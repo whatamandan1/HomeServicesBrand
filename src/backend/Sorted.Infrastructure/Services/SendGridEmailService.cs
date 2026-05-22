@@ -36,6 +36,10 @@ public class SendGridEmailService(IOptions<SendGridOptions> options, ILogger<Sen
 
         var response = await client.SendEmailAsync(msg, ct);
         if (!response.IsSuccessStatusCode)
-            logger.LogWarning("SendGrid returned {Status} for {Subject}", response.StatusCode, subject);
+        {
+            var body = await response.Body.ReadAsStringAsync(ct);
+            logger.LogWarning("SendGrid {Status} for {Subject} -> {Email}: {Body}",
+                response.StatusCode, subject, toEmail, body);
+        }
     }
 }

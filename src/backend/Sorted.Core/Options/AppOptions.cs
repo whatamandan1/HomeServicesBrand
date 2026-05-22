@@ -32,3 +32,10 @@ public class OpenAiOptions
     public string ApiKey { get; set; } = string.Empty;
     public string Model { get; set; } = "gpt-4o-mini";
 }
+
+public class FeaturesOptions
+{
+    public const string Section = "Features";
+    /// <summary>Skip Stripe checkout — activate subscription immediately (staging/dev only).</summary>
+    public bool BypassStripeCheckout { get; set; }
+}

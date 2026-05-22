@@ -90,7 +90,8 @@ src/frontend/web/       # Next.js (customer, provider, admin routes)
 
 See **[docs/deploy-staging.md](docs/deploy-staging.md)** for Vercel (frontend) + Railway (API).
 
-**Next:** **[docs/staging-hardening.md](docs/staging-hardening.md)** — PostgreSQL, SendGrid, OpenAI.
+**Next:** **[docs/staging-hardening.md](docs/staging-hardening.md)** — PostgreSQL, SendGrid, OpenAI.  
+**Dev costs / skip payment:** **[docs/dev-costs-and-email.md](docs/dev-costs-and-email.md)**
 
 ## GitHub Actions
 

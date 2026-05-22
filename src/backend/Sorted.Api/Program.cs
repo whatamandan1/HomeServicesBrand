@@ -95,6 +95,9 @@ app.UseAuthorization();
 app.MapGet("/health/live", () => Results.Ok(new { status = "ok" }));
 app.MapGet("/health", async (SortedDbContext db, IConfiguration config) =>
 {
+    var sendGridConfigured = !string.IsNullOrWhiteSpace(config["SendGrid:ApiKey"]);
+    var openAiConfigured = !string.IsNullOrWhiteSpace(config["OpenAI:ApiKey"]);
+
     var cs = DatabaseConfiguration.ResolveConnectionString(config);
     if (!DatabaseConfiguration.IsPostgres(cs))
     {
@@ -106,6 +109,8 @@ app.MapGet("/health", async (SortedDbContext db, IConfiguration config) =>
             canConnect = true,
             userCount = await db.Users.CountAsync(),
             demoAdminExists = await db.Users.AnyAsync(u => u.Email == DataSeeder.AdminEmail),
+            sendGridConfigured,
+            openAiConfigured,
         });
     }
 
@@ -146,6 +151,8 @@ app.MapGet("/health", async (SortedDbContext db, IConfiguration config) =>
         hint,
         userCount,
         demoAdminExists,
+        sendGridConfigured,
+        openAiConfigured,
     });
 });
 app.MapControllers();

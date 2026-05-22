@@ -8,11 +8,13 @@ import { saveAuth } from "@/lib/auth-storage";
 export default function SignupPage() {
   const router = useRouter();
   const [plans, setPlans] = useState<SubscriptionPlan[]>([]);
+  const [skipPayment, setSkipPayment] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
     api.getPlans().then(setPlans).catch((e) => setError(e.message));
+    api.getPublicConfig().then((c) => setSkipPayment(c.bypassStripeCheckout)).catch(() => {});
   }, []);
 
   async function onSubmit(e: React.FormEvent<HTMLFormElement>) {
@@ -39,6 +41,12 @@ export default function SignupPage() {
       const subId = auth.pendingSubscriptionId;
       if (!subId) throw new Error("No subscription created");
 
+      if (skipPayment) {
+        await api.devActivate(subId);
+        router.push("/portal");
+        return;
+      }
+
       const checkout = await api.checkout(subId, auth.token);
       window.location.href = checkout.url;
     } catch (err) {
@@ -51,6 +59,11 @@ export default function SignupPage() {
   return (
     <div className="max-w-lg">
       <h1 className="text-2xl font-bold text-gardens-primary">Sign up</h1>
+      {skipPayment && (
+        <p className="mt-2 rounded-lg bg-amber-50 p-3 text-sm text-amber-900">
+          Dev mode: payment skipped — subscription activates immediately. No charge.
+        </p>
+      )}
       <form onSubmit={onSubmit} className="mt-6 space-y-4">
         <Field label="First name" name="firstName" required />
         <Field label="Last name" name="lastName" required />
@@ -90,7 +103,11 @@ export default function SignupPage() {
           disabled={loading || plans.length === 0}
           className="w-full rounded-lg bg-gardens-primary py-3 text-white disabled:opacity-50"
         >
-          {loading ? "Creating account…" : "Continue to payment"}
+          {loading
+            ? "Creating account…"
+            : skipPayment
+              ? "Create account"
+              : "Continue to payment"}
         </button>
       </form>
     </div>

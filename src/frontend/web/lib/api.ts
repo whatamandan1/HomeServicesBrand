@@ -90,6 +90,8 @@ async function request<T>(
 }
 
 export const api = {
+  getPublicConfig: () =>
+    request<{ bypassStripeCheckout: boolean }>("/api/config/public"),
   getPlans: () =>
     request<SubscriptionPlan[]>("/api/brands/gardens-sorted/plans"),
   registerCustomer: (body: unknown) =>
