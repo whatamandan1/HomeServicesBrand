@@ -19,12 +19,22 @@ public static class DatabaseInitializer
     {
         await StampLegacyEnsureCreatedDatabaseAsync(db, logger, ct);
         await PostgresSchemaRepair.ApplyAsync(db, logger, ct);
-        await db.Database.MigrateAsync(ct);
-        await DataSeeder.SeedAsync(db, logger, ct);
-        await DataSeeder.EnsurePlanPricingAsync(db, logger, configuration, ct);
-        if (configuration is not null)
-            await DataSeeder.ApplyStripePriceIdsAsync(db, configuration, logger, ct);
-        logger.LogInformation("Database migrated and seeded successfully");
+
+        try
+        {
+            await db.Database.MigrateAsync(ct);
+            await DataSeeder.SeedAsync(db, logger, ct);
+            await DataSeeder.EnsurePlanPricingAsync(db, logger, configuration, ct);
+            if (configuration is not null)
+                await DataSeeder.ApplyStripePriceIdsAsync(db, configuration, logger, ct);
+            DatabaseMigrationState.MarkReady();
+            logger.LogInformation("Database migrated and seeded successfully");
+        }
+        catch (Exception ex)
+        {
+            DatabaseMigrationState.MarkFailed(ex.GetBaseException().Message);
+            throw;
+        }
     }
 
     /// <summary>

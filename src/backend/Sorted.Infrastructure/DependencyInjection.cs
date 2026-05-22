@@ -38,6 +38,7 @@ public static class DependencyInjection
         services.AddScoped<IVisitSchedulingService, VisitSchedulingService>();
         services.AddScoped<IWorkflowLogger, WorkflowLogger>();
 
+        services.AddHostedService<DatabaseMigrationHostedService>();
         return services;
     }
 }

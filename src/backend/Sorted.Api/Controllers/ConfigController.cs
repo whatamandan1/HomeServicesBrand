@@ -20,7 +20,8 @@ public class ConfigController(IOptions<FeaturesOptions> features, SortedDbContex
             bypassStripeCheckout = features.Value.BypassStripeCheckout,
             pendingMigrations = pending,
             appliedMigrations = applied,
-            databaseReady = !pending.Any(),
+            databaseReady = DatabaseMigrationState.IsReady && !pending.Any(),
+            databaseError = DatabaseMigrationState.LastError,
         });
     }
 }

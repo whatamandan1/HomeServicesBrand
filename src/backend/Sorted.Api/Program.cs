@@ -183,22 +183,4 @@ startupLogger.LogInformation(
     twilioConfigured ? "ok" : "missing",
     openAiConfigured ? "ok" : "missing");
 
-try
-{
-    await InitializeDatabaseAsync(app.Services, startupLogger);
-}
-catch (Exception ex)
-{
-    startupLogger.LogCritical(ex, "Database initialization failed at startup");
-    if (!app.Environment.IsDevelopment())
-        throw;
-}
-
 app.Run();
-
-static async Task InitializeDatabaseAsync(IServiceProvider services, ILogger<Program> logger)
-{
-    using var scope = services.CreateScope();
-    var db = scope.ServiceProvider.GetRequiredService<SortedDbContext>();
-    await DatabaseInitializer.InitializeAsync(db, logger, scope.ServiceProvider.GetService<IConfiguration>());
-}
