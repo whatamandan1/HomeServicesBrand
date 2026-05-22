@@ -17,8 +17,14 @@ public static class DependencyInjection
         services.Configure<SendGridOptions>(configuration.GetSection(SendGridOptions.Section));
         services.Configure<OpenAiOptions>(configuration.GetSection(OpenAiOptions.Section));
 
+        var connectionString = DatabaseConfiguration.ResolveConnectionString(configuration);
         services.AddDbContext<SortedDbContext>(options =>
-            options.UseSqlite(configuration.GetConnectionString("Default") ?? "Data Source=sorted.db"));
+        {
+            if (DatabaseConfiguration.IsPostgres(connectionString))
+                options.UseNpgsql(connectionString);
+            else
+                options.UseSqlite(connectionString);
+        });
 
         services.AddScoped<JwtTokenService>();
         services.AddScoped<IAuthService, AuthService>();

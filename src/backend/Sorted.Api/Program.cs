@@ -103,11 +103,18 @@ app.MapControllers();
 app.MapGet("/health", () => Results.Ok(new { status = "ok" }));
 
 var startupLogger = app.Services.GetRequiredService<ILogger<Program>>();
+var dbConnection = DatabaseConfiguration.ResolveConnectionString(app.Configuration);
+var dbKind = DatabaseConfiguration.IsPostgres(dbConnection) ? "PostgreSQL" : "SQLite";
 var stripeConfigured = !string.IsNullOrWhiteSpace(app.Configuration["Stripe:SecretKey"]);
 var webhookConfigured = !string.IsNullOrWhiteSpace(app.Configuration["Stripe:WebhookSecret"]);
+var sendGridConfigured = !string.IsNullOrWhiteSpace(app.Configuration["SendGrid:ApiKey"]);
+var openAiConfigured = !string.IsNullOrWhiteSpace(app.Configuration["OpenAI:ApiKey"]);
 startupLogger.LogInformation(
-    "Sorted API ready at http://localhost:5080 — Swagger: /swagger | Stripe key: {StripeKey} | Webhook secret: {Webhook}",
-    stripeConfigured ? "configured" : "MISSING (check appsettings.Development.local.json)",
-    webhookConfigured ? "configured" : "missing");
+    "Sorted API ready — DB: {Database} | Stripe: {StripeKey} | Webhook: {Webhook} | SendGrid: {SendGrid} | OpenAI: {OpenAi}",
+    dbKind,
+    stripeConfigured ? "ok" : "missing",
+    webhookConfigured ? "ok" : "missing",
+    sendGridConfigured ? "ok" : "missing",
+    openAiConfigured ? "ok" : "missing");
 
 app.Run();

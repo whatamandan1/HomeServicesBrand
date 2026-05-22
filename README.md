@@ -90,6 +90,8 @@ src/frontend/web/       # Next.js (customer, provider, admin routes)
 
 See **[docs/deploy-staging.md](docs/deploy-staging.md)** for Vercel (frontend) + Railway (API).
 
+**Next:** **[docs/staging-hardening.md](docs/staging-hardening.md)** — PostgreSQL, SendGrid, OpenAI.
+
 ## GitHub Actions
 
 CI builds backend and frontend on push/PR. See `.github/workflows/ci.yml`.
