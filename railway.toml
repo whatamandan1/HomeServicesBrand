@@ -3,6 +3,6 @@ builder = "DOCKERFILE"
 dockerfilePath = "src/backend/Dockerfile"
 
 [deploy]
-healthcheckPath = "/swagger/index.html"
+healthcheckPath = "/health"
 healthcheckTimeout = 120
 restartPolicyType = "ON_FAILURE"

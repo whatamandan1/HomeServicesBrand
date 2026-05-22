@@ -25,8 +25,9 @@ Ensure `appsettings.Development.local.json` is **not** committed (it is gitignor
 ## 2. Deploy API on Railway
 
 1. New Project → **Deploy from GitHub repo**
-2. Set **Root Directory** / Dockerfile path: use repo root; Railway reads `railway.toml` → builds `src/backend/Dockerfile`
-3. Add **Variables** (Railway dashboard):
+2. Leave **Root Directory** empty (repo root). Railway reads `railway.toml` → builds `src/backend/Dockerfile`
+3. If the first deploy failed, open the service → **Variables** → add the vars below → **Deploy** → **Redeploy**
+4. Add **Variables** (Railway dashboard):
 
 | Variable | Example |
 |----------|---------|
