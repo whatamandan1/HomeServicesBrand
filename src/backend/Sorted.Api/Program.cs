@@ -189,7 +189,9 @@ try
 }
 catch (Exception ex)
 {
-    startupLogger.LogError(ex, "Database initialization failed at startup");
+    startupLogger.LogCritical(ex, "Database initialization failed at startup");
+    if (!app.Environment.IsDevelopment())
+        throw;
 }
 
 app.Run();

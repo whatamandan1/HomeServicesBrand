@@ -18,6 +18,7 @@ public static class DatabaseInitializer
         CancellationToken ct = default)
     {
         await StampLegacyEnsureCreatedDatabaseAsync(db, logger, ct);
+        await PostgresSchemaRepair.ApplyAsync(db, logger, ct);
         await db.Database.MigrateAsync(ct);
         await DataSeeder.SeedAsync(db, logger, ct);
         await DataSeeder.EnsurePlanPricingAsync(db, logger, configuration, ct);

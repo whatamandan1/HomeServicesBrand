@@ -11,10 +11,16 @@ namespace Sorted.Api.Controllers;
 public class ConfigController(IOptions<FeaturesOptions> features, SortedDbContext db) : ControllerBase
 {
     [HttpGet("public")]
-    public async Task<IActionResult> PublicConfig(CancellationToken ct) =>
-        Ok(new
+    public async Task<IActionResult> PublicConfig(CancellationToken ct)
+    {
+        var pending = await db.Database.GetPendingMigrationsAsync(ct);
+        var applied = await db.Database.GetAppliedMigrationsAsync(ct);
+        return Ok(new
         {
             bypassStripeCheckout = features.Value.BypassStripeCheckout,
-            pendingMigrations = await db.Database.GetPendingMigrationsAsync(ct),
+            pendingMigrations = pending,
+            appliedMigrations = applied,
+            databaseReady = !pending.Any(),
         });
+    }
 }

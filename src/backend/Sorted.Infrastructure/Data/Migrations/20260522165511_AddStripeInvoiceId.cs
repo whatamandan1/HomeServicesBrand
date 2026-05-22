@@ -2,27 +2,25 @@
 
 #nullable disable
 
-namespace Sorted.Infrastructure.Data.Migrations
+namespace Sorted.Infrastructure.Data.Migrations;
+
+/// <inheritdoc />
+public partial class AddStripeInvoiceId : Migration
 {
     /// <inheritdoc />
-    public partial class AddStripeInvoiceId : Migration
+    protected override void Up(MigrationBuilder migrationBuilder)
     {
-        /// <inheritdoc />
-        protected override void Up(MigrationBuilder migrationBuilder)
-        {
-            migrationBuilder.AddColumn<string>(
-                name: "StripeInvoiceId",
-                table: "Payments",
-                type: "TEXT",
-                nullable: true);
-        }
+        // Provider-agnostic: works on PostgreSQL (Railway) and SQLite (local).
+        migrationBuilder.Sql("""
+            ALTER TABLE "Payments" ADD COLUMN IF NOT EXISTS "StripeInvoiceId" TEXT NULL;
+            """);
+    }
 
-        /// <inheritdoc />
-        protected override void Down(MigrationBuilder migrationBuilder)
-        {
-            migrationBuilder.DropColumn(
-                name: "StripeInvoiceId",
-                table: "Payments");
-        }
+    /// <inheritdoc />
+    protected override void Down(MigrationBuilder migrationBuilder)
+    {
+        migrationBuilder.Sql("""
+            ALTER TABLE "Payments" DROP COLUMN IF EXISTS "StripeInvoiceId";
+            """);
     }
 }
