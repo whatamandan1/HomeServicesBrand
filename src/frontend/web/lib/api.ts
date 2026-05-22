@@ -165,7 +165,7 @@ export const api = {
   providerMyVisits: (token: string) =>
     request<JobVisit[]>("/api/provider/visits/mine", {}, token),
   claimVisit: (token: string, visitId: string) =>
-    request<unknown>("/api/provider/visits/claim", {
+    request<JobVisit>("/api/provider/visits/claim", {
       method: "POST",
       body: JSON.stringify({ visitId }),
     }, token),

@@ -1,34 +1,50 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { api, type JobVisit, type ProviderProfile } from "@/lib/api";
 import { useAuth } from "@/lib/use-auth";
+import { isActiveVisit, normalizeVisitStatus, visitNextAction } from "@/lib/visit-status";
 import { StatusBadge } from "@/components/ui";
 
 export default function ProviderPage() {
   const { auth, ready } = useAuth();
+  const myVisitsRef = useRef<HTMLElement>(null);
   const [profile, setProfile] = useState<ProviderProfile | null>(null);
   const [open, setOpen] = useState<JobVisit[]>([]);
   const [mine, setMine] = useState<JobVisit[]>([]);
   const [error, setError] = useState<string | null>(null);
+  const [notice, setNotice] = useState<string | null>(null);
   const [busyId, setBusyId] = useState<string | null>(null);
 
-  function refresh() {
+  function scrollToMyVisits() {
+    myVisitsRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+  }
+
+  async function refresh() {
     if (!auth?.token) return;
     setError(null);
-    Promise.all([
+
+    const [profileResult, openResult, mineResult] = await Promise.allSettled([
       api.providerProfile(auth.token),
       api.providerOpenVisits(auth.token),
       api.providerMyVisits(auth.token),
-    ])
-      .then(([p, o, m]) => {
-        setProfile(p);
-        setOpen(o);
-        setMine(m);
-      })
-      .catch((e) => {
-        setError(e instanceof Error ? e.message : "Failed to load jobs");
-      });
+    ]);
+
+    if (profileResult.status === "fulfilled") setProfile(profileResult.value);
+    if (openResult.status === "fulfilled") setOpen(openResult.value);
+    if (mineResult.status === "fulfilled") setMine(mineResult.value);
+
+    const failures = [profileResult, openResult, mineResult].filter(
+      (r) => r.status === "rejected"
+    );
+    if (failures.length === 3) {
+      const first = failures[0];
+      setError(
+        first.status === "rejected" && first.reason instanceof Error
+          ? first.reason.message
+          : "Failed to load jobs"
+      );
+    }
   }
 
   useEffect(() => {
@@ -43,10 +59,21 @@ export default function ProviderPage() {
     if (!auth?.token) return;
     setBusyId(visitId);
     setError(null);
+    setNotice(null);
     try {
-      if (action === "start") await api.startVisit(auth.token, visitId);
-      else await api.completeVisit(auth.token, visitId);
-      refresh();
+      const updated =
+        action === "start"
+          ? await api.startVisit(auth.token, visitId)
+          : await api.completeVisit(auth.token, visitId);
+      setMine((visits) =>
+        visits.map((v) => (v.id === visitId ? updated : v))
+      );
+      setNotice(
+        action === "start"
+          ? "Visit started — mark complete when you finish on site."
+          : "Visit marked complete."
+      );
+      scrollToMyVisits();
     } catch (e) {
       setError(e instanceof Error ? e.message : "Update failed");
     } finally {
@@ -72,8 +99,8 @@ export default function ProviderPage() {
   }
 
   const sectors = profile?.postcodeSectors ?? [];
-  const upcoming = mine.filter((v) => v.status !== "Completed" && v.status !== "Cancelled");
-  const done = mine.filter((v) => v.status === "Completed");
+  const upcoming = mine.filter((v) => isActiveVisit(v.status));
+  const done = mine.filter((v) => normalizeVisitStatus(v.status) === "completed");
 
   return (
     <div className="space-y-8">
@@ -89,6 +116,11 @@ export default function ProviderPage() {
           Your postcode sectors: <strong>{sectors.join(", ")}</strong>
         </p>
       )}
+      {notice && (
+        <p className="rounded-lg border border-green-200 bg-green-50 px-4 py-3 text-sm text-green-900">
+          {notice}
+        </p>
+      )}
       {error && <p className="text-sm text-red-600">{error}</p>}
 
       <section>
@@ -97,13 +129,7 @@ export default function ProviderPage() {
           <div className="mt-2 space-y-2 text-sm text-stone-500">
             <p>No open visits in your postcode sectors right now.</p>
             <p>
-              Jobs appear here after a customer subscription is active and visits are opened for dispatch.
-              Demo provider covers <strong>LS1</strong>, <strong>LS2</strong>, and <strong>WF1</strong> — customer
-              signups need a matching postcode (e.g. LS1 4AP).
-            </p>
-            <p>
-              After the next API deploy, demo claimable visits are seeded automatically. An admin can also
-              use <strong>Open visits for dispatch</strong> on the admin portal.
+              Demo provider covers <strong>LS1</strong>, <strong>LS2</strong>, and <strong>WF1</strong>.
             </p>
           </div>
         ) : (
@@ -122,17 +148,30 @@ export default function ProviderPage() {
                 </div>
                 <button
                   className="min-h-[48px] w-full rounded-full bg-gardens-primary px-4 py-2.5 text-base font-semibold text-white sm:w-auto sm:rounded-lg sm:text-sm"
+                  disabled={busyId === v.id}
                   onClick={async () => {
                     setError(null);
+                    setNotice(null);
+                    setBusyId(v.id);
                     try {
-                      await api.claimVisit(auth.token, v.id);
-                      refresh();
+                      const claimed = await api.claimVisit(auth.token, v.id);
+                      setOpen((visits) => visits.filter((visit) => visit.id !== v.id));
+                      setMine((visits) => {
+                        const rest = visits.filter((visit) => visit.id !== claimed.id);
+                        return [...rest, claimed].sort((a, b) =>
+                          a.scheduledDate.localeCompare(b.scheduledDate)
+                        );
+                      });
+                      setNotice("Job claimed — scroll down to start your visit when you arrive.");
+                      scrollToMyVisits();
                     } catch (e) {
                       setError(e instanceof Error ? e.message : "Claim failed");
+                    } finally {
+                      setBusyId(null);
                     }
                   }}
                 >
-                  Claim job
+                  {busyId === v.id ? "Claiming…" : "Claim job"}
                 </button>
               </li>
             ))}
@@ -140,50 +179,56 @@ export default function ProviderPage() {
         )}
       </section>
 
-      <section>
+      <section ref={myVisitsRef} id="my-visits">
         <h2 className="font-semibold">My visits</h2>
+        <p className="mt-1 text-sm text-stone-500">
+          After claiming, use <strong>Start visit</strong> on arrival, then <strong>Mark complete</strong> when finished.
+        </p>
         {upcoming.length === 0 ? (
           <p className="mt-2 text-sm text-stone-500">No active visits — claim a job above.</p>
         ) : (
           <ul className="mt-2 space-y-3">
-            {upcoming.map((v) => (
-              <li
-                key={v.id}
-                className="rounded-lg border bg-white p-4 shadow-sm"
-              >
-                <div className="flex flex-wrap items-start justify-between gap-3">
-                  <div>
-                    <div className="font-medium">
-                      {v.scheduledDate.slice(0, 10)} — {v.postcode}
+            {upcoming.map((v) => {
+              const action = visitNextAction(v.status);
+              return (
+                <li
+                  key={v.id}
+                  className="rounded-lg border bg-white p-4 shadow-sm"
+                >
+                  <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+                    <div>
+                      <div className="font-medium">
+                        {v.scheduledDate.slice(0, 10)} — {v.postcode}
+                      </div>
+                      <div className="text-sm text-stone-500">{v.availabilityWindow}</div>
+                      <div className="mt-2">
+                        <StatusBadge status={v.status} />
+                      </div>
                     </div>
-                    <div className="text-sm text-stone-500">{v.availabilityWindow}</div>
-                    <div className="mt-2">
-                      <StatusBadge status={v.status} />
-                    </div>
+                    {action === "start" && (
+                      <button
+                        type="button"
+                        disabled={busyId === v.id}
+                        className="min-h-[48px] w-full rounded-full bg-amber-600 px-4 py-2.5 text-sm font-semibold text-white hover:bg-amber-700 disabled:opacity-50 sm:w-auto"
+                        onClick={() => runVisitAction(v.id, "start")}
+                      >
+                        {busyId === v.id ? "Starting…" : "Start visit"}
+                      </button>
+                    )}
+                    {action === "complete" && (
+                      <button
+                        type="button"
+                        disabled={busyId === v.id}
+                        className="min-h-[48px] w-full rounded-full bg-gardens-primary px-4 py-2.5 text-sm font-semibold text-white hover:bg-gardens-dark disabled:opacity-50 sm:w-auto"
+                        onClick={() => runVisitAction(v.id, "complete")}
+                      >
+                        {busyId === v.id ? "Saving…" : "Mark complete"}
+                      </button>
+                    )}
                   </div>
-                  {v.status === "Claimed" && (
-                    <button
-                      type="button"
-                      disabled={busyId === v.id}
-                      className="min-h-[48px] rounded-full bg-amber-600 px-4 py-2.5 text-sm font-semibold text-white hover:bg-amber-700 disabled:opacity-50"
-                      onClick={() => runVisitAction(v.id, "start")}
-                    >
-                      {busyId === v.id ? "Starting…" : "Start visit"}
-                    </button>
-                  )}
-                  {v.status === "InProgress" && (
-                    <button
-                      type="button"
-                      disabled={busyId === v.id}
-                      className="min-h-[48px] rounded-full bg-gardens-primary px-4 py-2.5 text-sm font-semibold text-white hover:bg-gardens-dark disabled:opacity-50"
-                      onClick={() => runVisitAction(v.id, "complete")}
-                    >
-                      {busyId === v.id ? "Saving…" : "Mark complete"}
-                    </button>
-                  )}
-                </div>
-              </li>
-            ))}
+                </li>
+              );
+            })}
           </ul>
         )}
       </section>
