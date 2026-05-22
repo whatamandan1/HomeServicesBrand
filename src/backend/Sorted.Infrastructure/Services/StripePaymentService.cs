@@ -15,6 +15,7 @@ namespace Sorted.Infrastructure.Services;
 public class StripePaymentService(
     SortedDbContext db,
     IOptions<StripeOptions> stripeOptions,
+    IOptions<PlanPricingOptions> planPricingOptions,
     IEmailService email,
     ISmsService sms,
     IVisitSchedulingService scheduling,
@@ -22,6 +23,7 @@ public class StripePaymentService(
     ILogger<StripePaymentService> logger) : IStripePaymentService
 {
     private readonly StripeOptions _options = stripeOptions.Value;
+    private readonly PlanPricingOptions _planPricing = planPricingOptions.Value;
 
     public async Task<CheckoutSessionResponse> CreateSignupCheckoutAsync(
         CustomerSubscription subscription,
@@ -31,7 +33,8 @@ public class StripePaymentService(
     {
         EnsureApiKey();
 
-        var lineItem = BuildSubscriptionLineItem(plan);
+        var chargePrice = PlanPricing.ResolvePrice(plan, _planPricing);
+        var lineItem = BuildSubscriptionLineItem(plan, chargePrice);
         var sessionService = new SessionService();
         var session = await sessionService.CreateAsync(new SessionCreateOptions
         {
@@ -59,7 +62,7 @@ public class StripePaymentService(
         db.Payments.Add(new PaymentRecord
         {
             CustomerSubscriptionId = subscription.Id,
-            AmountGbp = plan.PriceGbp,
+            AmountGbp = chargePrice,
             Status = PaymentStatus.Pending,
             StripeCheckoutSessionId = session.Id
         });
@@ -106,7 +109,7 @@ public class StripePaymentService(
         }
     }
 
-    private SessionLineItemOptions BuildSubscriptionLineItem(SubscriptionPlan plan)
+    private SessionLineItemOptions BuildSubscriptionLineItem(SubscriptionPlan plan, decimal chargePrice)
     {
         if (!string.IsNullOrWhiteSpace(plan.StripePriceId))
         {
@@ -117,7 +120,7 @@ public class StripePaymentService(
             };
         }
 
-        var amountPence = (long)(plan.PriceGbp * 100);
+        var amountPence = (long)(chargePrice * 100);
         return new SessionLineItemOptions
         {
             Quantity = 1,

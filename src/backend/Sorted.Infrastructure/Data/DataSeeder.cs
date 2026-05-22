@@ -4,6 +4,7 @@ using Microsoft.Extensions.Logging;
 using Sorted.Core.Entities;
 using Sorted.Core.Enums;
 using Sorted.Core.Options;
+using Sorted.Infrastructure.Services;
 
 namespace Sorted.Infrastructure.Data;
 
@@ -163,17 +164,12 @@ public static class DataSeeder
 
         foreach (var plan in plans)
         {
-            var target = plan.BillingInterval switch
-            {
-                SubscriptionBillingInterval.Monthly => pricing.EssentialMonthly,
-                SubscriptionBillingInterval.Annual => pricing.EssentialAnnual,
-                _ => (decimal?)null
-            };
+            var target = PlanPricing.ResolvePrice(plan.BillingInterval, plan.Name, plan.PriceGbp, pricing);
 
-            if (target is null || plan.PriceGbp == target)
+            if (plan.PriceGbp == target)
                 continue;
 
-            plan.PriceGbp = target.Value;
+            plan.PriceGbp = target;
             updated = true;
         }
 

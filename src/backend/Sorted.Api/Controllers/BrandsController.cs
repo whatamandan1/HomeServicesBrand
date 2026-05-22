@@ -1,14 +1,17 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Options;
 using Sorted.Core.Dtos;
+using Sorted.Core.Options;
 using Sorted.Infrastructure.Data;
+using Sorted.Infrastructure.Services;
 
 namespace Sorted.Api.Controllers;
 
 [ApiController]
 [Route("api/brands")]
-public class BrandsController(SortedDbContext db) : ControllerBase
+public class BrandsController(SortedDbContext db, IOptions<PlanPricingOptions> pricing) : ControllerBase
 {
     [HttpGet("{code}")]
     [AllowAnonymous]
@@ -31,8 +34,15 @@ public class BrandsController(SortedDbContext db) : ControllerBase
 
         var plans = await db.SubscriptionPlans.AsNoTracking()
             .Where(p => p.BrandId == brandId && p.IsActive && !p.IsDeleted)
-            .Select(p => new SubscriptionPlanResponse(p.Id, p.Name, p.Description, p.BillingInterval, p.MinimumTermMonths, p.PriceGbp))
             .ToListAsync(ct);
-        return Ok(plans);
+
+        var opts = pricing.Value;
+        return Ok(plans.Select(p => new SubscriptionPlanResponse(
+            p.Id,
+            p.Name,
+            p.Description,
+            p.BillingInterval,
+            p.MinimumTermMonths,
+            PlanPricing.ResolvePrice(p, opts))));
     }
 }
