@@ -37,6 +37,8 @@ Ensure `appsettings.Development.local.json` is **not** committed (it is gitignor
 | `Stripe__WebhookSecret` | from Stripe Dashboard webhook |
 | `Stripe__Prices__EssentialMonthly` | optional — `price_...` from Stripe Dashboard |
 | `Stripe__Prices__EssentialAnnual` | optional — `price_...` from Stripe Dashboard |
+| `Plans__EssentialMonthly` | `29.95` — shown on site and synced to DB on startup |
+| `Plans__EssentialAnnual` | `299.95` — shown on site and synced to DB on startup |
 | `Stripe__SuccessUrl` | `https://YOUR-VERCEL-URL/signup/success` |
 | `Stripe__CancelUrl` | `https://YOUR-VERCEL-URL/signup` |
 | `SendGrid__ApiKey` | optional |

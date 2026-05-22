@@ -20,11 +20,9 @@ public static class DatabaseInitializer
         await StampLegacyEnsureCreatedDatabaseAsync(db, logger, ct);
         await db.Database.MigrateAsync(ct);
         await DataSeeder.SeedAsync(db, logger, ct);
+        await DataSeeder.EnsurePlanPricingAsync(db, logger, configuration, ct);
         if (configuration is not null)
-        {
             await DataSeeder.ApplyStripePriceIdsAsync(db, configuration, logger, ct);
-            await DataSeeder.EnsurePlanPricingAsync(db, logger, ct);
-        }
         logger.LogInformation("Database migrated and seeded successfully");
     }
 

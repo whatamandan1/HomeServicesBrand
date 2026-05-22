@@ -151,8 +151,13 @@ public static class DataSeeder
         }
     }
 
-    public static async Task EnsurePlanPricingAsync(SortedDbContext db, ILogger logger, CancellationToken ct = default)
+    public static async Task EnsurePlanPricingAsync(
+        SortedDbContext db,
+        ILogger logger,
+        IConfiguration? configuration = null,
+        CancellationToken ct = default)
     {
+        var pricing = configuration?.GetSection(PlanPricingOptions.Section).Get<PlanPricingOptions>() ?? new PlanPricingOptions();
         var plans = await db.SubscriptionPlans.Where(p => !p.IsDeleted).ToListAsync(ct);
         var updated = false;
 
@@ -160,8 +165,8 @@ public static class DataSeeder
         {
             var target = plan.BillingInterval switch
             {
-                SubscriptionBillingInterval.Monthly => 29.95m,
-                SubscriptionBillingInterval.Annual => 299.95m,
+                SubscriptionBillingInterval.Monthly => pricing.EssentialMonthly,
+                SubscriptionBillingInterval.Annual => pricing.EssentialAnnual,
                 _ => (decimal?)null
             };
 
@@ -175,7 +180,10 @@ public static class DataSeeder
         if (updated)
         {
             await db.SaveChangesAsync(ct);
-            logger.LogInformation("Updated subscription plan prices to £29.95/month and £299.95/year");
+            logger.LogInformation(
+                "Updated subscription plan prices to £{Monthly}/month and £{Annual}/year",
+                pricing.EssentialMonthly,
+                pricing.EssentialAnnual);
         }
     }
 }

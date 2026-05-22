@@ -14,6 +14,7 @@ public static class DependencyInjection
     {
         services.Configure<JwtOptions>(configuration.GetSection(JwtOptions.Section));
         services.Configure<StripeOptions>(configuration.GetSection(StripeOptions.Section));
+        services.Configure<PlanPricingOptions>(configuration.GetSection(PlanPricingOptions.Section));
         services.Configure<SendGridOptions>(configuration.GetSection(SendGridOptions.Section));
         services.Configure<OpenAiOptions>(configuration.GetSection(OpenAiOptions.Section));
         services.Configure<TwilioOptions>(configuration.GetSection(TwilioOptions.Section));

@@ -5,6 +5,7 @@ import Link from "next/link";
 import { Check } from "lucide-react";
 import { api, type SubscriptionPlan } from "@/lib/api";
 import { FALLBACK_PLANS, sortPlans } from "@/lib/plans";
+import { formatGbp } from "@/lib/format";
 
 const features = [
   "Recurring visits on your schedule",
@@ -71,7 +72,7 @@ export function PricingSection() {
               <h3 className="font-display text-xl font-semibold text-gardens-dark">{plan.name}</h3>
               <p className="mt-2 text-sm text-stone-600">{plan.description}</p>
               <div className="mt-6 flex items-baseline gap-1">
-                <span className="font-display text-4xl font-bold text-gardens-primary">£{plan.priceGbp}</span>
+                <span className="font-display text-4xl font-bold text-gardens-primary">£{formatGbp(plan.priceGbp)}</span>
                 <span className="text-stone-500">/{isAnnual ? "year" : "month"}</span>
               </div>
               <p className="mt-2 text-xs text-stone-500">{plan.minimumTermMonths}-month minimum term</p>

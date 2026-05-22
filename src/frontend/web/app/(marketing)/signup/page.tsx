@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { Check, ChevronLeft, ChevronRight } from "lucide-react";
 import { api, type SubscriptionPlan } from "@/lib/api";
+import { formatGbp } from "@/lib/format";
 import { FALLBACK_PLANS, sortPlans } from "@/lib/plans";
 import { saveAuth } from "@/lib/auth-storage";
 
@@ -149,7 +150,7 @@ export default function SignupPage() {
                     <div>
                       <p className="font-semibold text-gardens-dark">{p.name}</p>
                       <p className="mt-1 text-2xl font-bold text-gardens-primary">
-                        £{p.priceGbp}
+                        £{formatGbp(p.priceGbp)}
                         <span className="text-sm font-normal text-stone-500">/{isMonthly ? "mo" : "yr"}</span>
                       </p>
                     </div>
