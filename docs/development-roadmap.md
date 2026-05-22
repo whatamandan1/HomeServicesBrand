@@ -9,7 +9,7 @@ statuses as features ship.
 **Last reviewed:** 2026-05-22  
 **Live site:** https://home-services-brand.vercel.app/
 
-**Current focus:** Phase 1 — provider self-signup UI (last Phase 1 item).
+**Current focus:** Phase 2 — day-to-day operations (background jobs, production comms).
 
 ---
 
@@ -33,9 +33,9 @@ These are the spec's top priorities for initial launch.
 | Customer signup | ✅ Done | 3-step wizard at `/signup`; dev Stripe bypass available |
 | Recurring subscriptions | ✅ Done | Stripe Checkout subscription mode + renewal webhooks |
 | Payment processing | ✅ Done | Renewals, past_due, cancellation via webhooks |
-| Provider onboarding | 🟡 Partial | API exists (`POST /api/auth/register/provider`); no frontend signup |
+| Provider onboarding | ✅ Done | Self-signup at `/providers#apply` + admin approval |
 | Provider job claiming | ✅ Done | Territory-filtered open visits + claim with conflict check |
-| Operational CRM | 🟡 Partial | Admin dashboard, lists, provider approval; escalation resolve missing |
+| Operational CRM | 🟡 Partial | Admin dashboard, visits, escalations; workflow/AI viewers still missing |
 | Recurring scheduling | 🟡 Partial | Generates initial batch of 4 weekly visits only |
 | Communication systems | 🟡 Partial | Email/SMS services wired; often no-op without config |
 | AI support assistant | ✅ Done | Customer portal chat + guest homepage chat |
@@ -53,7 +53,7 @@ Work through phases in order. Each phase builds on the last.
 - [x] **Visit lifecycle (provider)** — `POST .../start` and `POST .../complete`; provider UI for Claimed → InProgress → Completed
 - [x] **Visit lifecycle (admin/customer)** — cancel/reschedule APIs and UI on `/portal` and `/admin`
 - [x] **Escalation resolve workflow** — admin take case (InProgress) and resolve with optional notes
-- [ ] **Provider self-signup UI** — registration flow on `/providers` linked to admin approval
+- [x] **Provider self-signup UI** — registration on `/providers#apply` linked to admin approval
 
 ### Phase 2 — Day-to-day operations
 
@@ -95,7 +95,7 @@ Work through phases in order. Each phase builds on the last.
 
 | Requirement | Status | Next step |
 |-------------|--------|-----------|
-| Onboard | 🟡 Partial | Self-serve signup page + admin approval UX |
+| Onboard | ✅ Done | Apply at `/providers#apply`; admin approves on `/admin` |
 | Claim jobs | ✅ Done | — |
 | Manage availability | ⬜ Not started | Availability calendar / time windows |
 | View earnings | ⬜ Not started | Payout ledger + Stripe Connect or manual tracking |

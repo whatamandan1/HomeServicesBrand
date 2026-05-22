@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { Banknote, Calendar, MapPin, Shield } from "lucide-react";
 import { Button, Section } from "@/components/marketing/ui";
+import { ProviderSignupForm } from "@/components/providers/ProviderSignupForm";
 
 export const metadata = { title: "For gardeners" };
 
@@ -39,8 +40,14 @@ export default function ProvidersPage() {
           <p className="mt-6 text-lg text-stone-600 text-balance">
             GardensSorted connects you with subscription customers in your area. Claim visits through the provider portal when they fit your schedule.
           </p>
-          <div className="mt-8">
-            <Button href="/login">Provider login</Button>
+          <div className="mt-8 flex flex-col items-center justify-center gap-3 sm:flex-row">
+            <Button href="#apply">Apply to join</Button>
+            <Link
+              href="/login"
+              className="inline-flex min-h-[48px] items-center rounded-full border border-stone-200 px-6 py-3 text-sm font-semibold text-stone-700 transition hover:bg-white"
+            >
+              Provider login
+            </Link>
           </div>
         </div>
       </section>
@@ -61,17 +68,7 @@ export default function ProvidersPage() {
         </div>
       </Section>
 
-      <section className="pb-20">
-        <div className="mx-auto max-w-xl rounded-2xl border border-gardens-primary/20 bg-white p-8 text-center shadow-soft">
-          <h2 className="font-display text-2xl font-semibold text-gardens-dark">Interested in joining?</h2>
-          <p className="mt-3 text-sm text-stone-600">
-            Provider onboarding is opening in Yorkshire. Log in with your provider account, or contact us to register interest.
-          </p>
-          <Link href="/login" className="mt-6 inline-block text-sm font-semibold text-gardens-primary hover:underline">
-            Go to provider login →
-          </Link>
-        </div>
-      </section>
+      <ProviderSignupForm />
     </>
   );
 }

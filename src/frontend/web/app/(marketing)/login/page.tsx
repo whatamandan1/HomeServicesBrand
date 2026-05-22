@@ -68,6 +68,11 @@ export default function LoginPage() {
             <Link href="/signup" className="font-medium text-gardens-primary hover:underline">
               Sign up
             </Link>
+            {" · "}
+            Gardener?{" "}
+            <Link href="/providers#apply" className="font-medium text-gardens-primary hover:underline">
+              Apply to join
+            </Link>
           </p>
         </div>
       </div>

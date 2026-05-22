@@ -89,6 +89,9 @@ public class AuthService(SortedDbContext db, JwtTokenService jwt, IWorkflowLogge
         db.Providers.Add(provider);
         await db.SaveChangesAsync(ct);
 
+        if (request.PostcodeSectors is null || request.PostcodeSectors.Count == 0)
+            throw new InvalidOperationException("At least one postcode sector is required.");
+
         foreach (var sector in request.PostcodeSectors.Distinct(StringComparer.OrdinalIgnoreCase))
         {
             db.ProviderTerritories.Add(new ProviderTerritory

@@ -129,6 +129,18 @@ export const api = {
       method: "POST",
       body: JSON.stringify(body),
     }),
+  registerProvider: (body: {
+    email: string;
+    password: string;
+    firstName: string;
+    lastName: string;
+    phone: string;
+    postcodeSectors: string[];
+  }) =>
+    request<AuthResponse>("/api/auth/register/provider", {
+      method: "POST",
+      body: JSON.stringify(body),
+    }),
   login: (email: string, password: string) =>
     request<AuthResponse>("/api/auth/login", {
       method: "POST",
