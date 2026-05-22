@@ -81,8 +81,23 @@ async function request<T>(
     const text = await res.text();
     let message = res.statusText;
     try {
-      const err = JSON.parse(text) as { error?: string; title?: string };
-      message = err.error ?? err.title ?? message;
+      const err = JSON.parse(text) as {
+        error?: string;
+        title?: string;
+        errors?: Record<string, string[]>;
+      };
+      if (err.errors && Object.keys(err.errors).length > 0) {
+        message = Object.entries(err.errors)
+          .flatMap(([field, messages]) =>
+            messages.map((m) => {
+              const label = field === "$" || field.startsWith("$.") ? "request" : field;
+              return `${label}: ${m}`;
+            })
+          )
+          .join(" ");
+      } else {
+        message = err.error ?? err.title ?? message;
+      }
     } catch {
       if (text && !text.startsWith("<")) message = text.slice(0, 200);
     }

@@ -75,9 +75,22 @@ export default function SignupPage() {
     setLoading(true);
     setError(null);
     try {
+      if (selectedPlanId.startsWith("fallback-")) {
+        throw new Error("Plans could not be loaded from the server. Refresh the page and try again.");
+      }
+
       const auth = await api.registerCustomer({
-        ...form,
+        firstName: form.firstName,
+        lastName: form.lastName,
+        email: form.email,
+        password: form.password,
+        phone: form.phone,
+        line1: form.line1,
         line2: form.line2 || null,
+        city: form.city,
+        postcode: form.postcode,
+        gardenSize: form.gardenSize,
+        availabilityPreference: form.availability,
         subscriptionPlanId: selectedPlanId,
       });
       saveAuth(auth);

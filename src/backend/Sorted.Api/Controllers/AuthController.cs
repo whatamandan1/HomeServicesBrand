@@ -14,6 +14,9 @@ public class AuthController(IAuthService auth) : ControllerBase
     [AllowAnonymous]
     public async Task<ActionResult<AuthResponse>> RegisterCustomer([FromBody] RegisterCustomerRequest request, CancellationToken ct)
     {
+        if (!ModelState.IsValid)
+            return ValidationProblem(ModelState);
+
         try
         {
             return Ok(await auth.RegisterCustomerAsync(request, ct));
