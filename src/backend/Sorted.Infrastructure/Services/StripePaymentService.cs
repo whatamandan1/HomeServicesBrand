@@ -113,6 +113,14 @@ public class StripePaymentService(
     {
         if (!string.IsNullOrWhiteSpace(plan.StripePriceId))
         {
+            if (plan.StripePriceId.StartsWith("prod_", StringComparison.OrdinalIgnoreCase))
+            {
+                throw new InvalidOperationException(
+                    "Stripe is configured with a Product ID (prod_...) instead of a Price ID (price_...). " +
+                    "In Stripe Dashboard → Products → open your plan → under Pricing, copy the Price ID. " +
+                    "Update Stripe__Prices__EssentialMonthly / EssentialAnnual on Railway, then redeploy.");
+            }
+
             return new SessionLineItemOptions
             {
                 Price = plan.StripePriceId,

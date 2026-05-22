@@ -123,9 +123,12 @@ public static class DataSeeder
         if (stripe?.Prices is null)
             return;
 
-        var monthly = stripe.Prices.EssentialMonthly?.Trim();
-        var annual = stripe.Prices.EssentialAnnual?.Trim();
-        if (string.IsNullOrEmpty(monthly) && string.IsNullOrEmpty(annual))
+        var rawMonthly = stripe.Prices.EssentialMonthly?.Trim();
+        var rawAnnual = stripe.Prices.EssentialAnnual?.Trim();
+        var monthly = NormalizeStripePriceId(rawMonthly, logger, "EssentialMonthly");
+        var annual = NormalizeStripePriceId(rawAnnual, logger, "EssentialAnnual");
+        if (string.IsNullOrEmpty(monthly) && string.IsNullOrEmpty(annual)
+            && string.IsNullOrEmpty(rawMonthly) && string.IsNullOrEmpty(rawAnnual))
             return;
 
         var plans = await db.SubscriptionPlans.Where(p => !p.IsDeleted).ToListAsync(ct);
@@ -133,15 +136,31 @@ public static class DataSeeder
 
         foreach (var plan in plans)
         {
-            if (plan.BillingInterval == SubscriptionBillingInterval.Monthly && !string.IsNullOrEmpty(monthly))
+            if (plan.BillingInterval == SubscriptionBillingInterval.Monthly)
             {
-                plan.StripePriceId = monthly;
-                updated = true;
+                if (!string.IsNullOrEmpty(monthly))
+                {
+                    plan.StripePriceId = monthly;
+                    updated = true;
+                }
+                else if (!string.IsNullOrEmpty(rawMonthly) || plan.StripePriceId?.StartsWith("prod_", StringComparison.OrdinalIgnoreCase) == true)
+                {
+                    plan.StripePriceId = null;
+                    updated = true;
+                }
             }
-            else if (plan.BillingInterval == SubscriptionBillingInterval.Annual && !string.IsNullOrEmpty(annual))
+            else if (plan.BillingInterval == SubscriptionBillingInterval.Annual)
             {
-                plan.StripePriceId = annual;
-                updated = true;
+                if (!string.IsNullOrEmpty(annual))
+                {
+                    plan.StripePriceId = annual;
+                    updated = true;
+                }
+                else if (!string.IsNullOrEmpty(rawAnnual) || plan.StripePriceId?.StartsWith("prod_", StringComparison.OrdinalIgnoreCase) == true)
+                {
+                    plan.StripePriceId = null;
+                    updated = true;
+                }
             }
         }
 
@@ -181,5 +200,32 @@ public static class DataSeeder
                 pricing.EssentialMonthly,
                 pricing.EssentialAnnual);
         }
+    }
+
+    private static string? NormalizeStripePriceId(string? value, ILogger logger, string settingName)
+    {
+        if (string.IsNullOrWhiteSpace(value))
+            return null;
+
+        var trimmed = value.Trim();
+        if (trimmed.StartsWith("prod_", StringComparison.OrdinalIgnoreCase))
+        {
+            logger.LogWarning(
+                "{Setting} is a Stripe Product ID ({ProductId}). Use a Price ID (price_...) from the product Pricing section — ignoring this value.",
+                settingName,
+                trimmed);
+            return null;
+        }
+
+        if (!trimmed.StartsWith("price_", StringComparison.OrdinalIgnoreCase))
+        {
+            logger.LogWarning(
+                "{Setting} does not look like a Stripe Price ID (expected price_...). Ignoring {Value}.",
+                settingName,
+                trimmed);
+            return null;
+        }
+
+        return trimmed;
     }
 }
