@@ -3,6 +3,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using Sorted.Core.Entities;
 using Sorted.Core.Enums;
+using Sorted.Core.Interfaces;
 using Sorted.Core.Options;
 using Sorted.Infrastructure.Services;
 
@@ -14,6 +15,9 @@ public static class DataSeeder
     public const string AdminPassword = "Admin123!";
     public const string ProviderEmail = "provider@gardenssorted.local";
     public const string ProviderPassword = "Provider123!";
+    public const string DemoCustomerEmail = "demo@gardenssorted.local";
+    public const string DemoCustomerPassword = "Demo123!";
+    private static readonly string[] DemoProviderSectors = ["LS1", "LS2", "WF1"];
 
     public static async Task SeedAsync(SortedDbContext db, ILogger logger, CancellationToken ct = default)
     {
@@ -24,6 +28,20 @@ public static class DataSeeder
         }
 
         await EnsureDemoUsersAsync(db, logger, ct);
+    }
+
+    /// <summary>
+    /// Ensures demo provider territories, opens stuck scheduled visits, and seeds claimable demo jobs.
+    /// </summary>
+    public static async Task EnsureDemoDispatchDataAsync(
+        SortedDbContext db,
+        IVisitSchedulingService scheduling,
+        ILogger logger,
+        CancellationToken ct = default)
+    {
+        await EnsureDemoProviderTerritoriesAsync(db, logger, ct);
+        await scheduling.OpenVisitsForDispatchAsync(ct);
+        await EnsureDemoOpenVisitsAsync(db, logger, ct);
     }
 
     private static async Task SeedInitialDataAsync(SortedDbContext db, ILogger logger, CancellationToken ct)
@@ -104,13 +122,148 @@ public static class DataSeeder
             await db.SaveChangesAsync(ct);
 
             db.ProviderTerritories.AddRange(
-                new ProviderTerritory { ProviderId = provider.Id, PostcodeSector = "LS1" },
-                new ProviderTerritory { ProviderId = provider.Id, PostcodeSector = "LS2" },
-                new ProviderTerritory { ProviderId = provider.Id, PostcodeSector = "WF1" });
+                DemoProviderSectors.Select(s => new ProviderTerritory { ProviderId = provider.Id, PostcodeSector = s }));
             logger.LogInformation("Created demo provider user {Email}", ProviderEmail);
         }
 
         await db.SaveChangesAsync(ct);
+        await EnsureDemoProviderTerritoriesAsync(db, logger, ct);
+    }
+
+    private static async Task EnsureDemoProviderTerritoriesAsync(SortedDbContext db, ILogger logger, CancellationToken ct)
+    {
+        var provider = await db.Providers
+            .Include(p => p.User)
+            .Include(p => p.Territories)
+            .FirstOrDefaultAsync(p => p.User.Email == ProviderEmail && !p.IsDeleted, ct);
+        if (provider is null)
+            return;
+
+        var existing = provider.Territories.Select(t => t.PostcodeSector).ToHashSet(StringComparer.OrdinalIgnoreCase);
+        var added = false;
+        foreach (var sector in DemoProviderSectors)
+        {
+            if (existing.Contains(sector))
+                continue;
+            db.ProviderTerritories.Add(new ProviderTerritory { ProviderId = provider.Id, PostcodeSector = sector });
+            added = true;
+        }
+
+        if (added)
+        {
+            await db.SaveChangesAsync(ct);
+            logger.LogInformation("Backfilled demo provider territories: {Sectors}", string.Join(", ", DemoProviderSectors));
+        }
+    }
+
+    private static async Task EnsureDemoOpenVisitsAsync(SortedDbContext db, ILogger logger, CancellationToken ct)
+    {
+        var openVisits = await db.JobVisits
+            .Include(v => v.Property)
+            .Where(v => v.Status == VisitStatus.OpenForClaim && !v.IsDeleted)
+            .ToListAsync(ct);
+
+        if (openVisits.Any(v => DemoProviderSectors.Contains(VisitSchedulingService.PostcodeSector(v.Property.Postcode))))
+            return;
+
+        var brand = await db.Brands.FirstOrDefaultAsync(b => b.Code == "gardens-sorted", ct);
+        var plan = brand is null
+            ? null
+            : await db.SubscriptionPlans
+                .Where(p => p.BrandId == brand.Id && p.BillingInterval == SubscriptionBillingInterval.Monthly && !p.IsDeleted)
+                .OrderBy(p => p.CreatedAtUtc)
+                .FirstOrDefaultAsync(ct);
+        if (brand is null || plan is null)
+            return;
+
+        var subscription = await db.CustomerSubscriptions
+            .Include(s => s.Customer).ThenInclude(c => c.User)
+            .Include(s => s.Customer).ThenInclude(c => c.Properties)
+            .FirstOrDefaultAsync(s => s.Customer.User.Email == DemoCustomerEmail && !s.IsDeleted, ct);
+
+        if (subscription is null)
+        {
+            var user = new UserAccount
+            {
+                Email = DemoCustomerEmail,
+                PasswordHash = BCrypt.Net.BCrypt.HashPassword(DemoCustomerPassword),
+                FirstName = "Demo",
+                LastName = "Customer",
+                Phone = "07700900099",
+                Role = UserRole.Customer,
+                BrandId = brand.Id
+            };
+            db.Users.Add(user);
+            await db.SaveChangesAsync(ct);
+
+            var customer = new Customer { UserId = user.Id, BrandId = brand.Id };
+            db.Customers.Add(customer);
+            await db.SaveChangesAsync(ct);
+
+            var property = new CustomerProperty
+            {
+                CustomerId = customer.Id,
+                Line1 = "1 Demo Street",
+                City = "Leeds",
+                Postcode = "LS1 4AP",
+                GardenSize = GardenSize.Medium,
+                IsPrimary = true
+            };
+            db.CustomerProperties.Add(property);
+
+            subscription = new CustomerSubscription
+            {
+                CustomerId = customer.Id,
+                SubscriptionPlanId = plan.Id,
+                Status = SubscriptionStatus.Active,
+                StartedAtUtc = DateTime.UtcNow,
+                EndsAtUtc = DateTime.UtcNow.AddMonths(plan.MinimumTermMonths),
+                AvailabilityPreference = "Weekday mornings"
+            };
+            db.CustomerSubscriptions.Add(subscription);
+            await db.SaveChangesAsync(ct);
+
+            subscription.Customer = customer;
+            subscription.Customer.User = user;
+            subscription.Customer.Properties = [property];
+            logger.LogInformation("Created demo customer {Email} for provider dispatch testing", DemoCustomerEmail);
+        }
+        else if (subscription.Status != SubscriptionStatus.Active)
+        {
+            subscription.Status = SubscriptionStatus.Active;
+            subscription.StartedAtUtc ??= DateTime.UtcNow;
+            await db.SaveChangesAsync(ct);
+        }
+
+        var demoProperty = subscription.Customer.Properties.FirstOrDefault(p => p.IsPrimary && !p.IsDeleted)
+            ?? subscription.Customer.Properties.FirstOrDefault(p => !p.IsDeleted);
+        if (demoProperty is null)
+            return;
+
+        var start = DateTime.UtcNow.Date.AddDays(7);
+        for (var i = 0; i < 3; i++)
+        {
+            var visit = new JobVisit
+            {
+                CustomerSubscriptionId = subscription.Id,
+                CustomerPropertyId = demoProperty.Id,
+                ScheduledDate = start.AddDays(i * 7),
+                AvailabilityWindow = subscription.AvailabilityPreference,
+                Status = VisitStatus.OpenForClaim
+            };
+            db.JobVisits.Add(visit);
+            await db.SaveChangesAsync(ct);
+
+            db.DispatchOffers.Add(new DispatchOffer
+            {
+                JobVisitId = visit.Id,
+                Status = DispatchOfferStatus.Open,
+                ExpiresAtUtc = DateTime.UtcNow.AddDays(3)
+            });
+        }
+
+        await db.SaveChangesAsync(ct);
+        logger.LogInformation("Seeded {Count} open demo visits in {Postcode} for provider testing", 3, demoProperty.Postcode);
     }
 
     public static async Task ApplyStripePriceIdsAsync(

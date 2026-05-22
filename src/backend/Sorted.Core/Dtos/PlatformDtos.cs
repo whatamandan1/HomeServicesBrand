@@ -31,6 +31,8 @@ public record JobVisitResponse(
 
 public record ClaimVisitRequest(Guid VisitId);
 
+public record ProviderProfileResponse(string Email, bool IsApproved, IReadOnlyList<string> PostcodeSectors);
+
 public record SupportChatRequest(string Message, Guid? ThreadId);
 
 public record SupportChatResponse(

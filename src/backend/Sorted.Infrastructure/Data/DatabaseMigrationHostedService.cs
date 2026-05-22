@@ -3,6 +3,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
+using Sorted.Core.Interfaces;
 
 namespace Sorted.Infrastructure.Data;
 
@@ -17,7 +18,9 @@ public class DatabaseMigrationHostedService(
             using var scope = services.CreateScope();
             var db = scope.ServiceProvider.GetRequiredService<SortedDbContext>();
             var configuration = scope.ServiceProvider.GetService<IConfiguration>();
+            var scheduling = scope.ServiceProvider.GetRequiredService<IVisitSchedulingService>();
             await DatabaseInitializer.InitializeAsync(db, logger, configuration, cancellationToken);
+            await DataSeeder.EnsureDemoDispatchDataAsync(db, scheduling, logger, cancellationToken);
         }
         catch (Exception ex)
         {

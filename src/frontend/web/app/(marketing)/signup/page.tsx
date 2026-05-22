@@ -195,6 +195,9 @@ export default function SignupPage() {
               <Field label="City" value={form.city} onChange={(v) => updateField("city", v)} required autoComplete="address-level2" />
               <Field label="Postcode" value={form.postcode} onChange={(v) => updateField("postcode", v)} required autoComplete="postal-code" />
             </div>
+            <p className="text-xs text-stone-500">
+              Demo provider covers LS1, LS2, and WF1 (e.g. LS1 4AP) — use a matching postcode to test job claiming.
+            </p>
             <label className="block text-sm font-medium text-stone-700">
               Garden size
               <select

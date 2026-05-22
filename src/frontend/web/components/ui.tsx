@@ -72,12 +72,15 @@ export function StatusBadge({ status }: { status: string }) {
     Active: "bg-green-100 text-green-800",
     PendingPayment: "bg-amber-100 text-amber-800",
     PastDue: "bg-red-100 text-red-800",
+    Scheduled: "bg-stone-100 text-stone-700",
+    InProgress: "bg-amber-100 text-amber-900",
+    Completed: "bg-green-100 text-green-800",
+    Rescheduled: "bg-purple-100 text-purple-800",
     Cancelled: "bg-stone-100 text-stone-600",
     Expired: "bg-stone-100 text-stone-600",
     OpenForClaim: "bg-blue-100 text-blue-800",
     Claimed: "bg-indigo-100 text-indigo-800",
     Open: "bg-red-100 text-red-800",
-    Completed: "bg-stone-100 text-stone-800",
   };
   const cls = colors[status] ?? "bg-stone-100 text-stone-700";
   return (

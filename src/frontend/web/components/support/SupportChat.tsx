@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
-import { Loader2, MessageCircle, Send } from "lucide-react";
+import { Loader2, MessageCircle, Send, X } from "lucide-react";
 import { api } from "@/lib/api";
 
 type ChatMessage = {
@@ -20,6 +20,8 @@ type SupportChatProps = {
   subtitle?: string;
   emptyHint?: string;
   className?: string;
+  hideHeader?: boolean;
+  compact?: boolean;
 };
 
 export function SupportChat({
@@ -30,6 +32,8 @@ export function SupportChat({
   subtitle = "AI-powered · escalates to our team when needed",
   emptyHint,
   className = "",
+  hideHeader = false,
+  compact = false,
 }: SupportChatProps) {
   const threadStorageKey = storageKey ?? (mode === "guest" ? "gardens-guest-thread" : "gardens-support-thread");
   const [messages, setMessages] = useState<ChatMessage[]>([]);
@@ -37,7 +41,7 @@ export function SupportChat({
   const [threadId, setThreadId] = useState<string | undefined>();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const bottomRef = useRef<HTMLDivElement>(null);
+  const scrollRef = useRef<HTMLDivElement>(null);
 
   const defaultEmptyHint =
     mode === "guest"
@@ -50,7 +54,9 @@ export function SupportChat({
   }, [threadStorageKey]);
 
   useEffect(() => {
-    bottomRef.current?.scrollIntoView({ behavior: "smooth" });
+    const el = scrollRef.current;
+    if (!el) return;
+    el.scrollTop = el.scrollHeight;
   }, [messages, loading]);
 
   async function send() {
@@ -101,19 +107,24 @@ export function SupportChat({
 
   return (
     <div className={`overflow-hidden rounded-2xl border border-stone-200 bg-white shadow-soft ${className}`}>
-      <div className="flex items-start justify-between gap-3 border-b border-stone-100 bg-gardens-light/30 px-4 py-3">
-        <div className="min-w-0">
-          <p className="text-sm font-semibold text-gardens-dark">{title}</p>
-          <p className="text-xs text-stone-500">{subtitle}</p>
+      {!hideHeader && (
+        <div className="flex items-start justify-between gap-3 border-b border-stone-100 bg-gardens-light/30 px-4 py-3">
+          <div className="min-w-0">
+            <p className="text-sm font-semibold text-gardens-dark">{title}</p>
+            <p className="text-xs text-stone-500">{subtitle}</p>
+          </div>
+          {messages.length > 0 && (
+            <button type="button" onClick={startNewChat} className="shrink-0 text-xs text-gardens-primary hover:underline">
+              New chat
+            </button>
+          )}
         </div>
-        {messages.length > 0 && (
-          <button type="button" onClick={startNewChat} className="shrink-0 text-xs text-gardens-primary hover:underline">
-            New chat
-          </button>
-        )}
-      </div>
+      )}
 
-      <div className="flex h-64 flex-col gap-3 overflow-y-auto p-4 sm:h-80">
+      <div
+        ref={scrollRef}
+        className={`flex flex-col gap-3 overflow-y-auto p-4 ${compact ? "h-56 sm:h-64" : "h-64 sm:h-80"}`}
+      >
         {messages.length === 0 && !loading && (
           <p className="text-sm text-stone-500">{emptyHint ?? defaultEmptyHint}</p>
         )}
@@ -138,7 +149,6 @@ export function SupportChat({
             Thinking…
           </div>
         )}
-        <div ref={bottomRef} />
       </div>
 
       {error && <p className="px-4 text-sm text-red-600">{error}</p>}
@@ -175,20 +185,73 @@ export function SupportChat({
   );
 }
 
-export function GuestChatFab() {
-  function scrollToChat() {
-    document.getElementById("chat")?.scrollIntoView({ behavior: "smooth" });
+export function GuestChatWidget() {
+  const [open, setOpen] = useState(false);
+  const [session, setSession] = useState(0);
+
+  useEffect(() => {
+    if (typeof window === "undefined" || window.location.hash !== "#chat") return;
+    setOpen(true);
+    window.history.replaceState(null, "", window.location.pathname + window.location.search);
+  }, []);
+
+  function resetChat() {
+    localStorage.removeItem("gardens-guest-thread");
+    setSession((s) => s + 1);
   }
 
   return (
-    <button
-      type="button"
-      onClick={scrollToChat}
-      className="fixed bottom-20 right-4 z-40 flex min-h-[48px] items-center gap-2 rounded-full bg-gardens-primary px-4 py-3 text-sm font-semibold text-white shadow-lg transition hover:bg-gardens-dark md:bottom-6"
-      aria-label="Open live chat"
-    >
-      <MessageCircle className="h-5 w-5" />
-      <span className="hidden sm:inline">Chat with us</span>
-    </button>
+    <>
+      {open && (
+        <div
+          className="fixed bottom-20 right-4 z-50 flex w-[min(calc(100vw-2rem),380px)] flex-col overflow-hidden rounded-2xl border border-stone-200 bg-white shadow-2xl md:bottom-6"
+          role="dialog"
+          aria-label="Live chat"
+        >
+          <div className="flex items-start justify-between gap-3 border-b border-stone-100 bg-gardens-light/30 px-4 py-3">
+            <div className="min-w-0">
+              <p className="text-sm font-semibold text-gardens-dark">Chat with us</p>
+              <p className="text-xs text-stone-500">AI assistant · answers instantly</p>
+            </div>
+            <div className="flex shrink-0 items-center gap-1">
+              <button
+                type="button"
+                onClick={resetChat}
+                className="rounded-lg px-2 py-1 text-xs text-gardens-primary hover:bg-gardens-light/50 hover:underline"
+              >
+                New chat
+              </button>
+              <button
+                type="button"
+                onClick={() => setOpen(false)}
+                className="flex h-9 w-9 items-center justify-center rounded-lg text-stone-500 transition hover:bg-stone-100 hover:text-stone-800"
+                aria-label="Close chat"
+              >
+                <X className="h-5 w-5" />
+              </button>
+            </div>
+          </div>
+          <SupportChat
+            key={session}
+            mode="guest"
+            hideHeader
+            compact
+            className="rounded-none border-0 shadow-none"
+          />
+        </div>
+      )}
+
+      {!open && (
+        <button
+          type="button"
+          onClick={() => setOpen(true)}
+          className="fixed bottom-20 right-4 z-50 flex min-h-[48px] items-center gap-2 rounded-full bg-gardens-primary px-4 py-3 text-sm font-semibold text-white shadow-lg transition hover:bg-gardens-dark md:bottom-6"
+          aria-label="Open live chat"
+        >
+          <MessageCircle className="h-5 w-5" />
+          <span className="hidden sm:inline">Chat with us</span>
+        </button>
+      )}
+    </>
   );
 }

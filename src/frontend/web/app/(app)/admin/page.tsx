@@ -20,6 +20,13 @@ export default function AdminPage() {
   const [providers, setProviders] = useState<AdminProvider[]>([]);
   const [visits, setVisits] = useState<JobVisit[]>([]);
   const [escalations, setEscalations] = useState<Escalation[]>([]);
+  const [dispatchMsg, setDispatchMsg] = useState<string | null>(null);
+
+  function refreshVisits() {
+    if (!auth?.token) return;
+    api.adminVisits(auth.token).then(setVisits);
+    api.adminDashboard(auth.token).then(setDash);
+  }
 
   useEffect(() => {
     if (!auth?.token || auth.role !== "Admin") return;
@@ -116,7 +123,27 @@ export default function AdminPage() {
       </section>
 
       <section>
-        <h2 className="font-semibold">Visits</h2>
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <h2 className="font-semibold">Visits</h2>
+          <button
+            type="button"
+            className="rounded-lg bg-gardens-primary px-4 py-2 text-sm font-semibold text-white"
+            onClick={async () => {
+              if (!auth?.token) return;
+              setDispatchMsg(null);
+              try {
+                await api.adminOpenDispatch(auth.token);
+                setDispatchMsg("Scheduled visits opened for provider claiming.");
+                refreshVisits();
+              } catch (e) {
+                setDispatchMsg(e instanceof Error ? e.message : "Dispatch failed");
+              }
+            }}
+          >
+            Open visits for dispatch
+          </button>
+        </div>
+        {dispatchMsg && <p className="mt-2 text-sm text-stone-600">{dispatchMsg}</p>}
         <DataTable
           columns={[
             { key: "date", label: "Date" },

@@ -9,7 +9,7 @@ statuses as features ship.
 **Last reviewed:** 2026-05-22  
 **Live site:** https://home-services-brand.vercel.app/
 
-**Current focus:** Phase 1 — production-real pilot (migrations done; recurring Stripe billing done; next: visit lifecycle).
+**Current focus:** Phase 1 — production-real pilot (visit lifecycle in progress; next: admin cancel/reschedule + escalation resolve).
 
 ---
 
@@ -50,7 +50,8 @@ Work through phases in order. Each phase builds on the last.
 
 - [x] **PostgreSQL + EF Core migrations** — `Database.Migrate()` on startup; see `docs/database-migrations.md`
 - [x] **True recurring Stripe billing** — subscription Checkout + invoice/subscription webhooks
-- [ ] **Visit lifecycle completion** — APIs/UI for `InProgress` → `Completed` (and `Cancelled` / `Rescheduled`)
+- [x] **Visit lifecycle (provider)** — `POST .../start` and `POST .../complete`; provider UI for Claimed → InProgress → Completed
+- [ ] **Visit lifecycle (admin/customer)** — cancel/reschedule APIs and UI
 - [ ] **Escalation resolve workflow** — admin assign/resolve; use `EscalationStatus.InProgress` / `Resolved`
 - [ ] **Provider self-signup UI** — registration flow on `/providers` linked to admin approval
 

@@ -14,7 +14,7 @@ namespace Sorted.Api.Controllers;
 [ApiController]
 [Route("api/provider")]
 [Authorize(Roles = nameof(UserRole.Provider))]
-public class ProviderController(SortedDbContext db, ISmsService sms) : ControllerBase
+public class ProviderController(SortedDbContext db, ISmsService sms, IWorkflowLogger workflow) : ControllerBase
 {
     private async Task<Provider?> GetProviderAsync(CancellationToken ct)
     {
@@ -25,6 +25,17 @@ public class ProviderController(SortedDbContext db, ISmsService sms) : Controlle
             .FirstOrDefaultAsync(p => p.UserId == userId && !p.IsDeleted, ct);
     }
 
+    [HttpGet("me")]
+    public async Task<ActionResult<ProviderProfileResponse>> Profile(CancellationToken ct)
+    {
+        var provider = await GetProviderAsync(ct);
+        if (provider is null) return NotFound();
+        return Ok(new ProviderProfileResponse(
+            provider.User.Email,
+            provider.IsApproved,
+            provider.Territories.Select(t => t.PostcodeSector).OrderBy(s => s).ToList()));
+    }
+
     [HttpGet("visits/open")]
     public async Task<ActionResult<IEnumerable<JobVisitResponse>>> OpenVisits(CancellationToken ct)
     {
@@ -32,14 +43,18 @@ public class ProviderController(SortedDbContext db, ISmsService sms) : Controlle
         if (provider is null) return NotFound();
         if (!provider.IsApproved) return Forbid();
 
-        var sectors = provider.Territories.Select(t => t.PostcodeSector).ToList();
+        var sectors = provider.Territories.Select(t => t.PostcodeSector).ToHashSet(StringComparer.OrdinalIgnoreCase);
         var visits = await db.JobVisits.AsNoTracking()
+            .Include(v => v.Property)
             .Where(v => v.Status == VisitStatus.OpenForClaim && !v.IsDeleted)
-            .Where(v => sectors.Contains(VisitSchedulingService.PostcodeSector(v.Property.Postcode)))
             .OrderBy(v => v.ScheduledDate)
-            .Select(v => new JobVisitResponse(v.Id, v.ScheduledDate, v.AvailabilityWindow, v.Status, v.Property.Postcode, null))
             .ToListAsync(ct);
-        return Ok(visits);
+
+        var filtered = visits
+            .Where(v => sectors.Contains(VisitSchedulingService.PostcodeSector(v.Property.Postcode)))
+            .Select(v => new JobVisitResponse(v.Id, v.ScheduledDate, v.AvailabilityWindow, v.Status, v.Property.Postcode, null))
+            .ToList();
+        return Ok(filtered);
     }
 
     [HttpPost("visits/claim")]
@@ -88,6 +103,56 @@ public class ProviderController(SortedDbContext db, ISmsService sms) : Controlle
         }
 
         return Ok(new JobVisitResponse(visit.Id, visit.ScheduledDate, visit.AvailabilityWindow, visit.Status, visit.Property.Postcode, provider.User.FirstName + " " + provider.User.LastName));
+    }
+
+    [HttpPost("visits/{visitId:guid}/start")]
+    public async Task<ActionResult<JobVisitResponse>> StartVisit(Guid visitId, CancellationToken ct)
+        => await UpdateVisitStatusAsync(visitId, VisitStatus.Claimed, VisitStatus.InProgress, "visit_started", ct);
+
+    [HttpPost("visits/{visitId:guid}/complete")]
+    public async Task<ActionResult<JobVisitResponse>> CompleteVisit(Guid visitId, CancellationToken ct)
+        => await UpdateVisitStatusAsync(visitId, VisitStatus.InProgress, VisitStatus.Completed, "visit_completed", ct);
+
+    private async Task<ActionResult<JobVisitResponse>> UpdateVisitStatusAsync(
+        Guid visitId,
+        VisitStatus requiredStatus,
+        VisitStatus newStatus,
+        string workflowEvent,
+        CancellationToken ct)
+    {
+        var provider = await GetProviderAsync(ct);
+        if (provider is null) return NotFound();
+        if (!provider.IsApproved) return Forbid();
+
+        var visit = await db.JobVisits
+            .Include(v => v.Property)
+            .FirstOrDefaultAsync(v => v.Id == visitId && v.AssignedProviderId == provider.Id && !v.IsDeleted, ct);
+
+        if (visit is null)
+            return NotFound(new { error = "Visit not found or not assigned to you." });
+
+        if (visit.Status != requiredStatus)
+        {
+            return BadRequest(new
+            {
+                error = newStatus == VisitStatus.InProgress
+                    ? "Only claimed visits can be started."
+                    : "Only in-progress visits can be completed."
+            });
+        }
+
+        visit.Status = newStatus;
+        visit.UpdatedAtUtc = DateTime.UtcNow;
+        await db.SaveChangesAsync(ct);
+        await workflow.LogAsync("dispatch", workflowEvent, nameof(JobVisit), visit.Id, new { visit.Status }, ct);
+
+        return Ok(new JobVisitResponse(
+            visit.Id,
+            visit.ScheduledDate,
+            visit.AvailabilityWindow,
+            visit.Status,
+            visit.Property.Postcode,
+            provider.User.FirstName + " " + provider.User.LastName));
     }
 
     [HttpGet("visits/mine")]

@@ -49,6 +49,12 @@ export type AdminProvider = {
   sectors: string[];
 };
 
+export type ProviderProfile = {
+  email: string;
+  isApproved: boolean;
+  postcodeSectors: string[];
+};
+
 export type Escalation = {
   id: string;
   reason: string;
@@ -154,6 +160,8 @@ export const api = {
     ),
   providerOpenVisits: (token: string) =>
     request<JobVisit[]>("/api/provider/visits/open", {}, token),
+  providerProfile: (token: string) =>
+    request<ProviderProfile>("/api/provider/me", {}, token),
   providerMyVisits: (token: string) =>
     request<JobVisit[]>("/api/provider/visits/mine", {}, token),
   claimVisit: (token: string, visitId: string) =>
@@ -161,6 +169,10 @@ export const api = {
       method: "POST",
       body: JSON.stringify({ visitId }),
     }, token),
+  startVisit: (token: string, visitId: string) =>
+    request<JobVisit>(`/api/provider/visits/${visitId}/start`, { method: "POST" }, token),
+  completeVisit: (token: string, visitId: string) =>
+    request<JobVisit>(`/api/provider/visits/${visitId}/complete`, { method: "POST" }, token),
   adminDashboard: (token: string) =>
     request<{
       customerCount: number;
@@ -179,4 +191,6 @@ export const api = {
     request<Escalation[]>("/api/admin/escalations", {}, token),
   approveProvider: (token: string, id: string) =>
     request<void>(`/api/admin/providers/${id}/approve`, { method: "POST" }, token),
+  adminOpenDispatch: (token: string) =>
+    request<void>("/api/admin/scheduling/open-dispatch", { method: "POST" }, token),
 };
