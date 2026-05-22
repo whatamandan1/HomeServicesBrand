@@ -39,6 +39,7 @@ public static class DependencyInjection
         services.AddScoped<ISmsService, TwilioSmsService>();
         services.AddScoped<IAiSupportService, OpenAiSupportService>();
         services.AddScoped<IVisitSchedulingService, VisitSchedulingService>();
+        services.AddScoped<IVisitManagementService, VisitManagementService>();
         services.AddScoped<IWorkflowLogger, WorkflowLogger>();
 
         services.AddHostedService<DatabaseMigrationHostedService>();

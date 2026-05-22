@@ -42,6 +42,12 @@ public interface IVisitSchedulingService
     Task OpenVisitsForDispatchAsync(CancellationToken ct = default);
 }
 
+public interface IVisitManagementService
+{
+    Task<JobVisitResponse> CancelVisitAsync(Guid visitId, Guid? owningCustomerId, bool allowInProgress, CancellationToken ct = default);
+    Task<JobVisitResponse> RescheduleVisitAsync(Guid visitId, DateTime scheduledDate, Guid? owningCustomerId, bool allowInProgress, CancellationToken ct = default);
+}
+
 public interface IWorkflowLogger
 {
     Task LogAsync(string workflowName, string eventName, string? entityType, Guid? entityId, object? payload = null, CancellationToken ct = default);

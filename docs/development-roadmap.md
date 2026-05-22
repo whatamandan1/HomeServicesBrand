@@ -9,7 +9,7 @@ statuses as features ship.
 **Last reviewed:** 2026-05-22  
 **Live site:** https://home-services-brand.vercel.app/
 
-**Current focus:** Phase 1 — production-real pilot (visit lifecycle in progress; next: admin cancel/reschedule + escalation resolve).
+**Current focus:** Phase 1 — escalation resolve + provider self-signup UI.
 
 ---
 
@@ -51,7 +51,7 @@ Work through phases in order. Each phase builds on the last.
 - [x] **PostgreSQL + EF Core migrations** — `Database.Migrate()` on startup; see `docs/database-migrations.md`
 - [x] **True recurring Stripe billing** — subscription Checkout + invoice/subscription webhooks
 - [x] **Visit lifecycle (provider)** — `POST .../start` and `POST .../complete`; provider UI for Claimed → InProgress → Completed
-- [ ] **Visit lifecycle (admin/customer)** — cancel/reschedule APIs and UI
+- [x] **Visit lifecycle (admin/customer)** — cancel/reschedule APIs and UI on `/portal` and `/admin`
 - [ ] **Escalation resolve workflow** — admin assign/resolve; use `EscalationStatus.InProgress` / `Resolved`
 - [ ] **Provider self-signup UI** — registration flow on `/providers` linked to admin approval
 
@@ -62,7 +62,7 @@ Work through phases in order. Each phase builds on the last.
 - [ ] **Admin workflow viewer** — browse `WorkflowEvent` log in admin UI
 - [ ] **Admin AI log viewer** — browse `AIActionLog` and communication threads
 - [ ] **Customer property management** — edit property details, access notes, optional media upload
-- [ ] **Wire admin dispatch action** — expose `POST /api/admin/scheduling/open-dispatch` in admin UI
+- [ ] **Wire admin dispatch action** — expose `POST /api/admin/scheduling/open-dispatch` in admin UI *(done in admin portal)*
 
 ### Phase 3 — Platform maturity
 
@@ -85,7 +85,7 @@ Work through phases in order. Each phase builds on the last.
 | Manage subscriptions | 🟡 Partial | Cancel, upgrade/downgrade, minimum-term enforcement |
 | Manage billing | 🟡 Partial | Billing portal, payment method updates, invoice history |
 | Manage properties | 🟡 Partial | Edit property, access notes, multiple properties |
-| View upcoming visits | ✅ Done | Add reschedule/cancel when visit lifecycle is built |
+| View upcoming visits | ✅ Done | Cancel/reschedule in customer portal |
 | Communicate with support | ✅ Done | Guest + authenticated AI chat |
 | Upload property media | ⬜ Not started | Photo upload during signup and in portal |
 

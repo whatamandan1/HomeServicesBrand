@@ -4,19 +4,49 @@ import { useEffect, useState } from "react";
 import { api, type CustomerSubscription, type JobVisit } from "@/lib/api";
 import { clearAuth } from "@/lib/auth-storage";
 import { useAuth } from "@/lib/use-auth";
-import { DataTable, StatusBadge } from "@/components/ui";
+import { isActiveVisit } from "@/lib/visit-status";
+import { StatusBadge } from "@/components/ui";
+import { VisitList } from "@/components/visits/VisitList";
 import { SupportChat } from "@/components/support/SupportChat";
 
 export default function PortalPage() {
   const { auth, setAuth, ready } = useAuth();
   const [subs, setSubs] = useState<CustomerSubscription[]>([]);
   const [visits, setVisits] = useState<JobVisit[]>([]);
+  const [error, setError] = useState<string | null>(null);
+  const [busyId, setBusyId] = useState<string | null>(null);
+
+  function refreshVisits() {
+    if (!auth?.token) return;
+    api.customerVisits(auth.token).then(setVisits);
+  }
 
   useEffect(() => {
     if (!auth?.token || auth.role !== "Customer") return;
     api.customerSubscriptions(auth.token).then(setSubs);
-    api.customerVisits(auth.token).then(setVisits);
+    refreshVisits();
   }, [auth]);
+
+  async function runVisitAction(
+    visitId: string,
+    action: "cancel" | "reschedule",
+    scheduledDate?: string
+  ) {
+    if (!auth?.token) return;
+    setBusyId(visitId);
+    setError(null);
+    try {
+      const updated =
+        action === "cancel"
+          ? await api.customerCancelVisit(auth.token, visitId)
+          : await api.customerRescheduleVisit(auth.token, visitId, scheduledDate!);
+      setVisits((list) => list.map((v) => (v.id === visitId ? updated : v)));
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "Update failed");
+    } finally {
+      setBusyId(null);
+    }
+  }
 
   if (!ready) return <p className="text-stone-500">Loading…</p>;
   if (!auth) {
@@ -35,6 +65,9 @@ export default function PortalPage() {
     );
   }
 
+  const upcoming = visits.filter((v) => isActiveVisit(v.status));
+  const past = visits.filter((v) => !isActiveVisit(v.status));
+
   return (
     <div className="space-y-10">
       <div className="flex flex-wrap items-start justify-between gap-4">
@@ -52,6 +85,8 @@ export default function PortalPage() {
           Logout
         </button>
       </div>
+
+      {error && <p className="text-sm text-red-600">{error}</p>}
 
       <section>
         <h2 className="font-semibold text-gardens-dark">Subscriptions</h2>
@@ -81,24 +116,31 @@ export default function PortalPage() {
 
       <section>
         <h2 className="font-semibold text-gardens-dark">Upcoming visits</h2>
-        <DataTable
-          columns={[
-            { key: "date", label: "Date" },
-            { key: "postcode", label: "Postcode" },
-            { key: "window", label: "Window" },
-            { key: "status", label: "Status" },
-            { key: "provider", label: "Gardener" },
-          ]}
-          rows={visits.map((v) => ({
-            date: v.scheduledDate.slice(0, 10),
-            postcode: v.postcode,
-            window: v.availabilityWindow,
-            status: v.status,
-            provider: v.assignedProviderName ?? "To be assigned",
-          }))}
+        <p className="mt-1 text-sm text-stone-500">
+          Reschedule or cancel before your gardener starts the visit.
+        </p>
+        <VisitList
+          visits={upcoming}
+          busyId={busyId}
+          onCancel={(id) => runVisitAction(id, "cancel")}
+          onReschedule={(id, date) => runVisitAction(id, "reschedule", date)}
           emptyMessage="No visits scheduled yet."
         />
       </section>
+
+      {past.length > 0 && (
+        <section>
+          <h2 className="font-semibold text-gardens-dark">Past visits</h2>
+          <VisitList
+            visits={past}
+            busyId={null}
+            readOnly
+            onCancel={async () => {}}
+            onReschedule={async () => {}}
+            emptyMessage="No past visits."
+          />
+        </section>
+      )}
 
       <section>
         <SupportChat token={auth.token} mode="customer" />

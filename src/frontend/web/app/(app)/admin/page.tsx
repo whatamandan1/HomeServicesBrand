@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { api, type AdminCustomer, type AdminProvider, type Escalation, type JobVisit } from "@/lib/api";
 import { useAuth } from "@/lib/use-auth";
 import { DataTable, StatCard, StatusBadge } from "@/components/ui";
+import { VisitList } from "@/components/visits/VisitList";
 
 const DASH_LABELS: Record<string, string> = {
   customerCount: "Customers",
@@ -21,11 +22,35 @@ export default function AdminPage() {
   const [visits, setVisits] = useState<JobVisit[]>([]);
   const [escalations, setEscalations] = useState<Escalation[]>([]);
   const [dispatchMsg, setDispatchMsg] = useState<string | null>(null);
+  const [visitError, setVisitError] = useState<string | null>(null);
+  const [busyVisitId, setBusyVisitId] = useState<string | null>(null);
 
   function refreshVisits() {
     if (!auth?.token) return;
     api.adminVisits(auth.token).then(setVisits);
     api.adminDashboard(auth.token).then(setDash);
+  }
+
+  async function runVisitAction(
+    visitId: string,
+    action: "cancel" | "reschedule",
+    scheduledDate?: string
+  ) {
+    if (!auth?.token) return;
+    setBusyVisitId(visitId);
+    setVisitError(null);
+    try {
+      const updated =
+        action === "cancel"
+          ? await api.adminCancelVisit(auth.token, visitId)
+          : await api.adminRescheduleVisit(auth.token, visitId, scheduledDate!);
+      setVisits((list) => list.map((v) => (v.id === visitId ? updated : v)));
+      refreshVisits();
+    } catch (e) {
+      setVisitError(e instanceof Error ? e.message : "Update failed");
+    } finally {
+      setBusyVisitId(null);
+    }
   }
 
   useEffect(() => {
@@ -144,21 +169,13 @@ export default function AdminPage() {
           </button>
         </div>
         {dispatchMsg && <p className="mt-2 text-sm text-stone-600">{dispatchMsg}</p>}
-        <DataTable
-          columns={[
-            { key: "date", label: "Date" },
-            { key: "postcode", label: "Postcode" },
-            { key: "window", label: "Window" },
-            { key: "status", label: "Status" },
-            { key: "provider", label: "Provider" },
-          ]}
-          rows={visits.map((v) => ({
-            date: v.scheduledDate.slice(0, 10),
-            postcode: v.postcode,
-            window: v.availabilityWindow,
-            status: v.status,
-            provider: v.assignedProviderName ?? "—",
-          }))}
+        {visitError && <p className="mt-2 text-sm text-red-600">{visitError}</p>}
+        <VisitList
+          visits={visits}
+          busyId={busyVisitId}
+          allowInProgress
+          onCancel={(id) => runVisitAction(id, "cancel")}
+          onReschedule={(id, date) => runVisitAction(id, "reschedule", date)}
           emptyMessage="No visits scheduled."
         />
       </section>

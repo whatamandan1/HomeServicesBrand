@@ -11,7 +11,7 @@ namespace Sorted.Api.Controllers;
 [ApiController]
 [Route("api/admin")]
 [Authorize(Roles = nameof(UserRole.Admin))]
-public class AdminController(SortedDbContext db, IVisitSchedulingService scheduling) : ControllerBase
+public class AdminController(SortedDbContext db, IVisitSchedulingService scheduling, IVisitManagementService visits) : ControllerBase
 {
     [HttpGet("dashboard")]
     public async Task<ActionResult<AdminDashboardResponse>> Dashboard(CancellationToken ct)
@@ -83,6 +83,42 @@ public class AdminController(SortedDbContext db, IVisitSchedulingService schedul
                 v.AssignedProvider != null ? v.AssignedProvider.User.FirstName + " " + v.AssignedProvider.User.LastName : null))
             .ToListAsync(ct);
         return Ok(visits);
+    }
+
+    [HttpPost("visits/{visitId:guid}/cancel")]
+    public async Task<ActionResult<JobVisitResponse>> CancelVisit(Guid visitId, CancellationToken ct)
+    {
+        try
+        {
+            var result = await visits.CancelVisitAsync(visitId, owningCustomerId: null, allowInProgress: true, ct);
+            return Ok(result);
+        }
+        catch (InvalidOperationException ex)
+        {
+            return BadRequest(new { error = ex.Message });
+        }
+    }
+
+    [HttpPost("visits/{visitId:guid}/reschedule")]
+    public async Task<ActionResult<JobVisitResponse>> RescheduleVisit(
+        Guid visitId,
+        [FromBody] RescheduleVisitRequest request,
+        CancellationToken ct)
+    {
+        try
+        {
+            var result = await visits.RescheduleVisitAsync(
+                visitId,
+                request.ScheduledDate,
+                owningCustomerId: null,
+                allowInProgress: true,
+                ct);
+            return Ok(result);
+        }
+        catch (InvalidOperationException ex)
+        {
+            return BadRequest(new { error = ex.Message });
+        }
     }
 
     [HttpGet("escalations")]

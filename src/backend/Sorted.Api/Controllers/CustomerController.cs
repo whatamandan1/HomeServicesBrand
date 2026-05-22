@@ -15,7 +15,8 @@ namespace Sorted.Api.Controllers;
 public class CustomerController(
     SortedDbContext db,
     IStripePaymentService stripe,
-    IAiSupportService ai) : ControllerBase
+    IAiSupportService ai,
+    IVisitManagementService visits) : ControllerBase
 {
     private async Task<Guid> GetCustomerIdAsync(CancellationToken ct)
     {
@@ -74,6 +75,44 @@ public class CustomerController(
                 v.AssignedProvider != null ? v.AssignedProvider.User.FirstName + " " + v.AssignedProvider.User.LastName : null))
             .ToListAsync(ct);
         return Ok(visits);
+    }
+
+    [HttpPost("visits/{visitId:guid}/cancel")]
+    public async Task<ActionResult<JobVisitResponse>> CancelVisit(Guid visitId, CancellationToken ct)
+    {
+        try
+        {
+            var customerId = await GetCustomerIdAsync(ct);
+            var result = await visits.CancelVisitAsync(visitId, customerId, allowInProgress: false, ct);
+            return Ok(result);
+        }
+        catch (InvalidOperationException ex)
+        {
+            return BadRequest(new { error = ex.Message });
+        }
+    }
+
+    [HttpPost("visits/{visitId:guid}/reschedule")]
+    public async Task<ActionResult<JobVisitResponse>> RescheduleVisit(
+        Guid visitId,
+        [FromBody] RescheduleVisitRequest request,
+        CancellationToken ct)
+    {
+        try
+        {
+            var customerId = await GetCustomerIdAsync(ct);
+            var result = await visits.RescheduleVisitAsync(
+                visitId,
+                request.ScheduledDate,
+                customerId,
+                allowInProgress: false,
+                ct);
+            return Ok(result);
+        }
+        catch (InvalidOperationException ex)
+        {
+            return BadRequest(new { error = ex.Message });
+        }
     }
 
     [HttpPost("support/chat")]

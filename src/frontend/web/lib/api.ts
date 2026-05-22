@@ -147,6 +147,13 @@ export const api = {
     request<CustomerSubscription[]>("/api/customer/subscriptions", {}, token),
   customerVisits: (token: string) =>
     request<JobVisit[]>("/api/customer/visits", {}, token),
+  customerCancelVisit: (token: string, visitId: string) =>
+    request<JobVisit>(`/api/customer/visits/${visitId}/cancel`, { method: "POST" }, token),
+  customerRescheduleVisit: (token: string, visitId: string, scheduledDate: string) =>
+    request<JobVisit>(`/api/customer/visits/${visitId}/reschedule`, {
+      method: "POST",
+      body: JSON.stringify({ scheduledDate }),
+    }, token),
   supportChat: (token: string, message: string, threadId?: string) =>
     request<{ threadId: string; reply: string; escalated: boolean }>(
       "/api/customer/support/chat",
@@ -187,6 +194,13 @@ export const api = {
     request<AdminProvider[]>("/api/admin/providers", {}, token),
   adminVisits: (token: string) =>
     request<JobVisit[]>("/api/admin/visits", {}, token),
+  adminCancelVisit: (token: string, visitId: string) =>
+    request<JobVisit>(`/api/admin/visits/${visitId}/cancel`, { method: "POST" }, token),
+  adminRescheduleVisit: (token: string, visitId: string, scheduledDate: string) =>
+    request<JobVisit>(`/api/admin/visits/${visitId}/reschedule`, {
+      method: "POST",
+      body: JSON.stringify({ scheduledDate }),
+    }, token),
   adminEscalations: (token: string) =>
     request<Escalation[]>("/api/admin/escalations", {}, token),
   approveProvider: (token: string, id: string) =>
