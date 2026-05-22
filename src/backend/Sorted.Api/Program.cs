@@ -81,14 +81,6 @@ builder.Services.AddSortedInfrastructure(builder.Configuration);
 
 var app = builder.Build();
 
-using (var scope = app.Services.CreateScope())
-{
-    var db = scope.ServiceProvider.GetRequiredService<SortedDbContext>();
-    var logger = scope.ServiceProvider.GetRequiredService<ILogger<Program>>();
-    await db.Database.EnsureCreatedAsync();
-    await DataSeeder.SeedAsync(db, logger);
-}
-
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
@@ -99,22 +91,67 @@ app.UseSerilogRequestLogging();
 app.UseCors("Frontend");
 app.UseAuthentication();
 app.UseAuthorization();
+
+app.MapGet("/health/live", () => Results.Ok(new { status = "ok" }));
+app.MapGet("/health", async (SortedDbContext db, IConfiguration config) =>
+{
+    var cs = DatabaseConfiguration.ResolveConnectionString(config);
+    var canConnect = false;
+    string? dbError = null;
+    try
+    {
+        canConnect = await db.Database.CanConnectAsync();
+    }
+    catch (Exception ex)
+    {
+        dbError = ex.Message;
+    }
+
+    return Results.Ok(new
+    {
+        status = "ok",
+        database = DatabaseConfiguration.IsPostgres(cs) ? "postgresql" : "sqlite",
+        databaseSource = DatabaseConfiguration.DescribeSource(config),
+        canConnect,
+        dbError,
+    });
+});
 app.MapControllers();
-app.MapGet("/health", () => Results.Ok(new { status = "ok" }));
 
 var startupLogger = app.Services.GetRequiredService<ILogger<Program>>();
 var dbConnection = DatabaseConfiguration.ResolveConnectionString(app.Configuration);
 var dbKind = DatabaseConfiguration.IsPostgres(dbConnection) ? "PostgreSQL" : "SQLite";
+var dbSource = DatabaseConfiguration.DescribeSource(app.Configuration);
 var stripeConfigured = !string.IsNullOrWhiteSpace(app.Configuration["Stripe:SecretKey"]);
 var webhookConfigured = !string.IsNullOrWhiteSpace(app.Configuration["Stripe:WebhookSecret"]);
 var sendGridConfigured = !string.IsNullOrWhiteSpace(app.Configuration["SendGrid:ApiKey"]);
 var openAiConfigured = !string.IsNullOrWhiteSpace(app.Configuration["OpenAI:ApiKey"]);
 startupLogger.LogInformation(
-    "Sorted API ready — DB: {Database} | Stripe: {StripeKey} | Webhook: {Webhook} | SendGrid: {SendGrid} | OpenAI: {OpenAi}",
+    "Sorted API starting — DB config: {Database} ({Source}) | Stripe: {StripeKey} | Webhook: {Webhook} | SendGrid: {SendGrid} | OpenAI: {OpenAi}",
     dbKind,
+    dbSource,
     stripeConfigured ? "ok" : "missing",
     webhookConfigured ? "ok" : "missing",
     sendGridConfigured ? "ok" : "missing",
     openAiConfigured ? "ok" : "missing");
 
+_ = InitializeDatabaseAsync(app.Services, startupLogger);
+
 app.Run();
+
+static async Task InitializeDatabaseAsync(IServiceProvider services, ILogger<Program> logger)
+{
+    try
+    {
+        await Task.Delay(250);
+        using var scope = services.CreateScope();
+        var db = scope.ServiceProvider.GetRequiredService<SortedDbContext>();
+        await db.Database.EnsureCreatedAsync();
+        await DataSeeder.SeedAsync(db, logger);
+        logger.LogInformation("Database initialized successfully");
+    }
+    catch (Exception ex)
+    {
+        logger.LogError(ex, "Database initialization failed — check DATABASE_URL / Postgres connection");
+    }
+}

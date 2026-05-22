@@ -11,18 +11,58 @@ Right now SQLite on Railway **wipes customers on every redeploy**.
 ### Setup
 
 1. Railway project → **+ New** → **Database** → **PostgreSQL**
-2. Click your **API service** → **Variables** → **Add variable reference** (or **Connect** Postgres)
-3. Add reference: `DATABASE_URL` from the Postgres service  
-   (Railway often adds this automatically when you link services)
-4. **Redeploy** the API
+2. Click your **API service** → **Variables**
+3. Add **one** of these (pick the method that works in your UI):
+
+**Option A — Variable reference (preferred)**
+
+| Name | Value |
+|------|--------|
+| `DATABASE_URL` | `${{Postgres.DATABASE_URL}}` |
+
+Replace `Postgres` with the **exact** name on your Postgres service box (case-sensitive).
+
+**Option B — Copy the URL directly**
+
+1. Postgres service → **Variables** → reveal **`DATABASE_URL`**
+2. Copy the full `postgresql://...` value
+3. API service → **Variables** → new variable **`DATABASE_URL`** → paste the value
+
+**Option C — Individual PG variables (if Railway links them)**
+
+Add references for each:
+
+```
+PGHOST=${{Postgres.PGHOST}}
+PGPORT=${{Postgres.PGPORT}}
+PGUSER=${{Postgres.PGUSER}}
+PGPASSWORD=${{Postgres.PGPASSWORD}}
+PGDATABASE=${{Postgres.PGDATABASE}}
+```
+
+4. **Redeploy** the API (required after changing variables)
 
 ### Verify
 
-Check API deploy logs on startup:
+Open: `https://YOUR-RAILWAY-URL/health`
 
+Should show:
+
+```json
+{
+  "status": "ok",
+  "database": "postgresql",
+  "databaseSource": "DATABASE_URL"
+}
 ```
-Sorted API ready — DB: PostgreSQL | Stripe: ok | ...
-```
+
+If you see `"database": "sqlite"` check `databaseSource`:
+
+| databaseSource | Fix |
+|----------------|-----|
+| `SQLite fallback` | `DATABASE_URL` not set on API service |
+| `DATABASE_URL unresolved` | Reference typo — use Option B (paste URL) |
+| `PGHOST/...` | PG vars linked — should work after redeploy |
 
 Push the latest code first if you haven't (PostgreSQL support is in the repo):
 
