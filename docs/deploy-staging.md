@@ -77,7 +77,13 @@ If you only see project-level settings, you clicked the wrong level — go back 
 
 | Name | Value |
 |------|--------|
-| `NEXT_PUBLIC_API_URL` | Your Railway API URL (no trailing slash) |
+| Variable | Value |
+|----------|-------|
+| `API_URL` | Your Railway API URL (no trailing slash) — **required** for pricing/signup |
+| `NEXT_PUBLIC_SITE_URL` | `https://home-services-brand.vercel.app` |
+| `NEXT_PUBLIC_API_URL` | optional — leave unset; `/api` is proxied via `API_URL` |
+
+Legacy: if you already use `NEXT_PUBLIC_API_URL` pointing at Railway, that still works as a direct browser call.
 
 4. Deploy → copy URL e.g. `https://gardenssorted.vercel.app`
 

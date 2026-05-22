@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { Check, ChevronLeft, ChevronRight } from "lucide-react";
 import { api, type SubscriptionPlan } from "@/lib/api";
+import { FALLBACK_PLANS, sortPlans } from "@/lib/plans";
 import { saveAuth } from "@/lib/auth-storage";
 
 const STEPS = ["Choose plan", "Your details", "Your garden"] as const;
@@ -33,15 +34,27 @@ export default function SignupPage() {
 
   useEffect(() => {
     api.getPlans().then((p) => {
-      setPlans(p);
+      const sorted = sortPlans(p);
+      setPlans(sorted);
       const params = new URLSearchParams(window.location.search);
       const planIndex = params.get("plan");
-      if (planIndex !== null && p[Number(planIndex)]) {
-        setSelectedPlanId(p[Number(planIndex)].id);
-      } else if (p[0]) {
-        setSelectedPlanId(p[0].id);
+      if (planIndex !== null && sorted[Number(planIndex)]) {
+        setSelectedPlanId(sorted[Number(planIndex)].id);
+      } else if (sorted[0]) {
+        setSelectedPlanId(sorted[0].id);
       }
-    }).catch((e) => setError(e.message));
+    }).catch(() => {
+      setPlans(FALLBACK_PLANS);
+      const params = new URLSearchParams(window.location.search);
+      const planIndex = params.get("plan");
+      const sorted = sortPlans(FALLBACK_PLANS);
+      if (planIndex !== null && sorted[Number(planIndex)]) {
+        setSelectedPlanId(sorted[Number(planIndex)].id);
+      } else if (sorted[0]) {
+        setSelectedPlanId(sorted[0].id);
+      }
+      setError("Could not load live plans — showing standard pricing. Signup may fail until the API is reachable.");
+    });
     api.getPublicConfig().then((c) => setSkipPayment(c.bypassStripeCheckout)).catch(() => {});
   }, []);
 
@@ -101,6 +114,12 @@ export default function SignupPage() {
             />
           ))}
         </div>
+
+        {plans.length > 0 && plans[0]?.id.startsWith("fallback-") && (
+          <p className="mt-4 rounded-xl bg-amber-50 p-3 text-sm text-amber-900">
+            Live plans could not be loaded. Signup will work once the API connection is restored.
+          </p>
+        )}
 
         {skipPayment && process.env.NODE_ENV === "development" && (
           <p className="mt-6 rounded-xl bg-amber-50 p-3 text-sm text-amber-900">

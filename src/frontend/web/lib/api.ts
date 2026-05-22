@@ -1,4 +1,11 @@
-const API_BASE = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:5080";
+function resolveApiBase(): string {
+  const configured = process.env.NEXT_PUBLIC_API_URL?.trim();
+  if (configured) return configured.replace(/\/$/, "");
+  // Same-origin requests proxied to the backend via next.config rewrites.
+  return "";
+}
+
+const API_BASE = resolveApiBase();
 
 export type AuthResponse = {
   token: string;
