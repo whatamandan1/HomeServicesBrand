@@ -86,7 +86,11 @@ public class StripePaymentService(
         }
 
         StripeConfiguration.ApiKey = _options.SecretKey;
-        var stripeEvent = EventUtility.ConstructEvent(json, stripeSignature, _options.WebhookSecret);
+        var stripeEvent = EventUtility.ConstructEvent(
+            json,
+            stripeSignature,
+            _options.WebhookSecret,
+            throwOnApiVersionMismatch: false);
 
         if (stripeEvent.Type != "checkout.session.completed")
             return;
