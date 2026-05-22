@@ -5,7 +5,7 @@ import "./globals.css";
 const sans = DM_Sans({ subsets: ["latin"], variable: "--font-sans" });
 const display = Fraunces({ subsets: ["latin"], variable: "--font-display" });
 
-const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? "https://gardenssorted.vercel.app";
+const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? "https://home-services-brand.vercel.app";
 
 export const metadata: Metadata = {
   metadataBase: new URL(siteUrl),

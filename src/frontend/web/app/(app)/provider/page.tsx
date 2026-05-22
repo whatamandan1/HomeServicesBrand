@@ -66,7 +66,7 @@ export default function ProviderPage() {
                   <StatusBadge status={v.status} />
                 </div>
                 <button
-                  className="rounded bg-gardens-primary px-4 py-2 text-sm text-white"
+                  className="min-h-[48px] w-full rounded-full bg-gardens-primary px-4 py-2.5 text-base font-semibold text-white sm:w-auto sm:rounded-lg sm:text-sm"
                   onClick={async () => {
                     setError(null);
                     try {

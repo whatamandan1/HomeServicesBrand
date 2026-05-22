@@ -18,7 +18,7 @@ export function Button({ href, children, variant = "primary", className = "" }: 
   return (
     <Link
       href={href}
-      className={`inline-flex items-center justify-center rounded-full px-6 py-3 text-sm font-semibold transition ${variants[variant]} ${className}`}
+      className={`inline-flex min-h-[48px] items-center justify-center rounded-full px-6 py-3 text-base font-semibold transition sm:text-sm ${variants[variant]} ${className}`}
     >
       {children}
     </Link>
@@ -39,13 +39,13 @@ export function Section({
   className?: string;
 }) {
   return (
-    <section id={id} className={`py-16 md:py-24 ${className}`}>
+    <section id={id} className={`py-12 md:py-24 ${className}`}>
       <div className="mx-auto max-w-6xl px-4">
         <div className="mx-auto max-w-2xl text-center">
-          <h2 className="font-display text-3xl font-semibold text-gardens-dark md:text-4xl">{title}</h2>
-          {subtitle && <p className="mt-4 text-lg text-stone-600 text-balance">{subtitle}</p>}
+          <h2 className="font-display text-2xl font-semibold text-gardens-dark sm:text-3xl md:text-4xl">{title}</h2>
+          {subtitle && <p className="mt-3 text-base text-stone-600 text-balance sm:mt-4 sm:text-lg">{subtitle}</p>}
         </div>
-        <div className="mt-12">{children}</div>
+        <div className="mt-8 md:mt-12">{children}</div>
       </div>
     </section>
   );

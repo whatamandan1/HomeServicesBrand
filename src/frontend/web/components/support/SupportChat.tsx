@@ -70,19 +70,19 @@ export function SupportChat({ token }: { token: string }) {
 
   return (
     <div className="overflow-hidden rounded-2xl border border-stone-200 bg-white shadow-soft">
-      <div className="flex items-center justify-between border-b border-stone-100 bg-gardens-light/30 px-4 py-3">
-        <div>
+      <div className="flex items-start justify-between gap-3 border-b border-stone-100 bg-gardens-light/30 px-4 py-3">
+        <div className="min-w-0">
           <p className="text-sm font-semibold text-gardens-dark">Support chat</p>
           <p className="text-xs text-stone-500">AI-powered · escalates to our team when needed</p>
         </div>
         {messages.length > 0 && (
-          <button type="button" onClick={startNewChat} className="text-xs text-gardens-primary hover:underline">
+          <button type="button" onClick={startNewChat} className="shrink-0 text-xs text-gardens-primary hover:underline">
             New chat
           </button>
         )}
       </div>
 
-      <div className="flex h-72 flex-col gap-3 overflow-y-auto p-4">
+      <div className="flex h-64 flex-col gap-3 overflow-y-auto p-4 sm:h-72">
         {messages.length === 0 && !loading && (
           <p className="text-sm text-stone-500">
             Ask about your visits, plan, or availability — e.g. “When is my next visit?”
@@ -91,7 +91,7 @@ export function SupportChat({ token }: { token: string }) {
         {messages.map((m) => (
           <div
             key={m.id}
-            className={`max-w-[85%] rounded-2xl px-4 py-2.5 text-sm ${
+            className={`max-w-[90%] rounded-2xl px-4 py-2.5 text-base sm:max-w-[85%] sm:text-sm ${
               m.role === "user"
                 ? "ml-auto bg-gardens-primary text-white"
                 : "bg-stone-100 text-stone-800"
@@ -114,12 +114,12 @@ export function SupportChat({ token }: { token: string }) {
 
       {error && <p className="px-4 text-sm text-red-600">{error}</p>}
 
-      <div className="flex gap-2 border-t border-stone-100 p-3">
+      <div className="flex gap-2 border-t border-stone-100 p-3 safe-bottom">
         <input
           value={input}
           onChange={(e) => setInput(e.target.value)}
           onKeyDown={(e) => e.key === "Enter" && !e.shiftKey && (e.preventDefault(), send())}
-          className="flex-1 rounded-xl border border-stone-200 px-4 py-2.5 text-sm outline-none focus:border-gardens-primary focus:ring-1 focus:ring-gardens-primary"
+          className="field-input mt-0 min-h-[48px] flex-1 py-2.5"
           placeholder="Type your message…"
           disabled={loading}
         />
@@ -127,7 +127,7 @@ export function SupportChat({ token }: { token: string }) {
           type="button"
           onClick={send}
           disabled={loading || !input.trim()}
-          className="flex h-11 w-11 items-center justify-center rounded-xl bg-gardens-primary text-white transition hover:bg-gardens-dark disabled:opacity-50"
+          className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-gardens-primary text-white transition hover:bg-gardens-dark disabled:opacity-50"
           aria-label="Send message"
         >
           <Send className="h-4 w-4" />

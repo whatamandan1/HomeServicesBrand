@@ -49,34 +49,34 @@ export default function HomePage() {
     <>
       <section className="relative overflow-hidden bg-gradient-to-br from-gardens-dark via-gardens-primary to-gardens-primary">
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_30%_20%,rgba(149,213,178,0.25),transparent_50%)]" />
-        <div className="relative mx-auto grid max-w-6xl gap-12 px-4 py-20 md:grid-cols-2 md:items-center md:py-28">
+        <div className="relative mx-auto grid max-w-6xl gap-8 px-4 py-12 sm:gap-12 sm:py-16 md:grid-cols-2 md:items-center md:py-28">
           <div className="text-white">
             <p className="inline-flex items-center gap-2 rounded-full bg-white/10 px-4 py-1.5 text-sm font-medium text-gardens-accent backdrop-blur">
-              <MapPin className="h-4 w-4" />
+              <MapPin className="h-4 w-4 shrink-0" />
               Now launching in Yorkshire
             </p>
-            <h1 className="mt-6 font-display text-4xl font-bold leading-tight md:text-5xl lg:text-6xl text-balance">
+            <h1 className="mt-4 font-display text-3xl font-bold leading-tight sm:mt-6 sm:text-4xl md:text-5xl lg:text-6xl text-balance">
               Garden care, sorted.
             </h1>
-            <p className="mt-6 max-w-lg text-lg text-gardens-accent/95 text-balance">
+            <p className="mt-4 max-w-lg text-base text-gardens-accent/95 text-balance sm:mt-6 sm:text-lg">
               Subscribe once. We handle scheduling and your local gardener — so your garden stays sorted all year.
             </p>
-            <div className="mt-8 flex flex-wrap gap-4">
-              <Button href="/signup" className="!bg-white !text-gardens-dark hover:!bg-gardens-light">
+            <div className="mt-6 flex flex-col gap-3 sm:mt-8 sm:flex-row sm:flex-wrap sm:gap-4">
+              <Button href="/signup" className="w-full sm:w-auto !bg-white !text-gardens-dark hover:!bg-gardens-light">
                 Start your subscription
               </Button>
-              <Button href="/#how-it-works" variant="secondary" className="!border-white/30 !bg-white/10 !text-white hover:!bg-white/20">
+              <Button href="/#how-it-works" variant="secondary" className="w-full sm:w-auto !border-white/30 !bg-white/10 !text-white hover:!bg-white/20">
                 See how it works
               </Button>
             </div>
-            <div className="mt-10 flex flex-wrap gap-6 text-sm text-gardens-accent/90">
+            <div className="mt-8 flex flex-col gap-3 text-sm text-gardens-accent/90 sm:mt-10 sm:flex-row sm:flex-wrap sm:gap-6">
               <span className="flex items-center gap-2"><ShieldCheck className="h-4 w-4" /> Vetted gardeners</span>
               <span className="flex items-center gap-2"><CalendarCheck className="h-4 w-4" /> Recurring visits</span>
               <span className="flex items-center gap-2"><MapPin className="h-4 w-4" /> From £49/month</span>
             </div>
           </div>
 
-          <HeroImage />
+          <HeroImage className="max-md:order-last" />
         </div>
       </section>
 

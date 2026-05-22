@@ -39,36 +39,22 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="flex min-h-[60vh] items-center py-12">
+    <div className="flex min-h-[60vh] items-center py-8 md:py-12">
       <div className="mx-auto w-full max-w-md px-4">
-        <div className="rounded-2xl border border-stone-200 bg-white p-8 shadow-soft">
+        <div className="rounded-2xl border border-stone-200 bg-white p-6 shadow-soft sm:p-8">
           <h1 className="font-display text-2xl font-bold text-gardens-dark">Welcome back</h1>
           <p className="mt-2 text-sm text-stone-600">Log in to your GardensSorted account.</p>
           <form onSubmit={onSubmit} className="mt-6 space-y-4">
             <label className="block text-sm font-medium text-stone-700">
               Email
-              <input
-                name="email"
-                type="email"
-                required
-                className="mt-1.5 w-full rounded-xl border border-stone-200 px-4 py-2.5 outline-none focus:border-gardens-primary"
-              />
+              <input name="email" type="email" required autoComplete="email" className="field-input" />
             </label>
             <label className="block text-sm font-medium text-stone-700">
               Password
-              <input
-                name="password"
-                type="password"
-                required
-                className="mt-1.5 w-full rounded-xl border border-stone-200 px-4 py-2.5 outline-none focus:border-gardens-primary"
-              />
+              <input name="password" type="password" required autoComplete="current-password" className="field-input" />
             </label>
             {error && <p className="text-sm text-red-600">{error}</p>}
-            <button
-              type="submit"
-              disabled={loading}
-              className="w-full rounded-full bg-gardens-primary py-3 text-sm font-semibold text-white hover:bg-gardens-dark disabled:opacity-50"
-            >
+            <button type="submit" disabled={loading} className="btn-primary">
               {loading ? "Signing in…" : "Sign in"}
             </button>
           </form>

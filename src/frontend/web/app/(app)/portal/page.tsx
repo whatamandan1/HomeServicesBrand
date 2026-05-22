@@ -47,7 +47,7 @@ export default function PortalPage() {
             clearAuth();
             setAuth(null);
           }}
-          className="text-sm text-stone-500 hover:text-stone-800"
+          className="min-h-[44px] text-sm text-stone-500 hover:text-stone-800"
         >
           Logout
         </button>
