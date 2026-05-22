@@ -4,14 +4,20 @@ public static class PostcodeFormat
 {
     public static string Outcode(string postcode)
     {
-        var trimmed = postcode.Trim().ToUpperInvariant();
-        if (string.IsNullOrWhiteSpace(trimmed))
+        var normalized = Normalize(postcode);
+        if (string.IsNullOrWhiteSpace(normalized))
             return string.Empty;
 
-        var space = trimmed.IndexOf(' ');
-        if (space > 0)
-            return trimmed[..space];
+        var space = normalized.IndexOf(' ');
+        return space > 0 ? normalized[..space] : normalized;
+    }
 
-        return trimmed.Length > 3 ? trimmed[..^3] : trimmed;
+    public static string Normalize(string postcode)
+    {
+        var compact = postcode.Trim().ToUpperInvariant().Replace(" ", "", StringComparison.Ordinal);
+        if (compact.Length < 5)
+            return compact;
+
+        return compact[..^3] + " " + compact[^3..];
     }
 }

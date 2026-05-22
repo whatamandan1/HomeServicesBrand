@@ -2,6 +2,7 @@ using Microsoft.EntityFrameworkCore;
 using Sorted.Core.Dtos;
 using Sorted.Core.Entities;
 using Sorted.Core.Enums;
+using Sorted.Core.Geo;
 using Sorted.Core.Interfaces;
 using Sorted.Infrastructure.Data;
 
@@ -92,7 +93,7 @@ public class AuthService(
         if (radius is < 1 or > 50)
             throw new InvalidOperationException("Coverage radius must be between 1 and 50 miles.");
 
-        var geo = await geocoding.LookupAsync(request.CoveragePostcode, ct)
+        var geo = await geocoding.LookupAsync(PostcodeFormat.Normalize(request.CoveragePostcode), ct)
             ?? throw new InvalidOperationException("Could not find that postcode. Check it is a valid UK postcode.");
 
         var user = new UserAccount

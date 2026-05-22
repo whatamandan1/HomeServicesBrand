@@ -1,4 +1,3 @@
-using System.Net;
 using System.Text.Json;
 using Microsoft.Extensions.Logging;
 using Sorted.Core.Geo;
@@ -10,7 +9,7 @@ public class PostcodesIoGeocodingService(HttpClient http, ILogger<PostcodesIoGeo
     : IPostcodeGeocodingService
 {
     public Task<GeocodedPostcode?> LookupAsync(string postcode, CancellationToken ct = default) =>
-        FetchPostcodeAsync($"postcodes/{Encode(postcode)}", ct);
+        FetchPostcodeAsync($"postcodes/{Encode(PostcodeFormat.Normalize(postcode))}", ct);
 
     public Task<IReadOnlyList<GeocodedPostcode>> NearPointAsync(
         double latitude,
@@ -28,7 +27,7 @@ public class PostcodesIoGeocodingService(HttpClient http, ILogger<PostcodesIoGeo
         int limit,
         CancellationToken ct = default) =>
         FetchPostcodeListAsync(
-            $"postcodes/{Encode(postcode)}/nearest?radius={radiusMeters}&limit={limit}",
+            $"postcodes/{Encode(PostcodeFormat.Normalize(postcode))}/nearest?radius={radiusMeters}&limit={limit}",
             ct);
 
     private async Task<GeocodedPostcode?> FetchPostcodeAsync(string path, CancellationToken ct)
@@ -101,5 +100,5 @@ public class PostcodesIoGeocodingService(HttpClient http, ILogger<PostcodesIoGeo
     }
 
     private static string Encode(string postcode) =>
-        WebUtility.UrlEncode(postcode.Trim().ToUpperInvariant());
+        Uri.EscapeDataString(postcode.Trim().ToUpperInvariant());
 }
