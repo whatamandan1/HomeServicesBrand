@@ -1,8 +1,34 @@
-export function StatCard({ label, value }: { label: string; value: number }) {
-  return (
-    <div className="rounded-lg border bg-white p-4 text-center shadow-sm">
+export function StatCard({
+  label,
+  value,
+  onClick,
+}: {
+  label: string;
+  value: number;
+  onClick?: () => void;
+}) {
+  const content = (
+    <>
       <div className="text-2xl font-bold text-gardens-primary">{value}</div>
       <div className="text-xs text-stone-500">{label}</div>
+    </>
+  );
+
+  if (onClick) {
+    return (
+      <button
+        type="button"
+        onClick={onClick}
+        className="w-full rounded-lg border bg-white p-4 text-center shadow-sm transition hover:border-gardens-primary/30 hover:bg-gardens-light/20 focus:outline-none focus:ring-2 focus:ring-gardens-primary/30"
+      >
+        {content}
+      </button>
+    );
+  }
+
+  return (
+    <div className="rounded-lg border bg-white p-4 text-center shadow-sm">
+      {content}
     </div>
   );
 }

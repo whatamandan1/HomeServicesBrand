@@ -15,6 +15,18 @@ const DASH_LABELS: Record<string, string> = {
   openEscalations: "Escalations",
 };
 
+const DASH_SECTIONS: Record<string, string> = {
+  customerCount: "customers",
+  activeSubscriptions: "customers",
+  providerCount: "providers",
+  openVisits: "visits",
+  openEscalations: "escalations",
+};
+
+function scrollToSection(id: string) {
+  document.getElementById(id)?.scrollIntoView({ behavior: "smooth", block: "start" });
+}
+
 export default function AdminPage() {
   const { auth, ready } = useAuth();
   const [dash, setDash] = useState<Record<string, number> | null>(null);
@@ -120,12 +132,21 @@ export default function AdminPage() {
       {dash && (
         <div className="grid grid-cols-2 gap-4 md:grid-cols-5">
           {Object.entries(dash).map(([k, v]) => (
-            <StatCard key={k} label={DASH_LABELS[k] ?? k} value={v} />
+            <StatCard
+              key={k}
+              label={DASH_LABELS[k] ?? k}
+              value={v}
+              onClick={
+                DASH_SECTIONS[k]
+                  ? () => scrollToSection(DASH_SECTIONS[k])
+                  : undefined
+              }
+            />
           ))}
         </div>
       )}
 
-      <section>
+      <section id="providers" className="scroll-mt-6">
         <h2 className="font-semibold">Providers</h2>
         <div className="mt-2 space-y-2">
           {providers.map((p) => (
@@ -164,7 +185,7 @@ export default function AdminPage() {
         </div>
       </section>
 
-      <section>
+      <section id="customers" className="scroll-mt-6">
         <h2 className="font-semibold">Customers</h2>
         <DataTable
           columns={[
@@ -181,7 +202,7 @@ export default function AdminPage() {
         />
       </section>
 
-      <section>
+      <section id="visits" className="scroll-mt-6">
         <div className="flex flex-wrap items-center justify-between gap-3">
           <h2 className="font-semibold">Visits</h2>
           <button
@@ -214,7 +235,7 @@ export default function AdminPage() {
         />
       </section>
 
-      <section>
+      <section id="escalations" className="scroll-mt-6">
         <h2 className="font-semibold">Escalations</h2>
         <p className="mt-1 text-sm text-stone-500">
           Take open cases, then mark resolved when handled.
