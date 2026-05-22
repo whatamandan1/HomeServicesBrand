@@ -8,6 +8,7 @@ using Sorted.Core.Enums;
 using Sorted.Core.Interfaces;
 using Sorted.Core.Options;
 using Sorted.Infrastructure.Data;
+using System.ClientModel;
 
 namespace Sorted.Infrastructure.Services;
 
@@ -38,8 +39,10 @@ public class OpenAiSupportService(
 
         var reply = await GenerateReplyAsync(customerId, thread.Id, ct);
         var confidence = EstimateConfidence(request.Message, reply);
-        var shouldEscalate = confidence < EscalationThreshold
-            || EscalationKeywords.Any(k => request.Message.Contains(k, StringComparison.OrdinalIgnoreCase));
+        var infraFailure = reply.Contains("having trouble connecting", StringComparison.OrdinalIgnoreCase);
+        var shouldEscalate = !infraFailure && (
+            confidence < EscalationThreshold
+            || EscalationKeywords.Any(k => request.Message.Contains(k, StringComparison.OrdinalIgnoreCase)));
 
         if (shouldEscalate)
         {
@@ -68,7 +71,9 @@ public class OpenAiSupportService(
 
     private async Task<string> GenerateReplyAsync(Guid customerId, Guid threadId, CancellationToken ct)
     {
-        var apiKey = options.Value.ApiKey;
+        var apiKey = options.Value.ApiKey?.Trim();
+        var model = string.IsNullOrWhiteSpace(options.Value.Model) ? "gpt-4o-mini" : options.Value.Model.Trim();
+
         if (string.IsNullOrWhiteSpace(apiKey))
         {
             return "Thanks for your message. Our team will follow up shortly. (OpenAI not configured — add OpenAI__ApiKey to enable live AI replies.)";
@@ -84,7 +89,7 @@ public class OpenAiSupportService(
             history.Reverse();
 
             var context = await BuildCustomerContextAsync(customerId, ct);
-            var client = new ChatClient(options.Value.Model, apiKey);
+            var client = new ChatClient(model, apiKey);
 
             var chatMessages = new List<ChatMessage>
             {
@@ -100,12 +105,21 @@ public class OpenAiSupportService(
             {
                 if (msg.SenderRole is "Customer" or "User")
                     chatMessages.Add(new UserChatMessage(msg.Body));
-                else
+                else if (msg.SenderRole is "AI" or "Assistant")
                     chatMessages.Add(new AssistantChatMessage(msg.Body));
             }
 
             var completion = await client.CompleteChatAsync(chatMessages, cancellationToken: ct);
-            return completion.Value.Content[0].Text ?? "I could not generate a response.";
+            var content = completion.Value.Content;
+            if (content is null || content.Count == 0)
+                return "I could not generate a response right now. Please try again in a moment.";
+
+            return content[0].Text ?? "I could not generate a response.";
+        }
+        catch (ClientResultException ex)
+        {
+            logger.LogWarning(ex, "OpenAI API error {Status} for customer {CustomerId}", ex.Status, customerId);
+            return "Sorry — I'm having trouble connecting right now. Your message is saved and our team will follow up shortly.";
         }
         catch (Exception ex)
         {
@@ -131,14 +145,18 @@ public class OpenAiSupportService(
             .Select(s => $"{s.Plan.Name} ({s.Status}, availability: {s.AvailabilityPreference})")
             .ToList();
 
-        var upcomingVisits = await db.JobVisits.AsNoTracking()
-            .Include(v => v.Property)
-            .Where(v => v.Subscription.CustomerId == customerId && !v.IsDeleted)
-            .Where(v => v.ScheduledDate >= DateTime.UtcNow.Date && v.Status != VisitStatus.Cancelled)
-            .OrderBy(v => v.ScheduledDate)
-            .Take(3)
-            .Select(v => $"{v.ScheduledDate:dd MMM yyyy} — {v.AvailabilityWindow} ({v.Status}) at {v.Property.Postcode}")
-            .ToListAsync(ct);
+        var subscriptionIds = customer.Subscriptions.Select(s => s.Id).ToList();
+
+        var upcomingVisits = subscriptionIds.Count == 0
+            ? []
+            : await db.JobVisits.AsNoTracking()
+                .Include(v => v.Property)
+                .Where(v => subscriptionIds.Contains(v.CustomerSubscriptionId) && !v.IsDeleted)
+                .Where(v => v.ScheduledDate >= DateTime.UtcNow.Date && v.Status != VisitStatus.Cancelled)
+                .OrderBy(v => v.ScheduledDate)
+                .Take(3)
+                .Select(v => $"{v.ScheduledDate:dd MMM yyyy} — {v.AvailabilityWindow} ({v.Status}) at {v.Property.Postcode}")
+                .ToListAsync(ct);
 
         return $"""
             Customer: {customer.User.FirstName} {customer.User.LastName}
