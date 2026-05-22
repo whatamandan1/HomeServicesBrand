@@ -35,6 +35,8 @@ Ensure `appsettings.Development.local.json` is **not** committed (it is gitignor
 | `Jwt__Secret` | long random string (32+ chars) |
 | `Stripe__SecretKey` | `sk_test_...` or live later |
 | `Stripe__WebhookSecret` | from Stripe Dashboard webhook |
+| `Stripe__Prices__EssentialMonthly` | optional — `price_...` from Stripe Dashboard |
+| `Stripe__Prices__EssentialAnnual` | optional — `price_...` from Stripe Dashboard |
 | `Stripe__SuccessUrl` | `https://YOUR-VERCEL-URL/signup/success` |
 | `Stripe__CancelUrl` | `https://YOUR-VERCEL-URL/signup` |
 | `SendGrid__ApiKey` | optional |
@@ -48,10 +50,28 @@ Ensure `appsettings.Development.local.json` is **not** committed (it is gitignor
 
 - Dashboard → Developers → Webhooks → Add endpoint  
 - URL: `https://YOUR-RAILWAY-URL/api/webhooks/stripe`  
-- Event: `checkout.session.completed`  
+- Events:
+  - `checkout.session.completed`
+  - `invoice.paid`
+  - `invoice.payment_failed`
+  - `customer.subscription.updated`
+  - `customer.subscription.deleted`
 - Paste signing secret into `Stripe__WebhookSecret`
 
-**Note:** SQLite on Railway is ephemeral (resets on redeploy). Fine for demos; use PostgreSQL for persistent staging.
+**Note:** SQLite on Railway is ephemeral (resets on redeploy). Use **PostgreSQL** for persistent staging/production — the API applies EF migrations automatically on startup.
+
+### PostgreSQL on Railway (recommended)
+
+1. In your Railway project → **+ New** → **Database** → **PostgreSQL**
+2. Open the **API service** → **Variables** → **Add variable reference** (or link Postgres service) so Railway injects `PGHOST`, `PGPORT`, `PGUSER`, `PGPASSWORD`, `PGDATABASE`
+3. Redeploy the API — on startup it runs `Database.Migrate()` and seeds demo data if the database is empty
+4. Check `GET /health` — expect `"database": "postgresql"`, `"canConnect": true`
+
+If Postgres is in a **different** Railway project, copy `DATABASE_PUBLIC_URL` from the Postgres service into the API variables instead of using private `*.railway.internal` URLs.
+
+**Existing databases** created before migrations (via `EnsureCreated`) are detected automatically and stamped with the initial migration — no manual step required.
+
+See [`docs/database-migrations.md`](database-migrations.md) for local migration commands.
 
 ### Generate a public URL (Railway UI)
 

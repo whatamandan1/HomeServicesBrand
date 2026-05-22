@@ -33,6 +33,17 @@ Edit `appsettings.Development.local.json`:
 
 Leave `SuccessUrl` / `CancelUrl` as in `appsettings.json` unless you changed ports.
 
+**Optional (production):** create recurring **Prices** in Stripe Dashboard → Products, then set:
+
+```json
+"Prices": {
+  "EssentialMonthly": "price_xxx",
+  "EssentialAnnual": "price_yyy"
+}
+```
+
+If omitted, Checkout creates dynamic recurring prices from plan amounts (fine for local dev).
+
 **Restart the API** after saving.
 
 ## Step 3 — Forward webhooks to your API
@@ -54,6 +65,16 @@ Paste that into `appsettings.Development.local.json` as `WebhookSecret`, then **
 
 Leave `stripe listen` running while you test.
 
+### Webhook events handled
+
+| Event | Purpose |
+|-------|---------|
+| `checkout.session.completed` | Activate subscription after first Checkout payment |
+| `invoice.paid` | Record renewal payments; restore Active after retry |
+| `invoice.payment_failed` | Mark subscription **PastDue** |
+| `customer.subscription.updated` | Sync status from Stripe |
+| `customer.subscription.deleted` | Mark subscription **Cancelled** |
+
 ## Step 4 — Test signup
 
 1. http://localhost:3000/signup — use a **new email** (not one already registered)
@@ -72,6 +93,7 @@ In the `stripe listen` terminal you should see:
 
 ```
 checkout.session.completed [200]
+invoice.paid [200]
 ```
 
 In the API logs:
@@ -80,6 +102,12 @@ In the API logs:
 payment_succeeded
 visits_generated
 ```
+
+## Recurring billing
+
+Checkout uses **subscription mode** — Stripe automatically charges monthly or annual based on the plan. Renewals fire `invoice.paid` webhooks; failed payments fire `invoice.payment_failed` and set the subscription to **PastDue**.
+
+To simulate a failed renewal in test mode, use card `4000 0000 0000 0341` (requires authentication / fails on renewal depending on setup) or use Stripe Dashboard → Subscriptions → simulate invoice failure.
 
 ## Troubleshooting
 
@@ -96,7 +124,20 @@ visits_generated
 For deployed environments, add endpoint in Stripe Dashboard → Developers → Webhooks:
 
 - URL: `https://your-api-host/api/webhooks/stripe`
-- Event: `checkout.session.completed`
+- Events:
+  - `checkout.session.completed`
+  - `invoice.paid`
+  - `invoice.payment_failed`
+  - `customer.subscription.updated`
+  - `customer.subscription.deleted`
 - Use the signing secret from the dashboard in production config
 
 Local development should use **Stripe CLI** (`stripe listen`), not a Dashboard URL pointing to localhost.
+
+## Creating Stripe Prices (production)
+
+1. Stripe Dashboard → **Products** → Add product "GardensSorted Essential Monthly"
+2. Add recurring price £49/month
+3. Copy Price ID (`price_...`) → `Stripe__Prices__EssentialMonthly` on Railway
+4. Repeat for annual £499/year → `Stripe__Prices__EssentialAnnual`
+5. Redeploy API — Price IDs sync to plans on startup

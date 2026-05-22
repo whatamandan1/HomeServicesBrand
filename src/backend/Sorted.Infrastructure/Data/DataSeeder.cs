@@ -1,7 +1,9 @@
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using Sorted.Core.Entities;
 using Sorted.Core.Enums;
+using Sorted.Core.Options;
 
 namespace Sorted.Infrastructure.Data;
 
@@ -108,5 +110,44 @@ public static class DataSeeder
         }
 
         await db.SaveChangesAsync(ct);
+    }
+
+    public static async Task ApplyStripePriceIdsAsync(
+        SortedDbContext db,
+        IConfiguration configuration,
+        ILogger logger,
+        CancellationToken ct = default)
+    {
+        var stripe = configuration.GetSection(StripeOptions.Section).Get<StripeOptions>();
+        if (stripe?.Prices is null)
+            return;
+
+        var monthly = stripe.Prices.EssentialMonthly?.Trim();
+        var annual = stripe.Prices.EssentialAnnual?.Trim();
+        if (string.IsNullOrEmpty(monthly) && string.IsNullOrEmpty(annual))
+            return;
+
+        var plans = await db.SubscriptionPlans.Where(p => !p.IsDeleted).ToListAsync(ct);
+        var updated = false;
+
+        foreach (var plan in plans)
+        {
+            if (plan.BillingInterval == SubscriptionBillingInterval.Monthly && !string.IsNullOrEmpty(monthly))
+            {
+                plan.StripePriceId = monthly;
+                updated = true;
+            }
+            else if (plan.BillingInterval == SubscriptionBillingInterval.Annual && !string.IsNullOrEmpty(annual))
+            {
+                plan.StripePriceId = annual;
+                updated = true;
+            }
+        }
+
+        if (updated)
+        {
+            await db.SaveChangesAsync(ct);
+            logger.LogInformation("Applied Stripe Price IDs from configuration to subscription plans");
+        }
     }
 }

@@ -16,6 +16,14 @@ public class StripeOptions
     public string WebhookSecret { get; set; } = string.Empty;
     public string SuccessUrl { get; set; } = "http://localhost:3000/signup/success";
     public string CancelUrl { get; set; } = "http://localhost:3000/signup";
+    /// <summary>Optional pre-created Stripe Price IDs (recommended for production).</summary>
+    public StripePriceOptions Prices { get; set; } = new();
+}
+
+public class StripePriceOptions
+{
+    public string EssentialMonthly { get; set; } = string.Empty;
+    public string EssentialAnnual { get; set; } = string.Empty;
 }
 
 public class SendGridOptions

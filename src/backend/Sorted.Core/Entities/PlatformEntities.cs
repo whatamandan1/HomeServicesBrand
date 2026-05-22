@@ -122,6 +122,7 @@ public class PaymentRecord : AuditableEntity
     public PaymentStatus Status { get; set; } = PaymentStatus.Pending;
     public string? StripePaymentIntentId { get; set; }
     public string? StripeCheckoutSessionId { get; set; }
+    public string? StripeInvoiceId { get; set; }
 }
 
 public class WorkflowEvent : AuditableEntity

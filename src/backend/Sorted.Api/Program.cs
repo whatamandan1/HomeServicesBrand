@@ -198,7 +198,5 @@ static async Task InitializeDatabaseAsync(IServiceProvider services, ILogger<Pro
 {
     using var scope = services.CreateScope();
     var db = scope.ServiceProvider.GetRequiredService<SortedDbContext>();
-    await db.Database.EnsureCreatedAsync();
-    await DataSeeder.SeedAsync(db, logger);
-    logger.LogInformation("Database initialized successfully");
+    await DatabaseInitializer.InitializeAsync(db, logger, scope.ServiceProvider.GetService<IConfiguration>());
 }
