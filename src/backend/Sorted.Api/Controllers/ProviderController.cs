@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Sorted.Core.Dtos;
 using Sorted.Core.Entities;
+using Sorted.Core.Interfaces;
 using Sorted.Core.Enums;
 using Sorted.Infrastructure.Data;
 using Sorted.Infrastructure.Services;
@@ -13,7 +14,7 @@ namespace Sorted.Api.Controllers;
 [ApiController]
 [Route("api/provider")]
 [Authorize(Roles = nameof(UserRole.Provider))]
-public class ProviderController(SortedDbContext db) : ControllerBase
+public class ProviderController(SortedDbContext db, ISmsService sms) : ControllerBase
 {
     private async Task<Provider?> GetProviderAsync(CancellationToken ct)
     {
@@ -51,6 +52,7 @@ public class ProviderController(SortedDbContext db) : ControllerBase
         var visit = await db.JobVisits
             .Include(v => v.Property)
             .Include(v => v.AssignedProvider)
+            .Include(v => v.Subscription).ThenInclude(s => s.Customer).ThenInclude(c => c.User)
             .FirstOrDefaultAsync(v => v.Id == request.VisitId && v.Status == VisitStatus.OpenForClaim, ct);
         if (visit is null) return NotFound();
 
@@ -74,6 +76,16 @@ public class ProviderController(SortedDbContext db) : ControllerBase
         if (offer is not null) offer.Status = DispatchOfferStatus.Claimed;
 
         await db.SaveChangesAsync(ct);
+
+        var customerPhone = visit.Subscription.Customer.User.Phone;
+        if (!string.IsNullOrWhiteSpace(customerPhone))
+        {
+            await sms.SendVisitClaimedSmsAsync(
+                customerPhone,
+                visit.ScheduledDate,
+                visit.Property.Postcode,
+                ct);
+        }
 
         return Ok(new JobVisitResponse(visit.Id, visit.ScheduledDate, visit.AvailabilityWindow, visit.Status, visit.Property.Postcode, provider.User.FirstName + " " + provider.User.LastName));
     }

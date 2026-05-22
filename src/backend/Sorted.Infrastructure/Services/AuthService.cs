@@ -7,7 +7,7 @@ using Sorted.Infrastructure.Data;
 
 namespace Sorted.Infrastructure.Services;
 
-public class AuthService(SortedDbContext db, JwtTokenService jwt, IWorkflowLogger workflow, IEmailService email) : IAuthService
+public class AuthService(SortedDbContext db, JwtTokenService jwt, IWorkflowLogger workflow, IEmailService email, ISmsService sms) : IAuthService
 {
     public async Task<AuthResponse> RegisterCustomerAsync(RegisterCustomerRequest request, CancellationToken ct = default)
     {
@@ -61,6 +61,8 @@ public class AuthService(SortedDbContext db, JwtTokenService jwt, IWorkflowLogge
 
         await workflow.LogAsync("customer_signup", "registered", nameof(Customer), customer.Id, new { user.Email, plan.Name }, ct);
         await email.SendWelcomeEmailAsync(user.Email, user.FirstName, ct);
+        if (!string.IsNullOrWhiteSpace(user.Phone))
+            await sms.SendWelcomeSmsAsync(user.Phone, user.FirstName, ct);
 
         var (token, expires) = jwt.CreateToken(user, brand.Code);
         return new AuthResponse(token, expires, user.Id, user.Email, user.Role, brand.Code, subscription.Id);

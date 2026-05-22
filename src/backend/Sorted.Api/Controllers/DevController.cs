@@ -15,6 +15,8 @@ namespace Sorted.Api.Controllers;
 public class DevController(
     SortedDbContext db,
     IVisitSchedulingService scheduling,
+    IEmailService email,
+    ISmsService sms,
     IHostEnvironment env,
     IOptions<FeaturesOptions> features) : ControllerBase
 {
@@ -25,7 +27,10 @@ public class DevController(
         if (!CanBypassPayment())
             return NotFound();
 
-        var sub = await db.CustomerSubscriptions.FirstOrDefaultAsync(s => s.Id == subscriptionId, ct);
+        var sub = await db.CustomerSubscriptions
+            .Include(s => s.Customer).ThenInclude(c => c.User)
+            .Include(s => s.Plan)
+            .FirstOrDefaultAsync(s => s.Id == subscriptionId, ct);
         if (sub is null) return NotFound();
 
         sub.Status = SubscriptionStatus.Active;
@@ -33,6 +38,11 @@ public class DevController(
         await db.SaveChangesAsync(ct);
         await scheduling.GenerateVisitsForSubscriptionAsync(subscriptionId, ct: ct);
         await scheduling.OpenVisitsForDispatchAsync(ct);
+
+        await email.SendSubscriptionConfirmedEmailAsync(sub.Customer.User.Email, sub.Plan.Name, ct);
+        if (!string.IsNullOrWhiteSpace(sub.Customer.User.Phone))
+            await sms.SendSubscriptionConfirmedSmsAsync(sub.Customer.User.Phone, sub.Plan.Name, ct);
+
         return Ok(new { message = "Subscription activated (dev bypass)." });
     }
 

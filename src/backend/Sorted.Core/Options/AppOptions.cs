@@ -39,3 +39,12 @@ public class FeaturesOptions
     /// <summary>Skip Stripe checkout — activate subscription immediately (staging/dev only).</summary>
     public bool BypassStripeCheckout { get; set; }
 }
+
+public class TwilioOptions
+{
+    public const string Section = "Twilio";
+    public string AccountSid { get; set; } = string.Empty;
+    public string AuthToken { get; set; } = string.Empty;
+    /// <summary>E.164 format, e.g. +447700900000 (your Twilio number).</summary>
+    public string FromPhoneNumber { get; set; } = string.Empty;
+}

@@ -16,6 +16,7 @@ public class StripePaymentService(
     SortedDbContext db,
     IOptions<StripeOptions> stripeOptions,
     IEmailService email,
+    ISmsService sms,
     IVisitSchedulingService scheduling,
     IWorkflowLogger workflow,
     ILogger<StripePaymentService> logger) : IStripePaymentService
@@ -125,5 +126,7 @@ public class StripePaymentService(
         await scheduling.GenerateVisitsForSubscriptionAsync(subscription.Id, ct: ct);
         await scheduling.OpenVisitsForDispatchAsync(ct);
         await email.SendSubscriptionConfirmedEmailAsync(subscription.Customer.User.Email, subscription.Plan.Name, ct);
+        if (!string.IsNullOrWhiteSpace(subscription.Customer.User.Phone))
+            await sms.SendSubscriptionConfirmedSmsAsync(subscription.Customer.User.Phone, subscription.Plan.Name, ct);
     }
 }

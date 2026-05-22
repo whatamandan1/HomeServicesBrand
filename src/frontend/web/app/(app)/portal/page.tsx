@@ -5,14 +5,12 @@ import { api, type CustomerSubscription, type JobVisit } from "@/lib/api";
 import { clearAuth } from "@/lib/auth-storage";
 import { useAuth } from "@/lib/use-auth";
 import { DataTable, StatusBadge } from "@/components/ui";
+import { SupportChat } from "@/components/support/SupportChat";
 
 export default function PortalPage() {
   const { auth, setAuth, ready } = useAuth();
   const [subs, setSubs] = useState<CustomerSubscription[]>([]);
   const [visits, setVisits] = useState<JobVisit[]>([]);
-  const [chat, setChat] = useState("");
-  const [reply, setReply] = useState<string | null>(null);
-  const [chatError, setChatError] = useState<string | null>(null);
 
   useEffect(() => {
     if (!auth?.token || auth.role !== "Customer") return;
@@ -38,11 +36,11 @@ export default function PortalPage() {
   }
 
   return (
-    <div className="space-y-8">
-      <div className="flex justify-between">
+    <div className="space-y-10">
+      <div className="flex flex-wrap items-start justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold">My account</h1>
-          <p className="text-sm text-stone-500">{auth.email}</p>
+          <h1 className="font-display text-3xl font-bold text-gardens-dark">My account</h1>
+          <p className="mt-1 text-sm text-stone-500">{auth.email}</p>
         </div>
         <button
           onClick={() => {
@@ -56,13 +54,13 @@ export default function PortalPage() {
       </div>
 
       <section>
-        <h2 className="font-semibold">Subscriptions</h2>
+        <h2 className="font-semibold text-gardens-dark">Subscriptions</h2>
         {subs.length === 0 ? (
           <p className="mt-2 text-sm text-stone-500">No subscriptions yet.</p>
         ) : (
-          <ul className="mt-2 space-y-3">
+          <ul className="mt-3 space-y-3">
             {subs.map((s) => (
-              <li key={s.id} className="rounded-lg border bg-white p-4 shadow-sm">
+              <li key={s.id} className="rounded-xl border border-stone-200 bg-white p-5 shadow-soft">
                 <div className="flex flex-wrap items-center gap-2">
                   <span className="font-medium">{s.planName}</span>
                   <StatusBadge status={s.status} />
@@ -82,7 +80,7 @@ export default function PortalPage() {
       </section>
 
       <section>
-        <h2 className="font-semibold">Upcoming visits</h2>
+        <h2 className="font-semibold text-gardens-dark">Upcoming visits</h2>
         <DataTable
           columns={[
             { key: "date", label: "Date" },
@@ -103,35 +101,7 @@ export default function PortalPage() {
       </section>
 
       <section>
-        <h2 className="font-semibold">Support chat</h2>
-        <div className="mt-2 flex gap-2">
-          <input
-            value={chat}
-            onChange={(e) => setChat(e.target.value)}
-            className="flex-1 rounded border px-3 py-2"
-            placeholder="Ask about your visits or plan…"
-          />
-          <button
-            className="rounded bg-gardens-primary px-4 text-white disabled:opacity-50"
-            disabled={!chat.trim()}
-            onClick={async () => {
-              setChatError(null);
-              try {
-                const r = await api.supportChat(auth.token, chat);
-                setReply(r.reply + (r.escalated ? " (escalated to our team)" : ""));
-                setChat("");
-              } catch (e) {
-                setChatError(e instanceof Error ? e.message : "Chat failed");
-              }
-            }}
-          >
-            Send
-          </button>
-        </div>
-        {chatError && <p className="mt-2 text-sm text-red-600">{chatError}</p>}
-        {reply && (
-          <p className="mt-2 rounded-lg bg-gardens-accent/30 p-4 text-sm">{reply}</p>
-        )}
+        <SupportChat token={auth.token} />
       </section>
     </div>
   );

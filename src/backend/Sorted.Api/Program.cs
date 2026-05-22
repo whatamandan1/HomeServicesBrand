@@ -97,6 +97,9 @@ app.MapGet("/health", async (SortedDbContext db, IConfiguration config) =>
 {
     var sendGridConfigured = !string.IsNullOrWhiteSpace(config["SendGrid:ApiKey"]);
     var openAiConfigured = !string.IsNullOrWhiteSpace(config["OpenAI:ApiKey"]);
+    var twilioConfigured = !string.IsNullOrWhiteSpace(config["Twilio:AccountSid"])
+        && !string.IsNullOrWhiteSpace(config["Twilio:AuthToken"])
+        && !string.IsNullOrWhiteSpace(config["Twilio:FromPhoneNumber"]);
 
     var cs = DatabaseConfiguration.ResolveConnectionString(config);
     if (!DatabaseConfiguration.IsPostgres(cs))
@@ -111,6 +114,7 @@ app.MapGet("/health", async (SortedDbContext db, IConfiguration config) =>
             demoAdminExists = await db.Users.AnyAsync(u => u.Email == DataSeeder.AdminEmail),
             sendGridConfigured,
             openAiConfigured,
+            twilioConfigured,
         });
     }
 
@@ -153,6 +157,7 @@ app.MapGet("/health", async (SortedDbContext db, IConfiguration config) =>
         demoAdminExists,
         sendGridConfigured,
         openAiConfigured,
+        twilioConfigured,
     });
 });
 app.MapControllers();
@@ -165,13 +170,17 @@ var stripeConfigured = !string.IsNullOrWhiteSpace(app.Configuration["Stripe:Secr
 var webhookConfigured = !string.IsNullOrWhiteSpace(app.Configuration["Stripe:WebhookSecret"]);
 var sendGridConfigured = !string.IsNullOrWhiteSpace(app.Configuration["SendGrid:ApiKey"]);
 var openAiConfigured = !string.IsNullOrWhiteSpace(app.Configuration["OpenAI:ApiKey"]);
+var twilioConfigured = !string.IsNullOrWhiteSpace(app.Configuration["Twilio:AccountSid"])
+    && !string.IsNullOrWhiteSpace(app.Configuration["Twilio:AuthToken"])
+    && !string.IsNullOrWhiteSpace(app.Configuration["Twilio:FromPhoneNumber"]);
 startupLogger.LogInformation(
-    "Sorted API starting — DB config: {Database} ({Source}) | Stripe: {StripeKey} | Webhook: {Webhook} | SendGrid: {SendGrid} | OpenAI: {OpenAi}",
+    "Sorted API starting — DB config: {Database} ({Source}) | Stripe: {StripeKey} | Webhook: {Webhook} | SendGrid: {SendGrid} | Twilio: {Twilio} | OpenAI: {OpenAi}",
     dbKind,
     dbSource,
     stripeConfigured ? "ok" : "missing",
     webhookConfigured ? "ok" : "missing",
     sendGridConfigured ? "ok" : "missing",
+    twilioConfigured ? "ok" : "missing",
     openAiConfigured ? "ok" : "missing");
 
 try

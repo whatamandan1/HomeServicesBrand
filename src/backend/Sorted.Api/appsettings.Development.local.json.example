@@ -6,6 +6,11 @@
   "SendGrid": {
     "ApiKey": "SG.YOUR_KEY"
   },
+  "Twilio": {
+    "AccountSid": "ACxxxxxxxx",
+    "AuthToken": "your_auth_token",
+    "FromPhoneNumber": "+447700900000"
+  },
   "OpenAI": {
     "ApiKey": "sk-YOUR_KEY"
   }

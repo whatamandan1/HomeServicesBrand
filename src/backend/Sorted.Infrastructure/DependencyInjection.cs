@@ -16,6 +16,7 @@ public static class DependencyInjection
         services.Configure<StripeOptions>(configuration.GetSection(StripeOptions.Section));
         services.Configure<SendGridOptions>(configuration.GetSection(SendGridOptions.Section));
         services.Configure<OpenAiOptions>(configuration.GetSection(OpenAiOptions.Section));
+        services.Configure<TwilioOptions>(configuration.GetSection(TwilioOptions.Section));
         services.Configure<FeaturesOptions>(configuration.GetSection(FeaturesOptions.Section));
 
         var connectionString = DatabaseConfiguration.ResolveConnectionString(configuration);
@@ -31,6 +32,7 @@ public static class DependencyInjection
         services.AddScoped<IAuthService, AuthService>();
         services.AddScoped<IStripePaymentService, StripePaymentService>();
         services.AddScoped<IEmailService, SendGridEmailService>();
+        services.AddScoped<ISmsService, TwilioSmsService>();
         services.AddScoped<IAiSupportService, OpenAiSupportService>();
         services.AddScoped<IVisitSchedulingService, VisitSchedulingService>();
         services.AddScoped<IWorkflowLogger, WorkflowLogger>();

@@ -106,6 +106,26 @@ Emails sent on: welcome (signup), subscription confirmed (payment webhook).
 
 ---
 
+## 2b. Twilio (SMS, optional)
+
+See [twilio-sms-setup.md](./twilio-sms-setup.md) for full steps.
+
+1. Twilio console → Account SID, Auth Token, buy a UK number (E.164)
+2. Trial: verify your mobile under **Verified Caller IDs**
+3. Railway → API **Variables**:
+
+| Variable | Value |
+|----------|---------|
+| `Twilio__AccountSid` | `AC...` |
+| `Twilio__AuthToken` | your token |
+| `Twilio__FromPhoneNumber` | `+44...` |
+
+4. Redeploy API — `/health` should show `twilioConfigured: true`
+
+SMS sent on: welcome (signup), subscription confirmed, visit claimed (customer notified).
+
+---
+
 ## 3. OpenAI (support chat)
 
 1. https://platform.openai.com/api-keys → create key

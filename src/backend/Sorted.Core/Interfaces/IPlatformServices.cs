@@ -23,6 +23,13 @@ public interface IEmailService
     Task SendSubscriptionConfirmedEmailAsync(string toEmail, string planName, CancellationToken ct = default);
 }
 
+public interface ISmsService
+{
+    Task SendWelcomeSmsAsync(string toPhone, string firstName, CancellationToken ct = default);
+    Task SendSubscriptionConfirmedSmsAsync(string toPhone, string planName, CancellationToken ct = default);
+    Task SendVisitClaimedSmsAsync(string toPhone, DateTime visitDate, string postcode, CancellationToken ct = default);
+}
+
 public interface IAiSupportService
 {
     Task<SupportChatResponse> ChatAsync(Guid customerId, SupportChatRequest request, CancellationToken ct = default);

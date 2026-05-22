@@ -25,6 +25,7 @@ Domain authentication is recommended before launch (better deliverability than s
 |---------|----------------|------|
 | **Stripe (customer subs)** | Test mode keys **or** bypass checkout (below) | **£0** — test cards never charge real money |
 | **SendGrid** | Free tier (~100 emails/day) | **£0** |
+| **Twilio SMS** | Trial credit; verify your mobile on trial | **£0** for light testing |
 | **OpenAI** | Optional — omit `OpenAI__ApiKey` until needed; or set [usage limits](https://platform.openai.com/settings/organization/limits) | Pay-as-you-go, pennies for testing |
 | **Railway** | Hobby/free credits | varies |
 | **Vercel** | Free tier for hobby | **£0** |
@@ -59,6 +60,9 @@ Stripe__SecretKey=sk_test_...          # optional while bypass is on
 SendGrid__ApiKey=SG...                 # free tier
 SendGrid__FromEmail=your@gmail.com     # your verified personal sender
 SendGrid__FromName=GardensSorted
+Twilio__AccountSid=AC...               # optional — see docs/twilio-sms-setup.md
+Twilio__AuthToken=...
+Twilio__FromPhoneNumber=+44...
 OpenAI__ApiKey=                        # leave empty to skip AI costs
 ```
 
