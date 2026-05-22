@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 48" fill="none" role="img" aria-label="GardensSorted">
+  <g transform="translate(0,4)">
+    <rect width="40" height="40" rx="10" fill="#95d5b2"/>
+    <path d="M20 10c-4 6-8 9-8 14a8 8 0 1 0 16 0c0-5-4-8-8-14z" fill="#1b4332"/>
+    <path d="M20 22v8" stroke="#d8f3dc" stroke-width="2" stroke-linecap="round"/>
+  </g>
+  <text x="52" y="32" font-family="Georgia, 'Times New Roman', serif" font-size="26" font-weight="600" fill="#ffffff">GardensSorted</text>
+</svg>

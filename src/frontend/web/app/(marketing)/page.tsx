@@ -1,7 +1,6 @@
 import Link from "next/link";
 import {
   CalendarCheck,
-  Leaf,
   MapPin,
   MessageCircle,
   ShieldCheck,
@@ -10,6 +9,8 @@ import {
 } from "lucide-react";
 import { Button, Section } from "@/components/marketing/ui";
 import { PricingSection } from "@/components/marketing/PricingSection";
+import { HeroVisual } from "@/components/marketing/HeroVisual";
+import { SocialProofSection } from "@/components/marketing/SocialProofSection";
 
 const steps = [
   {
@@ -72,37 +73,11 @@ export default function HomePage() {
             <div className="mt-10 flex flex-wrap gap-6 text-sm text-gardens-accent/90">
               <span className="flex items-center gap-2"><ShieldCheck className="h-4 w-4" /> Vetted gardeners</span>
               <span className="flex items-center gap-2"><MessageCircle className="h-4 w-4" /> AI support in portal</span>
-              <span className="flex items-center gap-2"><Leaf className="h-4 w-4" /> From £49/month</span>
+              <span className="flex items-center gap-2"><MapPin className="h-4 w-4" /> From £49/month</span>
             </div>
           </div>
 
-          <div className="relative mx-auto w-full max-w-md">
-            <div className="rounded-2xl border border-white/20 bg-white/95 p-6 shadow-2xl backdrop-blur">
-              <p className="text-xs font-semibold uppercase tracking-wide text-gardens-primary">Your portal</p>
-              <p className="mt-1 font-display text-lg font-semibold text-gardens-dark">Monthly Garden Care</p>
-              <p className="text-sm text-stone-500">Active · Weekday mornings</p>
-              <div className="mt-6 space-y-3">
-                {[
-                  { date: "Thu 12 Jun", status: "Confirmed", gardener: "Sarah M." },
-                  { date: "Thu 26 Jun", status: "Scheduled", gardener: "Assigning…" },
-                ].map((v) => (
-                  <div key={v.date} className="flex items-center justify-between rounded-xl bg-gardens-light/60 px-4 py-3">
-                    <div>
-                      <p className="text-sm font-medium text-gardens-dark">{v.date}</p>
-                      <p className="text-xs text-stone-500">{v.gardener}</p>
-                    </div>
-                    <span className="rounded-full bg-gardens-primary/10 px-3 py-1 text-xs font-medium text-gardens-primary">
-                      {v.status}
-                    </span>
-                  </div>
-                ))}
-              </div>
-              <div className="mt-4 rounded-xl border border-gardens-accent/40 bg-gardens-accent/20 p-3">
-                <p className="text-xs font-medium text-gardens-dark">Support chat</p>
-                <p className="mt-1 text-sm text-stone-600">“When is my next visit?” — answered instantly.</p>
-              </div>
-            </div>
-          </div>
+          <HeroVisual />
         </div>
       </section>
 
@@ -124,6 +99,8 @@ export default function HomePage() {
           ))}
         </div>
       </Section>
+
+      <SocialProofSection />
 
       <section className="border-y border-gardens-primary/10 bg-gardens-light/40 py-16">
         <div className="mx-auto max-w-6xl px-4">

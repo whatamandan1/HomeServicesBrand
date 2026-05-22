@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { Leaf } from "lucide-react";
+import { Logo } from "@/components/marketing/Logo";
 
 const links = [
   { href: "/#how-it-works", label: "How it works" },
@@ -11,12 +11,7 @@ export function MarketingHeader() {
   return (
     <header className="sticky top-0 z-50 border-b border-gardens-primary/10 bg-white/90 backdrop-blur-md">
       <div className="mx-auto flex max-w-6xl items-center justify-between px-4 py-4">
-        <Link href="/" className="flex items-center gap-2 font-display text-xl font-semibold text-gardens-dark">
-          <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-gardens-primary text-white">
-            <Leaf className="h-5 w-5" />
-          </span>
-          GardensSorted
-        </Link>
+        <Logo />
         <nav className="hidden items-center gap-8 text-sm font-medium text-stone-600 md:flex">
           {links.map((l) => (
             <Link key={l.href} href={l.href} className="transition hover:text-gardens-primary">
