@@ -1,0 +1,8 @@
+[build]
+builder = "DOCKERFILE"
+dockerfilePath = "src/backend/Dockerfile"
+
+[deploy]
+healthcheckPath = "/swagger/index.html"
+healthcheckTimeout = 120
+restartPolicyType = "ON_FAILURE"

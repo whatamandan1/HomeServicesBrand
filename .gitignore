@@ -1,0 +1,26 @@
+# .NET
+bin/
+obj/
+*.db
+*.db-shm
+*.db-wal
+appsettings.Development.local.json
+**/appsettings.*.local.json
+**/sorted.db*
+
+# Node
+node_modules/
+.next/
+out/
+.env
+.env.local
+.env*.local
+
+# OS / IDE
+.DS_Store
+.idea/
+.vscode/
+*.user
+
+# Logs
+*.log

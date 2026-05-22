@@ -1,0 +1,12 @@
+{
+  "Stripe": {
+    "SecretKey": "sk_test_YOUR_KEY",
+    "WebhookSecret": "whsec_YOUR_WEBHOOK_SECRET"
+  },
+  "SendGrid": {
+    "ApiKey": "SG.YOUR_KEY"
+  },
+  "OpenAI": {
+    "ApiKey": "sk-YOUR_KEY"
+  }
+}

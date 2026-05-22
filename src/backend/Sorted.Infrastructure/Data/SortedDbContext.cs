@@ -1,0 +1,66 @@
+using Microsoft.EntityFrameworkCore;
+using Sorted.Core.Entities;
+
+namespace Sorted.Infrastructure.Data;
+
+public class SortedDbContext(DbContextOptions<SortedDbContext> options) : DbContext(options)
+{
+    public DbSet<Brand> Brands => Set<Brand>();
+    public DbSet<UserAccount> Users => Set<UserAccount>();
+    public DbSet<Customer> Customers => Set<Customer>();
+    public DbSet<CustomerProperty> CustomerProperties => Set<CustomerProperty>();
+    public DbSet<SubscriptionPlan> SubscriptionPlans => Set<SubscriptionPlan>();
+    public DbSet<CustomerSubscription> CustomerSubscriptions => Set<CustomerSubscription>();
+    public DbSet<Provider> Providers => Set<Provider>();
+    public DbSet<ProviderTerritory> ProviderTerritories => Set<ProviderTerritory>();
+    public DbSet<JobVisit> JobVisits => Set<JobVisit>();
+    public DbSet<DispatchOffer> DispatchOffers => Set<DispatchOffer>();
+    public DbSet<PaymentRecord> Payments => Set<PaymentRecord>();
+    public DbSet<WorkflowEvent> WorkflowEvents => Set<WorkflowEvent>();
+    public DbSet<CommunicationThread> CommunicationThreads => Set<CommunicationThread>();
+    public DbSet<Message> Messages => Set<Message>();
+    public DbSet<AIActionLog> AIActionLogs => Set<AIActionLog>();
+    public DbSet<Escalation> Escalations => Set<Escalation>();
+
+    protected override void OnModelCreating(ModelBuilder modelBuilder)
+    {
+        modelBuilder.Entity<UserAccount>()
+            .HasIndex(u => u.Email)
+            .IsUnique();
+
+        modelBuilder.Entity<Brand>()
+            .HasIndex(b => b.Code)
+            .IsUnique();
+
+        modelBuilder.Entity<Customer>()
+            .HasIndex(c => c.UserId)
+            .IsUnique();
+
+        modelBuilder.Entity<Provider>()
+            .HasIndex(p => p.UserId)
+            .IsUnique();
+
+        modelBuilder.Entity<Customer>()
+            .HasOne(c => c.User).WithMany().HasForeignKey(c => c.UserId);
+        modelBuilder.Entity<Customer>()
+            .HasOne(c => c.Brand).WithMany().HasForeignKey(c => c.BrandId);
+        modelBuilder.Entity<Provider>()
+            .HasOne(p => p.User).WithMany().HasForeignKey(p => p.UserId);
+        modelBuilder.Entity<JobVisit>()
+            .HasOne(v => v.Subscription).WithMany().HasForeignKey(v => v.CustomerSubscriptionId);
+        modelBuilder.Entity<JobVisit>()
+            .HasOne(v => v.Property).WithMany().HasForeignKey(v => v.CustomerPropertyId);
+
+        foreach (var entity in modelBuilder.Model.GetEntityTypes())
+        {
+            if (typeof(Core.Common.AuditableEntity).IsAssignableFrom(entity.ClrType))
+            {
+                modelBuilder.Entity(entity.ClrType)
+                    .Property<bool>("IsDeleted")
+                    .HasDefaultValue(false);
+            }
+        }
+
+        base.OnModelCreating(modelBuilder);
+    }
+}
