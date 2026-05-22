@@ -68,6 +68,7 @@ public interface IPostcodeGeocodingService
 public interface IProviderCoverageService
 {
     Task SyncTerritoriesAsync(Provider provider, CancellationToken ct = default);
+    void ScheduleTerritorySync(Guid providerId);
     Task<bool> IsPropertyWithinCoverageAsync(Provider provider, CustomerProperty property, CancellationToken ct = default);
 }
 

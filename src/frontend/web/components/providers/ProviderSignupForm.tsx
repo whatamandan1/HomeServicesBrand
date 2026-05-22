@@ -39,7 +39,13 @@ export function ProviderSignupForm() {
       saveAuth(auth);
       router.push("/provider");
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Registration failed");
+      if (err instanceof Error && err.name === "AbortError") {
+        setError(
+          "Signup timed out. Your account may have been created — try logging in, or submit again with a new email."
+        );
+      } else {
+        setError(err instanceof Error ? err.message : "Registration failed");
+      }
     } finally {
       setLoading(false);
     }

@@ -1,4 +1,6 @@
+using System.Collections.Concurrent;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Sorted.Core.Entities;
 using Sorted.Core.Geo;
@@ -10,12 +12,50 @@ namespace Sorted.Infrastructure.Services;
 public class ProviderCoverageService(
     SortedDbContext db,
     IPostcodeGeocodingService geocoding,
+    IServiceScopeFactory scopeFactory,
     ILogger<ProviderCoverageService> logger) : IProviderCoverageService
 {
     private const double PartialOverlapBufferMiles = 1.0;
     private const int PostcodesIoMaxRadiusMeters = 2000;
     private const int PostcodesIoMaxLimit = 100;
     private const int MaxApiQueriesPerSync = 150;
+
+    private static readonly ConcurrentDictionary<Guid, byte> SyncInProgress = new();
+
+    public void ScheduleTerritorySync(Guid providerId)
+    {
+        if (!SyncInProgress.TryAdd(providerId, 0))
+            return;
+
+        _ = Task.Run(async () =>
+        {
+            try
+            {
+                using var scope = scopeFactory.CreateScope();
+                var scopedDb = scope.ServiceProvider.GetRequiredService<SortedDbContext>();
+                var provider = await scopedDb.Providers
+                    .Include(p => p.Territories)
+                    .FirstOrDefaultAsync(p => p.Id == providerId && !p.IsDeleted);
+
+                if (provider?.CoverageLatitude is null || provider.CoverageLongitude is null)
+                    return;
+
+                if (provider.Territories.Any(t => !t.IsDeleted))
+                    return;
+
+                var coverage = scope.ServiceProvider.GetRequiredService<IProviderCoverageService>();
+                await coverage.SyncTerritoriesAsync(provider, CancellationToken.None);
+            }
+            catch (Exception ex)
+            {
+                logger.LogError(ex, "Background territory sync failed for provider {ProviderId}", providerId);
+            }
+            finally
+            {
+                SyncInProgress.TryRemove(providerId, out _);
+            }
+        });
+    }
 
     public async Task SyncTerritoriesAsync(Provider provider, CancellationToken ct = default)
     {
@@ -67,7 +107,7 @@ public class ProviderCoverageService(
         CustomerProperty property,
         CancellationToken ct = default)
     {
-        await EnsureTerritoriesAsync(provider, ct);
+        await LoadTerritoriesAsync(provider, ct);
 
         var propertyOutcode = PostcodeFormat.Outcode(property.Postcode);
         if (provider.Territories.Count > 0)
@@ -75,6 +115,10 @@ public class ProviderCoverageService(
             if (provider.Territories.Any(t =>
                     string.Equals(t.PostcodeSector, propertyOutcode, StringComparison.OrdinalIgnoreCase)))
                 return true;
+        }
+        else if (provider.CoverageLatitude is not null)
+        {
+            ScheduleTerritorySync(provider.Id);
         }
 
         if (provider.CoverageLatitude is not double pLat || provider.CoverageLongitude is not double pLon)
@@ -88,25 +132,14 @@ public class ProviderCoverageService(
         return GeoDistance.MilesBetween(pLat, pLon, coords.Latitude, coords.Longitude) <= effectiveRadius;
     }
 
-    private async Task EnsureTerritoriesAsync(Provider provider, CancellationToken ct)
+    private async Task LoadTerritoriesAsync(Provider provider, CancellationToken ct)
     {
         if (provider.Territories.Count > 0)
             return;
 
-        if (provider.CoverageLatitude is null || provider.CoverageLongitude is null)
-            return;
-
-        var loaded = await db.ProviderTerritories
+        provider.Territories = await db.ProviderTerritories
             .Where(t => t.ProviderId == provider.Id && !t.IsDeleted)
             .ToListAsync(ct);
-
-        if (loaded.Count > 0)
-        {
-            provider.Territories = loaded;
-            return;
-        }
-
-        await SyncTerritoriesAsync(provider, ct);
     }
 
     private async Task<IReadOnlyList<string>> ResolveOutcodesAsync(

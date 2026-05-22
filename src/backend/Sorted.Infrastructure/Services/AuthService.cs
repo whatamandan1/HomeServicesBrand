@@ -120,7 +120,7 @@ public class AuthService(
         db.Providers.Add(provider);
         await db.SaveChangesAsync(ct);
 
-        await coverage.SyncTerritoriesAsync(provider, ct);
+        coverage.ScheduleTerritorySync(provider.Id);
 
         await workflow.LogAsync(
             "provider_onboarding",

@@ -41,7 +41,11 @@ public static class DependencyInjection
         services.AddScoped<IVisitSchedulingService, VisitSchedulingService>();
         services.AddScoped<IVisitManagementService, VisitManagementService>();
         services.AddScoped<IProviderCoverageService, ProviderCoverageService>();
-        services.AddHttpClient<IPostcodeGeocodingService, PostcodesIoGeocodingService>();
+        services.AddHttpClient<IPostcodeGeocodingService, PostcodesIoGeocodingService>(client =>
+        {
+            client.Timeout = TimeSpan.FromSeconds(15);
+            client.DefaultRequestHeaders.UserAgent.ParseAdd("GardensSorted/1.0");
+        });
         services.AddScoped<IWorkflowLogger, WorkflowLogger>();
 
         services.AddHostedService<DatabaseMigrationHostedService>();

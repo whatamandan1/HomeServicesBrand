@@ -31,6 +31,9 @@ public class AuthController(IAuthService auth) : ControllerBase
     [AllowAnonymous]
     public async Task<ActionResult<AuthResponse>> RegisterProvider([FromBody] RegisterProviderRequest request, CancellationToken ct)
     {
+        if (!ModelState.IsValid)
+            return ValidationProblem(ModelState);
+
         try
         {
             return Ok(await auth.RegisterProviderAsync(request, ct));
@@ -38,6 +41,10 @@ public class AuthController(IAuthService auth) : ControllerBase
         catch (InvalidOperationException ex)
         {
             return BadRequest(new { error = ex.Message });
+        }
+        catch (Exception)
+        {
+            return StatusCode(500, new { error = "Registration failed. Please try again or log in if you already signed up." });
         }
     }
 

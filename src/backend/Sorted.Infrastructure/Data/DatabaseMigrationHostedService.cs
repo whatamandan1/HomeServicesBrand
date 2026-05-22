@@ -30,7 +30,7 @@ public class DatabaseMigrationHostedService(
                     p => p.User.Email == DataSeeder.ProviderEmail && !p.IsDeleted,
                     cancellationToken);
             if (demoProvider?.CoverageLatitude is not null && demoProvider.Territories.Count == 0)
-                await coverage.SyncTerritoriesAsync(demoProvider, cancellationToken);
+                coverage.ScheduleTerritorySync(demoProvider.Id);
         }
         catch (Exception ex)
         {

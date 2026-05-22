@@ -117,7 +117,11 @@ async function request<T>(
       message =
         "Access denied — you may be logged in with the wrong account (customer vs admin vs provider).";
     }
-    throw new Error(message);
+    if (res.status >= 500 && !text.trim()) {
+      message =
+        "The server took too long or encountered an error. If you already submitted, try logging in.";
+    }
+    throw new Error(message || "Request failed");
   }
   if (res.status === 204) return undefined as T;
   return res.json() as Promise<T>;
@@ -141,11 +145,18 @@ export const api = {
     phone: string;
     coveragePostcode: string;
     coverageRadiusMiles: number;
-  }) =>
-    request<AuthResponse>("/api/auth/register/provider", {
-      method: "POST",
-      body: JSON.stringify(body),
-    }),
+  }) => {
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 30000);
+    return request<AuthResponse>(
+      "/api/auth/register/provider",
+      {
+        method: "POST",
+        body: JSON.stringify(body),
+        signal: controller.signal,
+      }
+    ).finally(() => clearTimeout(timeout));
+  },
   login: (email: string, password: string) =>
     request<AuthResponse>("/api/auth/login", {
       method: "POST",
