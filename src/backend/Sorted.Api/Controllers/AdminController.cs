@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Sorted.Core.Dtos;
+using Sorted.Core.Entities;
 using Sorted.Core.Enums;
 using Sorted.Core.Interfaces;
 using Sorted.Infrastructure.Data;
@@ -11,7 +12,11 @@ namespace Sorted.Api.Controllers;
 [ApiController]
 [Route("api/admin")]
 [Authorize(Roles = nameof(UserRole.Admin))]
-public class AdminController(SortedDbContext db, IVisitSchedulingService scheduling, IVisitManagementService visits) : ControllerBase
+public class AdminController(
+    SortedDbContext db,
+    IVisitSchedulingService scheduling,
+    IVisitManagementService visits,
+    IWorkflowLogger workflow) : ControllerBase
 {
     [HttpGet("dashboard")]
     public async Task<ActionResult<AdminDashboardResponse>> Dashboard(CancellationToken ct)
@@ -127,10 +132,69 @@ public class AdminController(SortedDbContext db, IVisitSchedulingService schedul
         var list = await db.Escalations.AsNoTracking()
             .Where(e => !e.IsDeleted)
             .OrderByDescending(e => e.CreatedAtUtc)
-            .Select(e => new EscalationResponse(e.Id, e.Reason, e.Status, e.CreatedAtUtc))
+            .Select(e => new EscalationResponse(
+                e.Id,
+                e.Reason,
+                e.Status,
+                e.CreatedAtUtc,
+                e.Customer != null ? e.Customer.User.Email : null,
+                e.Notes))
             .ToListAsync(ct);
         return Ok(list);
     }
+
+    [HttpPost("escalations/{id:guid}/start")]
+    public async Task<ActionResult<EscalationResponse>> StartEscalation(Guid id, CancellationToken ct)
+    {
+        var escalation = await db.Escalations
+            .Include(e => e.Customer).ThenInclude(c => c!.User)
+            .FirstOrDefaultAsync(e => e.Id == id && !e.IsDeleted, ct);
+        if (escalation is null) return NotFound();
+
+        if (escalation.Status != EscalationStatus.Open)
+            return BadRequest(new { error = "Only open escalations can be assigned." });
+
+        escalation.Status = EscalationStatus.InProgress;
+        escalation.UpdatedAtUtc = DateTime.UtcNow;
+        await db.SaveChangesAsync(ct);
+        await workflow.LogAsync("support", "escalation_started", nameof(Escalation), escalation.Id, null, ct);
+
+        return Ok(ToEscalationResponse(escalation));
+    }
+
+    [HttpPost("escalations/{id:guid}/resolve")]
+    public async Task<ActionResult<EscalationResponse>> ResolveEscalation(
+        Guid id,
+        [FromBody] ResolveEscalationRequest? request,
+        CancellationToken ct)
+    {
+        var escalation = await db.Escalations
+            .Include(e => e.Customer).ThenInclude(c => c!.User)
+            .FirstOrDefaultAsync(e => e.Id == id && !e.IsDeleted, ct);
+        if (escalation is null) return NotFound();
+
+        if (escalation.Status == EscalationStatus.Resolved)
+            return BadRequest(new { error = "Escalation is already resolved." });
+
+        if (!string.IsNullOrWhiteSpace(request?.Notes))
+            escalation.Notes = request.Notes.Trim();
+
+        escalation.Status = EscalationStatus.Resolved;
+        escalation.UpdatedAtUtc = DateTime.UtcNow;
+        await db.SaveChangesAsync(ct);
+        await workflow.LogAsync("support", "escalation_resolved", nameof(Escalation), escalation.Id, null, ct);
+
+        return Ok(ToEscalationResponse(escalation));
+    }
+
+    private static EscalationResponse ToEscalationResponse(Escalation e) =>
+        new(
+            e.Id,
+            e.Reason,
+            e.Status,
+            e.CreatedAtUtc,
+            e.Customer?.User.Email,
+            e.Notes);
 
     [HttpPost("scheduling/open-dispatch")]
     public async Task<IActionResult> OpenDispatch(CancellationToken ct)

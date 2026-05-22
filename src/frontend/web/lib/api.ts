@@ -60,6 +60,8 @@ export type Escalation = {
   reason: string;
   status: string;
   createdAtUtc: string;
+  customerEmail: string | null;
+  notes: string | null;
 };
 
 export type SubscriptionPlan = {
@@ -203,6 +205,13 @@ export const api = {
     }, token),
   adminEscalations: (token: string) =>
     request<Escalation[]>("/api/admin/escalations", {}, token),
+  adminStartEscalation: (token: string, id: string) =>
+    request<Escalation>(`/api/admin/escalations/${id}/start`, { method: "POST" }, token),
+  adminResolveEscalation: (token: string, id: string, notes?: string) =>
+    request<Escalation>(`/api/admin/escalations/${id}/resolve`, {
+      method: "POST",
+      body: JSON.stringify({ notes: notes ?? null }),
+    }, token),
   approveProvider: (token: string, id: string) =>
     request<void>(`/api/admin/providers/${id}/approve`, { method: "POST" }, token),
   adminOpenDispatch: (token: string) =>

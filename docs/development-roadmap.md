@@ -9,7 +9,7 @@ statuses as features ship.
 **Last reviewed:** 2026-05-22  
 **Live site:** https://home-services-brand.vercel.app/
 
-**Current focus:** Phase 1 — escalation resolve + provider self-signup UI.
+**Current focus:** Phase 1 — provider self-signup UI (last Phase 1 item).
 
 ---
 
@@ -52,7 +52,7 @@ Work through phases in order. Each phase builds on the last.
 - [x] **True recurring Stripe billing** — subscription Checkout + invoice/subscription webhooks
 - [x] **Visit lifecycle (provider)** — `POST .../start` and `POST .../complete`; provider UI for Claimed → InProgress → Completed
 - [x] **Visit lifecycle (admin/customer)** — cancel/reschedule APIs and UI on `/portal` and `/admin`
-- [ ] **Escalation resolve workflow** — admin assign/resolve; use `EscalationStatus.InProgress` / `Resolved`
+- [x] **Escalation resolve workflow** — admin take case (InProgress) and resolve with optional notes
 - [ ] **Provider self-signup UI** — registration flow on `/providers` linked to admin approval
 
 ### Phase 2 — Day-to-day operations
@@ -113,7 +113,7 @@ Work through phases in order. Each phase builds on the last.
 | Provider management | 🟡 Partial | Full CRUD, territory editing, suspend provider |
 | Workflow monitoring | 🟡 Partial | UI for `WorkflowEvent` log |
 | Dispatch visibility | 🟡 Partial | Dispatch board + open-dispatch action in UI |
-| Escalation handling | 🟡 Partial | Assign, resolve, status updates |
+| Escalation handling | ✅ Done | Take case and resolve in admin portal |
 | KPI monitoring | 🟡 Partial | Dashboard counts only; no trends or exports |
 | AI action monitoring | 🟡 Partial | Admin view of `AIActionLog` + thread review |
 

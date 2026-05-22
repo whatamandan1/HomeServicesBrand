@@ -50,4 +50,12 @@ public record AdminDashboardResponse(
     int OpenVisits,
     int OpenEscalations);
 
-public record EscalationResponse(Guid Id, string Reason, EscalationStatus Status, DateTime CreatedAtUtc);
+public record EscalationResponse(
+    Guid Id,
+    string Reason,
+    EscalationStatus Status,
+    DateTime CreatedAtUtc,
+    string? CustomerEmail,
+    string? Notes);
+
+public record ResolveEscalationRequest(string? Notes);

@@ -3,8 +3,9 @@
 import { useEffect, useState } from "react";
 import { api, type AdminCustomer, type AdminProvider, type Escalation, type JobVisit } from "@/lib/api";
 import { useAuth } from "@/lib/use-auth";
-import { DataTable, StatCard, StatusBadge } from "@/components/ui";
+import { DataTable, StatCard } from "@/components/ui";
 import { VisitList } from "@/components/visits/VisitList";
+import { EscalationList } from "@/components/escalations/EscalationList";
 
 const DASH_LABELS: Record<string, string> = {
   customerCount: "Customers",
@@ -24,10 +25,18 @@ export default function AdminPage() {
   const [dispatchMsg, setDispatchMsg] = useState<string | null>(null);
   const [visitError, setVisitError] = useState<string | null>(null);
   const [busyVisitId, setBusyVisitId] = useState<string | null>(null);
+  const [escalationError, setEscalationError] = useState<string | null>(null);
+  const [busyEscalationId, setBusyEscalationId] = useState<string | null>(null);
 
   function refreshVisits() {
     if (!auth?.token) return;
     api.adminVisits(auth.token).then(setVisits);
+    api.adminDashboard(auth.token).then(setDash);
+  }
+
+  function refreshEscalations() {
+    if (!auth?.token) return;
+    api.adminEscalations(auth.token).then(setEscalations);
     api.adminDashboard(auth.token).then(setDash);
   }
 
@@ -50,6 +59,28 @@ export default function AdminPage() {
       setVisitError(e instanceof Error ? e.message : "Update failed");
     } finally {
       setBusyVisitId(null);
+    }
+  }
+
+  async function runEscalationAction(
+    id: string,
+    action: "start" | "resolve",
+    notes?: string
+  ) {
+    if (!auth?.token) return;
+    setBusyEscalationId(id);
+    setEscalationError(null);
+    try {
+      const updated =
+        action === "start"
+          ? await api.adminStartEscalation(auth.token, id)
+          : await api.adminResolveEscalation(auth.token, id, notes);
+      setEscalations((list) => list.map((e) => (e.id === id ? updated : e)));
+      refreshEscalations();
+    } catch (e) {
+      setEscalationError(e instanceof Error ? e.message : "Update failed");
+    } finally {
+      setBusyEscalationId(null);
     }
   }
 
@@ -78,6 +109,9 @@ export default function AdminPage() {
       </p>
     );
   }
+
+  const activeEscalations = escalations.filter((e) => e.status !== "Resolved");
+  const resolvedEscalations = escalations.filter((e) => e.status === "Resolved");
 
   return (
     <div className="space-y-8">
@@ -182,24 +216,32 @@ export default function AdminPage() {
 
       <section>
         <h2 className="font-semibold">Escalations</h2>
-        {escalations.length === 0 ? (
-          <p className="mt-2 text-sm text-stone-500">No open escalations.</p>
-        ) : (
-          <ul className="mt-2 space-y-2">
-            {escalations.map((e) => (
-              <li key={e.id} className="rounded-lg border bg-white p-4 text-sm shadow-sm">
-                <div className="flex flex-wrap items-center gap-2">
-                  <StatusBadge status={e.status} />
-                  <span className="text-xs text-stone-400">
-                    {new Date(e.createdAtUtc).toLocaleString("en-GB")}
-                  </span>
-                </div>
-                <p className="mt-2 text-stone-700">{e.reason}</p>
-              </li>
-            ))}
-          </ul>
-        )}
+        <p className="mt-1 text-sm text-stone-500">
+          Take open cases, then mark resolved when handled.
+        </p>
+        {escalationError && <p className="mt-2 text-sm text-red-600">{escalationError}</p>}
+        <EscalationList
+          escalations={activeEscalations}
+          busyId={busyEscalationId}
+          onStart={(id) => runEscalationAction(id, "start")}
+          onResolve={(id, notes) => runEscalationAction(id, "resolve", notes)}
+          emptyMessage="No open escalations."
+        />
       </section>
+
+      {resolvedEscalations.length > 0 && (
+        <section>
+          <h2 className="font-semibold">Resolved escalations</h2>
+          <EscalationList
+            escalations={resolvedEscalations}
+            busyId={null}
+            readOnly
+            onStart={async () => {}}
+            onResolve={async () => {}}
+            emptyMessage="No resolved escalations."
+          />
+        </section>
+      )}
     </div>
   );
 }
