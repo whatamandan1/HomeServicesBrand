@@ -7,7 +7,7 @@ export function MarketingFooter() {
       <div className="mx-auto grid max-w-6xl gap-10 px-4 py-12 md:grid-cols-4">
         <div className="md:col-span-2">
           <Link href="/" className="inline-block">
-            <Image src="/logo-white.svg" alt="GardensSorted" width={200} height={40} />
+            <Image src="/logo-white.svg" alt="GardensSorted" width={272} height={48} className="h-10 w-auto" />
           </Link>
           <p className="mt-4 max-w-sm text-sm text-gardens-accent/90">
             Recurring garden care for Yorkshire homes. Part of the Sorted platform — subscription home services, done properly.

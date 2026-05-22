@@ -7,10 +7,13 @@ type LogoProps = {
   href?: string;
 };
 
+const FULL_WIDTH = 272;
+const FULL_HEIGHT = 48;
+
 export function Logo({ variant = "full", className = "", href = "/" }: LogoProps) {
   const src = variant === "icon" ? "/logo-icon.svg" : "/logo.svg";
-  const width = variant === "icon" ? 40 : 200;
-  const height = variant === "icon" ? 40 : 40;
+  const width = variant === "icon" ? 40 : FULL_WIDTH;
+  const height = variant === "icon" ? 40 : FULL_HEIGHT;
 
   const img = (
     <Image
@@ -18,7 +21,7 @@ export function Logo({ variant = "full", className = "", href = "/" }: LogoProps
       alt="GardensSorted"
       width={width}
       height={height}
-      className={className}
+      className={variant === "full" ? `h-10 w-auto ${className}` : className}
       priority={variant === "full"}
     />
   );
