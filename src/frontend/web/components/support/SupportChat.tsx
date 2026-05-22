@@ -1,10 +1,9 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { Loader2, Send } from "lucide-react";
+import Link from "next/link";
+import { Loader2, MessageCircle, Send } from "lucide-react";
 import { api } from "@/lib/api";
-
-const THREAD_KEY = "gardens-support-thread";
 
 type ChatMessage = {
   id: string;
@@ -13,7 +12,26 @@ type ChatMessage = {
   escalated?: boolean;
 };
 
-export function SupportChat({ token }: { token: string }) {
+type SupportChatProps = {
+  mode: "guest" | "customer";
+  token?: string;
+  storageKey?: string;
+  title?: string;
+  subtitle?: string;
+  emptyHint?: string;
+  className?: string;
+};
+
+export function SupportChat({
+  mode,
+  token,
+  storageKey,
+  title = "Support chat",
+  subtitle = "AI-powered · escalates to our team when needed",
+  emptyHint,
+  className = "",
+}: SupportChatProps) {
+  const threadStorageKey = storageKey ?? (mode === "guest" ? "gardens-guest-thread" : "gardens-support-thread");
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [input, setInput] = useState("");
   const [threadId, setThreadId] = useState<string | undefined>();
@@ -21,10 +39,15 @@ export function SupportChat({ token }: { token: string }) {
   const [error, setError] = useState<string | null>(null);
   const bottomRef = useRef<HTMLDivElement>(null);
 
+  const defaultEmptyHint =
+    mode === "guest"
+      ? "Ask about pricing, how it works, or whether we cover your area — no signup needed."
+      : "Ask about your visits, plan, or availability — e.g. “When is my next visit?”";
+
   useEffect(() => {
-    const saved = localStorage.getItem(THREAD_KEY);
+    const saved = localStorage.getItem(threadStorageKey);
     if (saved) setThreadId(saved);
-  }, []);
+  }, [threadStorageKey]);
 
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -33,6 +56,10 @@ export function SupportChat({ token }: { token: string }) {
   async function send() {
     const text = input.trim();
     if (!text || loading) return;
+    if (mode === "customer" && !token) {
+      setError("Please log in to use support chat.");
+      return;
+    }
 
     setInput("");
     setError(null);
@@ -40,10 +67,14 @@ export function SupportChat({ token }: { token: string }) {
     setLoading(true);
 
     try {
-      const r = await api.supportChat(token, text, threadId);
+      const r =
+        mode === "guest"
+          ? await api.guestSupportChat(text, threadId)
+          : await api.supportChat(token!, text, threadId);
+
       if (!threadId) {
         setThreadId(r.threadId);
-        localStorage.setItem(THREAD_KEY, r.threadId);
+        localStorage.setItem(threadStorageKey, r.threadId);
       }
       setMessages((m) => [
         ...m,
@@ -62,18 +93,18 @@ export function SupportChat({ token }: { token: string }) {
   }
 
   function startNewChat() {
-    localStorage.removeItem(THREAD_KEY);
+    localStorage.removeItem(threadStorageKey);
     setThreadId(undefined);
     setMessages([]);
     setError(null);
   }
 
   return (
-    <div className="overflow-hidden rounded-2xl border border-stone-200 bg-white shadow-soft">
+    <div className={`overflow-hidden rounded-2xl border border-stone-200 bg-white shadow-soft ${className}`}>
       <div className="flex items-start justify-between gap-3 border-b border-stone-100 bg-gardens-light/30 px-4 py-3">
         <div className="min-w-0">
-          <p className="text-sm font-semibold text-gardens-dark">Support chat</p>
-          <p className="text-xs text-stone-500">AI-powered · escalates to our team when needed</p>
+          <p className="text-sm font-semibold text-gardens-dark">{title}</p>
+          <p className="text-xs text-stone-500">{subtitle}</p>
         </div>
         {messages.length > 0 && (
           <button type="button" onClick={startNewChat} className="shrink-0 text-xs text-gardens-primary hover:underline">
@@ -82,11 +113,9 @@ export function SupportChat({ token }: { token: string }) {
         )}
       </div>
 
-      <div className="flex h-64 flex-col gap-3 overflow-y-auto p-4 sm:h-72">
+      <div className="flex h-64 flex-col gap-3 overflow-y-auto p-4 sm:h-80">
         {messages.length === 0 && !loading && (
-          <p className="text-sm text-stone-500">
-            Ask about your visits, plan, or availability — e.g. “When is my next visit?”
-          </p>
+          <p className="text-sm text-stone-500">{emptyHint ?? defaultEmptyHint}</p>
         )}
         {messages.map((m) => (
           <div
@@ -133,6 +162,33 @@ export function SupportChat({ token }: { token: string }) {
           <Send className="h-4 w-4" />
         </button>
       </div>
+
+      {mode === "guest" && (
+        <p className="border-t border-stone-100 px-4 py-2 text-center text-xs text-stone-500">
+          Ready to subscribe?{" "}
+          <Link href="/signup" className="font-medium text-gardens-primary hover:underline">
+            Sign up free
+          </Link>
+        </p>
+      )}
     </div>
+  );
+}
+
+export function GuestChatFab() {
+  function scrollToChat() {
+    document.getElementById("chat")?.scrollIntoView({ behavior: "smooth" });
+  }
+
+  return (
+    <button
+      type="button"
+      onClick={scrollToChat}
+      className="fixed bottom-20 right-4 z-40 flex min-h-[48px] items-center gap-2 rounded-full bg-gardens-primary px-4 py-3 text-sm font-semibold text-white shadow-lg transition hover:bg-gardens-dark md:bottom-6"
+      aria-label="Open live chat"
+    >
+      <MessageCircle className="h-5 w-5" />
+      <span className="hidden sm:inline">Chat with us</span>
+    </button>
   );
 }

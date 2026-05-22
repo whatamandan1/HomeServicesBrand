@@ -9,6 +9,7 @@ import { Logo } from "@/components/marketing/Logo";
 const links = [
   { href: "/#how-it-works", label: "How it works" },
   { href: "/#pricing", label: "Pricing" },
+  { href: "/#chat", label: "Live chat" },
   { href: "/providers", label: "For gardeners" },
 ];
 

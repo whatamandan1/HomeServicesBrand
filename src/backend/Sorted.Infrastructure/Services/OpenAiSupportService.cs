@@ -21,23 +21,51 @@ public class OpenAiSupportService(
     private const int MaxHistoryMessages = 20;
     private static readonly string[] EscalationKeywords = ["cancel", "refund", "complaint", "dispute", "angry", "broken", "urgent"];
 
-    public async Task<SupportChatResponse> ChatAsync(Guid customerId, SupportChatRequest request, CancellationToken ct = default)
+    public Task<SupportChatResponse> ChatAsync(Guid customerId, SupportChatRequest request, CancellationToken ct = default)
+        => HandleChatAsync(
+            request,
+            ct,
+            customerId,
+            threadQuery: threadId => db.CommunicationThreads
+                .Include(t => t.Messages)
+                .FirstOrDefaultAsync(t => t.Id == threadId && t.CustomerId == customerId, ct),
+            newThread: () => new CommunicationThread { CustomerId = customerId, Subject = "Support chat" },
+            senderRole: "Customer");
+
+    public Task<SupportChatResponse> GuestChatAsync(SupportChatRequest request, CancellationToken ct = default)
+        => HandleChatAsync(
+            request,
+            ct,
+            customerId: null,
+            threadQuery: threadId => db.CommunicationThreads
+                .Include(t => t.Messages)
+                .FirstOrDefaultAsync(t => t.Id == threadId && t.CustomerId == null, ct),
+            newThread: () => new CommunicationThread { CustomerId = null, Subject = "Website chat" },
+            senderRole: "Visitor");
+
+    private async Task<SupportChatResponse> HandleChatAsync(
+        SupportChatRequest request,
+        CancellationToken ct,
+        Guid? customerId,
+        Func<Guid, Task<CommunicationThread?>> threadQuery,
+        Func<CommunicationThread> newThread,
+        string senderRole)
     {
         var thread = request.ThreadId.HasValue
-            ? await db.CommunicationThreads.Include(t => t.Messages).FirstOrDefaultAsync(t => t.Id == request.ThreadId && t.CustomerId == customerId, ct)
+            ? await threadQuery(request.ThreadId.Value)
             : null;
 
         if (thread is null)
         {
-            thread = new CommunicationThread { CustomerId = customerId, Subject = "Support chat" };
+            thread = newThread();
             db.CommunicationThreads.Add(thread);
             await db.SaveChangesAsync(ct);
         }
 
-        db.Messages.Add(new Message { ThreadId = thread.Id, SenderRole = "Customer", Body = request.Message });
+        db.Messages.Add(new Message { ThreadId = thread.Id, SenderRole = senderRole, Body = request.Message });
         await db.SaveChangesAsync(ct);
 
-        var reply = await GenerateReplyAsync(customerId, thread.Id, ct);
+        var reply = await GenerateReplyAsync(thread.Id, customerId, ct);
         var confidence = EstimateConfidence(request.Message, reply);
         var infraFailure = reply.Contains("having trouble connecting", StringComparison.OrdinalIgnoreCase);
         var shouldEscalate = !infraFailure && (
@@ -49,7 +77,7 @@ public class OpenAiSupportService(
             db.Escalations.Add(new Escalation
             {
                 CustomerId = customerId,
-                Reason = $"AI escalation: low confidence or sensitive topic. Message: {request.Message[..Math.Min(200, request.Message.Length)]}",
+                Reason = $"AI escalation ({(customerId.HasValue ? "customer" : "website")}): {request.Message[..Math.Min(200, request.Message.Length)]}",
                 Status = EscalationStatus.Open
             });
         }
@@ -58,7 +86,7 @@ public class OpenAiSupportService(
         db.AIActionLogs.Add(new AIActionLog
         {
             CustomerId = customerId,
-            ActionType = "support_chat",
+            ActionType = customerId.HasValue ? "support_chat" : "guest_chat",
             PromptSummary = request.Message[..Math.Min(500, request.Message.Length)],
             ResponseSummary = reply[..Math.Min(500, reply.Length)],
             ConfidenceScore = confidence,
@@ -69,7 +97,7 @@ public class OpenAiSupportService(
         return new SupportChatResponse(thread.Id, reply, shouldEscalate, confidence);
     }
 
-    private async Task<string> GenerateReplyAsync(Guid customerId, Guid threadId, CancellationToken ct)
+    private async Task<string> GenerateReplyAsync(Guid threadId, Guid? customerId, CancellationToken ct)
     {
         var apiKey = options.Value.ApiKey?.Trim();
         var model = string.IsNullOrWhiteSpace(options.Value.Model) ? "gpt-4o-mini" : options.Value.Model.Trim();
@@ -88,22 +116,31 @@ public class OpenAiSupportService(
                 .ToListAsync(ct);
             history.Reverse();
 
-            var context = await BuildCustomerContextAsync(customerId, ct);
+            var context = customerId.HasValue
+                ? await BuildCustomerContextAsync(customerId.Value, ct)
+                : await BuildGuestContextAsync(ct);
+
+            var systemPrompt = customerId.HasValue
+                ? "You are GardensSorted customer support for a Yorkshire UK gardening subscription service. " +
+                  "Be brief, friendly, and factual. Use the customer account context when answering about their plan or visits. " +
+                  "Do not promise refunds or cancellations — say a human will help for billing disputes. " +
+                  "Topics: visit windows, subscription plans, property access, billing questions.\n\n"
+                : "You are GardensSorted's friendly website assistant for a Yorkshire UK gardening subscription service. " +
+                  "The visitor is NOT signed in — answer pre-sales questions about how the service works, pricing, coverage, and signup. " +
+                  "Be brief, warm, and helpful. Encourage signup at /signup when they seem ready. " +
+                  "Do not invent account-specific details (visits, billing) — they need to sign up first for that. " +
+                  "For refunds, cancellations, or complaints, say a human will help after they contact us or sign up.\n\n";
+
             var client = new ChatClient(model, apiKey);
 
             var chatMessages = new List<ChatMessage>
             {
-                new SystemChatMessage(
-                    "You are GardensSorted customer support for a Yorkshire UK gardening subscription service. " +
-                    "Be brief, friendly, and factual. Use the customer account context when answering about their plan or visits. " +
-                    "Do not promise refunds or cancellations — say a human will help for billing disputes. " +
-                    "Topics: visit windows, subscription plans, property access, billing questions.\n\n" +
-                    context)
+                new SystemChatMessage(systemPrompt + context)
             };
 
             foreach (var msg in history)
             {
-                if (msg.SenderRole is "Customer" or "User")
+                if (msg.SenderRole is "Customer" or "User" or "Visitor")
                     chatMessages.Add(new UserChatMessage(msg.Body));
                 else if (msg.SenderRole is "AI" or "Assistant")
                     chatMessages.Add(new AssistantChatMessage(msg.Body));
@@ -118,14 +155,37 @@ public class OpenAiSupportService(
         }
         catch (ClientResultException ex)
         {
-            logger.LogWarning(ex, "OpenAI API error {Status} for customer {CustomerId}", ex.Status, customerId);
+            logger.LogWarning(ex, "OpenAI API error {Status} for chat thread {ThreadId}", ex.Status, threadId);
             return "Sorry — I'm having trouble connecting right now. Your message is saved and our team will follow up shortly.";
         }
         catch (Exception ex)
         {
-            logger.LogWarning(ex, "OpenAI support chat failed for customer {CustomerId}", customerId);
+            logger.LogWarning(ex, "OpenAI support chat failed for thread {ThreadId}", threadId);
             return "Sorry — I'm having trouble connecting right now. Your message is saved and our team will follow up shortly.";
         }
+    }
+
+    private async Task<string> BuildGuestContextAsync(CancellationToken ct)
+    {
+        var plans = await db.SubscriptionPlans.AsNoTracking()
+            .Where(p => p.IsActive && !p.IsDeleted)
+            .OrderBy(p => p.PriceGbp)
+            .Select(p => new { p.Name, p.Description, p.BillingInterval, p.MinimumTermMonths, p.PriceGbp })
+            .ToListAsync(ct);
+
+        var planLines = plans.Count > 0
+            ? string.Join("\n", plans.Select(p =>
+                $"- {p.Name}: £{p.PriceGbp}/{(p.BillingInterval == SubscriptionBillingInterval.Monthly ? "month" : "year")}, {p.MinimumTermMonths}-month minimum. {p.Description}"))
+            : "- Essential Monthly: £49/month, 3-month minimum\n- Essential Annual: £499/year, 12-month minimum";
+
+        return $"""
+            Visitor status: Not signed in (pre-sales / general questions)
+            Service area: Yorkshire, UK (Leeds, York, and surrounding areas — launching)
+            How it works: Subscribe online → recurring visits scheduled → local gardeners assigned
+            Current plans:
+            {planLines}
+            Signup: gardenssorted.co.uk/signup
+            """;
     }
 
     private async Task<string> BuildCustomerContextAsync(Guid customerId, CancellationToken ct)

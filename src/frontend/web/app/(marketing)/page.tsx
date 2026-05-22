@@ -10,6 +10,7 @@ import { Button, Section } from "@/components/marketing/ui";
 import { PricingSection } from "@/components/marketing/PricingSection";
 import { HeroImage } from "@/components/marketing/HeroImage";
 import { SocialProofSection } from "@/components/marketing/SocialProofSection";
+import { GuestChatFab, SupportChat } from "@/components/support/SupportChat";
 
 const steps = [
   {
@@ -122,6 +123,20 @@ export default function HomePage() {
         <PricingSection />
       </Section>
 
+      <Section
+        id="chat"
+        title="Questions? Chat with us"
+        subtitle="Ask about pricing, coverage, or how GardensSorted works — no signup required."
+      >
+        <div className="mx-auto max-w-2xl">
+          <SupportChat
+            mode="guest"
+            title="Live chat"
+            subtitle="AI assistant · answers instantly"
+          />
+        </div>
+      </Section>
+
       <Section title="Questions" subtitle="Quick answers before you sign up.">
         <div className="mx-auto max-w-2xl divide-y divide-stone-200 rounded-2xl border border-stone-200 bg-white shadow-soft">
           {faqs.map((faq) => (
@@ -150,6 +165,8 @@ export default function HomePage() {
           </div>
         </div>
       </section>
+
+      <GuestChatFab />
     </>
   );
 }

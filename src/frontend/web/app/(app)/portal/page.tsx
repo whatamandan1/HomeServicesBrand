@@ -101,7 +101,7 @@ export default function PortalPage() {
       </section>
 
       <section>
-        <SupportChat token={auth.token} />
+        <SupportChat token={auth.token} mode="customer" />
       </section>
     </div>
   );

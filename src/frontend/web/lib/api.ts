@@ -132,6 +132,11 @@ export const api = {
       { method: "POST", body: JSON.stringify({ message, threadId }) },
       token
     ),
+  guestSupportChat: (message: string, threadId?: string) =>
+    request<{ threadId: string; reply: string; escalated: boolean; confidence?: number }>(
+      "/api/support/chat",
+      { method: "POST", body: JSON.stringify({ message, threadId }) }
+    ),
   providerOpenVisits: (token: string) =>
     request<JobVisit[]>("/api/provider/visits/open", {}, token),
   providerMyVisits: (token: string) =>

@@ -33,6 +33,7 @@ public interface ISmsService
 public interface IAiSupportService
 {
     Task<SupportChatResponse> ChatAsync(Guid customerId, SupportChatRequest request, CancellationToken ct = default);
+    Task<SupportChatResponse> GuestChatAsync(SupportChatRequest request, CancellationToken ct = default);
 }
 
 public interface IVisitSchedulingService
