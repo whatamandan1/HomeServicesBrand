@@ -44,7 +44,7 @@ public static class DataSeeder
                 Description = "Weekly garden maintenance, 3-month minimum.",
                 BillingInterval = SubscriptionBillingInterval.Monthly,
                 MinimumTermMonths = 3,
-                PriceGbp = 49m
+                PriceGbp = 29.95m
             },
             new SubscriptionPlan
             {
@@ -53,7 +53,7 @@ public static class DataSeeder
                 Description = "Weekly garden maintenance, 12-month commitment, discounted.",
                 BillingInterval = SubscriptionBillingInterval.Annual,
                 MinimumTermMonths = 12,
-                PriceGbp = 499m
+                PriceGbp = 299.95m
             });
 
         await db.SaveChangesAsync(ct);
@@ -148,6 +148,34 @@ public static class DataSeeder
         {
             await db.SaveChangesAsync(ct);
             logger.LogInformation("Applied Stripe Price IDs from configuration to subscription plans");
+        }
+    }
+
+    public static async Task EnsurePlanPricingAsync(SortedDbContext db, ILogger logger, CancellationToken ct = default)
+    {
+        var plans = await db.SubscriptionPlans.Where(p => !p.IsDeleted).ToListAsync(ct);
+        var updated = false;
+
+        foreach (var plan in plans)
+        {
+            var target = plan.BillingInterval switch
+            {
+                SubscriptionBillingInterval.Monthly => 29.95m,
+                SubscriptionBillingInterval.Annual => 299.95m,
+                _ => (decimal?)null
+            };
+
+            if (target is null || plan.PriceGbp == target)
+                continue;
+
+            plan.PriceGbp = target.Value;
+            updated = true;
+        }
+
+        if (updated)
+        {
+            await db.SaveChangesAsync(ct);
+            logger.LogInformation("Updated subscription plan prices to £29.95/month and £299.95/year");
         }
     }
 }

@@ -21,7 +21,10 @@ public static class DatabaseInitializer
         await db.Database.MigrateAsync(ct);
         await DataSeeder.SeedAsync(db, logger, ct);
         if (configuration is not null)
+        {
             await DataSeeder.ApplyStripePriceIdsAsync(db, configuration, logger, ct);
+            await DataSeeder.EnsurePlanPricingAsync(db, logger, ct);
+        }
         logger.LogInformation("Database migrated and seeded successfully");
     }
 

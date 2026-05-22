@@ -71,7 +71,7 @@ export default function AboutPage() {
             marketplace layer.
           </p>
           <p>
-            GardensSorted is the live first vertical — Yorkshire garden care at £49/month or £499/year. The same backend
+            GardensSorted is the live first vertical — Yorkshire garden care at £29.95/month or £299.95/year. The same backend
             powers customer signup, Stripe payments, visit generation, provider claiming, admin CRM, and AI support chat.
           </p>
           <p>

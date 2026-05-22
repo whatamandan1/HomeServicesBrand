@@ -137,7 +137,7 @@ Local development should use **Stripe CLI** (`stripe listen`), not a Dashboard U
 ## Creating Stripe Prices (production)
 
 1. Stripe Dashboard → **Products** → Add product "GardensSorted Essential Monthly"
-2. Add recurring price £49/month
+2. Add recurring price £29.95/month
 3. Copy Price ID (`price_...`) → `Stripe__Prices__EssentialMonthly` on Railway
-4. Repeat for annual £499/year → `Stripe__Prices__EssentialAnnual`
+4. Repeat for annual £299.95/year → `Stripe__Prices__EssentialAnnual`
 5. Redeploy API — Price IDs sync to plans on startup

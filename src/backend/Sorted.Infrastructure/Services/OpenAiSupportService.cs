@@ -176,7 +176,7 @@ public class OpenAiSupportService(
         var planLines = plans.Count > 0
             ? string.Join("\n", plans.Select(p =>
                 $"- {p.Name}: £{p.PriceGbp}/{(p.BillingInterval == SubscriptionBillingInterval.Monthly ? "month" : "year")}, {p.MinimumTermMonths}-month minimum. {p.Description}"))
-            : "- Essential Monthly: £49/month, 3-month minimum\n- Essential Annual: £499/year, 12-month minimum";
+            : "- Essential Monthly: £29.95/month, 3-month minimum\n- Essential Annual: £299.95/year, 12-month minimum";
 
         return $"""
             Visitor status: Not signed in (pre-sales / general questions)

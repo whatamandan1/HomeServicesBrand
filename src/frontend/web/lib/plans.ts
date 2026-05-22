@@ -8,7 +8,7 @@ export const FALLBACK_PLANS: SubscriptionPlan[] = [
     description: "Weekly garden maintenance, 3-month minimum.",
     billingInterval: "Monthly",
     minimumTermMonths: 3,
-    priceGbp: 49,
+    priceGbp: 29.95,
   },
   {
     id: "fallback-annual",
@@ -16,7 +16,7 @@ export const FALLBACK_PLANS: SubscriptionPlan[] = [
     description: "Weekly garden maintenance, 12-month commitment, discounted.",
     billingInterval: "Annual",
     minimumTermMonths: 12,
-    priceGbp: 499,
+    priceGbp: 299.95,
   },
 ];
 

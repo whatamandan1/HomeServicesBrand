@@ -73,7 +73,7 @@ export default function HomePage() {
             <div className="mt-8 flex flex-col gap-3 text-sm text-gardens-accent/90 sm:mt-10 sm:flex-row sm:flex-wrap sm:gap-6">
               <span className="flex items-center gap-2"><ShieldCheck className="h-4 w-4" /> Vetted gardeners</span>
               <span className="flex items-center gap-2"><CalendarCheck className="h-4 w-4" /> Recurring visits</span>
-              <span className="flex items-center gap-2"><MapPin className="h-4 w-4" /> From £49/month</span>
+              <span className="flex items-center gap-2"><MapPin className="h-4 w-4" /> From £29.95/month</span>
             </div>
           </div>
 
