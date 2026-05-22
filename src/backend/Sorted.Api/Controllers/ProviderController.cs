@@ -7,14 +7,17 @@ using Sorted.Core.Entities;
 using Sorted.Core.Interfaces;
 using Sorted.Core.Enums;
 using Sorted.Infrastructure.Data;
-using Sorted.Infrastructure.Services;
 
 namespace Sorted.Api.Controllers;
 
 [ApiController]
 [Route("api/provider")]
 [Authorize(Roles = nameof(UserRole.Provider))]
-public class ProviderController(SortedDbContext db, ISmsService sms, IWorkflowLogger workflow) : ControllerBase
+public class ProviderController(
+    SortedDbContext db,
+    ISmsService sms,
+    IWorkflowLogger workflow,
+    IProviderCoverageService coverage) : ControllerBase
 {
     private async Task<Provider?> GetProviderAsync(CancellationToken ct)
     {
@@ -33,7 +36,13 @@ public class ProviderController(SortedDbContext db, ISmsService sms, IWorkflowLo
         return Ok(new ProviderProfileResponse(
             provider.User.Email,
             provider.IsApproved,
-            provider.Territories.Select(t => t.PostcodeSector).OrderBy(s => s).ToList()));
+            provider.CoveragePostcode,
+            provider.CoverageRadiusMiles,
+            provider.Territories
+                .Where(t => !t.IsDeleted)
+                .Select(t => t.PostcodeSector)
+                .OrderBy(s => s, StringComparer.OrdinalIgnoreCase)
+                .ToList()));
     }
 
     [HttpGet("visits/open")]
@@ -43,17 +52,27 @@ public class ProviderController(SortedDbContext db, ISmsService sms, IWorkflowLo
         if (provider is null) return NotFound();
         if (!provider.IsApproved) return Forbid();
 
-        var sectors = provider.Territories.Select(t => t.PostcodeSector).ToHashSet(StringComparer.OrdinalIgnoreCase);
         var visits = await db.JobVisits.AsNoTracking()
             .Include(v => v.Property)
             .Where(v => v.Status == VisitStatus.OpenForClaim && !v.IsDeleted)
             .OrderBy(v => v.ScheduledDate)
             .ToListAsync(ct);
 
-        var filtered = visits
-            .Where(v => sectors.Contains(VisitSchedulingService.PostcodeSector(v.Property.Postcode)))
-            .Select(v => new JobVisitResponse(v.Id, v.ScheduledDate, v.AvailabilityWindow, v.Status, v.Property.Postcode, null))
-            .ToList();
+        var filtered = new List<JobVisitResponse>();
+        foreach (var visit in visits)
+        {
+            if (!await coverage.IsPropertyWithinCoverageAsync(provider, visit.Property, ct))
+                continue;
+
+            filtered.Add(new JobVisitResponse(
+                visit.Id,
+                visit.ScheduledDate,
+                visit.AvailabilityWindow,
+                visit.Status,
+                visit.Property.Postcode,
+                null));
+        }
+
         return Ok(filtered);
     }
 
@@ -71,9 +90,8 @@ public class ProviderController(SortedDbContext db, ISmsService sms, IWorkflowLo
             .FirstOrDefaultAsync(v => v.Id == request.VisitId && v.Status == VisitStatus.OpenForClaim, ct);
         if (visit is null) return NotFound();
 
-        var sectors = provider.Territories.Select(t => t.PostcodeSector).ToList();
-        if (!sectors.Contains(VisitSchedulingService.PostcodeSector(visit.Property.Postcode)))
-            return BadRequest(new { error = "Visit is outside your territory." });
+        if (!await coverage.IsPropertyWithinCoverageAsync(provider, visit.Property, ct))
+            return BadRequest(new { error = "Visit is outside your coverage area." });
 
         var conflict = await db.JobVisits.AnyAsync(v =>
             v.AssignedProviderId == provider.Id &&

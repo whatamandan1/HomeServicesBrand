@@ -98,7 +98,9 @@ export default function ProviderPage() {
     );
   }
 
-  const sectors = profile?.postcodeSectors ?? [];
+  const coveragePostcode = profile?.coveragePostcode;
+  const coverageRadiusMiles = profile?.coverageRadiusMiles;
+  const coveredOutcodes = profile?.coveredOutcodes ?? [];
   const upcoming = mine.filter((v) => isActiveVisit(v.status));
   const done = mine.filter((v) => normalizeVisitStatus(v.status) === "completed");
 
@@ -111,10 +113,21 @@ export default function ProviderPage() {
           Your account is pending admin approval — you will not see open jobs until approved.
         </p>
       )}
-      {sectors.length > 0 && (
-        <p className="text-sm text-stone-600">
-          Your postcode sectors: <strong>{sectors.join(", ")}</strong>
-        </p>
+      {coveragePostcode && (
+        <div className="text-sm text-stone-600">
+          <p>
+            Your coverage area: <strong>{coveragePostcode}</strong>, within{" "}
+            <strong>{coverageRadiusMiles} miles</strong>
+          </p>
+          {coveredOutcodes.length > 0 && (
+            <p className="mt-1 text-xs text-stone-500">
+              Postcode areas: {coveredOutcodes.slice(0, 24).join(", ")}
+              {coveredOutcodes.length > 24
+                ? ` and ${coveredOutcodes.length - 24} more`
+                : ""}
+            </p>
+          )}
+        </div>
       )}
       {notice && (
         <p className="rounded-lg border border-green-200 bg-green-50 px-4 py-3 text-sm text-green-900">
@@ -127,9 +140,10 @@ export default function ProviderPage() {
         <h2 className="font-semibold">Open in your area</h2>
         {open.length === 0 ? (
           <div className="mt-2 space-y-2 text-sm text-stone-500">
-            <p>No open visits in your postcode sectors right now.</p>
+            <p>No open visits in your coverage area right now.</p>
             <p>
-              Demo provider covers <strong>LS1</strong>, <strong>LS2</strong>, and <strong>WF1</strong>.
+              Demo provider covers jobs within <strong>15 miles</strong> of{" "}
+              <strong>LS1 4AP</strong>.
             </p>
           </div>
         ) : (

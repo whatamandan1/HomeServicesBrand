@@ -4,6 +4,8 @@ using Sorted.Core.Enums;
 using Sorted.Core.Interfaces;
 using Sorted.Infrastructure.Data;
 
+using Sorted.Core.Geo;
+
 namespace Sorted.Infrastructure.Services;
 
 public class VisitSchedulingService(SortedDbContext db, IWorkflowLogger workflow) : IVisitSchedulingService
@@ -56,9 +58,5 @@ public class VisitSchedulingService(SortedDbContext db, IWorkflowLogger workflow
         await workflow.LogAsync("dispatch", "visits_opened", null, null, new { count = visits.Count }, ct);
     }
 
-    public static string PostcodeSector(string postcode)
-    {
-        var normalized = postcode.Replace(" ", "", StringComparison.Ordinal).ToUpperInvariant();
-        return normalized.Length >= 3 ? normalized[..3] : normalized;
-    }
+    public static string PostcodeSector(string postcode) => PostcodeFormat.Outcode(postcode);
 }

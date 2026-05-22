@@ -43,6 +43,8 @@ public class CustomerProperty : AuditableEntity
     public string? Line2 { get; set; }
     public string City { get; set; } = string.Empty;
     public string Postcode { get; set; } = string.Empty;
+    public double? Latitude { get; set; }
+    public double? Longitude { get; set; }
     public string Country { get; set; } = "GB";
     public GardenSize GardenSize { get; set; }
     public string? AccessNotes { get; set; }
@@ -82,6 +84,10 @@ public class Provider : AuditableEntity
     public UserAccount User { get; set; } = null!;
     public bool IsApproved { get; set; }
     public string? Bio { get; set; }
+    public string? CoveragePostcode { get; set; }
+    public double? CoverageLatitude { get; set; }
+    public double? CoverageLongitude { get; set; }
+    public double CoverageRadiusMiles { get; set; } = 10;
     public ICollection<ProviderTerritory> Territories { get; set; } = [];
 }
 

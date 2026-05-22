@@ -33,7 +33,12 @@ public record ClaimVisitRequest(Guid VisitId);
 
 public record RescheduleVisitRequest(DateTime ScheduledDate);
 
-public record ProviderProfileResponse(string Email, bool IsApproved, IReadOnlyList<string> PostcodeSectors);
+public record ProviderProfileResponse(
+    string Email,
+    bool IsApproved,
+    string? CoveragePostcode,
+    double CoverageRadiusMiles,
+    IReadOnlyList<string> CoveredOutcodes);
 
 public record SupportChatRequest(string Message, Guid? ThreadId);
 

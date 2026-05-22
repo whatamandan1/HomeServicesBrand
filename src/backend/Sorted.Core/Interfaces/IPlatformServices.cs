@@ -1,5 +1,6 @@
 using Sorted.Core.Dtos;
 using Sorted.Core.Entities;
+using Sorted.Core.Geo;
 
 namespace Sorted.Core.Interfaces;
 
@@ -46,6 +47,28 @@ public interface IVisitManagementService
 {
     Task<JobVisitResponse> CancelVisitAsync(Guid visitId, Guid? owningCustomerId, bool allowInProgress, CancellationToken ct = default);
     Task<JobVisitResponse> RescheduleVisitAsync(Guid visitId, DateTime scheduledDate, Guid? owningCustomerId, bool allowInProgress, CancellationToken ct = default);
+}
+
+public interface IPostcodeGeocodingService
+{
+    Task<GeocodedPostcode?> LookupAsync(string postcode, CancellationToken ct = default);
+    Task<IReadOnlyList<GeocodedPostcode>> NearPointAsync(
+        double latitude,
+        double longitude,
+        int radiusMeters,
+        int limit,
+        CancellationToken ct = default);
+    Task<IReadOnlyList<GeocodedPostcode>> NearestPostcodesAsync(
+        string postcode,
+        int radiusMeters,
+        int limit,
+        CancellationToken ct = default);
+}
+
+public interface IProviderCoverageService
+{
+    Task SyncTerritoriesAsync(Provider provider, CancellationToken ct = default);
+    Task<bool> IsPropertyWithinCoverageAsync(Provider provider, CustomerProperty property, CancellationToken ct = default);
 }
 
 public interface IWorkflowLogger

@@ -56,7 +56,13 @@ public class AdminController(
                 p.User.Email,
                 name = p.User.FirstName + " " + p.User.LastName,
                 p.IsApproved,
-                sectors = p.Territories.Select(t => t.PostcodeSector).ToList()
+                coveragePostcode = p.CoveragePostcode,
+                coverageRadiusMiles = p.CoverageRadiusMiles,
+                coveredOutcodes = p.Territories
+                    .Where(t => !t.IsDeleted)
+                    .Select(t => t.PostcodeSector)
+                    .OrderBy(s => s)
+                    .ToList()
             })
             .ToListAsync(ct);
         return Ok(list);

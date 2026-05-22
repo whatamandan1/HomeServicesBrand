@@ -158,7 +158,18 @@ export default function AdminPage() {
                 <div className="font-medium">{p.name}</div>
                 <div className="text-stone-500">{p.email}</div>
                 <div className="text-xs text-stone-400">
-                  Sectors: {p.sectors?.join(", ") || "—"}
+                  Coverage:{" "}
+                  {p.coveragePostcode
+                    ? `${p.coveragePostcode}, ${p.coverageRadiusMiles} miles`
+                    : "—"}
+                  {p.coveredOutcodes?.length ? (
+                    <span className="block text-stone-400">
+                      {p.coveredOutcodes.slice(0, 12).join(", ")}
+                      {p.coveredOutcodes.length > 12
+                        ? ` +${p.coveredOutcodes.length - 12} more`
+                        : ""}
+                    </span>
+                  ) : null}
                 </div>
               </div>
               <div className="flex items-center gap-3">

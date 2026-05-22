@@ -9,7 +9,7 @@ const benefits = [
   {
     icon: MapPin,
     title: "Work in your area",
-    body: "Claim visits in postcode sectors you choose — no driving across the county for one job.",
+    body: "Claim visits within a radius of your base postcode — no driving across the county for one job.",
   },
   {
     icon: Calendar,

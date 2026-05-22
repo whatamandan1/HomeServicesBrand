@@ -46,13 +46,17 @@ export type AdminProvider = {
   email: string;
   name: string;
   isApproved: boolean;
-  sectors: string[];
+  coveragePostcode: string | null;
+  coverageRadiusMiles: number;
+  coveredOutcodes: string[];
 };
 
 export type ProviderProfile = {
   email: string;
   isApproved: boolean;
-  postcodeSectors: string[];
+  coveragePostcode: string | null;
+  coverageRadiusMiles: number;
+  coveredOutcodes: string[];
 };
 
 export type Escalation = {
@@ -135,7 +139,8 @@ export const api = {
     firstName: string;
     lastName: string;
     phone: string;
-    postcodeSectors: string[];
+    coveragePostcode: string;
+    coverageRadiusMiles: number;
   }) =>
     request<AuthResponse>("/api/auth/register/provider", {
       method: "POST",

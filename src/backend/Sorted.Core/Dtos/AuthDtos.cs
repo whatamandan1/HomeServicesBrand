@@ -23,7 +23,8 @@ public record RegisterProviderRequest(
     string FirstName,
     string LastName,
     string Phone,
-    IReadOnlyList<string> PostcodeSectors);
+    string CoveragePostcode,
+    double CoverageRadiusMiles);
 
 public record LoginRequest(string Email, string Password);
 

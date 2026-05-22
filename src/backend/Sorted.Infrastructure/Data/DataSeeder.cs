@@ -17,7 +17,12 @@ public static class DataSeeder
     public const string ProviderPassword = "Provider123!";
     public const string DemoCustomerEmail = "demo@gardenssorted.local";
     public const string DemoCustomerPassword = "Demo123!";
-    private static readonly string[] DemoProviderSectors = ["LS1", "LS2", "WF1"];
+    private const string DemoCoveragePostcode = "LS1 4AP";
+    private const double DemoCoverageLatitude = 53.7991;
+    private const double DemoCoverageLongitude = -1.5478;
+    private const double DemoCoverageRadiusMiles = 15;
+    private const double DemoPropertyLatitude = 53.7991;
+    private const double DemoPropertyLongitude = -1.5478;
 
     public static async Task SeedAsync(SortedDbContext db, ILogger logger, CancellationToken ct = default)
     {
@@ -39,7 +44,7 @@ public static class DataSeeder
         ILogger logger,
         CancellationToken ct = default)
     {
-        await EnsureDemoProviderTerritoriesAsync(db, logger, ct);
+        await EnsureDemoProviderCoverageAsync(db, logger, ct);
         await scheduling.OpenVisitsForDispatchAsync(ct);
         await EnsureDemoOpenVisitsAsync(db, logger, ct);
     }
@@ -116,44 +121,42 @@ public static class DataSeeder
             {
                 UserId = providerUser.Id,
                 IsApproved = true,
-                Bio = "Experienced gardener covering Leeds and Wakefield."
+                Bio = "Experienced gardener covering Leeds and Wakefield.",
+                CoveragePostcode = DemoCoveragePostcode,
+                CoverageLatitude = DemoCoverageLatitude,
+                CoverageLongitude = DemoCoverageLongitude,
+                CoverageRadiusMiles = DemoCoverageRadiusMiles
             };
             db.Providers.Add(provider);
             await db.SaveChangesAsync(ct);
 
-            db.ProviderTerritories.AddRange(
-                DemoProviderSectors.Select(s => new ProviderTerritory { ProviderId = provider.Id, PostcodeSector = s }));
             logger.LogInformation("Created demo provider user {Email}", ProviderEmail);
         }
 
         await db.SaveChangesAsync(ct);
-        await EnsureDemoProviderTerritoriesAsync(db, logger, ct);
+        await EnsureDemoProviderCoverageAsync(db, logger, ct);
     }
 
-    private static async Task EnsureDemoProviderTerritoriesAsync(SortedDbContext db, ILogger logger, CancellationToken ct)
+    private static async Task EnsureDemoProviderCoverageAsync(SortedDbContext db, ILogger logger, CancellationToken ct)
     {
         var provider = await db.Providers
             .Include(p => p.User)
-            .Include(p => p.Territories)
             .FirstOrDefaultAsync(p => p.User.Email == ProviderEmail && !p.IsDeleted, ct);
         if (provider is null)
             return;
 
-        var existing = provider.Territories.Select(t => t.PostcodeSector).ToHashSet(StringComparer.OrdinalIgnoreCase);
-        var added = false;
-        foreach (var sector in DemoProviderSectors)
-        {
-            if (existing.Contains(sector))
-                continue;
-            db.ProviderTerritories.Add(new ProviderTerritory { ProviderId = provider.Id, PostcodeSector = sector });
-            added = true;
-        }
+        if (provider.CoverageLatitude is not null && provider.CoverageLongitude is not null)
+            return;
 
-        if (added)
-        {
-            await db.SaveChangesAsync(ct);
-            logger.LogInformation("Backfilled demo provider territories: {Sectors}", string.Join(", ", DemoProviderSectors));
-        }
+        provider.CoveragePostcode = DemoCoveragePostcode;
+        provider.CoverageLatitude = DemoCoverageLatitude;
+        provider.CoverageLongitude = DemoCoverageLongitude;
+        provider.CoverageRadiusMiles = DemoCoverageRadiusMiles;
+        await db.SaveChangesAsync(ct);
+        logger.LogInformation(
+            "Backfilled demo provider coverage: {Postcode}, {Radius} miles",
+            DemoCoveragePostcode,
+            DemoCoverageRadiusMiles);
     }
 
     private static async Task EnsureDemoOpenVisitsAsync(SortedDbContext db, ILogger logger, CancellationToken ct)
@@ -163,7 +166,8 @@ public static class DataSeeder
             .Where(v => v.Status == VisitStatus.OpenForClaim && !v.IsDeleted)
             .ToListAsync(ct);
 
-        if (openVisits.Any(v => DemoProviderSectors.Contains(VisitSchedulingService.PostcodeSector(v.Property.Postcode))))
+        if (openVisits.Any(v =>
+                string.Equals(v.Property.Postcode, DemoCoveragePostcode, StringComparison.OrdinalIgnoreCase)))
             return;
 
         var brand = await db.Brands.FirstOrDefaultAsync(b => b.Code == "gardens-sorted", ct);
@@ -205,7 +209,9 @@ public static class DataSeeder
                 CustomerId = customer.Id,
                 Line1 = "1 Demo Street",
                 City = "Leeds",
-                Postcode = "LS1 4AP",
+                Postcode = DemoCoveragePostcode,
+                Latitude = DemoPropertyLatitude,
+                Longitude = DemoPropertyLongitude,
                 GardenSize = GardenSize.Medium,
                 IsPrimary = true
             };

@@ -6,20 +6,11 @@ import Link from "next/link";
 import { api } from "@/lib/api";
 import { saveAuth } from "@/lib/auth-storage";
 
-function parsePostcodeSectors(input: string): string[] {
-  const sectors = input
-    .split(/[\n,;]+/)
-    .map((s) => s.trim().toUpperCase().replace(/\s+/g, ""))
-    .filter(Boolean)
-    .map((s) => (s.length >= 3 ? s.slice(0, 3) : s));
-
-  return [...new Set(sectors)];
-}
-
 export function ProviderSignupForm() {
   const router = useRouter();
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+  const [radius, setRadius] = useState(10);
 
   async function onSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -27,10 +18,10 @@ export function ProviderSignupForm() {
     setLoading(true);
 
     const fd = new FormData(e.currentTarget);
-    const sectors = parsePostcodeSectors(String(fd.get("sectors") ?? ""));
+    const coveragePostcode = String(fd.get("coveragePostcode") ?? "").trim();
 
-    if (sectors.length === 0) {
-      setError("Enter at least one postcode sector (e.g. LS1, LS2).");
+    if (!coveragePostcode) {
+      setError("Enter your base postcode.");
       setLoading(false);
       return;
     }
@@ -42,7 +33,8 @@ export function ProviderSignupForm() {
         email: String(fd.get("email")),
         password: String(fd.get("password")),
         phone: String(fd.get("phone")),
-        postcodeSectors: sectors,
+        coveragePostcode,
+        coverageRadiusMiles: radius,
       });
       saveAuth(auth);
       router.push("/provider");
@@ -85,17 +77,30 @@ export function ProviderSignupForm() {
             <input name="phone" type="tel" required autoComplete="tel" className="field-input" />
           </label>
           <label className="block text-sm font-medium text-stone-700">
-            Postcode sectors you cover
-            <textarea
-              name="sectors"
+            Base postcode
+            <input
+              name="coveragePostcode"
               required
-              rows={3}
-              placeholder="LS1, LS2, WF1"
-              className="field-input resize-y"
+              placeholder="LS1 4AP"
+              autoComplete="postal-code"
+              className="field-input"
+            />
+          </label>
+          <label className="block text-sm font-medium text-stone-700">
+            Coverage radius: {radius} miles
+            <input
+              name="coverageRadiusMiles"
+              type="range"
+              min={1}
+              max={50}
+              value={radius}
+              onChange={(e) => setRadius(Number(e.target.value))}
+              className="mt-2 w-full accent-gardens-primary"
             />
           </label>
           <p className="text-xs text-stone-500">
-            Use Yorkshire outward codes (first part of postcode), separated by commas — e.g. LS1, LS2, WF1.
+            Jobs in postcode areas within this distance of your base postcode will appear in your open visits list.
+            Areas that partially overlap your radius are included.
           </p>
           {error && <p className="text-sm text-red-600">{error}</p>}
           <button type="submit" disabled={loading} className="btn-primary w-full">

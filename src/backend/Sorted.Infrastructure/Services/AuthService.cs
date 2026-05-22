@@ -7,7 +7,14 @@ using Sorted.Infrastructure.Data;
 
 namespace Sorted.Infrastructure.Services;
 
-public class AuthService(SortedDbContext db, JwtTokenService jwt, IWorkflowLogger workflow, IEmailService email, ISmsService sms) : IAuthService
+public class AuthService(
+    SortedDbContext db,
+    JwtTokenService jwt,
+    IWorkflowLogger workflow,
+    IEmailService email,
+    ISmsService sms,
+    IPostcodeGeocodingService geocoding,
+    IProviderCoverageService coverage) : IAuthService
 {
     public async Task<AuthResponse> RegisterCustomerAsync(RegisterCustomerRequest request, CancellationToken ct = default)
     {
@@ -59,6 +66,14 @@ public class AuthService(SortedDbContext db, JwtTokenService jwt, IWorkflowLogge
         db.CustomerSubscriptions.Add(subscription);
         await db.SaveChangesAsync(ct);
 
+        var geo = await geocoding.LookupAsync(property.Postcode, ct);
+        if (geo is not null)
+        {
+            property.Latitude = geo.Latitude;
+            property.Longitude = geo.Longitude;
+            await db.SaveChangesAsync(ct);
+        }
+
         await workflow.LogAsync("customer_signup", "registered", nameof(Customer), customer.Id, new { user.Email, plan.Name }, ct);
         await email.SendWelcomeEmailAsync(user.Email, user.FirstName, ct);
         if (!string.IsNullOrWhiteSpace(user.Phone))
@@ -73,6 +88,13 @@ public class AuthService(SortedDbContext db, JwtTokenService jwt, IWorkflowLogge
         if (await db.Users.AnyAsync(u => u.Email == request.Email, ct))
             throw new InvalidOperationException("Email already registered.");
 
+        var radius = request.CoverageRadiusMiles;
+        if (radius is < 1 or > 50)
+            throw new InvalidOperationException("Coverage radius must be between 1 and 50 miles.");
+
+        var geo = await geocoding.LookupAsync(request.CoveragePostcode, ct)
+            ?? throw new InvalidOperationException("Could not find that postcode. Check it is a valid UK postcode.");
+
         var user = new UserAccount
         {
             Email = request.Email.Trim().ToLowerInvariant(),
@@ -85,24 +107,27 @@ public class AuthService(SortedDbContext db, JwtTokenService jwt, IWorkflowLogge
         db.Users.Add(user);
         await db.SaveChangesAsync(ct);
 
-        var provider = new Provider { UserId = user.Id, IsApproved = false };
+        var provider = new Provider
+        {
+            UserId = user.Id,
+            IsApproved = false,
+            CoveragePostcode = geo.Postcode,
+            CoverageLatitude = geo.Latitude,
+            CoverageLongitude = geo.Longitude,
+            CoverageRadiusMiles = radius
+        };
         db.Providers.Add(provider);
         await db.SaveChangesAsync(ct);
 
-        if (request.PostcodeSectors is null || request.PostcodeSectors.Count == 0)
-            throw new InvalidOperationException("At least one postcode sector is required.");
+        await coverage.SyncTerritoriesAsync(provider, ct);
 
-        foreach (var sector in request.PostcodeSectors.Distinct(StringComparer.OrdinalIgnoreCase))
-        {
-            db.ProviderTerritories.Add(new ProviderTerritory
-            {
-                ProviderId = provider.Id,
-                PostcodeSector = sector.Trim().ToUpperInvariant()
-            });
-        }
-        await db.SaveChangesAsync(ct);
-
-        await workflow.LogAsync("provider_onboarding", "registered", nameof(Provider), provider.Id, new { user.Email }, ct);
+        await workflow.LogAsync(
+            "provider_onboarding",
+            "registered",
+            nameof(Provider),
+            provider.Id,
+            new { user.Email, geo.Postcode, radius },
+            ct);
 
         var (token, expires) = jwt.CreateToken(user, null);
         return new AuthResponse(token, expires, user.Id, user.Email, user.Role, null);

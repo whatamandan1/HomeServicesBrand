@@ -19,8 +19,18 @@ public class DatabaseMigrationHostedService(
             var db = scope.ServiceProvider.GetRequiredService<SortedDbContext>();
             var configuration = scope.ServiceProvider.GetService<IConfiguration>();
             var scheduling = scope.ServiceProvider.GetRequiredService<IVisitSchedulingService>();
+            var coverage = scope.ServiceProvider.GetRequiredService<IProviderCoverageService>();
             await DatabaseInitializer.InitializeAsync(db, logger, configuration, cancellationToken);
             await DataSeeder.EnsureDemoDispatchDataAsync(db, scheduling, logger, cancellationToken);
+
+            var demoProvider = await db.Providers
+                .Include(p => p.User)
+                .Include(p => p.Territories)
+                .FirstOrDefaultAsync(
+                    p => p.User.Email == DataSeeder.ProviderEmail && !p.IsDeleted,
+                    cancellationToken);
+            if (demoProvider?.CoverageLatitude is not null && demoProvider.Territories.Count == 0)
+                await coverage.SyncTerritoriesAsync(demoProvider, cancellationToken);
         }
         catch (Exception ex)
         {
