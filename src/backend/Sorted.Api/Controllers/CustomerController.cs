@@ -53,7 +53,8 @@ public class CustomerController(
         }
         catch (Exception ex)
         {
-            return BadRequest(new { error = ex.Message });
+            var detail = ex.GetBaseException().Message;
+            return BadRequest(new { error = detail });
         }
     }
 
