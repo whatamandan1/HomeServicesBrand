@@ -1,4 +1,5 @@
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Diagnostics;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Sorted.Core.Interfaces;
@@ -23,6 +24,8 @@ public static class DependencyInjection
         var connectionString = DatabaseConfiguration.ResolveConnectionString(configuration);
         services.AddDbContext<SortedDbContext>(options =>
         {
+            options.ConfigureWarnings(w => w.Ignore(RelationalEventId.PendingModelChangesWarning));
+
             if (DatabaseConfiguration.IsPostgres(connectionString))
                 options.UseNpgsql(connectionString);
             else
