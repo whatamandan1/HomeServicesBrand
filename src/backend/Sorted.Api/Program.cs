@@ -96,24 +96,56 @@ app.MapGet("/health/live", () => Results.Ok(new { status = "ok" }));
 app.MapGet("/health", async (SortedDbContext db, IConfiguration config) =>
 {
     var cs = DatabaseConfiguration.ResolveConnectionString(config);
-    var canConnect = false;
-    string? dbError = null;
-    try
+    if (!DatabaseConfiguration.IsPostgres(cs))
     {
-        canConnect = await db.Database.CanConnectAsync();
+        return Results.Ok(new
+        {
+            status = "ok",
+            database = "sqlite",
+            databaseSource = DatabaseConfiguration.DescribeSource(config),
+            canConnect = true,
+            userCount = await db.Users.CountAsync(),
+            demoAdminExists = await db.Users.AnyAsync(u => u.Email == DataSeeder.AdminEmail),
+        });
     }
-    catch (Exception ex)
+
+    var (canConnect, dbError, host, sslMode) = await DatabaseConfiguration.TestConnectionAsync(cs);
+    var diagnostics = DatabaseConfiguration.DescribeDiagnostics(config);
+    var parsedHost = config["DATABASE_URL"]?.Contains("railway.internal", StringComparison.OrdinalIgnoreCase) == true;
+    var hint = canConnect
+        ? null
+        : parsedHost
+            ? "Private URLs (*.railway.internal) only work when API and Postgres are in the SAME Railway project. Use DATABASE_PUBLIC_URL from Postgres, or move Postgres into the API project."
+            : "Use DATABASE_PUBLIC_URL (cross-project) or link Postgres in the same project via PGHOST/PGUSER/PGPASSWORD.";
+
+    var userCount = 0;
+    var demoAdminExists = false;
+    if (canConnect)
     {
-        dbError = ex.Message;
+        try
+        {
+            userCount = await db.Users.CountAsync();
+            demoAdminExists = await db.Users.AnyAsync(u => u.Email == DataSeeder.AdminEmail);
+        }
+        catch
+        {
+            // db context may not be ready yet
+        }
     }
 
     return Results.Ok(new
     {
         status = "ok",
-        database = DatabaseConfiguration.IsPostgres(cs) ? "postgresql" : "sqlite",
+        database = "postgresql",
         databaseSource = DatabaseConfiguration.DescribeSource(config),
+        diagnostics,
         canConnect,
+        host,
+        sslMode,
         dbError,
+        hint,
+        userCount,
+        demoAdminExists,
     });
 });
 app.MapControllers();
@@ -135,23 +167,22 @@ startupLogger.LogInformation(
     sendGridConfigured ? "ok" : "missing",
     openAiConfigured ? "ok" : "missing");
 
-_ = InitializeDatabaseAsync(app.Services, startupLogger);
+try
+{
+    await InitializeDatabaseAsync(app.Services, startupLogger);
+}
+catch (Exception ex)
+{
+    startupLogger.LogError(ex, "Database initialization failed at startup");
+}
 
 app.Run();
 
 static async Task InitializeDatabaseAsync(IServiceProvider services, ILogger<Program> logger)
 {
-    try
-    {
-        await Task.Delay(250);
-        using var scope = services.CreateScope();
-        var db = scope.ServiceProvider.GetRequiredService<SortedDbContext>();
-        await db.Database.EnsureCreatedAsync();
-        await DataSeeder.SeedAsync(db, logger);
-        logger.LogInformation("Database initialized successfully");
-    }
-    catch (Exception ex)
-    {
-        logger.LogError(ex, "Database initialization failed — check DATABASE_URL / Postgres connection");
-    }
+    using var scope = services.CreateScope();
+    var db = scope.ServiceProvider.GetRequiredService<SortedDbContext>();
+    await db.Database.EnsureCreatedAsync();
+    await DataSeeder.SeedAsync(db, logger);
+    logger.LogInformation("Database initialized successfully");
 }

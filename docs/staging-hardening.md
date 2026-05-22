@@ -6,31 +6,18 @@ Staging works. These steps make it **production-ready for pilots**.
 
 ## 1. PostgreSQL on Railway (keeps data across redeploys)
 
+> **Important:** API and Postgres must be in the **same Railway project** to use private URLs (`*.railway.internal`).  
+> If they are in **different projects**, use **`DATABASE_PUBLIC_URL`** (see cross-project section below).
+
 Right now SQLite on Railway **wipes customers on every redeploy**.
 
-### Setup
+### Setup (same project — recommended)
 
-1. Railway project → **+ New** → **Database** → **PostgreSQL**
+1. Railway project → **+ New** → **Database** → **PostgreSQL** (in the **same project** as your API)
 2. Click your **API service** → **Variables**
-3. Add **one** of these (pick the method that works in your UI):
+3. Add **one** of these:
 
-**Option A — Variable reference (preferred)**
-
-| Name | Value |
-|------|--------|
-| `DATABASE_URL` | `${{Postgres.DATABASE_URL}}` |
-
-Replace `Postgres` with the **exact** name on your Postgres service box (case-sensitive).
-
-**Option B — Copy the URL directly**
-
-1. Postgres service → **Variables** → reveal **`DATABASE_URL`**
-2. Copy the full `postgresql://...` value
-3. API service → **Variables** → new variable **`DATABASE_URL`** → paste the value
-
-**Option C — Individual PG variables (if Railway links them)**
-
-Add references for each:
+**Option A — PG variables (best)**
 
 ```
 PGHOST=${{Postgres.PGHOST}}
@@ -40,7 +27,34 @@ PGPASSWORD=${{Postgres.PGPASSWORD}}
 PGDATABASE=${{Postgres.PGDATABASE}}
 ```
 
-4. **Redeploy** the API (required after changing variables)
+**Option B — Private DATABASE_URL**
+
+| Name | Value |
+|------|--------|
+| `DATABASE_URL` | `${{Postgres.DATABASE_URL}}` |
+
+(URL must contain `railway.internal`)
+
+4. **Redeploy** the API
+
+### Cross-project setup (API and Postgres in different projects)
+
+Private URLs **will not work**. Use the **public** connection string:
+
+1. Open **Postgres project** → Postgres service → **Variables**
+2. Copy **`DATABASE_PUBLIC_URL`** (host looks like `*.proxy.rlwy.net`)
+3. Open **API project** → API service → **Variables**
+4. Set:
+
+| Name | Value |
+|------|--------|
+| `DATABASE_URL` | paste full `DATABASE_PUBLIC_URL` value |
+
+5. Redeploy API
+
+`/health` should show `canConnect: true` and host `*.rlwy.net`.
+
+**Long term:** move Postgres into the API project (or vice versa) so you can use private networking (faster, no public exposure).
 
 ### Verify
 
