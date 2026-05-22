@@ -10,7 +10,7 @@ export function MarketingFooter() {
             <Image src="/logo-white.svg" alt="GardensSorted" width={272} height={48} className="h-10 w-auto" />
           </Link>
           <p className="mt-4 max-w-sm text-sm text-gardens-accent/90">
-            Recurring garden care for Yorkshire homes. Part of the Sorted platform — subscription home services, done properly.
+            Recurring garden care for Yorkshire homes — subscribe online, we handle the rest.
           </p>
         </div>
         <div>
@@ -24,8 +24,9 @@ export function MarketingFooter() {
         <div>
           <p className="text-sm font-semibold text-white">Company</p>
           <ul className="mt-3 space-y-2 text-sm text-gardens-accent/80">
-            <li><a href="/providers" className="hover:text-white">Become a gardener</a></li>
-            <li><a href="/login" className="hover:text-white">Log in</a></li>
+            <li><Link href="/providers" className="hover:text-white">Become a gardener</Link></li>
+            <li><Link href="/login" className="hover:text-white">Log in</Link></li>
+            <li><Link href="/about" className="hover:text-white">About Sorted</Link></li>
           </ul>
         </div>
       </div>

@@ -2,14 +2,13 @@ import Link from "next/link";
 import {
   CalendarCheck,
   MapPin,
-  MessageCircle,
   ShieldCheck,
   Sparkles,
   Users,
 } from "lucide-react";
 import { Button, Section } from "@/components/marketing/ui";
 import { PricingSection } from "@/components/marketing/PricingSection";
-import { HeroVisual } from "@/components/marketing/HeroVisual";
+import { HeroImage } from "@/components/marketing/HeroImage";
 import { SocialProofSection } from "@/components/marketing/SocialProofSection";
 
 const steps = [
@@ -25,8 +24,8 @@ const steps = [
   },
   {
     icon: Users,
-    title: "Local gardeners claim work",
-    body: "Approved providers in your postcode sector claim visits. You always know who's coming.",
+    title: "Local gardeners visit",
+    body: "Approved gardeners in your area take on your visits. You always know who's coming and when.",
   },
 ];
 
@@ -37,7 +36,7 @@ const faqs = [
   },
   {
     q: "Can I cancel?",
-    a: "Plans have a minimum term. After that, manage changes through your customer portal or support chat.",
+    a: "Plans have a minimum term. After that, manage changes through your account or get in touch with our team.",
   },
   {
     q: "Where do you operate?",
@@ -60,7 +59,7 @@ export default function HomePage() {
               Garden care, sorted.
             </h1>
             <p className="mt-6 max-w-lg text-lg text-gardens-accent/95 text-balance">
-              Subscribe once. We handle scheduling, dispatch, and your local gardener — so your garden stays sorted all year.
+              Subscribe once. We handle scheduling and your local gardener — so your garden stays sorted all year.
             </p>
             <div className="mt-8 flex flex-wrap gap-4">
               <Button href="/signup" className="!bg-white !text-gardens-dark hover:!bg-gardens-light">
@@ -72,12 +71,12 @@ export default function HomePage() {
             </div>
             <div className="mt-10 flex flex-wrap gap-6 text-sm text-gardens-accent/90">
               <span className="flex items-center gap-2"><ShieldCheck className="h-4 w-4" /> Vetted gardeners</span>
-              <span className="flex items-center gap-2"><MessageCircle className="h-4 w-4" /> AI support in portal</span>
+              <span className="flex items-center gap-2"><CalendarCheck className="h-4 w-4" /> Recurring visits</span>
               <span className="flex items-center gap-2"><MapPin className="h-4 w-4" /> From £49/month</span>
             </div>
           </div>
 
-          <HeroVisual />
+          <HeroImage />
         </div>
       </section>
 
@@ -106,7 +105,7 @@ export default function HomePage() {
         <div className="mx-auto max-w-6xl px-4">
           <div className="grid gap-10 md:grid-cols-3 md:text-center">
             {[
-              ["500+", "Gardens we’re building for"],
+              ["500+", "Gardens we're building for"],
               ["100%", "Subscription — no one-off quotes"],
               ["Local", "Yorkshire gardeners, your area"],
             ].map(([stat, label]) => (
@@ -121,23 +120,6 @@ export default function HomePage() {
 
       <Section id="pricing" title="Simple, transparent pricing" subtitle="Two plans. No hidden fees. Cancel after your minimum term.">
         <PricingSection />
-      </Section>
-
-      <Section title="Built on Sorted" subtitle="GardensSorted is the first brand on the Sorted platform — infrastructure for recurring home services.">
-        <div className="mx-auto max-w-3xl rounded-2xl border border-gardens-primary/20 bg-white p-8 shadow-soft md:p-10">
-          <p className="text-stone-600 leading-relaxed">
-            Sorted powers subscription signup, payments, scheduling, provider dispatch, and customer support —
-            so each vertical (gardens today, more services tomorrow) launches faster with shared tech.
-            Investors see a repeatable playbook, not a one-off gardening website.
-          </p>
-          <div className="mt-6 flex flex-wrap gap-3">
-            {["Stripe billing", "Provider marketplace", "Admin CRM", "AI support"].map((tag) => (
-              <span key={tag} className="rounded-full bg-gardens-light px-4 py-1.5 text-xs font-semibold text-gardens-dark">
-                {tag}
-              </span>
-            ))}
-          </div>
-        </div>
       </Section>
 
       <Section title="Questions" subtitle="Quick answers before you sign up.">
