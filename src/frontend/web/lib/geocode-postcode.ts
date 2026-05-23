@@ -1,30 +1,32 @@
 import type { AdminProvider, JobVisit } from "@/lib/api";
 import type { MapCoverageArea } from "@/lib/map-utils";
 
-type PostcodesIoResponse = {
-  result?: { latitude: number; longitude: number; postcode: string } | null;
+type GeoResponse = {
+  postcode: string;
+  latitude: number;
+  longitude: number;
 };
 
-export async function geocodeUkPostcode(
+async function geocodeViaApi(
   postcode: string
 ): Promise<{ latitude: number; longitude: number } | null> {
   const compact = postcode.trim().toUpperCase().replace(/\s+/g, "");
   if (compact.length < 5) return null;
 
   try {
-    const res = await fetch(
-      `https://api.postcodes.io/postcodes/${encodeURIComponent(compact)}`
-    );
+    const res = await fetch(`/api/geo/postcodes/${encodeURIComponent(compact)}`);
     if (!res.ok) return null;
-    const data = (await res.json()) as PostcodesIoResponse;
-    if (!data.result) return null;
-    return {
-      latitude: data.result.latitude,
-      longitude: data.result.longitude,
-    };
+    const data = (await res.json()) as GeoResponse;
+    return { latitude: data.latitude, longitude: data.longitude };
   } catch {
     return null;
   }
+}
+
+export async function geocodeUkPostcode(
+  postcode: string
+): Promise<{ latitude: number; longitude: number } | null> {
+  return geocodeViaApi(postcode);
 }
 
 export async function resolveVisitCoordinates(visits: JobVisit[]): Promise<JobVisit[]> {
@@ -33,7 +35,7 @@ export async function resolveVisitCoordinates(visits: JobVisit[]): Promise<JobVi
       if (visit.latitude != null && visit.longitude != null) return visit;
       if (!visit.postcode?.trim()) return visit;
 
-      const geo = await geocodeUkPostcode(visit.postcode);
+      const geo = await geocodeViaApi(visit.postcode);
       if (!geo) return visit;
 
       return {
@@ -57,9 +59,11 @@ export async function resolveCoverageAreas(
   coverageAreas: MapCoverageArea[],
   fallback?: CoverageFallback
 ): Promise<MapCoverageArea[]> {
-  const resolved = [...coverageAreas.filter(
-    (c) => c.latitude != null && c.longitude != null && c.radiusMiles > 0
-  )];
+  const resolved = [
+    ...coverageAreas.filter(
+      (c) => c.latitude != null && c.longitude != null && c.radiusMiles > 0
+    ),
+  ];
 
   if (resolved.length > 0 || !fallback?.postcode?.trim() || fallback.radiusMiles <= 0) {
     return resolved;
@@ -69,7 +73,7 @@ export async function resolveCoverageAreas(
   let longitude = fallback.longitude ?? null;
 
   if (latitude == null || longitude == null) {
-    const geo = await geocodeUkPostcode(fallback.postcode);
+    const geo = await geocodeViaApi(fallback.postcode);
     if (!geo) return resolved;
     latitude = geo.latitude;
     longitude = geo.longitude;
@@ -95,7 +99,7 @@ export async function resolveProviderCoordinates(
       }
       if (!provider.coveragePostcode?.trim()) return provider;
 
-      const geo = await geocodeUkPostcode(provider.coveragePostcode);
+      const geo = await geocodeViaApi(provider.coveragePostcode);
       if (!geo) return provider;
 
       return {

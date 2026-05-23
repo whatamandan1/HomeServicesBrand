@@ -14,7 +14,7 @@ import {
   visitMarkerColor,
   visitsWithCoordinates,
 } from "@/lib/map-utils";
-import { attachOsmBaseLayer, loadLeaflet, refreshMapSize } from "@/lib/leaflet-init";
+import { useLeafletMap } from "@/lib/use-leaflet-map";
 
 type VisitMapProps = {
   visits: JobVisit[];
@@ -24,6 +24,29 @@ type VisitMapProps = {
   className?: string;
 };
 
+function MapContainer({
+  containerRef,
+  loading = false,
+}: {
+  containerRef: React.RefObject<HTMLDivElement | null>;
+  loading?: boolean;
+}) {
+  return (
+    <div className="relative">
+      {loading && (
+        <div className="absolute inset-0 z-10 flex items-center justify-center rounded-lg bg-stone-100/90 text-sm text-stone-500">
+          Loading map…
+        </div>
+      )}
+      <div
+        ref={containerRef}
+        className="map-shell h-[420px] w-full overflow-hidden rounded-lg border border-stone-200 bg-stone-100 shadow-sm"
+        aria-label="Visit map"
+      />
+    </div>
+  );
+}
+
 export function VisitMap({
   visits,
   coverageAreas = [],
@@ -32,7 +55,6 @@ export function VisitMap({
   className = "",
 }: VisitMapProps) {
   const containerRef = useRef<HTMLDivElement>(null);
-  const mapRef = useRef<import("leaflet").Map | null>(null);
   const [resolvedVisits, setResolvedVisits] = useState<JobVisit[] | null>(null);
   const [resolvedCoverage, setResolvedCoverage] = useState<MapCoverageArea[] | null>(null);
 
@@ -67,7 +89,7 @@ export function VisitMap({
     return () => {
       cancelled = true;
     };
-  }, [visitsKey, coverageAreasKey, coverageFallbackKey]);
+  }, [visitsKey, coverageAreasKey, coverageFallbackKey, visits, coverageAreas, coverageFallback]);
 
   const visitPoints = useMemo(
     () => (resolvedVisits ? visitsWithCoordinates(resolvedVisits) : []),
@@ -82,98 +104,70 @@ export function VisitMap({
     [resolvedCoverage]
   );
 
-  const mapKey = useMemo(
-    () =>
-      [
-        ...visitPoints.map((v) => `${v.id}:${v.latitude}:${v.longitude}`),
-        ...areas.map((a) => `${a.latitude}:${a.longitude}:${a.radiusMiles}`),
-      ].join("|"),
-    [visitPoints, areas]
-  );
+  const mapSetupKey = [
+    ...visitPoints.map((v) => `${v.id}:${v.latitude}:${v.longitude}:${v.status}`),
+    ...areas.map((a) => `${a.latitude}:${a.longitude}:${a.radiusMiles}`),
+  ].join("|");
 
-  useEffect(() => {
-    if (!containerRef.current || mapKey.length === 0) return;
+  const mapReady = resolvedVisits !== null && resolvedCoverage !== null;
+  const hasMapContent = visitPoints.length > 0 || areas.length > 0;
 
-    let cancelled = false;
-    const points = [...visitPoints];
-    const circles = [...areas];
+  useLeafletMap(containerRef, mapReady && hasMapContent, mapSetupKey, (L, map) => {
+    const bounds = L.latLngBounds([]);
 
-    void (async () => {
-      const L = await loadLeaflet();
+    for (const area of areas) {
+      const circle = L.circle([area.latitude, area.longitude], {
+        radius: milesToMeters(area.radiusMiles),
+        color: "#059669",
+        fillColor: "#059669",
+        fillOpacity: 0.08,
+        weight: 2,
+      }).addTo(map);
 
-      if (cancelled || !containerRef.current) return;
-
-      if (mapRef.current) {
-        mapRef.current.remove();
-        mapRef.current = null;
+      if (area.label) {
+        circle.bindPopup(`<strong>${area.label}</strong><br/>${area.radiusMiles} mile radius`);
       }
 
-      const map = L.map(containerRef.current, { scrollWheelZoom: false });
-      mapRef.current = map;
-      await attachOsmBaseLayer(map);
+      bounds.extend(circle.getBounds());
+    }
 
-      const bounds = L.latLngBounds([]);
+    for (const visit of visitPoints) {
+      const color = visitMarkerColor(visit.status);
+      const marker = L.circleMarker([visit.latitude, visit.longitude], {
+        radius: 8,
+        color,
+        fillColor: color,
+        fillOpacity: 0.85,
+        weight: 2,
+      }).addTo(map);
 
-      for (const area of circles) {
-        const circle = L.circle([area.latitude, area.longitude], {
-          radius: milesToMeters(area.radiusMiles),
-          color: "#059669",
-          fillColor: "#059669",
-          fillOpacity: 0.08,
-          weight: 2,
-        }).addTo(map);
+      const date = visit.scheduledDate.slice(0, 10);
+      const provider = visit.assignedProviderName
+        ? `<br/>Gardener: ${visit.assignedProviderName}`
+        : "";
+      marker.bindPopup(
+        `<strong>${visit.postcode}</strong><br/>${date} · ${visit.availabilityWindow}<br/>Status: ${visit.status.replace(/([A-Z])/g, " $1").trim()}${provider}`
+      );
 
-        if (area.label) {
-          circle.bindPopup(`<strong>${area.label}</strong><br/>${area.radiusMiles} mile radius`);
-        }
+      bounds.extend([visit.latitude, visit.longitude]);
+    }
 
-        bounds.extend(circle.getBounds());
-      }
+    if (bounds.isValid()) {
+      map.fitBounds(bounds.pad(0.15));
+    } else {
+      map.setView(DEFAULT_MAP_CENTER, 11);
+    }
+  });
 
-      for (const visit of points) {
-        const color = visitMarkerColor(visit.status);
-        const marker = L.circleMarker([visit.latitude, visit.longitude], {
-          radius: 8,
-          color,
-          fillColor: color,
-          fillOpacity: 0.85,
-          weight: 2,
-        }).addTo(map);
-
-        const date = visit.scheduledDate.slice(0, 10);
-        const provider = visit.assignedProviderName
-          ? `<br/>Gardener: ${visit.assignedProviderName}`
-          : "";
-        marker.bindPopup(
-          `<strong>${visit.postcode}</strong><br/>${date} · ${visit.availabilityWindow}<br/>Status: ${visit.status.replace(/([A-Z])/g, " $1").trim()}${provider}`
-        );
-
-        bounds.extend([visit.latitude, visit.longitude]);
-      }
-
-      if (bounds.isValid()) {
-        map.fitBounds(bounds.pad(0.15));
-      } else {
-        map.setView(DEFAULT_MAP_CENTER, 11);
-      }
-
-      refreshMapSize(map);
-    })();
-
-    return () => {
-      cancelled = true;
-      if (mapRef.current) {
-        mapRef.current.remove();
-        mapRef.current = null;
-      }
-    };
-  }, [mapKey, visitPoints, areas]);
-
-  if (resolvedVisits === null || resolvedCoverage === null) {
-    return <p className={`text-sm text-stone-500 ${className}`.trim()}>Loading map…</p>;
+  if (!mapReady) {
+    return (
+      <div className={className}>
+        <MapContainer containerRef={containerRef} loading />
+      </div>
+    );
   }
 
-  if (visitPoints.length === 0 && areas.length === 0) {
+  if (!hasMapContent) {
     return <p className={`text-sm text-stone-500 ${className}`.trim()}>{emptyMessage}</p>;
   }
 
@@ -186,11 +180,7 @@ export function VisitMap({
           {missingCount} visit{missingCount === 1 ? "" : "s"} without map coordinates (shown in list view only).
         </p>
       )}
-      <div
-        ref={containerRef}
-        className="h-[420px] w-full overflow-hidden rounded-lg border border-stone-200 bg-stone-100 shadow-sm"
-        aria-label="Visit map"
-      />
+      <MapContainer containerRef={containerRef} />
     </div>
   );
 }

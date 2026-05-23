@@ -7,7 +7,32 @@ import {
   mappableProviders,
   resolveProviderCoordinates,
 } from "@/lib/geocode-postcode";
-import { attachOsmBaseLayer, loadLeaflet, refreshMapSize } from "@/lib/leaflet-init";
+import { useLeafletMap } from "@/lib/use-leaflet-map";
+
+function MapContainer({
+  containerRef,
+  loading = false,
+  label,
+}: {
+  containerRef: React.RefObject<HTMLDivElement | null>;
+  loading?: boolean;
+  label: string;
+}) {
+  return (
+    <div className="relative">
+      {loading && (
+        <div className="absolute inset-0 z-10 flex items-center justify-center rounded-lg bg-stone-100/90 text-sm text-stone-500">
+          Loading map…
+        </div>
+      )}
+      <div
+        ref={containerRef}
+        className="map-shell h-[420px] w-full overflow-hidden rounded-lg border border-stone-200 bg-stone-100 shadow-sm"
+        aria-label={label}
+      />
+    </div>
+  );
+}
 
 export function ProviderCoverageMap({
   providers,
@@ -17,52 +42,50 @@ export function ProviderCoverageMap({
   emptyMessage?: string;
 }) {
   const containerRef = useRef<HTMLDivElement>(null);
-  const mapRef = useRef<import("leaflet").Map | null>(null);
   const [resolvedProviders, setResolvedProviders] = useState<AdminProvider[] | null>(null);
+  const [loadError, setLoadError] = useState<string | null>(null);
+
+  const providersKey = providers
+    .map((p) => `${p.id}:${p.coveragePostcode}:${p.coverageLatitude}:${p.coverageLongitude}`)
+    .join("|");
 
   useEffect(() => {
     let cancelled = false;
     setResolvedProviders(null);
+    setLoadError(null);
 
     void (async () => {
-      const resolved = await resolveProviderCoordinates(providers);
-      if (!cancelled) setResolvedProviders(resolved);
+      try {
+        const resolved = await resolveProviderCoordinates(providers);
+        if (!cancelled) setResolvedProviders(resolved);
+      } catch {
+        if (!cancelled) setLoadError("Failed to load map data.");
+      }
     })();
 
     return () => {
       cancelled = true;
     };
-  }, [providers]);
+  }, [providersKey, providers]);
 
   const mappable = useMemo(
     () => (resolvedProviders ? mappableProviders(resolvedProviders) : []),
     [resolvedProviders]
   );
 
-  useEffect(() => {
-    if (!containerRef.current || mappable.length === 0) return;
+  const mapSetupKey = mappable
+    .map((p) => `${p.id}:${p.coverageLatitude}:${p.coverageLongitude}:${p.coverageRadiusMiles}`)
+    .join("|");
 
-    let cancelled = false;
-    const points = [...mappable];
-
-    void (async () => {
-      const L = await loadLeaflet();
-
-      if (cancelled || !containerRef.current) return;
-
-      if (mapRef.current) {
-        mapRef.current.remove();
-        mapRef.current = null;
-      }
-
-      const map = L.map(containerRef.current, { scrollWheelZoom: false });
-      mapRef.current = map;
-      await attachOsmBaseLayer(map);
-
+  useLeafletMap(
+    containerRef,
+    resolvedProviders !== null && mappable.length > 0,
+    mapSetupKey,
+    (L, map) => {
       const bounds = L.latLngBounds([]);
       const palette = ["#059669", "#0284c7", "#7c3aed", "#db2777", "#ca8a04"];
 
-      points.forEach((provider, index) => {
+      mappable.forEach((provider, index) => {
         const lat = provider.coverageLatitude!;
         const lon = provider.coverageLongitude!;
         const color = palette[index % palette.length];
@@ -95,21 +118,19 @@ export function ProviderCoverageMap({
       } else {
         map.setView(DEFAULT_MAP_CENTER, 11);
       }
+    }
+  );
 
-      refreshMapSize(map);
-    })();
-
-    return () => {
-      cancelled = true;
-      if (mapRef.current) {
-        mapRef.current.remove();
-        mapRef.current = null;
-      }
-    };
-  }, [mappable]);
+  if (loadError) {
+    return <p className="mt-2 text-sm text-red-600">{loadError}</p>;
+  }
 
   if (resolvedProviders === null) {
-    return <p className="mt-2 text-sm text-stone-500">Loading map…</p>;
+    return (
+      <div className="mt-2">
+        <MapContainer containerRef={containerRef} loading label="Provider coverage map" />
+      </div>
+    );
   }
 
   if (mappable.length === 0) {
@@ -132,11 +153,7 @@ export function ProviderCoverageMap({
           {missingCount} provider{missingCount === 1 ? "" : "s"} without map coordinates.
         </p>
       )}
-      <div
-        ref={containerRef}
-        className="h-[420px] w-full overflow-hidden rounded-lg border border-stone-200 bg-stone-100 shadow-sm"
-        aria-label="Provider coverage map"
-      />
+      <MapContainer containerRef={containerRef} label="Provider coverage map" />
     </div>
   );
 }
