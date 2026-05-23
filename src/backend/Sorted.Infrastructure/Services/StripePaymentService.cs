@@ -83,6 +83,8 @@ public class StripePaymentService(
         CustomerSubscription subscription,
         CancellationToken ct = default)
     {
+        await EnsureStripeBillingLinksAsync(subscription, ct);
+
         var customerId = subscription.StripeCustomerId;
         if (string.IsNullOrWhiteSpace(customerId) && !string.IsNullOrWhiteSpace(subscription.StripeSubscriptionId))
         {
@@ -324,6 +326,25 @@ public class StripePaymentService(
         return BuildUpgradeResponse(premiumPlan, subscription.EndsAtUtc!.Value, proratedCharge: true);
     }
 
+    public async Task SyncCheckoutSessionAsync(Guid customerUserId, string checkoutSessionId, CancellationToken ct = default)
+    {
+        EnsureApiKey();
+        var session = await new SessionService().GetAsync(checkoutSessionId, cancellationToken: ct);
+        if (session.Mode != "subscription")
+            throw new InvalidOperationException("That checkout session is not a subscription.");
+
+        if (!session.Metadata.TryGetValue("subscriptionId", out var subIdStr) || !Guid.TryParse(subIdStr, out var subId))
+            throw new InvalidOperationException("Could not match that checkout to your account.");
+
+        var subscription = await LoadSubscriptionAsync(subId, ct)
+            ?? throw new InvalidOperationException("Subscription not found.");
+
+        if (subscription.Customer.UserId != customerUserId)
+            throw new InvalidOperationException("That checkout session belongs to another account.");
+
+        await ApplyCheckoutSessionAsync(subscription, session, ct);
+    }
+
     public async Task HandleWebhookAsync(string json, string stripeSignature, CancellationToken ct = default)
     {
         if (string.IsNullOrWhiteSpace(_options.WebhookSecret))
@@ -425,8 +446,13 @@ public class StripePaymentService(
         if (subscription is null)
             return;
 
-        subscription.StripeCustomerId = session.CustomerId;
-        subscription.StripeSubscriptionId = session.SubscriptionId;
+        await ApplyCheckoutSessionAsync(subscription, session, ct);
+    }
+
+    private async Task ApplyCheckoutSessionAsync(CustomerSubscription subscription, Session session, CancellationToken ct)
+    {
+        subscription.StripeCustomerId = session.CustomerId ?? subscription.StripeCustomerId;
+        subscription.StripeSubscriptionId = session.SubscriptionId ?? subscription.StripeSubscriptionId;
 
         var payment = await db.Payments.FirstOrDefaultAsync(p => p.StripeCheckoutSessionId == session.Id, ct);
         if (payment is not null)
@@ -436,6 +462,28 @@ public class StripePaymentService(
 
         if (subscription.Status == SubscriptionStatus.PendingPayment)
             await ActivateSubscriptionAsync(subscription, ct);
+    }
+
+    private async Task EnsureStripeBillingLinksAsync(CustomerSubscription subscription, CancellationToken ct)
+    {
+        if (!string.IsNullOrWhiteSpace(subscription.StripeCustomerId)
+            || !string.IsNullOrWhiteSpace(subscription.StripeSubscriptionId))
+        {
+            return;
+        }
+
+        var checkoutSessionId = await db.Payments
+            .Where(p => p.CustomerSubscriptionId == subscription.Id && p.StripeCheckoutSessionId != null)
+            .OrderByDescending(p => p.CreatedAtUtc)
+            .Select(p => p.StripeCheckoutSessionId)
+            .FirstOrDefaultAsync(ct);
+
+        if (string.IsNullOrWhiteSpace(checkoutSessionId))
+            return;
+
+        EnsureApiKey();
+        var session = await new SessionService().GetAsync(checkoutSessionId, cancellationToken: ct);
+        await ApplyCheckoutSessionAsync(subscription, session, ct);
     }
 
     private async Task HandleInvoicePaidAsync(Event stripeEvent, CancellationToken ct)

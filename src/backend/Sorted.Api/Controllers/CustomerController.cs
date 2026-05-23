@@ -58,9 +58,8 @@ public class CustomerController(
     }
 
     private static bool CanManageBilling(CustomerSubscription s) =>
-        s.Status != SubscriptionStatus.PendingPayment
-        && (!string.IsNullOrWhiteSpace(s.StripeCustomerId)
-            || !string.IsNullOrWhiteSpace(s.StripeSubscriptionId));
+        s.Status is SubscriptionStatus.Active or SubscriptionStatus.PastDue
+        && s.StartedAtUtc is not null;
 
     private static bool CanUpgradeToPremium(CustomerSubscription s) =>
         s.Status is SubscriptionStatus.Active or SubscriptionStatus.PastDue
@@ -122,6 +121,24 @@ public class CustomerController(
         try
         {
             return Ok(await stripe.SwitchToAnnualBillingAsync(sub, ct));
+        }
+        catch (InvalidOperationException ex)
+        {
+            return BadRequest(new { error = ex.Message });
+        }
+    }
+
+    [HttpPost("subscriptions/sync-checkout")]
+    public async Task<IActionResult> SyncCheckout([FromBody] SyncCheckoutRequest request, CancellationToken ct)
+    {
+        if (string.IsNullOrWhiteSpace(request.SessionId))
+            return BadRequest(new { error = "Checkout session id is required." });
+
+        var userId = Guid.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!);
+        try
+        {
+            await stripe.SyncCheckoutSessionAsync(userId, request.SessionId.Trim(), ct);
+            return Ok(new { message = "Subscription synced." });
         }
         catch (InvalidOperationException ex)
         {

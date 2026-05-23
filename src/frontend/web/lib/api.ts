@@ -380,6 +380,12 @@ export const api = {
       { method: "POST" },
       token
     ),
+  customerSyncCheckout: (token: string, sessionId: string) =>
+    request<{ message: string }>(
+      "/api/customer/subscriptions/sync-checkout",
+      { method: "POST", body: JSON.stringify({ sessionId }) },
+      token
+    ),
   customerProperties: (token: string) =>
     request<CustomerProperty[]>("/api/customer/properties", {}, token),
   customerUpdateProperty: (

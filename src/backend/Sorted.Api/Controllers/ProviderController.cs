@@ -21,7 +21,8 @@ public class ProviderController(
     ISmsService sms,
     IWorkflowLogger workflow,
     IProviderCoverageService coverage,
-    IPostcodeGeocodingService geocoding) : ControllerBase
+    IPostcodeGeocodingService geocoding,
+    IVisitSchedulingService scheduling) : ControllerBase
 {
     private async Task<Provider?> GetProviderAsync(CancellationToken ct)
     {
@@ -245,6 +246,9 @@ public class ProviderController(
 
         await db.SaveChangesAsync(ct);
         await workflow.LogAsync("dispatch", workflowEvent, nameof(JobVisit), visit.Id, new { visit.Status }, ct);
+
+        if (newStatus == VisitStatus.Completed)
+            await scheduling.AssignPreferredProviderToPendingVisitsAsync(visit.CustomerSubscriptionId, ct);
 
         return Ok(JobVisitResponseMapper.FromEntity(visit, provider.User.FirstName + " " + provider.User.LastName));
     }

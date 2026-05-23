@@ -14,6 +14,8 @@ public record SubscriptionPlanResponse(
 
 public record CheckoutSessionResponse(string SessionId, string Url);
 
+public record SyncCheckoutRequest(string SessionId);
+
 public record CustomerSubscriptionResponse(
     Guid Id,
     string PlanName,

@@ -323,6 +323,35 @@ public class VisitSchedulingService(
         return true;
     }
 
+    public async Task AssignPreferredProviderToPendingVisitsAsync(Guid subscriptionId, CancellationToken ct = default)
+    {
+        var today = DateTime.UtcNow.Date;
+        var visits = await db.JobVisits
+            .Where(v =>
+                v.CustomerSubscriptionId == subscriptionId
+                && !v.IsDeleted
+                && v.AssignedProviderId == null
+                && v.ScheduledDate >= today
+                && (v.Status == VisitStatus.Scheduled || v.Status == VisitStatus.OpenForClaim))
+            .ToListAsync(ct);
+
+        if (visits.Count == 0)
+            return;
+
+        var assigned = 0;
+        foreach (var visit in visits)
+        {
+            if (await TryAutoAssignPreferredProviderAsync(visit, ct))
+                assigned++;
+        }
+
+        if (assigned > 0)
+            logger.LogInformation(
+                "Auto-assigned preferred provider to {Count} pending visits for subscription {SubscriptionId}",
+                assigned,
+                subscriptionId);
+    }
+
     private async Task<CustomerSubscription?> LoadSubscriptionAsync(Guid subscriptionId, CancellationToken ct)
         => await db.CustomerSubscriptions
             .Include(s => s.Customer).ThenInclude(c => c.Properties)

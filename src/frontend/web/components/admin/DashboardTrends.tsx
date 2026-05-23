@@ -16,9 +16,9 @@ function TrendChart({
         <h3 className="text-sm font-semibold text-gardens-dark">{title}</h3>
         <span className="text-xs text-stone-500">{total} total</span>
       </div>
-      <div className="mt-4 flex h-28 items-end gap-1">
+      <div className="mt-4 flex h-28 gap-1">
         {points.map((point) => (
-          <div key={point.date} className="group flex flex-1 flex-col items-center justify-end">
+          <div key={point.date} className="group flex h-full flex-1 flex-col justify-end">
             <div
               className="w-full rounded-t bg-gardens-primary/80 transition group-hover:bg-gardens-primary"
               style={{ height: `${Math.max((point.count / max) * 100, point.count > 0 ? 8 : 2)}%` }}

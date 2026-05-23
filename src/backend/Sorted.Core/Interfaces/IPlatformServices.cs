@@ -23,6 +23,7 @@ public interface IStripePaymentService
     Task<SwitchToAnnualBillingResponse> SwitchToAnnualBillingAsync(CustomerSubscription subscription, CancellationToken ct = default);
     Task<UpgradeSubscriptionResponse> UpgradeToPremiumAsync(CustomerSubscription subscription, CancellationToken ct = default);
     Task HandleWebhookAsync(string json, string stripeSignature, CancellationToken ct = default);
+    Task SyncCheckoutSessionAsync(Guid customerUserId, string checkoutSessionId, CancellationToken ct = default);
 }
 
 public interface IEmailService
@@ -56,6 +57,7 @@ public interface IVisitSchedulingService
     Task OpenUpcomingVisitsForDispatchAsync(int withinDays = 14, CancellationToken ct = default);
     Task ExpireStaleDispatchOffersAsync(int renewalExpiryDays = 3, CancellationToken ct = default);
     Task SendDueVisitRemindersAsync(int leadHours = 24, CancellationToken ct = default);
+    Task AssignPreferredProviderToPendingVisitsAsync(Guid subscriptionId, CancellationToken ct = default);
 }
 
 public interface IVisitManagementService

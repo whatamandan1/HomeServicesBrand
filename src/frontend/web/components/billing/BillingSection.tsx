@@ -159,7 +159,7 @@ export function BillingSection({
                       className="rounded-lg border border-stone-200 px-3 py-2 text-sm font-medium text-stone-700 hover:bg-stone-50"
                       onClick={() => openBillingPortal(s.id, (msg) => onError(msg))}
                     >
-                      Payment method &amp; invoices
+                      Manage billing
                     </button>
                   )}
                   {isActiveSubscription(s) && s.billingInterval === "Monthly" && (
@@ -215,7 +215,7 @@ export function BillingSection({
         <h2 className="font-semibold text-gardens-dark">Payment history</h2>
         <p className="mt-1 text-sm text-stone-500">
           Successful charges on your account. For PDF receipts, open{" "}
-          <strong>Payment method &amp; invoices</strong> above (opens in a new tab).
+          <strong>Manage billing</strong> above (opens in a new tab).
         </p>
         {loadingPayments ? (
           <p className="mt-3 text-sm text-stone-500">Loading payments…</p>

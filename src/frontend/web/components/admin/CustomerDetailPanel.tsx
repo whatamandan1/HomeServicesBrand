@@ -186,6 +186,7 @@ export function CustomerDetailPanel({
                     <p className="text-xs text-stone-500">
                       Garden: {p.gardenSize}
                       {p.isPrimary ? " · Primary" : ""}
+                      {(p.photoCount ?? 0) > 0 ? ` · ${p.photoCount} photo${p.photoCount === 1 ? "" : "s"}` : ""}
                     </p>
                     {p.accessNotes && (
                       <p className="mt-1 text-xs text-stone-500">Access: {p.accessNotes}</p>
