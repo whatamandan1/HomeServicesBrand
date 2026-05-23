@@ -29,6 +29,7 @@ export type CustomerSubscription = {
   minimumTermEndsAtUtc: string | null;
   cancelsAtUtc: string | null;
   canManageBilling: boolean;
+  canUpgradeToPremium: boolean;
 };
 
 export type CustomerPayment = {
@@ -301,6 +302,18 @@ export const api = {
     request<CustomerSubscription[]>("/api/customer/subscriptions", {}, token),
   customerPayments: (token: string) =>
     request<CustomerPayment[]>("/api/customer/payments", {}, token),
+  customerUpgradeToPremium: (token: string, subscriptionId: string) =>
+    request<{ planName: string; minimumTermEndsAtUtc: string; message: string }>(
+      `/api/customer/subscriptions/${subscriptionId}/upgrade`,
+      { method: "POST" },
+      token
+    ),
+  customerSwitchToAnnual: (token: string, subscriptionId: string) =>
+    request<{ planName: string; minimumTermEndsAtUtc: string; message: string }>(
+      `/api/customer/subscriptions/${subscriptionId}/switch-to-annual`,
+      { method: "POST" },
+      token
+    ),
   customerBillingPortal: (token: string, subscriptionId: string) =>
     request<{ url: string }>(
       `/api/customer/subscriptions/${subscriptionId}/billing-portal`,

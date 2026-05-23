@@ -2,12 +2,14 @@
 
 import { useEffect, useState } from "react";
 import { api, type CustomerPayment, type CustomerSubscription } from "@/lib/api";
+import { premiumPlanLabel } from "@/lib/plans";
 import { StatusBadge } from "@/components/ui";
 
 type BillingSectionProps = {
   token: string;
   subscriptions: CustomerSubscription[];
   onContactSupport: (message: string) => void;
+  onSubscriptionUpdated: () => void;
   onError: (message: string | null) => void;
 };
 
@@ -41,10 +43,14 @@ export function BillingSection({
   token,
   subscriptions,
   onContactSupport,
+  onSubscriptionUpdated,
   onError,
 }: BillingSectionProps) {
   const [payments, setPayments] = useState<CustomerPayment[]>([]);
   const [loadingPayments, setLoadingPayments] = useState(true);
+  const [switchingId, setSwitchingId] = useState<string | null>(null);
+  const [upgradingId, setUpgradingId] = useState<string | null>(null);
+  const [successMessage, setSuccessMessage] = useState<string | null>(null);
 
   useEffect(() => {
     setLoadingPayments(true);
@@ -57,17 +63,66 @@ export function BillingSection({
       .finally(() => setLoadingPayments(false));
   }, [token]);
 
+  async function switchToAnnual(sub: CustomerSubscription) {
+    const confirmed = window.confirm(
+      "Switch to annual billing now? Your subscription updates immediately and Stripe may charge a prorated amount on your next invoice."
+    );
+    if (!confirmed) return;
+
+    setSwitchingId(sub.id);
+    setSuccessMessage(null);
+    onError(null);
+    try {
+      const result = await api.customerSwitchToAnnual(token, sub.id);
+      setSuccessMessage(result.message);
+      onSubscriptionUpdated();
+      api.customerPayments(token).then(setPayments).catch(() => {});
+    } catch (e) {
+      onError(e instanceof Error ? e.message : "Could not switch to annual billing");
+    } finally {
+      setSwitchingId(null);
+    }
+  }
+
+  async function upgradeToPremium(sub: CustomerSubscription) {
+    const target = premiumPlanLabel(sub.billingInterval);
+    const confirmed = window.confirm(
+      `Upgrade to ${target} now? Your subscription updates immediately and Stripe may charge a prorated amount on your next invoice.`
+    );
+    if (!confirmed) return;
+
+    setUpgradingId(sub.id);
+    setSuccessMessage(null);
+    onError(null);
+    try {
+      const result = await api.customerUpgradeToPremium(token, sub.id);
+      setSuccessMessage(result.message);
+      onSubscriptionUpdated();
+      api.customerPayments(token).then(setPayments).catch(() => {});
+    } catch (e) {
+      onError(e instanceof Error ? e.message : "Could not upgrade subscription");
+    } finally {
+      setUpgradingId(null);
+    }
+  }
+
   const cancellableSubs = subscriptions.filter(
     (s) => s.status === "Active" || s.status === "PastDue"
   );
 
   return (
     <div className="space-y-8">
+      {successMessage && (
+        <p className="rounded-xl border border-green-200 bg-green-50 px-4 py-3 text-sm text-green-900">
+          {successMessage}
+        </p>
+      )}
+
       <section>
         <h2 className="font-semibold text-gardens-dark">Subscriptions</h2>
         <p className="mt-1 text-sm text-stone-500">
-          Update your payment method or download invoices in a new tab. Plan changes and
-          cancellations go through customer service — we&apos;ll honour your minimum term.
+          Update your payment method or download invoices in a new tab. Switch to annual billing or
+          upgrade to Premium instantly below. Cancellations go through customer service.
         </p>
         {subscriptions.length === 0 ? (
           <p className="mt-3 text-sm text-stone-500">No subscriptions yet.</p>
@@ -110,27 +165,23 @@ export function BillingSection({
                   {isActiveSubscription(s) && s.billingInterval === "Monthly" && (
                     <button
                       type="button"
-                      className="rounded-lg border border-gardens-primary/30 bg-gardens-light/40 px-3 py-2 text-sm font-medium text-gardens-dark hover:bg-gardens-light/70"
-                      onClick={() =>
-                        onContactSupport(
-                          `I'd like to switch my ${s.planName} subscription to annual billing. Please can you help?`
-                        )
-                      }
+                      disabled={switchingId === s.id}
+                      className="rounded-lg border border-gardens-primary/30 bg-gardens-light/40 px-3 py-2 text-sm font-medium text-gardens-dark hover:bg-gardens-light/70 disabled:opacity-50"
+                      onClick={() => switchToAnnual(s)}
                     >
-                      Switch to annual billing
+                      {switchingId === s.id ? "Switching…" : "Switch to annual billing"}
                     </button>
                   )}
-                  {isActiveSubscription(s) && (
+                  {isActiveSubscription(s) && s.canUpgradeToPremium && (
                     <button
                       type="button"
-                      className="rounded-lg border border-stone-200 px-3 py-2 text-sm font-medium text-stone-700 hover:bg-stone-50"
-                      onClick={() =>
-                        onContactSupport(
-                          `I'd like to upgrade or change my ${s.planName} plan. Please can you help?`
-                        )
-                      }
+                      disabled={upgradingId === s.id}
+                      className="rounded-lg border border-gardens-primary/30 bg-gardens-light/40 px-3 py-2 text-sm font-medium text-gardens-dark hover:bg-gardens-light/70 disabled:opacity-50"
+                      onClick={() => upgradeToPremium(s)}
                     >
-                      Upgrade plan
+                      {upgradingId === s.id
+                        ? "Upgrading…"
+                        : `Upgrade to ${premiumPlanLabel(s.billingInterval)}`}
                     </button>
                   )}
                   {isActiveSubscription(s) && (
@@ -155,9 +206,8 @@ export function BillingSection({
 
       {cancellableSubs.length > 0 && (
         <p className="rounded-xl border border-stone-200 bg-stone-50 px-4 py-3 text-sm text-stone-600">
-          Plan upgrades, annual billing, and cancellations are handled by our team. Use the buttons
-          above to message customer service — if you&apos;re within your minimum term, billing
-          continues until that date.
+          Annual billing and Premium upgrades apply immediately. Cancellations are handled by our
+          team — if you&apos;re within your minimum term, billing continues until that date.
         </p>
       )}
 

@@ -34,6 +34,8 @@ public static class DataSeeder
 
         if (seedDemoData)
             await EnsureDemoUsersAsync(db, logger, ct);
+
+        await EnsurePremiumPlansAsync(db, logger, ct);
     }
 
     /// <summary>
@@ -79,6 +81,24 @@ public static class DataSeeder
                 BillingInterval = SubscriptionBillingInterval.Annual,
                 MinimumTermMonths = 12,
                 PriceGbp = 299.95m
+            },
+            new SubscriptionPlan
+            {
+                BrandId = brand.Id,
+                Name = "Premium Monthly",
+                Description = "Premium weekly garden maintenance with enhanced service, 3-month minimum.",
+                BillingInterval = SubscriptionBillingInterval.Monthly,
+                MinimumTermMonths = 3,
+                PriceGbp = 49.95m
+            },
+            new SubscriptionPlan
+            {
+                BrandId = brand.Id,
+                Name = "Premium Annual",
+                Description = "Premium weekly garden maintenance, 12-month commitment, discounted.",
+                BillingInterval = SubscriptionBillingInterval.Annual,
+                MinimumTermMonths = 12,
+                PriceGbp = 499.95m
             });
 
         await db.SaveChangesAsync(ct);
@@ -292,10 +312,21 @@ public static class DataSeeder
 
         var rawMonthly = stripe.Prices.EssentialMonthly?.Trim();
         var rawAnnual = stripe.Prices.EssentialAnnual?.Trim();
-        var monthly = NormalizeStripePriceId(rawMonthly, logger, "EssentialMonthly");
-        var annual = NormalizeStripePriceId(rawAnnual, logger, "EssentialAnnual");
-        if (string.IsNullOrEmpty(monthly) && string.IsNullOrEmpty(annual)
-            && string.IsNullOrEmpty(rawMonthly) && string.IsNullOrEmpty(rawAnnual))
+        var rawPremiumMonthly = stripe.Prices.PremiumMonthly?.Trim();
+        var rawPremiumAnnual = stripe.Prices.PremiumAnnual?.Trim();
+        var configuredPrices = new Dictionary<string, string?>(StringComparer.OrdinalIgnoreCase)
+        {
+            ["Essential Monthly"] = NormalizeStripePriceId(rawMonthly, logger, "EssentialMonthly"),
+            ["Essential Annual"] = NormalizeStripePriceId(rawAnnual, logger, "EssentialAnnual"),
+            ["Premium Monthly"] = NormalizeStripePriceId(rawPremiumMonthly, logger, "PremiumMonthly"),
+            ["Premium Annual"] = NormalizeStripePriceId(rawPremiumAnnual, logger, "PremiumAnnual"),
+        };
+
+        if (configuredPrices.Values.All(string.IsNullOrEmpty)
+            && string.IsNullOrEmpty(rawMonthly)
+            && string.IsNullOrEmpty(rawAnnual)
+            && string.IsNullOrEmpty(rawPremiumMonthly)
+            && string.IsNullOrEmpty(rawPremiumAnnual))
             return;
 
         var plans = await db.SubscriptionPlans.Where(p => !p.IsDeleted).ToListAsync(ct);
@@ -303,31 +334,32 @@ public static class DataSeeder
 
         foreach (var plan in plans)
         {
-            if (plan.BillingInterval == SubscriptionBillingInterval.Monthly)
+            if (!configuredPrices.TryGetValue(plan.Name, out var priceId))
+                continue;
+
+            if (!string.IsNullOrEmpty(priceId))
             {
-                if (!string.IsNullOrEmpty(monthly))
-                {
-                    plan.StripePriceId = monthly;
-                    updated = true;
-                }
-                else if (!string.IsNullOrEmpty(rawMonthly) || plan.StripePriceId?.StartsWith("prod_", StringComparison.OrdinalIgnoreCase) == true)
-                {
-                    plan.StripePriceId = null;
-                    updated = true;
-                }
+                if (plan.StripePriceId == priceId)
+                    continue;
+
+                plan.StripePriceId = priceId;
+                updated = true;
+                continue;
             }
-            else if (plan.BillingInterval == SubscriptionBillingInterval.Annual)
+
+            var rawConfigured = plan.Name switch
             {
-                if (!string.IsNullOrEmpty(annual))
-                {
-                    plan.StripePriceId = annual;
-                    updated = true;
-                }
-                else if (!string.IsNullOrEmpty(rawAnnual) || plan.StripePriceId?.StartsWith("prod_", StringComparison.OrdinalIgnoreCase) == true)
-                {
-                    plan.StripePriceId = null;
-                    updated = true;
-                }
+                "Essential Monthly" => rawMonthly,
+                "Essential Annual" => rawAnnual,
+                "Premium Monthly" => rawPremiumMonthly,
+                "Premium Annual" => rawPremiumAnnual,
+                _ => null,
+            };
+
+            if (!string.IsNullOrEmpty(rawConfigured) || plan.StripePriceId?.StartsWith("prod_", StringComparison.OrdinalIgnoreCase) == true)
+            {
+                plan.StripePriceId = null;
+                updated = true;
             }
         }
 
@@ -363,10 +395,61 @@ public static class DataSeeder
         {
             await db.SaveChangesAsync(ct);
             logger.LogInformation(
-                "Updated subscription plan prices to £{Monthly}/month and £{Annual}/year",
+                "Updated subscription plan prices (Essential £{EssentialMonthly}/£{EssentialAnnual}, Premium £{PremiumMonthly}/£{PremiumAnnual})",
                 pricing.EssentialMonthly,
-                pricing.EssentialAnnual);
+                pricing.EssentialAnnual,
+                pricing.PremiumMonthly,
+                pricing.PremiumAnnual);
         }
+    }
+
+    private static async Task EnsurePremiumPlansAsync(SortedDbContext db, ILogger logger, CancellationToken ct)
+    {
+        var brandId = await db.Brands
+            .Where(b => b.Code == "gardens-sorted")
+            .Select(b => b.Id)
+            .FirstOrDefaultAsync(ct);
+        if (brandId == Guid.Empty)
+            return;
+
+        var existingNames = await db.SubscriptionPlans
+            .Where(p => p.BrandId == brandId && !p.IsDeleted)
+            .Select(p => p.Name)
+            .ToListAsync(ct);
+
+        var toAdd = new List<SubscriptionPlan>();
+        if (!existingNames.Any(n => n.Equals("Premium Monthly", StringComparison.OrdinalIgnoreCase)))
+        {
+            toAdd.Add(new SubscriptionPlan
+            {
+                BrandId = brandId,
+                Name = "Premium Monthly",
+                Description = "Premium weekly garden maintenance with enhanced service, 3-month minimum.",
+                BillingInterval = SubscriptionBillingInterval.Monthly,
+                MinimumTermMonths = 3,
+                PriceGbp = 49.95m,
+            });
+        }
+
+        if (!existingNames.Any(n => n.Equals("Premium Annual", StringComparison.OrdinalIgnoreCase)))
+        {
+            toAdd.Add(new SubscriptionPlan
+            {
+                BrandId = brandId,
+                Name = "Premium Annual",
+                Description = "Premium weekly garden maintenance, 12-month commitment, discounted.",
+                BillingInterval = SubscriptionBillingInterval.Annual,
+                MinimumTermMonths = 12,
+                PriceGbp = 499.95m,
+            });
+        }
+
+        if (toAdd.Count == 0)
+            return;
+
+        db.SubscriptionPlans.AddRange(toAdd);
+        await db.SaveChangesAsync(ct);
+        logger.LogInformation("Added Premium subscription plans to the catalog");
     }
 
     private static string? NormalizeStripePriceId(string? value, ILogger logger, string settingName)

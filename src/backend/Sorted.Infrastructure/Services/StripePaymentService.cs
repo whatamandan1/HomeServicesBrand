@@ -7,6 +7,7 @@ using Sorted.Core.Entities;
 using Sorted.Core.Enums;
 using Sorted.Core.Interfaces;
 using Sorted.Core.Options;
+using Sorted.Core.Plans;
 using Sorted.Infrastructure.Data;
 using Stripe;
 using Stripe.Checkout;
@@ -256,6 +257,71 @@ public class StripePaymentService(
             : $"Your subscription will end on {subscription.CancelsAtUtc:dddd d MMMM yyyy} at the end of the current billing period.";
 
         return new CancelSubscriptionResponse(subscription.CancelsAtUtc!.Value, message);
+    }
+
+    public async Task<SwitchToAnnualBillingResponse> SwitchToAnnualBillingAsync(
+        CustomerSubscription subscription,
+        CancellationToken ct = default)
+    {
+        if (subscription.Status is not (SubscriptionStatus.Active or SubscriptionStatus.PastDue))
+            throw new InvalidOperationException("Only active subscriptions can switch to annual billing.");
+        if (subscription.CancelsAtUtc is not null)
+            throw new InvalidOperationException("Cannot switch billing while cancellation is scheduled.");
+        if (subscription.Plan.BillingInterval != SubscriptionBillingInterval.Monthly)
+            throw new InvalidOperationException("This subscription is already on annual billing.");
+
+        var tier = PlanCatalog.GetTier(subscription.Plan.Name);
+        var annualPlan = await db.SubscriptionPlans
+            .FirstOrDefaultAsync(p =>
+                p.BrandId == subscription.Plan.BrandId
+                && p.BillingInterval == SubscriptionBillingInterval.Annual
+                && p.Name.Contains(tier, StringComparison.OrdinalIgnoreCase)
+                && p.IsActive
+                && !p.IsDeleted,
+                ct)
+            ?? throw new InvalidOperationException("Annual billing is not available right now.");
+
+        if (string.IsNullOrWhiteSpace(subscription.StripeSubscriptionId))
+        {
+            await ApplyPlanChangeAsync(subscription, annualPlan, "switched_to_annual", ct);
+            return BuildSwitchToAnnualResponse(annualPlan, subscription.EndsAtUtc!.Value, proratedCharge: false);
+        }
+
+        await UpdateStripeSubscriptionPlanAsync(subscription, annualPlan, ct);
+        await ApplyPlanChangeAsync(subscription, annualPlan, "switched_to_annual", ct);
+        return BuildSwitchToAnnualResponse(annualPlan, subscription.EndsAtUtc!.Value, proratedCharge: true);
+    }
+
+    public async Task<UpgradeSubscriptionResponse> UpgradeToPremiumAsync(
+        CustomerSubscription subscription,
+        CancellationToken ct = default)
+    {
+        if (subscription.Status is not (SubscriptionStatus.Active or SubscriptionStatus.PastDue))
+            throw new InvalidOperationException("Only active subscriptions can be upgraded.");
+        if (subscription.CancelsAtUtc is not null)
+            throw new InvalidOperationException("Cannot upgrade while cancellation is scheduled.");
+        if (PlanCatalog.IsPremium(subscription.Plan.Name))
+            throw new InvalidOperationException("You're already on our Premium plan.");
+
+        var premiumPlan = await db.SubscriptionPlans
+            .FirstOrDefaultAsync(p =>
+                p.BrandId == subscription.Plan.BrandId
+                && p.BillingInterval == subscription.Plan.BillingInterval
+                && PlanCatalog.IsPremium(p.Name)
+                && p.IsActive
+                && !p.IsDeleted,
+                ct)
+            ?? throw new InvalidOperationException("Premium billing is not available right now.");
+
+        if (string.IsNullOrWhiteSpace(subscription.StripeSubscriptionId))
+        {
+            await ApplyPlanChangeAsync(subscription, premiumPlan, "upgraded_to_premium", ct);
+            return BuildUpgradeResponse(premiumPlan, subscription.EndsAtUtc!.Value, proratedCharge: false);
+        }
+
+        await UpdateStripeSubscriptionPlanAsync(subscription, premiumPlan, ct);
+        await ApplyPlanChangeAsync(subscription, premiumPlan, "upgraded_to_premium", ct);
+        return BuildUpgradeResponse(premiumPlan, subscription.EndsAtUtc!.Value, proratedCharge: true);
     }
 
     public async Task HandleWebhookAsync(string json, string stripeSignature, CancellationToken ct = default)
@@ -554,6 +620,117 @@ public class StripePaymentService(
         "incomplete_expired" => SubscriptionStatus.Expired,
         _ => SubscriptionStatus.Active
     };
+
+    private async Task UpdateStripeSubscriptionPlanAsync(
+        CustomerSubscription subscription,
+        SubscriptionPlan targetPlan,
+        CancellationToken ct)
+    {
+        EnsureApiKey();
+        var priceId = ResolveStripePriceId(targetPlan);
+        var subscriptionService = new SubscriptionService();
+        var stripeSubscription = await subscriptionService.GetAsync(
+            subscription.StripeSubscriptionId,
+            cancellationToken: ct);
+        var item = stripeSubscription.Items.Data.FirstOrDefault()
+            ?? throw new InvalidOperationException("Stripe subscription has no billable items.");
+
+        await subscriptionService.UpdateAsync(
+            subscription.StripeSubscriptionId,
+            new SubscriptionUpdateOptions
+            {
+                Items =
+                [
+                    new SubscriptionItemOptions
+                    {
+                        Id = item.Id,
+                        Price = priceId,
+                    },
+                ],
+                ProrationBehavior = "create_prorations",
+                Metadata = new Dictionary<string, string>
+                {
+                    ["subscriptionId"] = subscription.Id.ToString(),
+                    ["planId"] = targetPlan.Id.ToString(),
+                    ["minimumTermMonths"] = targetPlan.MinimumTermMonths.ToString(),
+                },
+            },
+            cancellationToken: ct);
+    }
+
+    private async Task ApplyPlanChangeAsync(
+        CustomerSubscription subscription,
+        SubscriptionPlan newPlan,
+        string workflowEvent,
+        CancellationToken ct)
+    {
+        var now = DateTime.UtcNow;
+        var minimumEnd = now.AddMonths(newPlan.MinimumTermMonths);
+        subscription.SubscriptionPlanId = newPlan.Id;
+        subscription.Plan = newPlan;
+        subscription.EndsAtUtc = subscription.EndsAtUtc is { } existing && existing > minimumEnd
+            ? existing
+            : minimumEnd;
+        subscription.UpdatedAtUtc = now;
+
+        await db.SaveChangesAsync(ct);
+        await workflow.LogAsync(
+            "billing",
+            workflowEvent,
+            nameof(CustomerSubscription),
+            subscription.Id,
+            $"{{\"planId\":\"{newPlan.Id}\",\"minimumTermEndsAtUtc\":\"{subscription.EndsAtUtc:O}\"}}",
+            ct);
+    }
+
+    private static SwitchToAnnualBillingResponse BuildSwitchToAnnualResponse(
+        SubscriptionPlan annualPlan,
+        DateTime minimumTermEndsAtUtc,
+        bool proratedCharge)
+    {
+        var prorationNote = proratedCharge
+            ? " Stripe may charge a prorated amount on your next invoice."
+            : string.Empty;
+
+        return new SwitchToAnnualBillingResponse(
+            annualPlan.Name,
+            minimumTermEndsAtUtc,
+            $"You're now on {annualPlan.Name}. Your minimum term runs until {minimumTermEndsAtUtc:dddd d MMMM yyyy}.{prorationNote}");
+    }
+
+    private static UpgradeSubscriptionResponse BuildUpgradeResponse(
+        SubscriptionPlan premiumPlan,
+        DateTime minimumTermEndsAtUtc,
+        bool proratedCharge)
+    {
+        var chargePrice = premiumPlan.PriceGbp;
+        var prorationNote = proratedCharge
+            ? " Stripe may charge a prorated amount on your next invoice."
+            : string.Empty;
+
+        return new UpgradeSubscriptionResponse(
+            premiumPlan.Name,
+            minimumTermEndsAtUtc,
+            $"You're now on {premiumPlan.Name} (£{chargePrice:0.00}/{(premiumPlan.BillingInterval == SubscriptionBillingInterval.Monthly ? "month" : "year")}). "
+            + $"Your minimum term runs until {minimumTermEndsAtUtc:dddd d MMMM yyyy}.{prorationNote}");
+    }
+
+    private string ResolveStripePriceId(SubscriptionPlan plan)
+    {
+        if (!string.IsNullOrWhiteSpace(plan.StripePriceId))
+        {
+            if (plan.StripePriceId.StartsWith("prod_", StringComparison.OrdinalIgnoreCase))
+            {
+                throw new InvalidOperationException(
+                    $"{plan.Name} is misconfigured in Stripe (product ID instead of price ID).");
+            }
+
+            return plan.StripePriceId;
+        }
+
+        throw new InvalidOperationException(
+            $"{plan.Name} is not configured in Stripe yet. Please try again later or contact support.");
+    }
 
     private void EnsureApiKey()
     {

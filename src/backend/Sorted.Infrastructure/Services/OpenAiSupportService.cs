@@ -124,7 +124,9 @@ public class OpenAiSupportService(
             var systemPrompt = customerId.HasValue
                 ? "You are GardensSorted customer support for a Yorkshire UK gardening subscription service. " +
                   "Be brief, friendly, and factual. Use the customer account context when answering about their plan or visits. " +
-                  "For cancellations, plan changes, billing disputes, or refunds, confirm the request has been escalated to the team — do not tell them to email billing or contact support separately. " +
+                  "For cancellations, billing disputes, or refunds, confirm the request has been escalated to the team — do not tell them to email billing or contact support separately. " +
+                  "Customers can switch from monthly to annual billing instantly from their account portal — direct them there for annual billing. " +
+                  "Customers can upgrade to Premium instantly from their account portal — direct them there for plan upgrades. " +
                   "Topics: visit windows, subscription plans, property access, billing questions.\n\n"
                 : "You are GardensSorted's friendly website assistant for a Yorkshire UK gardening subscription service. " +
                   "The visitor is NOT signed in — answer pre-sales questions about how the service works, pricing, coverage, and signup. " +
@@ -177,7 +179,7 @@ public class OpenAiSupportService(
         var planLines = plans.Count > 0
             ? string.Join("\n", plans.Select(p =>
                 $"- {p.Name}: £{p.PriceGbp}/{(p.BillingInterval == SubscriptionBillingInterval.Monthly ? "month" : "year")}, {p.MinimumTermMonths}-month minimum. {p.Description}"))
-            : "- Essential Monthly: £29.95/month, 3-month minimum\n- Essential Annual: £299.95/year, 12-month minimum";
+            : "- Essential Monthly: £29.95/month, 3-month minimum\n- Essential Annual: £299.95/year, 12-month minimum\n- Premium Monthly: £49.95/month, 3-month minimum\n- Premium Annual: £499.95/year, 12-month minimum";
 
         return $"""
             Visitor status: Not signed in (pre-sales / general questions)
@@ -246,9 +248,14 @@ public class OpenAiSupportService(
             return "Thanks for getting in touch. I've escalated your cancellation request to our customer service team — someone will follow up with you shortly.";
         }
 
-        if (lower.Contains("annual") || lower.Contains("upgrade") || lower.Contains("plan change") || lower.Contains("switch"))
+        if (lower.Contains("upgrade"))
         {
-            return "Thanks for getting in touch. I've escalated your plan change request to our customer service team — someone will follow up with you shortly.";
+            return "You can upgrade to Premium instantly from your account portal — open My account and click Upgrade to Premium on your subscription.";
+        }
+
+        if (lower.Contains("annual") || lower.Contains("switch"))
+        {
+            return "You can switch to annual billing instantly from your account portal — open My account and click Switch to annual billing on your subscription.";
         }
 
         if (EscalationKeywords.Any(k => userMessage.Contains(k, StringComparison.OrdinalIgnoreCase)))

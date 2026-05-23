@@ -23,11 +23,22 @@ public record CustomerSubscriptionResponse(
     string AvailabilityPreference,
     DateTime? MinimumTermEndsAtUtc,
     DateTime? CancelsAtUtc,
-    bool CanManageBilling);
+    bool CanManageBilling,
+    bool CanUpgradeToPremium);
 
 public record BillingPortalSessionResponse(string Url);
 
 public record CancelSubscriptionResponse(DateTime CancelsAtUtc, string Message);
+
+public record SwitchToAnnualBillingResponse(
+    string PlanName,
+    DateTime MinimumTermEndsAtUtc,
+    string Message);
+
+public record UpgradeSubscriptionResponse(
+    string PlanName,
+    DateTime MinimumTermEndsAtUtc,
+    string Message);
 
 public record CustomerPaymentResponse(
     Guid Id,

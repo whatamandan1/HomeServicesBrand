@@ -7,6 +7,7 @@ using Sorted.Core.Entities;
 using Sorted.Core.Enums;
 using Sorted.Core.Geo;
 using Sorted.Core.Interfaces;
+using Sorted.Core.Plans;
 using Sorted.Infrastructure.Data;
 
 namespace Sorted.Api.Controllers;
@@ -46,7 +47,8 @@ public class CustomerController(
             s.AvailabilityPreference,
             s.EndsAtUtc,
             s.CancelsAtUtc,
-            CanManageBilling(s))).ToList();
+            CanManageBilling(s),
+            CanUpgradeToPremium(s))).ToList();
 
         return Ok(responses);
     }
@@ -55,6 +57,11 @@ public class CustomerController(
         s.Status != SubscriptionStatus.PendingPayment
         && (!string.IsNullOrWhiteSpace(s.StripeCustomerId)
             || !string.IsNullOrWhiteSpace(s.StripeSubscriptionId));
+
+    private static bool CanUpgradeToPremium(CustomerSubscription s) =>
+        s.Status is SubscriptionStatus.Active or SubscriptionStatus.PastDue
+        && s.CancelsAtUtc is null
+        && !PlanCatalog.IsPremium(s.Plan.Name);
 
     [HttpGet("payments")]
     public async Task<ActionResult<IEnumerable<CustomerPaymentResponse>>> Payments(CancellationToken ct)
@@ -76,6 +83,46 @@ public class CustomerController(
             .ToListAsync(ct);
 
         return Ok(payments);
+    }
+
+    [HttpPost("subscriptions/{subscriptionId:guid}/upgrade")]
+    public async Task<ActionResult<UpgradeSubscriptionResponse>> UpgradeToPremium(Guid subscriptionId, CancellationToken ct)
+    {
+        var userId = Guid.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!);
+        var sub = await db.CustomerSubscriptions
+            .Include(s => s.Plan)
+            .Include(s => s.Customer)
+            .FirstOrDefaultAsync(s => s.Id == subscriptionId && s.Customer.UserId == userId && !s.IsDeleted, ct);
+        if (sub is null) return NotFound();
+
+        try
+        {
+            return Ok(await stripe.UpgradeToPremiumAsync(sub, ct));
+        }
+        catch (InvalidOperationException ex)
+        {
+            return BadRequest(new { error = ex.Message });
+        }
+    }
+
+    [HttpPost("subscriptions/{subscriptionId:guid}/switch-to-annual")]
+    public async Task<ActionResult<SwitchToAnnualBillingResponse>> SwitchToAnnual(Guid subscriptionId, CancellationToken ct)
+    {
+        var userId = Guid.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!);
+        var sub = await db.CustomerSubscriptions
+            .Include(s => s.Plan)
+            .Include(s => s.Customer)
+            .FirstOrDefaultAsync(s => s.Id == subscriptionId && s.Customer.UserId == userId && !s.IsDeleted, ct);
+        if (sub is null) return NotFound();
+
+        try
+        {
+            return Ok(await stripe.SwitchToAnnualBillingAsync(sub, ct));
+        }
+        catch (InvalidOperationException ex)
+        {
+            return BadRequest(new { error = ex.Message });
+        }
     }
 
     [HttpPost("subscriptions/{subscriptionId:guid}/billing-portal")]

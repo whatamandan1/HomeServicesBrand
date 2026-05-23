@@ -20,6 +20,8 @@ public interface IStripePaymentService
     Task<CheckoutSessionResponse> CreateSignupCheckoutAsync(CustomerSubscription subscription, SubscriptionPlan plan, string customerEmail, CancellationToken ct = default);
     Task<BillingPortalSessionResponse> CreateBillingPortalSessionAsync(CustomerSubscription subscription, CancellationToken ct = default);
     Task<CancelSubscriptionResponse> CancelSubscriptionAsync(CustomerSubscription subscription, CancellationToken ct = default);
+    Task<SwitchToAnnualBillingResponse> SwitchToAnnualBillingAsync(CustomerSubscription subscription, CancellationToken ct = default);
+    Task<UpgradeSubscriptionResponse> UpgradeToPremiumAsync(CustomerSubscription subscription, CancellationToken ct = default);
     Task HandleWebhookAsync(string json, string stripeSignature, CancellationToken ct = default);
 }
 

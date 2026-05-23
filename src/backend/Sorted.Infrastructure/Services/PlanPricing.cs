@@ -1,6 +1,7 @@
 using Sorted.Core.Entities;
 using Sorted.Core.Enums;
 using Sorted.Core.Options;
+using Sorted.Core.Plans;
 
 namespace Sorted.Infrastructure.Services;
 
@@ -15,11 +16,19 @@ public static class PlanPricing
         decimal storedPrice,
         PlanPricingOptions options)
     {
-        if (planName.Contains("Monthly", StringComparison.OrdinalIgnoreCase))
-            return options.EssentialMonthly;
+        if (PlanCatalog.IsPremium(planName))
+        {
+            return billingInterval == SubscriptionBillingInterval.Monthly
+                ? options.PremiumMonthly
+                : options.PremiumAnnual;
+        }
 
-        if (planName.Contains("Annual", StringComparison.OrdinalIgnoreCase))
-            return options.EssentialAnnual;
+        if (PlanCatalog.IsEssential(planName))
+        {
+            return billingInterval == SubscriptionBillingInterval.Monthly
+                ? options.EssentialMonthly
+                : options.EssentialAnnual;
+        }
 
         return billingInterval switch
         {

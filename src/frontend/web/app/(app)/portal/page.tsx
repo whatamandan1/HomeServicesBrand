@@ -24,6 +24,11 @@ export default function PortalPage() {
     api.customerVisits(auth.token).then(setVisits);
   }
 
+  function refreshSubscriptions() {
+    if (!auth?.token) return;
+    api.customerSubscriptions(auth.token).then(setSubs);
+  }
+
   useEffect(() => {
     if (!auth?.token || auth.role !== "Customer") return;
     api.customerSubscriptions(auth.token)
@@ -99,6 +104,7 @@ export default function PortalPage() {
           token={auth.token}
           subscriptions={subs}
           onError={setError}
+          onSubscriptionUpdated={refreshSubscriptions}
           onContactSupport={(message) => {
             setChatPrompt({ key: Date.now(), text: message });
             document.getElementById("support-chat")?.scrollIntoView({ behavior: "smooth" });

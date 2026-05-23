@@ -27,6 +27,8 @@ public class StripePriceOptions
 {
     public string EssentialMonthly { get; set; } = string.Empty;
     public string EssentialAnnual { get; set; } = string.Empty;
+    public string PremiumMonthly { get; set; } = string.Empty;
+    public string PremiumAnnual { get; set; } = string.Empty;
 }
 
 public class PlanPricingOptions
@@ -34,6 +36,8 @@ public class PlanPricingOptions
     public const string Section = "Plans";
     public decimal EssentialMonthly { get; set; } = 29.95m;
     public decimal EssentialAnnual { get; set; } = 299.95m;
+    public decimal PremiumMonthly { get; set; } = 49.95m;
+    public decimal PremiumAnnual { get; set; } = 499.95m;
 }
 
 public class SendGridOptions
