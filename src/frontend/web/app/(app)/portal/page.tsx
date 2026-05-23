@@ -135,10 +135,17 @@ export default function PortalPage() {
                         if (!auth?.token) return;
                         setBusySubId(s.id);
                         setError(null);
+                        let billingTab: Window | null = null;
                         try {
+                          billingTab = window.open("about:blank", "_blank", "noopener,noreferrer");
                           const { url } = await api.customerBillingPortal(auth.token, s.id);
-                          window.location.href = url;
+                          if (billingTab) {
+                            billingTab.location.href = url;
+                          } else {
+                            window.open(url, "_blank", "noopener,noreferrer");
+                          }
                         } catch (e) {
+                          billingTab?.close();
                           setError(e instanceof Error ? e.message : "Could not open billing portal");
                         } finally {
                           setBusySubId(null);

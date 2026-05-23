@@ -47,6 +47,80 @@ public class AdminController(
         return Ok(list);
     }
 
+    [HttpGet("customers/{customerId:guid}")]
+    public async Task<ActionResult<AdminCustomerDetailResponse>> CustomerDetail(Guid customerId, CancellationToken ct)
+    {
+        var customer = await db.Customers.AsNoTracking()
+            .Include(c => c.User)
+            .FirstOrDefaultAsync(c => c.Id == customerId && !c.IsDeleted, ct);
+        if (customer is null) return NotFound();
+
+        var subscriptions = await db.CustomerSubscriptions.AsNoTracking()
+            .Include(s => s.Plan)
+            .Where(s => s.CustomerId == customerId && !s.IsDeleted)
+            .OrderByDescending(s => s.CreatedAtUtc)
+            .ToListAsync(ct);
+
+        var properties = await db.CustomerProperties.AsNoTracking()
+            .Where(p => p.CustomerId == customerId && !p.IsDeleted)
+            .OrderByDescending(p => p.IsPrimary)
+            .ThenBy(p => p.CreatedAtUtc)
+            .Select(p => new CustomerPropertyResponse(
+                p.Id,
+                p.Line1,
+                p.Line2,
+                p.City,
+                p.Postcode,
+                p.GardenSize,
+                p.AccessNotes,
+                p.IsPrimary))
+            .ToListAsync(ct);
+
+        var recentVisits = await db.JobVisits.AsNoTracking()
+            .Where(v => v.Subscription.CustomerId == customerId && !v.IsDeleted)
+            .OrderByDescending(v => v.ScheduledDate)
+            .Take(10)
+            .Select(v => new JobVisitResponse(
+                v.Id,
+                v.ScheduledDate,
+                v.AvailabilityWindow,
+                v.Status,
+                v.Property.Postcode,
+                v.AssignedProvider != null
+                    ? v.AssignedProvider.User.FirstName + " " + v.AssignedProvider.User.LastName
+                    : null,
+                v.Property.Latitude,
+                v.Property.Longitude))
+            .ToListAsync(ct);
+
+        return Ok(new AdminCustomerDetailResponse(
+            customer.Id,
+            customer.User.Email,
+            customer.User.FirstName + " " + customer.User.LastName,
+            customer.User.Phone,
+            customer.CreatedAtUtc,
+            subscriptions.Select(ToAdminSubscription).ToList(),
+            properties,
+            recentVisits));
+    }
+
+    private static AdminCustomerSubscriptionResponse ToAdminSubscription(CustomerSubscription s)
+    {
+        var hasStripe = !string.IsNullOrWhiteSpace(s.StripeSubscriptionId);
+        var canCancel = s.Status is SubscriptionStatus.Active or SubscriptionStatus.PastDue
+            && s.CancelsAtUtc is null;
+
+        return new AdminCustomerSubscriptionResponse(
+            s.Id,
+            s.Plan.Name,
+            s.Status,
+            s.StartedAtUtc,
+            s.EndsAtUtc,
+            s.CancelsAtUtc,
+            hasStripe,
+            canCancel);
+    }
+
     [HttpGet("providers")]
     public async Task<ActionResult> Providers(CancellationToken ct)
     {

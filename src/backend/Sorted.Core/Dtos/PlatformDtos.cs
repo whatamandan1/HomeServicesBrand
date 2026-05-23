@@ -89,6 +89,26 @@ public record AdminDashboardResponse(
     int OpenVisits,
     int OpenEscalations);
 
+public record AdminCustomerSubscriptionResponse(
+    Guid Id,
+    string PlanName,
+    SubscriptionStatus Status,
+    DateTime? StartedAtUtc,
+    DateTime? MinimumTermEndsAtUtc,
+    DateTime? CancelsAtUtc,
+    bool HasStripeBilling,
+    bool CanCancel);
+
+public record AdminCustomerDetailResponse(
+    Guid Id,
+    string Email,
+    string Name,
+    string? Phone,
+    DateTime CreatedAtUtc,
+    IReadOnlyList<AdminCustomerSubscriptionResponse> Subscriptions,
+    IReadOnlyList<CustomerPropertyResponse> Properties,
+    IReadOnlyList<JobVisitResponse> RecentVisits);
+
 public record EscalationResponse(
     Guid Id,
     string Reason,

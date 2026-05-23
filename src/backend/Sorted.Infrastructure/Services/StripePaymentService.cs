@@ -196,7 +196,28 @@ public class StripePaymentService(
         if (subscription.CancelsAtUtc is not null)
             throw new InvalidOperationException("Cancellation is already scheduled.");
         if (string.IsNullOrWhiteSpace(subscription.StripeSubscriptionId))
-            throw new InvalidOperationException("This subscription is not linked to Stripe billing yet.");
+        {
+            var utcNow = DateTime.UtcNow;
+            var cancelsAt = subscription.EndsAtUtc is { } minimumEnd && minimumEnd > utcNow ? minimumEnd : utcNow;
+            subscription.CancelsAtUtc = cancelsAt;
+            if (cancelsAt <= utcNow)
+                subscription.Status = SubscriptionStatus.Cancelled;
+
+            await db.SaveChangesAsync(ct);
+            await workflow.LogAsync(
+                "billing",
+                "subscription_cancel_scheduled",
+                nameof(CustomerSubscription),
+                subscription.Id,
+                $"{{\"cancelsAtUtc\":\"{subscription.CancelsAtUtc:O}\",\"source\":\"admin-local\"}}",
+                ct);
+
+            var localMessage =
+                $"Subscription will end on {subscription.CancelsAtUtc:dddd d MMMM yyyy}."
+                + (subscription.Status == SubscriptionStatus.Cancelled ? " It is now cancelled." : "");
+
+            return new CancelSubscriptionResponse(subscription.CancelsAtUtc.Value, localMessage);
+        }
 
         EnsureApiKey();
         var now = DateTime.UtcNow;

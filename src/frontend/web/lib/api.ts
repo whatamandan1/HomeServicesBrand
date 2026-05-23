@@ -59,6 +59,28 @@ export type AdminCustomer = {
   createdAtUtc: string;
 };
 
+export type AdminCustomerSubscription = {
+  id: string;
+  planName: string;
+  status: string;
+  startedAtUtc: string | null;
+  minimumTermEndsAtUtc: string | null;
+  cancelsAtUtc: string | null;
+  hasStripeBilling: boolean;
+  canCancel: boolean;
+};
+
+export type AdminCustomerDetail = {
+  id: string;
+  email: string;
+  name: string;
+  phone: string | null;
+  createdAtUtc: string;
+  subscriptions: AdminCustomerSubscription[];
+  properties: CustomerProperty[];
+  recentVisits: JobVisit[];
+};
+
 export type AdminProvider = {
   id: string;
   email: string;
@@ -331,6 +353,14 @@ export const api = {
     }>("/api/admin/dashboard", {}, token),
   adminCustomers: (token: string) =>
     request<AdminCustomer[]>("/api/admin/customers", {}, token),
+  adminCustomerDetail: (token: string, customerId: string) =>
+    request<AdminCustomerDetail>(`/api/admin/customers/${customerId}`, {}, token),
+  adminCancelSubscription: (token: string, subscriptionId: string) =>
+    request<{ cancelsAtUtc: string; message: string }>(
+      `/api/admin/subscriptions/${subscriptionId}/cancel`,
+      { method: "POST" },
+      token
+    ),
   adminProviders: (token: string) =>
     request<AdminProvider[]>("/api/admin/providers", {}, token),
   adminVisits: (token: string) =>
