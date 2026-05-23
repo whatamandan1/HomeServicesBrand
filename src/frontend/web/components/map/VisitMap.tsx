@@ -74,7 +74,9 @@ export function VisitMap({
     return () => {
       cancelled = true;
     };
-  }, [visitsKey, coverageAreasKey, coverageFallbackKey, visits, coverageAreas, coverageFallback]);
+    // Keys encode visit/coverage data; object refs in deps caused infinite re-fetch loops.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [visitsKey, coverageAreasKey, coverageFallbackKey]);
 
   const visitPoints = useMemo(
     () => (resolvedVisits ? visitsWithCoordinates(resolvedVisits) : []),

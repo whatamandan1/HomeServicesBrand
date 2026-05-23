@@ -57,7 +57,9 @@ export function ProviderCoverageMap({
     return () => {
       cancelled = true;
     };
-  }, [providersKey, providers]);
+    // providersKey encodes provider coordinate fields; avoid `providers` ref in deps (re-render loop).
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [providersKey]);
 
   const mappable = useMemo(
     () => (resolvedProviders ? mappableProviders(resolvedProviders) : []),
