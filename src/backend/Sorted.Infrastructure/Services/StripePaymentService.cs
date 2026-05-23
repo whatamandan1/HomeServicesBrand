@@ -275,7 +275,7 @@ public class StripePaymentService(
             .FirstOrDefaultAsync(p =>
                 p.BrandId == subscription.Plan.BrandId
                 && p.BillingInterval == SubscriptionBillingInterval.Annual
-                && p.Name.Contains(tier, StringComparison.OrdinalIgnoreCase)
+                && p.Name.Contains(tier)
                 && p.IsActive
                 && !p.IsDeleted,
                 ct)
@@ -307,7 +307,7 @@ public class StripePaymentService(
             .FirstOrDefaultAsync(p =>
                 p.BrandId == subscription.Plan.BrandId
                 && p.BillingInterval == subscription.Plan.BillingInterval
-                && PlanCatalog.IsPremium(p.Name)
+                && p.Name.Contains(PlanCatalog.PremiumToken)
                 && p.IsActive
                 && !p.IsDeleted,
                 ct)

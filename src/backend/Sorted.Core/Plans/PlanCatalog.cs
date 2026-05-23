@@ -2,18 +2,21 @@ namespace Sorted.Core.Plans;
 
 public static class PlanCatalog
 {
+    public const string PremiumToken = "Premium";
+    public const string EssentialToken = "Essential";
+
     public static bool IsPremium(string planName) =>
-        planName.Contains("Premium", StringComparison.OrdinalIgnoreCase);
+        planName.Contains(PremiumToken, StringComparison.OrdinalIgnoreCase);
 
     public static bool IsEssential(string planName) =>
-        planName.Contains("Essential", StringComparison.OrdinalIgnoreCase);
+        planName.Contains(EssentialToken, StringComparison.OrdinalIgnoreCase);
 
     public static string GetTier(string planName)
     {
         if (IsPremium(planName))
-            return "Premium";
+            return PremiumToken;
         if (IsEssential(planName))
-            return "Essential";
+            return EssentialToken;
         return planName;
     }
 }
