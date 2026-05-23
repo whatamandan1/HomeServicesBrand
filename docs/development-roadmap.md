@@ -6,15 +6,15 @@ Living checklist comparing the current GardensSorted / Sorted platform build aga
 Use this document to track what is done, what is partial, and what to build next. Update
 statuses as features ship.
 
-**Last reviewed:** 2026-05-23  
+**Last reviewed:** 2026-05-23 (end of session)  
 **Live site:** https://home-services-brand.vercel.app/  
 **Live API:** https://homeservicesbrand-production.up.railway.app/
 
-**Current focus:** Phase 3 product — provider payouts, SMS, admin polish. Pilot flows verified on live.
+**Current focus:** Phase 3 product — provider payouts, SMS, admin polish. Pilot flows verified on live including day-off vs claimed-visit release.
 
 ### What's next (when you resume)
 
-Recent batch shipped: provider availability v1, billing portal recovery, signup/Postgres fixes, admin trend charts, same-gardener auto-assign, property photos.
+Recent batch shipped: provider availability v1 (incl. day-off release), billing portal recovery, signup/Postgres fixes, admin trend charts, same-gardener auto-assign, property photos.
 
 1. **Provider earnings / payouts** — Stripe Connect or visit ledger + payout history
 2. **Twilio SMS** — UK sender registration + visit/reminder texts in prod
@@ -29,7 +29,7 @@ Do this **once**, immediately before inviting real paying customers:
 2. **Turn off demo seed on Railway** — set `Features__SeedDemoData=false` and redeploy API (only after the real admin exists and you have verified admin login).
 3. **Smoke-test on live** — admin login, customer signup, billing portal, provider claim flow, no demo credentials visible in UI.
 
-Recent session (2026-05-23): provider availability (working days, hours, blocked dates), billing sync + Manage billing, PostgreSQL migration fix for signup, 90-day weekly trend charts, gardener auto-assign + provider refresh, property photos, terms on signup.
+Recent session (2026-05-23): provider availability (working days, hours, blocked dates + **release assigned visits on day off**), billing sync + Manage billing, PostgreSQL migration fix for signup, 90-day weekly trend charts, gardener auto-assign + provider refresh, property photos, terms on signup. Day-off release verified on live (25 Jun test case).
 
 ---
 
@@ -88,7 +88,7 @@ Work through phases in order. Each phase builds on the last.
 
 ### Phase 3 — Platform maturity (post-pilot / optional pre-launch)
 
-- [x] **Provider availability (v1)** — working days + default hours + blocked dates on `/provider`; claim, open jobs, and preferred-provider auto-assign respect schedule
+- [x] **Provider availability (v1)** — working days + default hours + blocked dates on `/provider`; claim, open jobs, and preferred-provider auto-assign respect schedule; blocking a day or changing working days releases assigned visits back to open pool (incl. rescheduled)
 - [ ] **Provider availability (v2)** — match visit times to customer text windows; admin view/edit
 - [ ] **Multi-brand frontend** — theme/config per brand; remove hardcoded `gardens-sorted` in API client
 - [ ] **Provider earnings / payouts** — ledger or Stripe Connect integration
@@ -127,7 +127,7 @@ Work through phases in order. Each phase builds on the last.
 |-------------|--------|-----------|
 | Onboard | ✅ Done | Apply at `/providers#apply` (postcode + radius); admin approves on `/admin` |
 | Claim jobs | ✅ Done | Matched by derived outcodes / distance within radius |
-| Manage availability | 🟡 Partial | Working days, hours, blocked dates on `/provider`; v2 = time-window matching + admin view |
+| Manage availability | 🟡 Partial | Working days, hours, blocked dates on `/provider`; day-off releases claimed/rescheduled visits; v2 = time-window matching + admin view |
 | View earnings | ⬜ Not started | Payout ledger + Stripe Connect or manual tracking |
 | View recurring assignments | ✅ Done | Preferred gardener auto-assign; portal shows assigned gardener name |
 | Communicate with operations | ⬜ Not started | Provider messaging or ops notifications |
@@ -154,7 +154,7 @@ Work through phases in order. Each phase builds on the last.
 | Requirement | Status | Next step |
 |-------------|--------|-----------|
 | Recurring visits | 🟡 Partial | Background job to generate future visits indefinitely |
-| Availability windows | 🟡 Partial | Customer free-text preference on signup; provider schedule enforced on dispatch |
+| Availability windows | 🟡 Partial | Customer free-text preference on signup; provider schedule enforced on dispatch; day-off unassigns conflicting visits |
 | Provider allocation | ✅ Done | Radius from base postcode; outcodes derived via postcodes.io; distance fallback |
 | Weather-aware adjustments | ⬜ Not started | Weather API + reschedule workflow |
 | Recurring provider preference | ✅ Done | Set on first completed visit; auto-assign on scheduling + after complete |
@@ -276,7 +276,7 @@ Quick snapshot of implemented features as of last review.
 - Customer: signup creates account, property, subscription; property edit in portal
 - Stripe: subscription Checkout + renewal/past_due/cancel webhooks; billing portal (cancel disabled — support/admin only); customer payment history API
 - Visits: scheduling service, background jobs (top-up, dispatch expiry, reminders), claim/start/complete, cancel/reschedule
-- Provider availability: `WorkingDaysMask`, default hours, `ProviderBlockedDates`; API + provider UI; enforced on open jobs, claim, auto-assign
+- Provider availability: `WorkingDaysMask`, default hours, `ProviderBlockedDates`; API + provider UI; enforced on open jobs, claim, auto-assign; calendar-day release of assigned visits on blocked dates / non-working days (self-heal on `GET /provider/visits/mine`)
 - Signup: terms acceptance, deferred photo upload, checkout session sync, PostgreSQL migration repair
 - Billing: Manage billing for active subs; Stripe link recovery from checkout session
 - Admin: KPI trend charts (daily 7/30d, weekly 90d); customer photo count in CRM
@@ -299,6 +299,9 @@ Quick snapshot of implemented features as of last review.
 - Docker, env examples, Stripe/Twilio setup guides
 
 ### Recent commits (2026-05-23)
+- `efacb65` — reliable day-off release (calendar-day match, rescheduled visits, schedule-change + my-visits self-heal)
+- `772083a` — initial day-off clash fix (blocked-date release)
+- `bb9ef6d` — provider availability v1 (working days, hours, blocked dates)
 - `5e14953` — 90-day weekly trend charts; provider refresh after complete
 - `0555109` — billing portal, admin trends/photos, gardener auto-assign on complete
 - `ae236be` — PostgreSQL migration fix (signup blocked on Railway)
