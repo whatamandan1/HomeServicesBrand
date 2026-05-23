@@ -40,7 +40,7 @@ function MapContainer({
       )}
       <div
         ref={containerRef}
-        className="map-shell h-[420px] w-full overflow-hidden rounded-lg border border-stone-200 bg-stone-100 shadow-sm"
+        className="map-shell w-full overflow-hidden rounded-lg border border-stone-200 bg-stone-200 shadow-sm"
         aria-label="Visit map"
       />
     </div>
