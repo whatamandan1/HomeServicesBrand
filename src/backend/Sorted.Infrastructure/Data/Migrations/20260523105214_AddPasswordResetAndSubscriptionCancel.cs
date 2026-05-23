@@ -11,6 +11,35 @@ namespace Sorted.Infrastructure.Data.Migrations
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
         {
+            if (migrationBuilder.ActiveProvider == "Npgsql.EntityFrameworkCore.PostgreSQL")
+            {
+                migrationBuilder.Sql("""
+                    ALTER TABLE "CustomerSubscriptions"
+                    ADD COLUMN IF NOT EXISTS "CancelsAtUtc" timestamp with time zone NULL;
+
+                    CREATE TABLE IF NOT EXISTS "PasswordResetTokens" (
+                        "Id" uuid NOT NULL,
+                        "UserId" uuid NOT NULL,
+                        "TokenHash" text NOT NULL,
+                        "ExpiresAtUtc" timestamp with time zone NOT NULL,
+                        "UsedAtUtc" timestamp with time zone NULL,
+                        "CreatedAtUtc" timestamp with time zone NOT NULL,
+                        "UpdatedAtUtc" timestamp with time zone NULL,
+                        "IsDeleted" boolean NOT NULL DEFAULT FALSE,
+                        CONSTRAINT "PK_PasswordResetTokens" PRIMARY KEY ("Id"),
+                        CONSTRAINT "FK_PasswordResetTokens_Users_UserId" FOREIGN KEY ("UserId") REFERENCES "Users" ("Id") ON DELETE CASCADE
+                    );
+
+                    CREATE UNIQUE INDEX IF NOT EXISTS "IX_PasswordResetTokens_TokenHash"
+                        ON "PasswordResetTokens" ("TokenHash");
+
+                    CREATE INDEX IF NOT EXISTS "IX_PasswordResetTokens_UserId"
+                        ON "PasswordResetTokens" ("UserId");
+                    """);
+
+                return;
+            }
+
             migrationBuilder.AddColumn<DateTime>(
                 name: "CancelsAtUtc",
                 table: "CustomerSubscriptions",
@@ -56,6 +85,15 @@ namespace Sorted.Infrastructure.Data.Migrations
         /// <inheritdoc />
         protected override void Down(MigrationBuilder migrationBuilder)
         {
+            if (migrationBuilder.ActiveProvider == "Npgsql.EntityFrameworkCore.PostgreSQL")
+            {
+                migrationBuilder.Sql("""
+                    DROP TABLE IF EXISTS "PasswordResetTokens";
+                    ALTER TABLE "CustomerSubscriptions" DROP COLUMN IF EXISTS "CancelsAtUtc";
+                    """);
+                return;
+            }
+
             migrationBuilder.DropTable(
                 name: "PasswordResetTokens");
 
