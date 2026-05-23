@@ -26,7 +26,9 @@ export default function PortalPage() {
 
   useEffect(() => {
     if (!auth?.token || auth.role !== "Customer") return;
-    api.customerSubscriptions(auth.token).then(setSubs);
+    api.customerSubscriptions(auth.token)
+      .then(setSubs)
+      .catch((e) => setError(e instanceof Error ? e.message : "Could not load subscriptions"));
     api.customerProperties(auth.token).then(setProperties);
     refreshVisits();
   }, [auth]);

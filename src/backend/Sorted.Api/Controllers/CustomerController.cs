@@ -33,20 +33,27 @@ public class CustomerController(
     {
         var customerId = await GetCustomerIdAsync(ct);
         var subs = await db.CustomerSubscriptions.AsNoTracking()
+            .Include(s => s.Plan)
             .Where(s => s.CustomerId == customerId && !s.IsDeleted)
-            .Select(s => new CustomerSubscriptionResponse(
-                s.Id,
-                s.Plan.Name,
-                s.Status,
-                s.StartedAtUtc,
-                s.AvailabilityPreference,
-                s.EndsAtUtc,
-                s.CancelsAtUtc,
-                (s.Status == SubscriptionStatus.Active || s.Status == SubscriptionStatus.PastDue)
-                    && (s.StripeCustomerId != null || s.StripeSubscriptionId != null)))
             .ToListAsync(ct);
-        return Ok(subs);
+
+        var responses = subs.Select(s => new CustomerSubscriptionResponse(
+            s.Id,
+            s.Plan.Name,
+            s.Status,
+            s.StartedAtUtc,
+            s.AvailabilityPreference,
+            s.EndsAtUtc,
+            s.CancelsAtUtc,
+            CanManageBilling(s))).ToList();
+
+        return Ok(responses);
     }
+
+    private static bool CanManageBilling(CustomerSubscription s) =>
+        s.Status != SubscriptionStatus.PendingPayment
+        && (!string.IsNullOrWhiteSpace(s.StripeCustomerId)
+            || !string.IsNullOrWhiteSpace(s.StripeSubscriptionId));
 
     [HttpPost("subscriptions/{subscriptionId:guid}/billing-portal")]
     public async Task<ActionResult<BillingPortalSessionResponse>> BillingPortal(Guid subscriptionId, CancellationToken ct)

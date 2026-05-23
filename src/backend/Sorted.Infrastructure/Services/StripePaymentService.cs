@@ -119,29 +119,34 @@ public class StripePaymentService(
         if (!string.IsNullOrWhiteSpace(_billingPortalConfigurationId))
             return _billingPortalConfigurationId;
 
+        EnsureApiKey();
         var configService = new Stripe.BillingPortal.ConfigurationService();
         var existing = await configService.ListAsync(
             new Stripe.BillingPortal.ConfigurationListOptions { Limit = 100 },
             cancellationToken: ct);
-        var managed = existing.Data.FirstOrDefault(c =>
-            c.Metadata?.TryGetValue(ManagedPortalMetadataKey, out var value) == true
-            && value == ManagedPortalMetadataValue);
 
         var features = BuildManagedPortalFeatures();
+        var config = existing.Data.FirstOrDefault(c =>
+                c.Metadata?.TryGetValue(ManagedPortalMetadataKey, out var value) == true
+                && value == ManagedPortalMetadataValue)
+            ?? existing.Data.FirstOrDefault(c => c.IsDefault)
+            ?? existing.Data.FirstOrDefault(c => c.Active);
 
-        if (managed is not null)
+        if (config is not null)
         {
-            if (managed.Features?.SubscriptionCancel?.Enabled == true
-                || managed.Features?.SubscriptionUpdate?.Enabled == true)
+            if (PortalCancelOrPlanChangeEnabled(config))
             {
-                managed = await configService.UpdateAsync(
-                    managed.Id,
+                config = await configService.UpdateAsync(
+                    config.Id,
                     new Stripe.BillingPortal.ConfigurationUpdateOptions { Features = features },
                     cancellationToken: ct);
+                logger.LogInformation(
+                    "Updated Stripe billing portal configuration {ConfigurationId} (cancellation disabled)",
+                    config.Id);
             }
 
-            _billingPortalConfigurationId = managed.Id;
-            return managed.Id;
+            _billingPortalConfigurationId = config.Id;
+            return config.Id;
         }
 
         var created = await configService.CreateAsync(
@@ -156,16 +161,29 @@ public class StripePaymentService(
             cancellationToken: ct);
 
         _billingPortalConfigurationId = created.Id;
-        logger.LogInformation("Created Stripe billing portal configuration {ConfigurationId} (cancellation disabled)", created.Id);
+        logger.LogInformation(
+            "Created Stripe billing portal configuration {ConfigurationId} (cancellation disabled)",
+            created.Id);
         return created.Id;
     }
+
+    private static bool PortalCancelOrPlanChangeEnabled(Stripe.BillingPortal.Configuration config) =>
+        config.Features?.SubscriptionCancel?.Enabled != false
+        || config.Features?.SubscriptionUpdate?.Enabled != false;
 
     private static Stripe.BillingPortal.ConfigurationFeaturesOptions BuildManagedPortalFeatures() =>
         new()
         {
             InvoiceHistory = new Stripe.BillingPortal.ConfigurationFeaturesInvoiceHistoryOptions { Enabled = true },
             PaymentMethodUpdate = new Stripe.BillingPortal.ConfigurationFeaturesPaymentMethodUpdateOptions { Enabled = true },
-            SubscriptionCancel = new Stripe.BillingPortal.ConfigurationFeaturesSubscriptionCancelOptions { Enabled = false },
+            SubscriptionCancel = new Stripe.BillingPortal.ConfigurationFeaturesSubscriptionCancelOptions
+            {
+                Enabled = false,
+                CancellationReason = new Stripe.BillingPortal.ConfigurationFeaturesSubscriptionCancelCancellationReasonOptions
+                {
+                    Enabled = false,
+                },
+            },
             SubscriptionUpdate = new Stripe.BillingPortal.ConfigurationFeaturesSubscriptionUpdateOptions { Enabled = false },
         };
 
