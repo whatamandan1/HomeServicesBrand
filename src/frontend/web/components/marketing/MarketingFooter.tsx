@@ -27,6 +27,8 @@ export function MarketingFooter() {
             <li><Link href="/providers" className="hover:text-white">Become a gardener</Link></li>
             <li><Link href="/login" className="hover:text-white">Log in</Link></li>
             <li><Link href="/about" className="hover:text-white">About us</Link></li>
+            <li><Link href="/privacy" className="hover:text-white">Privacy policy</Link></li>
+            <li><Link href="/terms" className="hover:text-white">Terms of service</Link></li>
           </ul>
         </div>
       </div>

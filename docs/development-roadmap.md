@@ -10,14 +10,14 @@ statuses as features ship.
 **Live site:** https://home-services-brand.vercel.app/  
 **Live API:** https://homeservicesbrand-production.up.railway.app/
 
-**Current focus:** Pre-launch hardening — finish customer-facing gaps, then **real admin + disable demo seed** as the final gate before opening to paying customers.
+**Current focus:** Go-live gate — real admin account + disable demo seed when ready for paying customers.
 
 ### What's next (when you resume)
 
-Phases 1–2 are **complete and verified on live**. Work through the items below in order; **do not** create the production admin account or turn off demo seed until everything else is done.
+Marketing polish is **done except custom domain** (add `NEXT_PUBLIC_SITE_URL` when `gardenssorted.co.uk` is on Vercel). Next:
 
-1. **Marketing & ops polish** — custom domain + `NEXT_PUBLIC_SITE_URL`; compress `og-image.png`; privacy/terms pages before ad spend.
-2. **Phase 3 (optional before launch)** — provider availability, automated tests, multi-brand — only if needed for pilot scope.
+1. **Pre-launch gate** — real admin account, `Features__SeedDemoData=false`, live smoke-test (see below).
+2. **Phase 3 (optional)** — provider availability, automated tests, multi-brand — only if needed for pilot scope.
 
 ### Last job before go-live (customer launch gate)
 
@@ -27,7 +27,7 @@ Do this **once**, immediately before inviting real paying customers:
 2. **Turn off demo seed on Railway** — set `Features__SeedDemoData=false` and redeploy API (only after the real admin exists and you have verified admin login).
 3. **Smoke-test on live** — admin login, customer signup, billing portal, provider claim flow, no demo credentials visible in UI.
 
-Recent session (2026-05-23): auth & production security (role-based route middleware, production startup guards, demo login hidden by default); customer billing self-service with Premium upgrade and annual switch.
+Recent session (2026-05-23): marketing polish (privacy/terms pages, compressed OG image, footer links); role-specific app header nav; auth account switching fixes.
 
 ---
 
@@ -239,7 +239,7 @@ Modular boundaries to maintain as the platform grows.
 |------|--------|-----------|
 | JWT + RBAC | ✅ Done | API + Next.js role middleware on `/admin`, `/provider`, `/portal` |
 | Encrypted secrets | 🟡 Partial | Env vars documented; production startup validates JWT + Stripe webhook |
-| GDPR readiness | ⬜ Not started | Privacy flows, data export/delete |
+| GDPR readiness | 🟡 Partial | Privacy policy at `/privacy`; data export/delete flows still open |
 | Audit logging | 🟡 Partial | AI + workflow logs in DB; admin UI missing |
 | Structured logging | 🟡 Partial | Serilog + `/health`; add error tracking (e.g. Sentry) |
 | Workflow tracing | 🟡 Partial | `WorkflowEvent` table; no admin viewer |
@@ -280,7 +280,7 @@ Quick snapshot of implemented features as of last review.
 - Brands API, workflow event logging, health checks
 
 ### Frontend
-- Marketing: customer-focused `/`, `/about`, `/providers`; SEO (sitemap, robots); compressed hero; lazy chat
+- Marketing: customer-focused `/`, `/about`, `/providers`; SEO (sitemap, robots); compressed hero; lazy chat; `/privacy` and `/terms`; OG image (~200KB JPEG)
 - Signup: 3-step customer wizard; provider apply form (postcode + radius slider)
 - Portals: `/portal` (billing section, payment history, support-led cancellation), `/provider` (coverage self-service), `/admin` (CRM polish)
 - Mobile UX: responsive layouts, hamburger nav, mobile CTA bar

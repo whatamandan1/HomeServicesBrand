@@ -23,13 +23,13 @@ export const metadata: Metadata = {
     title: "GardensSorted — Garden care, sorted.",
     description: "Recurring garden care subscriptions for Yorkshire homes.",
     type: "website",
-    images: [{ url: "/og-image.png", width: 1200, height: 630, alt: "GardensSorted — Garden care, sorted." }],
+    images: [{ url: "/og-image.jpg", width: 1200, height: 630, alt: "GardensSorted — Garden care, sorted." }],
   },
   twitter: {
     card: "summary_large_image",
     title: "GardensSorted — Garden care, sorted.",
     description: "Recurring garden care subscriptions for Yorkshire homes.",
-    images: ["/og-image.png"],
+    images: ["/og-image.jpg"],
   },
 };
 
