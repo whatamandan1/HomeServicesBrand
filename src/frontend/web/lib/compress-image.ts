@@ -1,5 +1,5 @@
-const MAX_DIMENSION = 1200;
-const JPEG_QUALITY = 0.82;
+const MAX_DIMENSION = 800;
+const JPEG_QUALITY = 0.75;
 
 export async function compressImageFile(file: File): Promise<File> {
   if (!file.type.startsWith("image/")) {

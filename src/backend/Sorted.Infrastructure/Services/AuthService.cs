@@ -1,6 +1,7 @@
 using System.Security.Cryptography;
 using System.Text;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 using Sorted.Core.Dtos;
 using Sorted.Core.Entities;
@@ -20,6 +21,7 @@ public class AuthService(
     ISmsService sms,
     IPostcodeGeocodingService geocoding,
     IProviderCoverageService coverage,
+    IServiceScopeFactory scopeFactory,
     IOptions<AppOptions> appOptions) : IAuthService
 {
     private readonly AppOptions _appOptions = appOptions.Value;
@@ -57,15 +59,14 @@ public class AuthService(
             TermsAcceptedAtUtc = DateTime.UtcNow
         };
         db.Customers.Add(customer);
-        await db.SaveChangesAsync(ct);
 
         var property = new CustomerProperty
         {
-            CustomerId = customer.Id,
+            Customer = customer,
             Line1 = request.Line1,
             Line2 = request.Line2,
             City = request.City,
-            Postcode = request.Postcode.ToUpperInvariant(),
+            Postcode = PostcodeFormat.Normalize(request.Postcode),
             GardenSize = request.GardenSize,
             IsPrimary = true
         };
@@ -73,7 +74,7 @@ public class AuthService(
 
         var subscription = new CustomerSubscription
         {
-            CustomerId = customer.Id,
+            Customer = customer,
             SubscriptionPlanId = plan.Id,
             Status = SubscriptionStatus.PendingPayment,
             AvailabilityPreference = request.AvailabilityPreference
@@ -81,13 +82,7 @@ public class AuthService(
         db.CustomerSubscriptions.Add(subscription);
         await db.SaveChangesAsync(ct);
 
-        var geo = await geocoding.LookupAsync(property.Postcode, ct);
-        if (geo is not null)
-        {
-            property.Latitude = geo.Latitude;
-            property.Longitude = geo.Longitude;
-            await db.SaveChangesAsync(ct);
-        }
+        SchedulePropertyGeocoding(property.Id, property.Postcode);
 
         await workflow.LogAsync("customer_signup", "registered", nameof(Customer), customer.Id, new { user.Email, plan.Name }, ct);
 
@@ -293,4 +288,32 @@ public class AuthService(
 
     private static string HashResetToken(string token) =>
         Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(token)));
+
+    private void SchedulePropertyGeocoding(Guid propertyId, string postcode)
+    {
+        _ = Task.Run(async () =>
+        {
+            try
+            {
+                using var scope = scopeFactory.CreateScope();
+                var scopedDb = scope.ServiceProvider.GetRequiredService<SortedDbContext>();
+                var scopedGeocoding = scope.ServiceProvider.GetRequiredService<IPostcodeGeocodingService>();
+                var geo = await scopedGeocoding.LookupAsync(postcode, CancellationToken.None);
+                if (geo is null) return;
+
+                var property = await scopedDb.CustomerProperties
+                    .FirstOrDefaultAsync(p => p.Id == propertyId && !p.IsDeleted);
+                if (property is null) return;
+
+                property.Latitude = geo.Latitude;
+                property.Longitude = geo.Longitude;
+                property.UpdatedAtUtc = DateTime.UtcNow;
+                await scopedDb.SaveChangesAsync();
+            }
+            catch
+            {
+                // Geocoding should not block signup completion.
+            }
+        });
+    }
 }

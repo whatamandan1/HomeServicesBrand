@@ -9,6 +9,7 @@ import { formatGbp } from "@/lib/format";
 import { FALLBACK_PLANS, sortPlans } from "@/lib/plans";
 import { saveAuth } from "@/lib/auth-storage";
 import { stashSignupPhotos } from "@/lib/pending-signup-photos";
+import { compressImageFile } from "@/lib/compress-image";
 import type { AuthResponse } from "@/lib/api";
 
 const STEPS = ["Choose plan", "Your details", "Your garden"] as const;
@@ -36,6 +37,7 @@ export default function SignupPage() {
   });
   const [acceptedTerms, setAcceptedTerms] = useState(false);
   const [pendingPhotos, setPendingPhotos] = useState<File[]>([]);
+  const [photoBusy, setPhotoBusy] = useState(false);
 
   useEffect(() => {
     api.getPlans().then((p) => {
@@ -80,10 +82,6 @@ export default function SignupPage() {
   }
 
   async function continueToPayment(auth: AuthResponse) {
-    if (pendingPhotos.length > 0) {
-      await stashSignupPhotos(pendingPhotos);
-    }
-
     let subId = auth.pendingSubscriptionId ?? null;
     if (!subId) {
       const subs = await api.customerSubscriptions(auth.token);
@@ -92,12 +90,22 @@ export default function SignupPage() {
     if (!subId) throw new Error("No subscription awaiting payment on this account.");
 
     if (skipPayment) {
+      try {
+        if (pendingPhotos.length > 0) await stashSignupPhotos(pendingPhotos);
+      } catch {
+        // Photos can be added in the portal after signup.
+      }
       await api.devActivate(subId);
       router.push("/portal");
       return;
     }
 
     const checkout = await api.checkout(subId, auth.token);
+    try {
+      if (pendingPhotos.length > 0) await stashSignupPhotos(pendingPhotos);
+    } catch {
+      // Photos can be added in the portal after payment.
+    }
     window.location.href = checkout.url;
   }
 
@@ -143,10 +151,12 @@ export default function SignupPage() {
               "This email is already registered. Log in with your password to continue to payment."
             );
           } else {
+            const retryMessage =
+              retryErr instanceof Error ? retryErr.message : "Could not continue checkout.";
             setError(
-              retryErr instanceof Error
-                ? `${message} ${retryErr.message}`
-                : `${message} Try logging in to continue checkout.`
+              retryMessage === message
+                ? `${message} Try logging in to continue checkout.`
+                : retryMessage
             );
           }
           return;
@@ -308,15 +318,25 @@ export default function SignupPage() {
                 ))}
                 {pendingPhotos.length < 3 && (
                   <label className="inline-flex cursor-pointer items-center rounded-full border border-stone-200 px-4 py-2 text-sm font-medium text-stone-700 hover:bg-stone-50">
-                    Add photo
+                    {photoBusy ? "Processing…" : "Add photo"}
                     <input
                       type="file"
                       accept="image/jpeg,image/png,image/webp,image/*"
                       className="sr-only"
+                      disabled={photoBusy || loading}
                       onChange={(e) => {
                         const file = e.target.files?.[0];
                         e.target.value = "";
-                        if (file) setPendingPhotos((files) => [...files, file].slice(0, 3));
+                        if (!file) return;
+                        setPhotoBusy(true);
+                        void compressImageFile(file)
+                          .then((compressed) => {
+                            setPendingPhotos((files) => [...files, compressed].slice(0, 3));
+                          })
+                          .catch(() => {
+                            setError("Could not process that photo. Try a smaller image.");
+                          })
+                          .finally(() => setPhotoBusy(false));
                       }}
                     />
                   </label>
@@ -355,7 +375,7 @@ export default function SignupPage() {
               onClick={submit}
               className="btn-primary sm:ml-auto"
             >
-              {loading ? "Creating account…" : skipPayment ? "Create account" : "Continue to payment"}
+              {loading ? "Continuing to payment…" : skipPayment ? "Create account" : "Continue to payment"}
             </button>
           )}
         </div>

@@ -54,7 +54,7 @@ export default function PortalPage() {
           await api.customerUploadPropertyPhoto(
             auth.token,
             primary.id,
-            stashedPhotoToFile(item)
+            await stashedPhotoToFile(item)
           );
         } catch {
           // Photos can be re-added manually in the portal if upload fails.
