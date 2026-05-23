@@ -107,7 +107,12 @@ export function ProviderAvailabilitySection({
       );
       setBlockedDate("");
       setBlockedReason("");
-      onNotice("Day off added.");
+      const released = updated.releasedVisitCount ?? 0;
+      onNotice(
+        released > 0
+          ? `Day off added. ${released} visit${released === 1 ? "" : "s"} returned to the open pool.`
+          : "Day off added."
+      );
       onUpdated?.();
     } catch (e) {
       onError(e instanceof Error ? e.message : "Could not block that date");

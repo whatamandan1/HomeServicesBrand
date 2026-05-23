@@ -1,34 +1,29 @@
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Options;
 using Sorted.Core;
 using Sorted.Core.Dtos;
 using Sorted.Core.Entities;
+using Sorted.Core.Enums;
 using Sorted.Core.Interfaces;
+using Sorted.Core.Options;
 using Sorted.Infrastructure.Data;
 
 namespace Sorted.Infrastructure.Services;
 
-public class ProviderAvailabilityService(SortedDbContext db) : IProviderAvailabilityService
+public class ProviderAvailabilityService(
+    SortedDbContext db,
+    IOptions<BackgroundJobsOptions> jobOptions) : IProviderAvailabilityService
 {
+    private readonly BackgroundJobsOptions _jobOptions = jobOptions.Value;
+
     public async Task<bool> IsAvailableAsync(Provider provider, DateTime scheduledDate, CancellationToken ct = default)
     {
-        var date = DateOnly.FromDateTime(scheduledDate.Date);
-        if (!ProviderWorkingDays.IsWorkingDay(provider.WorkingDaysMask, scheduledDate.DayOfWeek))
+        var visitDate = VisitCalendar.ToVisitDate(scheduledDate);
+        if (!ProviderWorkingDays.IsWorkingDay(provider.WorkingDaysMask, visitDate.DayOfWeek))
             return false;
 
-        if (provider.BlockedDates.Count > 0)
-        {
-            if (provider.BlockedDates.Any(b => !b.IsDeleted && b.BlockedDate == date))
-                return false;
-        }
-        else
-        {
-            var blocked = await db.ProviderBlockedDates.AsNoTracking()
-                .AnyAsync(b => b.ProviderId == provider.Id && !b.IsDeleted && b.BlockedDate == date, ct);
-            if (blocked)
-                return false;
-        }
-
-        return true;
+        return !await db.ProviderBlockedDates.AsNoTracking()
+            .AnyAsync(b => b.ProviderId == provider.Id && !b.IsDeleted && b.BlockedDate == visitDate, ct);
     }
 
     public async Task<ProviderAvailabilityResponse> GetAvailabilityAsync(Guid providerId, CancellationToken ct = default)
@@ -95,9 +90,16 @@ public class ProviderAvailabilityService(SortedDbContext db) : IProviderAvailabi
             Reason = string.IsNullOrWhiteSpace(request.Reason) ? null : request.Reason.Trim(),
         };
         db.ProviderBlockedDates.Add(entry);
+
+        var releasedVisitCount = await ReleaseAssignedVisitsOnDateAsync(providerId, blockedDate, ct);
+
         await db.SaveChangesAsync(ct);
 
-        return new ProviderBlockedDateResponse(entry.Id, entry.BlockedDate.ToString("yyyy-MM-dd"), entry.Reason);
+        return new ProviderBlockedDateResponse(
+            entry.Id,
+            entry.BlockedDate.ToString("yyyy-MM-dd"),
+            entry.Reason,
+            releasedVisitCount);
     }
 
     public async Task RemoveBlockedDateAsync(Guid providerId, Guid blockedDateId, CancellationToken ct = default)
@@ -109,6 +111,56 @@ public class ProviderAvailabilityService(SortedDbContext db) : IProviderAvailabi
         entry.IsDeleted = true;
         entry.UpdatedAtUtc = DateTime.UtcNow;
         await db.SaveChangesAsync(ct);
+    }
+
+    private async Task<int> ReleaseAssignedVisitsOnDateAsync(
+        Guid providerId,
+        DateOnly blockedDate,
+        CancellationToken ct)
+    {
+        var (dayStart, dayEnd) = VisitCalendar.ToUtcDayRange(blockedDate);
+        var visits = await db.JobVisits
+            .Where(v =>
+                v.AssignedProviderId == providerId
+                && !v.IsDeleted
+                && v.ScheduledDate >= dayStart
+                && v.ScheduledDate < dayEnd
+                && (v.Status == VisitStatus.Claimed || v.Status == VisitStatus.InProgress))
+            .ToListAsync(ct);
+
+        if (visits.Count == 0)
+            return 0;
+
+        var now = DateTime.UtcNow;
+        var expiryDays = _jobOptions.DispatchOfferExpiryDays;
+
+        foreach (var visit in visits)
+        {
+            visit.Status = VisitStatus.OpenForClaim;
+            visit.AssignedProviderId = null;
+            visit.ClaimedAtUtc = null;
+            visit.UpdatedAtUtc = now;
+
+            var offer = await db.DispatchOffers
+                .FirstOrDefaultAsync(o => o.JobVisitId == visit.Id && !o.IsDeleted, ct);
+            if (offer is not null)
+            {
+                offer.Status = DispatchOfferStatus.Open;
+                offer.ExpiresAtUtc = now.AddDays(expiryDays);
+                offer.UpdatedAtUtc = now;
+            }
+            else
+            {
+                db.DispatchOffers.Add(new DispatchOffer
+                {
+                    JobVisitId = visit.Id,
+                    Status = DispatchOfferStatus.Open,
+                    ExpiresAtUtc = now.AddDays(expiryDays),
+                });
+            }
+        }
+
+        return visits.Count;
     }
 
     private static ProviderAvailabilityResponse MapResponse(Provider provider)

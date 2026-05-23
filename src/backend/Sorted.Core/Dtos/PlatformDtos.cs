@@ -116,7 +116,8 @@ public record UpdateProviderCoverageRequest(
 public record ProviderBlockedDateResponse(
     Guid Id,
     string BlockedDate,
-    string? Reason);
+    string? Reason,
+    int ReleasedVisitCount = 0);
 
 public record ProviderAvailabilityResponse(
     int WorkingDaysMask,

@@ -153,6 +153,7 @@ export type ProviderBlockedDate = {
   id: string;
   blockedDate: string;
   reason: string | null;
+  releasedVisitCount?: number;
 };
 
 export type ProviderAvailability = {
