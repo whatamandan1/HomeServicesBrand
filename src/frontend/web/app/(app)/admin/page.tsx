@@ -226,43 +226,52 @@ export default function AdminPage() {
         <h2 className="font-semibold">Customers</h2>
         <div className="mt-2 space-y-2">
           {customers.map((c) => (
-            <div
-              key={c.id}
-              className="flex flex-wrap items-center justify-between gap-2 rounded-lg border bg-white p-3 text-sm shadow-sm"
-            >
-              <div>
-                <div className="font-medium">{c.name}</div>
-                <div className="text-stone-500">{c.email}</div>
-                <div className="text-xs text-stone-400">
-                  Joined {new Date(c.createdAtUtc).toLocaleDateString("en-GB")}
+            <div key={c.id} id={`customer-${c.id}`} className="space-y-2">
+              <div className="flex flex-wrap items-center justify-between gap-2 rounded-lg border bg-white p-3 text-sm shadow-sm">
+                <div>
+                  <div className="font-medium">{c.name}</div>
+                  <div className="text-stone-500">{c.email}</div>
+                  <div className="text-xs text-stone-400">
+                    Joined {new Date(c.createdAtUtc).toLocaleDateString("en-GB")}
+                  </div>
                 </div>
+                <button
+                  type="button"
+                  className="rounded-lg border border-stone-200 px-3 py-1.5 text-sm font-medium text-stone-700 hover:bg-stone-50"
+                  onClick={() => {
+                    setSelectedCustomerId((current) => {
+                      const next = current === c.id ? null : c.id;
+                      if (next) {
+                        requestAnimationFrame(() => {
+                          document
+                            .getElementById(`customer-${c.id}`)
+                            ?.scrollIntoView({ behavior: "smooth", block: "nearest" });
+                        });
+                      }
+                      return next;
+                    });
+                  }}
+                >
+                  {selectedCustomerId === c.id ? "Hide" : "View"}
+                </button>
               </div>
-              <button
-                type="button"
-                className="rounded-lg border border-stone-200 px-3 py-1.5 text-sm font-medium text-stone-700 hover:bg-stone-50"
-                onClick={() =>
-                  setSelectedCustomerId((current) => (current === c.id ? null : c.id))
-                }
-              >
-                {selectedCustomerId === c.id ? "Hide" : "View"}
-              </button>
+              {selectedCustomerId === c.id && auth?.token && (
+                <CustomerDetailPanel
+                  customerId={c.id}
+                  token={auth.token}
+                  onClose={() => setSelectedCustomerId(null)}
+                  onUpdated={() => {
+                    api.adminDashboard(auth.token).then(setDash);
+                    api.adminCustomers(auth.token).then(setCustomers);
+                  }}
+                />
+              )}
             </div>
           ))}
           {customers.length === 0 && (
             <p className="text-sm text-stone-500">No customers yet.</p>
           )}
         </div>
-        {selectedCustomerId && auth?.token && (
-          <CustomerDetailPanel
-            customerId={selectedCustomerId}
-            token={auth.token}
-            onClose={() => setSelectedCustomerId(null)}
-            onUpdated={() => {
-              api.adminDashboard(auth.token).then(setDash);
-              api.adminCustomers(auth.token).then(setCustomers);
-            }}
-          />
-        )}
       </section>
 
       <section id="visits" className="scroll-mt-6">

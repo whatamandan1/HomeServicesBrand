@@ -62,7 +62,7 @@ export function CustomerDetailPanel({
   }
 
   return (
-    <div className="mt-4 rounded-xl border border-gardens-primary/20 bg-gardens-light/10 p-5">
+    <div className="rounded-xl border border-gardens-primary/20 bg-gardens-light/10 p-5">
       <div className="flex flex-wrap items-start justify-between gap-3">
         <h3 className="font-semibold text-gardens-dark">Customer detail</h3>
         <button

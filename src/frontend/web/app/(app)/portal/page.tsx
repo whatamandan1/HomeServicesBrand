@@ -137,12 +137,18 @@ export default function PortalPage() {
                         setError(null);
                         let billingTab: Window | null = null;
                         try {
-                          billingTab = window.open("about:blank", "_blank", "noopener,noreferrer");
+                          billingTab = window.open("", "_blank");
                           const { url } = await api.customerBillingPortal(auth.token, s.id);
                           if (billingTab) {
                             billingTab.location.href = url;
+                            billingTab.opener = null;
                           } else {
-                            window.open(url, "_blank", "noopener,noreferrer");
+                            const opened = window.open(url, "_blank");
+                            if (!opened) {
+                              setError(
+                                "Pop-up blocked. Allow pop-ups for this site, or try again."
+                              );
+                            }
                           }
                         } catch (e) {
                           billingTab?.close();
