@@ -11,6 +11,51 @@ namespace Sorted.Infrastructure.Data.Migrations
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
         {
+            if (migrationBuilder.ActiveProvider == "Npgsql.EntityFrameworkCore.PostgreSQL")
+            {
+                migrationBuilder.Sql("""
+                    ALTER TABLE "Customers"
+                    ADD COLUMN IF NOT EXISTS "TermsAcceptedAtUtc" timestamp with time zone NULL;
+
+                    ALTER TABLE "CustomerSubscriptions"
+                    ADD COLUMN IF NOT EXISTS "PreferredProviderId" uuid NULL;
+
+                    CREATE TABLE IF NOT EXISTS "PropertyMedia" (
+                        "Id" uuid NOT NULL,
+                        "CustomerPropertyId" uuid NOT NULL,
+                        "FileName" text NOT NULL,
+                        "ContentType" text NOT NULL,
+                        "Data" bytea NOT NULL,
+                        "SizeBytes" integer NOT NULL,
+                        "CreatedAtUtc" timestamp with time zone NOT NULL,
+                        "UpdatedAtUtc" timestamp with time zone NULL,
+                        "IsDeleted" boolean NOT NULL DEFAULT FALSE,
+                        CONSTRAINT "PK_PropertyMedia" PRIMARY KEY ("Id"),
+                        CONSTRAINT "FK_PropertyMedia_CustomerProperties_CustomerPropertyId" FOREIGN KEY ("CustomerPropertyId") REFERENCES "CustomerProperties" ("Id") ON DELETE CASCADE
+                    );
+
+                    CREATE INDEX IF NOT EXISTS "IX_PropertyMedia_CustomerPropertyId"
+                        ON "PropertyMedia" ("CustomerPropertyId");
+
+                    CREATE INDEX IF NOT EXISTS "IX_CustomerSubscriptions_PreferredProviderId"
+                        ON "CustomerSubscriptions" ("PreferredProviderId");
+
+                    DO $$
+                    BEGIN
+                        IF NOT EXISTS (
+                            SELECT 1 FROM pg_constraint
+                            WHERE conname = 'FK_CustomerSubscriptions_Providers_PreferredProviderId'
+                        ) THEN
+                            ALTER TABLE "CustomerSubscriptions"
+                            ADD CONSTRAINT "FK_CustomerSubscriptions_Providers_PreferredProviderId"
+                            FOREIGN KEY ("PreferredProviderId") REFERENCES "Providers" ("Id");
+                        END IF;
+                    END $$;
+                    """);
+
+                return;
+            }
+
             migrationBuilder.AddColumn<Guid>(
                 name: "PreferredProviderId",
                 table: "CustomerSubscriptions",
@@ -69,6 +114,21 @@ namespace Sorted.Infrastructure.Data.Migrations
         /// <inheritdoc />
         protected override void Down(MigrationBuilder migrationBuilder)
         {
+            if (migrationBuilder.ActiveProvider == "Npgsql.EntityFrameworkCore.PostgreSQL")
+            {
+                migrationBuilder.Sql("""
+                    ALTER TABLE "CustomerSubscriptions"
+                    DROP CONSTRAINT IF EXISTS "FK_CustomerSubscriptions_Providers_PreferredProviderId";
+
+                    DROP TABLE IF EXISTS "PropertyMedia";
+
+                    ALTER TABLE "CustomerSubscriptions" DROP COLUMN IF EXISTS "PreferredProviderId";
+                    ALTER TABLE "Customers" DROP COLUMN IF EXISTS "TermsAcceptedAtUtc";
+                    """);
+
+                return;
+            }
+
             migrationBuilder.DropForeignKey(
                 name: "FK_CustomerSubscriptions_Providers_PreferredProviderId",
                 table: "CustomerSubscriptions");

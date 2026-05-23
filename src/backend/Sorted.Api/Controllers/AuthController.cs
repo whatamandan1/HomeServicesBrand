@@ -25,6 +25,10 @@ public class AuthController(IAuthService auth) : ControllerBase
         {
             return BadRequest(new { error = ex.Message });
         }
+        catch (Exception)
+        {
+            return StatusCode(500, new { error = "Registration failed. Please try again or log in if you already signed up." });
+        }
     }
 
     [HttpPost("register/provider")]
