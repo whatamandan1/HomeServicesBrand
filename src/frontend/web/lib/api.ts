@@ -15,6 +15,8 @@ export type AuthResponse = {
   role: "Customer" | "Provider" | "Admin";
   brandCode: string | null;
   pendingSubscriptionId?: string | null;
+  impersonatorUserId?: string | null;
+  impersonatorEmail?: string | null;
 };
 
 export type CustomerSubscription = {
@@ -54,6 +56,7 @@ export type JobVisit = {
 
 export type AdminCustomer = {
   id: string;
+  userId: string;
   email: string;
   name: string;
   createdAtUtc: string;
@@ -72,6 +75,7 @@ export type AdminCustomerSubscription = {
 
 export type AdminCustomerDetail = {
   id: string;
+  userId: string;
   email: string;
   name: string;
   phone: string | null;
@@ -83,6 +87,7 @@ export type AdminCustomerDetail = {
 
 export type AdminProvider = {
   id: string;
+  userId: string;
   email: string;
   name: string;
   isApproved: boolean;
@@ -361,6 +366,8 @@ export const api = {
       { method: "POST" },
       token
     ),
+  adminImpersonate: (token: string, userId: string) =>
+    request<AuthResponse>(`/api/admin/users/${userId}/impersonate`, { method: "POST" }, token),
   adminProviders: (token: string) =>
     request<AdminProvider[]>("/api/admin/providers", {}, token),
   adminVisits: (token: string) =>

@@ -4,7 +4,9 @@ import { useEffect, useState } from "react";
 import { api, type AdminCustomer, type AdminProvider, type AiActionLog, type CommunicationThreadSummary, type Escalation, type JobVisit, type WorkflowEvent } from "@/lib/api";
 import { useAuth } from "@/lib/use-auth";
 import { CustomerDetailPanel } from "@/components/admin/CustomerDetailPanel";
+import { ActAsUserButton } from "@/components/admin/ActAsUserButton";
 import { StatCard } from "@/components/ui";
+import { isImpersonating } from "@/lib/auth-storage";
 import { VisitList } from "@/components/visits/VisitList";
 import { EscalationList } from "@/components/escalations/EscalationList";
 import { WorkflowEventList } from "@/components/workflow/WorkflowEventList";
@@ -52,6 +54,7 @@ export default function AdminPage() {
   const [providerView, setProviderView] = useState<ViewMode>("list");
   const [visitView, setVisitView] = useState<ViewMode>("list");
   const [selectedCustomerId, setSelectedCustomerId] = useState<string | null>(null);
+  const [customerError, setCustomerError] = useState<string | null>(null);
 
   function refreshVisits() {
     if (!auth?.token) return;
@@ -197,7 +200,7 @@ export default function AdminPage() {
                   ) : null}
                 </div>
               </div>
-              <div className="flex items-center gap-3">
+              <div className="flex flex-wrap items-center gap-2">
                 {p.isApproved ? (
                   <span className="text-green-700">Approved</span>
                 ) : (
@@ -212,6 +215,14 @@ export default function AdminPage() {
                     Approve
                   </button>
                 )}
+                {auth && auth.role === "Admin" && !isImpersonating(auth) && (
+                  <ActAsUserButton
+                    adminAuth={auth}
+                    userId={p.userId}
+                    label="Act as provider"
+                    onError={setCustomerError}
+                  />
+                )}
               </div>
             </div>
           ))}
@@ -224,6 +235,7 @@ export default function AdminPage() {
 
       <section id="customers" className="scroll-mt-6">
         <h2 className="font-semibold">Customers</h2>
+        {customerError && <p className="mt-2 text-sm text-red-600">{customerError}</p>}
         <div className="mt-2 space-y-2">
           {customers.map((c) => (
             <div key={c.id} id={`customer-${c.id}`} className="space-y-2">
@@ -235,31 +247,44 @@ export default function AdminPage() {
                     Joined {new Date(c.createdAtUtc).toLocaleDateString("en-GB")}
                   </div>
                 </div>
-                <button
-                  type="button"
-                  className="rounded-lg border border-stone-200 px-3 py-1.5 text-sm font-medium text-stone-700 hover:bg-stone-50"
-                  onClick={() => {
-                    setSelectedCustomerId((current) => {
-                      const next = current === c.id ? null : c.id;
-                      if (next) {
-                        requestAnimationFrame(() => {
-                          document
-                            .getElementById(`customer-${c.id}`)
-                            ?.scrollIntoView({ behavior: "smooth", block: "nearest" });
-                        });
-                      }
-                      return next;
-                    });
-                  }}
-                >
-                  {selectedCustomerId === c.id ? "Hide" : "View"}
-                </button>
+                <div className="flex flex-wrap items-center gap-2">
+                  <button
+                    type="button"
+                    className="rounded-lg border border-stone-200 px-3 py-1.5 text-sm font-medium text-stone-700 hover:bg-stone-50"
+                    onClick={() => {
+                      setSelectedCustomerId((current) => {
+                        const next = current === c.id ? null : c.id;
+                        if (next) {
+                          requestAnimationFrame(() => {
+                            document
+                              .getElementById(`customer-${c.id}`)
+                              ?.scrollIntoView({ behavior: "smooth", block: "nearest" });
+                          });
+                        }
+                        return next;
+                      });
+                    }}
+                  >
+                    {selectedCustomerId === c.id ? "Hide" : "View"}
+                  </button>
+                  {auth && auth.role === "Admin" && !isImpersonating(auth) && (
+                    <ActAsUserButton
+                      adminAuth={auth}
+                      userId={c.userId}
+                      label="Act as"
+                      onError={setCustomerError}
+                    />
+                  )}
+                </div>
               </div>
               {selectedCustomerId === c.id && auth?.token && (
                 <CustomerDetailPanel
                   customerId={c.id}
+                  customerUserId={c.userId}
                   token={auth.token}
+                  adminAuth={auth}
                   onClose={() => setSelectedCustomerId(null)}
+                  onError={setCustomerError}
                   onUpdated={() => {
                     api.adminDashboard(auth.token).then(setDash);
                     api.adminCustomers(auth.token).then(setCustomers);

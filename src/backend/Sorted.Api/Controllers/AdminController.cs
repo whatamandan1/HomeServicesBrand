@@ -1,3 +1,4 @@
+using System.Security.Claims;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -14,6 +15,7 @@ namespace Sorted.Api.Controllers;
 [Authorize(Roles = nameof(UserRole.Admin))]
 public class AdminController(
     SortedDbContext db,
+    IAuthService auth,
     IStripePaymentService stripe,
     IVisitSchedulingService scheduling,
     IVisitManagementService visits,
@@ -39,6 +41,7 @@ public class AdminController(
             .Select(c => new
             {
                 c.Id,
+                c.UserId,
                 c.User.Email,
                 Name = c.User.FirstName + " " + c.User.LastName,
                 c.CreatedAtUtc
@@ -95,6 +98,7 @@ public class AdminController(
 
         return Ok(new AdminCustomerDetailResponse(
             customer.Id,
+            customer.UserId,
             customer.User.Email,
             customer.User.FirstName + " " + customer.User.LastName,
             customer.User.Phone,
@@ -157,6 +161,7 @@ public class AdminController(
             .Select(p => new
             {
                 p.Id,
+                p.UserId,
                 p.User.Email,
                 name = p.User.FirstName + " " + p.User.LastName,
                 p.IsApproved,
@@ -310,6 +315,22 @@ public class AdminController(
             e.CreatedAtUtc,
             e.Customer?.User.Email,
             e.Notes);
+
+    [HttpPost("users/{userId:guid}/impersonate")]
+    public async Task<ActionResult<AuthResponse>> ImpersonateUser(Guid userId, CancellationToken ct)
+    {
+        var adminId = Guid.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!);
+        var adminEmail = User.FindFirstValue(ClaimTypes.Email)!;
+
+        try
+        {
+            return Ok(await auth.ImpersonateAsync(userId, adminId, adminEmail, ct));
+        }
+        catch (InvalidOperationException ex)
+        {
+            return BadRequest(new { error = ex.Message });
+        }
+    }
 
     [HttpPost("scheduling/open-dispatch")]
     public async Task<IActionResult> OpenDispatch(CancellationToken ct)

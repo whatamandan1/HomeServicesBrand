@@ -1,6 +1,7 @@
 import type { AuthResponse } from "./api";
 
 const KEY = "sorted_auth";
+const ADMIN_BACKUP_KEY = "sorted_auth_admin";
 const SESSION_COOKIE = "sorted_session";
 
 function cookieSecure() {
@@ -41,7 +42,36 @@ export function loadAuth(): AuthResponse | null {
 export function clearAuth() {
   if (typeof window === "undefined") return;
   localStorage.removeItem(KEY);
+  localStorage.removeItem(ADMIN_BACKUP_KEY);
   document.cookie = `${SESSION_COOKIE}=; path=/; max-age=0`;
+}
+
+export function isImpersonating(auth: AuthResponse | null) {
+  return !!auth?.impersonatorUserId;
+}
+
+export function beginImpersonation(adminAuth: AuthResponse, impersonatedAuth: AuthResponse) {
+  if (typeof window === "undefined") return;
+  localStorage.setItem(ADMIN_BACKUP_KEY, JSON.stringify(adminAuth));
+  saveAuth(impersonatedAuth);
+}
+
+export function exitImpersonation(): AuthResponse | null {
+  if (typeof window === "undefined") return null;
+  const raw = localStorage.getItem(ADMIN_BACKUP_KEY);
+  if (!raw) return null;
+  localStorage.removeItem(ADMIN_BACKUP_KEY);
+  try {
+    const admin = JSON.parse(raw) as AuthResponse;
+    if (isAuthExpired(admin)) {
+      clearAuth();
+      return null;
+    }
+    saveAuth(admin);
+    return admin;
+  } catch {
+    return null;
+  }
 }
 
 export function portalPathForRole(role: AuthResponse["role"]) {

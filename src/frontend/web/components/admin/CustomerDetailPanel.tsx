@@ -1,7 +1,8 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { api, type AdminCustomerDetail } from "@/lib/api";
+import { ActAsUserButton } from "@/components/admin/ActAsUserButton";
+import { api, type AdminCustomerDetail, type AuthResponse } from "@/lib/api";
 import { StatusBadge } from "@/components/ui";
 
 function formatDate(iso: string | null) {
@@ -11,14 +12,20 @@ function formatDate(iso: string | null) {
 
 export function CustomerDetailPanel({
   customerId,
+  customerUserId,
   token,
+  adminAuth,
   onClose,
   onUpdated,
+  onError,
 }: {
   customerId: string;
+  customerUserId: string;
   token: string;
+  adminAuth: AuthResponse;
   onClose: () => void;
   onUpdated?: () => void;
+  onError?: (message: string) => void;
 }) {
   const [detail, setDetail] = useState<AdminCustomerDetail | null>(null);
   const [loading, setLoading] = useState(true);
@@ -65,13 +72,21 @@ export function CustomerDetailPanel({
     <div className="rounded-xl border border-gardens-primary/20 bg-gardens-light/10 p-5">
       <div className="flex flex-wrap items-start justify-between gap-3">
         <h3 className="font-semibold text-gardens-dark">Customer detail</h3>
-        <button
-          type="button"
-          onClick={onClose}
-          className="text-sm text-stone-500 hover:text-stone-800"
-        >
-          Close
-        </button>
+        <div className="flex flex-wrap items-center gap-2">
+          <ActAsUserButton
+              adminAuth={adminAuth}
+              userId={detail?.userId ?? customerUserId}
+              label="Act as customer"
+              onError={onError}
+            />
+          <button
+            type="button"
+            onClick={onClose}
+            className="text-sm text-stone-500 hover:text-stone-800"
+          >
+            Close
+          </button>
+        </div>
       </div>
 
       {loading && <p className="mt-3 text-sm text-stone-500">Loading…</p>}

@@ -12,6 +12,7 @@ public interface IAuthService
     Task<UserProfileResponse?> GetProfileAsync(Guid userId, CancellationToken ct = default);
     Task RequestPasswordResetAsync(string email, CancellationToken ct = default);
     Task ResetPasswordAsync(string token, string newPassword, CancellationToken ct = default);
+    Task<AuthResponse> ImpersonateAsync(Guid targetUserId, Guid adminUserId, string adminEmail, CancellationToken ct = default);
 }
 
 public interface IStripePaymentService

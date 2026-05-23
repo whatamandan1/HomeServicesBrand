@@ -35,7 +35,9 @@ public record AuthResponse(
     string Email,
     UserRole Role,
     string? BrandCode,
-    Guid? PendingSubscriptionId = null);
+    Guid? PendingSubscriptionId = null,
+    Guid? ImpersonatorUserId = null,
+    string? ImpersonatorEmail = null);
 
 public record UserProfileResponse(
     Guid UserId,

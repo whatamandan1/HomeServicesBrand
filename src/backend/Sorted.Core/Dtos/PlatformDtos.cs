@@ -101,6 +101,7 @@ public record AdminCustomerSubscriptionResponse(
 
 public record AdminCustomerDetailResponse(
     Guid Id,
+    Guid UserId,
     string Email,
     string Name,
     string? Phone,

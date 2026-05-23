@@ -12,7 +12,11 @@ public class JwtTokenService(IOptions<JwtOptions> options)
 {
     private readonly JwtOptions _options = options.Value;
 
-    public (string Token, DateTime ExpiresAtUtc) CreateToken(UserAccount user, string? brandCode)
+    public (string Token, DateTime ExpiresAtUtc) CreateToken(
+        UserAccount user,
+        string? brandCode,
+        Guid? impersonatorUserId = null,
+        string? impersonatorEmail = null)
     {
         var expires = DateTime.UtcNow.AddHours(_options.ExpiryHours);
         var claims = new List<Claim>
@@ -25,6 +29,12 @@ public class JwtTokenService(IOptions<JwtOptions> options)
         };
         if (brandCode is not null)
             claims.Add(new Claim("brandCode", brandCode));
+        if (impersonatorUserId is not null)
+        {
+            claims.Add(new Claim("impersonatorId", impersonatorUserId.Value.ToString()));
+            if (!string.IsNullOrWhiteSpace(impersonatorEmail))
+                claims.Add(new Claim("impersonatorEmail", impersonatorEmail));
+        }
 
         var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_options.Secret));
         var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);

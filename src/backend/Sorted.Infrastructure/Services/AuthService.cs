@@ -157,6 +157,58 @@ public class AuthService(
         return new AuthResponse(token, expires, user.Id, user.Email, user.Role, brandCode);
     }
 
+    public async Task<AuthResponse> ImpersonateAsync(
+        Guid targetUserId,
+        Guid adminUserId,
+        string adminEmail,
+        CancellationToken ct = default)
+    {
+        if (targetUserId == adminUserId)
+            throw new InvalidOperationException("Cannot impersonate yourself.");
+
+        var target = await db.Users.FirstOrDefaultAsync(u => u.Id == targetUserId && u.IsActive && !u.IsDeleted, ct)
+            ?? throw new InvalidOperationException("User not found.");
+
+        if (target.Role == UserRole.Admin)
+            throw new InvalidOperationException("Cannot impersonate an admin account.");
+
+        string? brandCode = null;
+        if (target.BrandId.HasValue)
+            brandCode = await db.Brands.Where(b => b.Id == target.BrandId).Select(b => b.Code).FirstOrDefaultAsync(ct);
+
+        Guid? pendingSubscriptionId = null;
+        if (target.Role == UserRole.Customer)
+        {
+            pendingSubscriptionId = await db.Customers.AsNoTracking()
+                .Where(c => c.UserId == target.Id && !c.IsDeleted)
+                .SelectMany(c => c.Subscriptions)
+                .Where(s => s.Status == SubscriptionStatus.PendingPayment && !s.IsDeleted)
+                .OrderByDescending(s => s.CreatedAtUtc)
+                .Select(s => (Guid?)s.Id)
+                .FirstOrDefaultAsync(ct);
+        }
+
+        var (token, expires) = jwt.CreateToken(target, brandCode, adminUserId, adminEmail);
+        await workflow.LogAsync(
+            "admin",
+            "impersonation_started",
+            nameof(UserAccount),
+            target.Id,
+            new { adminUserId, adminEmail, targetEmail = target.Email, role = target.Role.ToString() },
+            ct);
+
+        return new AuthResponse(
+            token,
+            expires,
+            target.Id,
+            target.Email,
+            target.Role,
+            brandCode,
+            pendingSubscriptionId,
+            adminUserId,
+            adminEmail);
+    }
+
     public async Task<UserProfileResponse?> GetProfileAsync(Guid userId, CancellationToken ct = default)
     {
         var user = await db.Users.AsNoTracking().FirstOrDefaultAsync(u => u.Id == userId && !u.IsDeleted, ct);
