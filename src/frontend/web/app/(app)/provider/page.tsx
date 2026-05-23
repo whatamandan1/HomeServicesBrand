@@ -116,14 +116,16 @@ export default function ProviderPage() {
         action === "start"
           ? await api.startVisit(auth.token, visitId)
           : await api.completeVisit(auth.token, visitId);
-      setMine((visits) =>
-        visits.map((v) => (v.id === visitId ? updated : v))
-      );
-      setNotice(
-        action === "start"
-          ? "Visit started — mark complete when you finish on site."
-          : "Visit marked complete."
-      );
+
+      if (action === "complete") {
+        await refresh();
+        setNotice("Visit marked complete. Your upcoming visits have been refreshed.");
+      } else {
+        setMine((visits) =>
+          visits.map((v) => (v.id === visitId ? updated : v))
+        );
+        setNotice("Visit started — mark complete when you finish on site.");
+      }
       scrollToMyVisits();
     } catch (e) {
       setError(e instanceof Error ? e.message : "Update failed");
