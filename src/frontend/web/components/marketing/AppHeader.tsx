@@ -5,19 +5,30 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { Menu, X } from "lucide-react";
 import { Logo } from "@/components/marketing/Logo";
+import type { AuthResponse } from "@/lib/api";
 import { loadAuth, syncSessionCookies } from "@/lib/auth-storage";
 
-const baseLinks = [
-  { href: "/portal", label: "Customer portal" },
-  { href: "/provider", label: "Provider jobs" },
-  { href: "/login", label: "Switch account" },
-] as const;
-
+const customerLink = { href: "/portal", label: "Customer portal" } as const;
+const providerLink = { href: "/provider", label: "Provider jobs" } as const;
 const adminLink = { href: "/admin", label: "Admin CRM" } as const;
+const switchAccountLink = { href: "/login", label: "Switch account" } as const;
+
+function navLinksForRole(role: AuthResponse["role"] | null) {
+  if (role === "Admin") {
+    return [customerLink, providerLink, adminLink, switchAccountLink];
+  }
+  if (role === "Provider") {
+    return [providerLink, switchAccountLink];
+  }
+  if (role === "Customer") {
+    return [customerLink, switchAccountLink];
+  }
+  return [customerLink, providerLink, switchAccountLink];
+}
 
 export function AppHeader() {
   const [open, setOpen] = useState(false);
-  const [showAdmin, setShowAdmin] = useState(false);
+  const [role, setRole] = useState<AuthResponse["role"] | null>(null);
   const pathname = usePathname();
 
   useEffect(() => {
@@ -34,13 +45,10 @@ export function AppHeader() {
   useEffect(() => {
     const auth = loadAuth();
     if (auth) syncSessionCookies(auth);
-    setShowAdmin(auth?.role === "Admin");
+    setRole(auth?.role ?? null);
   }, [pathname]);
 
-  const links = useMemo(
-    () => (showAdmin ? [...baseLinks.slice(0, 2), adminLink, ...baseLinks.slice(2)] : [...baseLinks]),
-    [showAdmin]
-  );
+  const links = useMemo(() => navLinksForRole(role), [role]);
 
   return (
     <header className="sticky top-0 z-50 border-b border-gardens-primary/10 bg-white/95 backdrop-blur-md">
