@@ -22,6 +22,7 @@ export type AuthResponse = {
 export type CustomerSubscription = {
   id: string;
   planName: string;
+  billingInterval: string;
   status: string;
   startedAtUtc: string | null;
   availabilityPreference: string;

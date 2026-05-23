@@ -147,7 +147,7 @@ export function SupportChat({
           >
             {m.body}
             {m.escalated && (
-              <p className="mt-1 text-xs opacity-80">Escalated to our team — we&apos;ll follow up.</p>
+              <p className="mt-1 text-xs font-medium opacity-90">Escalated — our team will follow up shortly.</p>
             )}
           </div>
         ))}

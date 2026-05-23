@@ -40,6 +40,7 @@ public class CustomerController(
         var responses = subs.Select(s => new CustomerSubscriptionResponse(
             s.Id,
             s.Plan.Name,
+            s.Plan.BillingInterval,
             s.Status,
             s.StartedAtUtc,
             s.AvailabilityPreference,

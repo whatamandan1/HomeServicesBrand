@@ -17,6 +17,7 @@ public record CheckoutSessionResponse(string SessionId, string Url);
 public record CustomerSubscriptionResponse(
     Guid Id,
     string PlanName,
+    SubscriptionBillingInterval BillingInterval,
     SubscriptionStatus Status,
     DateTime? StartedAtUtc,
     string AvailabilityPreference,

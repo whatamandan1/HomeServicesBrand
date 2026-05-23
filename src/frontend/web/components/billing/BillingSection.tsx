@@ -23,8 +23,18 @@ function formatDate(iso: string) {
   });
 }
 
-function openBillingPortal(subscriptionId: string) {
-  window.location.href = `/portal/billing-redirect?subscriptionId=${encodeURIComponent(subscriptionId)}`;
+function openBillingPortal(subscriptionId: string, onError: (message: string) => void) {
+  const opened = window.open(
+    `/portal/billing-redirect?subscriptionId=${encodeURIComponent(subscriptionId)}`,
+    "_blank"
+  );
+  if (!opened) {
+    onError("Pop-up blocked. Allow pop-ups for this site, or try again.");
+  }
+}
+
+function isActiveSubscription(sub: CustomerSubscription) {
+  return (sub.status === "Active" || sub.status === "PastDue") && !sub.cancelsAtUtc;
 }
 
 export function BillingSection({
@@ -56,8 +66,8 @@ export function BillingSection({
       <section>
         <h2 className="font-semibold text-gardens-dark">Subscriptions</h2>
         <p className="mt-1 text-sm text-stone-500">
-          Update your payment method or download invoices. To cancel, contact customer service —
-          we&apos;ll honour your minimum term.
+          Update your payment method or download invoices in a new tab. Plan changes and
+          cancellations go through customer service — we&apos;ll honour your minimum term.
         </p>
         {subscriptions.length === 0 ? (
           <p className="mt-3 text-sm text-stone-500">No subscriptions yet.</p>
@@ -92,12 +102,38 @@ export function BillingSection({
                     <button
                       type="button"
                       className="rounded-lg border border-stone-200 px-3 py-2 text-sm font-medium text-stone-700 hover:bg-stone-50"
-                      onClick={() => openBillingPortal(s.id)}
+                      onClick={() => openBillingPortal(s.id, (msg) => onError(msg))}
                     >
                       Payment method &amp; invoices
                     </button>
                   )}
-                  {(s.status === "Active" || s.status === "PastDue") && !s.cancelsAtUtc && (
+                  {isActiveSubscription(s) && s.billingInterval === "Monthly" && (
+                    <button
+                      type="button"
+                      className="rounded-lg border border-gardens-primary/30 bg-gardens-light/40 px-3 py-2 text-sm font-medium text-gardens-dark hover:bg-gardens-light/70"
+                      onClick={() =>
+                        onContactSupport(
+                          `I'd like to switch my ${s.planName} subscription to annual billing. Please can you help?`
+                        )
+                      }
+                    >
+                      Switch to annual billing
+                    </button>
+                  )}
+                  {isActiveSubscription(s) && (
+                    <button
+                      type="button"
+                      className="rounded-lg border border-stone-200 px-3 py-2 text-sm font-medium text-stone-700 hover:bg-stone-50"
+                      onClick={() =>
+                        onContactSupport(
+                          `I'd like to upgrade or change my ${s.planName} plan. Please can you help?`
+                        )
+                      }
+                    >
+                      Upgrade plan
+                    </button>
+                  )}
+                  {isActiveSubscription(s) && (
                     <button
                       type="button"
                       className="rounded-lg border border-stone-200 px-3 py-2 text-sm font-medium text-stone-700 hover:bg-stone-50"
@@ -119,9 +155,9 @@ export function BillingSection({
 
       {cancellableSubs.length > 0 && (
         <p className="rounded-xl border border-stone-200 bg-stone-50 px-4 py-3 text-sm text-stone-600">
-          Subscriptions can only be cancelled by our team. Use{" "}
-          <strong>Request cancellation</strong> above to message support — if you&apos;re within
-          your minimum term, billing continues until that date.
+          Plan upgrades, annual billing, and cancellations are handled by our team. Use the buttons
+          above to message customer service — if you&apos;re within your minimum term, billing
+          continues until that date.
         </p>
       )}
 
@@ -129,7 +165,7 @@ export function BillingSection({
         <h2 className="font-semibold text-gardens-dark">Payment history</h2>
         <p className="mt-1 text-sm text-stone-500">
           Successful charges on your account. For PDF receipts, open{" "}
-          <strong>Payment method &amp; invoices</strong> above.
+          <strong>Payment method &amp; invoices</strong> above (opens in a new tab).
         </p>
         {loadingPayments ? (
           <p className="mt-3 text-sm text-stone-500">Loading payments…</p>

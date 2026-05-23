@@ -80,6 +80,7 @@ public class OpenAiSupportService(
                 Reason = $"AI escalation ({(customerId.HasValue ? "customer" : "website")}): {request.Message[..Math.Min(200, request.Message.Length)]}",
                 Status = EscalationStatus.Open
             });
+            reply = BuildEscalationReply(request.Message, customerId.HasValue);
         }
 
         db.Messages.Add(new Message { ThreadId = thread.Id, SenderRole = "AI", Body = reply, IsFromAi = true });
@@ -123,13 +124,13 @@ public class OpenAiSupportService(
             var systemPrompt = customerId.HasValue
                 ? "You are GardensSorted customer support for a Yorkshire UK gardening subscription service. " +
                   "Be brief, friendly, and factual. Use the customer account context when answering about their plan or visits. " +
-                  "Do not promise refunds or cancellations — say a human will help for billing disputes. " +
+                  "For cancellations, plan changes, billing disputes, or refunds, confirm the request has been escalated to the team — do not tell them to email billing or contact support separately. " +
                   "Topics: visit windows, subscription plans, property access, billing questions.\n\n"
                 : "You are GardensSorted's friendly website assistant for a Yorkshire UK gardening subscription service. " +
                   "The visitor is NOT signed in — answer pre-sales questions about how the service works, pricing, coverage, and signup. " +
                   "Be brief, warm, and helpful. Encourage signup at /signup when they seem ready. " +
                   "Do not invent account-specific details (visits, billing) — they need to sign up first for that. " +
-                  "For refunds, cancellations, or complaints, say a human will help after they contact us or sign up.\n\n";
+                  "For refunds, cancellations, or complaints, confirm a human will follow up — do not ask them to contact billing separately.\n\n";
 
             var client = new ChatClient(model, apiKey);
 
@@ -235,5 +236,30 @@ public class OpenAiSupportService(
         if (userMessage.Length < 5)
             return 0.4;
         return 0.85;
+    }
+
+    private static string BuildEscalationReply(string userMessage, bool isCustomer)
+    {
+        var lower = userMessage.ToLowerInvariant();
+        if (lower.Contains("cancel"))
+        {
+            return "Thanks for getting in touch. I've escalated your cancellation request to our customer service team — someone will follow up with you shortly.";
+        }
+
+        if (lower.Contains("annual") || lower.Contains("upgrade") || lower.Contains("plan change") || lower.Contains("switch"))
+        {
+            return "Thanks for getting in touch. I've escalated your plan change request to our customer service team — someone will follow up with you shortly.";
+        }
+
+        if (EscalationKeywords.Any(k => userMessage.Contains(k, StringComparison.OrdinalIgnoreCase)))
+        {
+            return isCustomer
+                ? "Thanks for getting in touch. I've escalated this to our customer service team — someone will follow up with you shortly."
+                : "Thanks for your message. I've passed this to our team — someone will follow up with you shortly.";
+        }
+
+        return isCustomer
+            ? "Thanks for your message. I've escalated this to our customer service team — someone will follow up with you shortly."
+            : "Thanks for your message. I've passed this to our team — someone will follow up with you shortly.";
     }
 }
