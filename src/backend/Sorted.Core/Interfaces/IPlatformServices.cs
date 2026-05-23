@@ -103,6 +103,7 @@ public interface IProviderAvailabilityService
         AddProviderBlockedDateRequest request,
         CancellationToken ct = default);
     Task RemoveBlockedDateAsync(Guid providerId, Guid blockedDateId, CancellationToken ct = default);
+    Task<int> ReleaseConflictingAssignedVisitsAsync(Guid providerId, CancellationToken ct = default);
 }
 
 public interface IWorkflowLogger

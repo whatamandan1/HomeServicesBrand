@@ -21,4 +21,20 @@ public static class VisitCalendar
         var start = date.ToDateTime(TimeOnly.MinValue, DateTimeKind.Utc);
         return (start, start.AddDays(1));
     }
+
+    /// <summary>
+    /// Returns true when an assigned visit should be returned to the open pool
+    /// because it falls on a non-working day or blocked date.
+    /// </summary>
+    public static bool ConflictsWithAvailability(
+        DateTime scheduledDate,
+        int workingDaysMask,
+        IEnumerable<DateOnly> blockedDates)
+    {
+        var visitDate = ToVisitDate(scheduledDate);
+        if (!ProviderWorkingDays.IsWorkingDay(workingDaysMask, visitDate.DayOfWeek))
+            return true;
+
+        return blockedDates.Contains(visitDate);
+    }
 }

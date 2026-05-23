@@ -58,6 +58,8 @@ public class ProviderAvailabilityService(
         provider.WorkDayStartMinutes = startMinutes;
         provider.WorkDayEndMinutes = endMinutes;
         provider.UpdatedAtUtc = DateTime.UtcNow;
+
+        await ReleaseConflictingAssignedVisitsAsync(providerId, ct);
         await db.SaveChangesAsync(ct);
 
         return MapResponse(provider);
@@ -113,26 +115,63 @@ public class ProviderAvailabilityService(
         await db.SaveChangesAsync(ct);
     }
 
+    public async Task<int> ReleaseConflictingAssignedVisitsAsync(Guid providerId, CancellationToken ct = default)
+    {
+        var provider = await db.Providers.AsNoTracking()
+            .FirstOrDefaultAsync(p => p.Id == providerId && !p.IsDeleted, ct)
+            ?? throw new InvalidOperationException("Provider not found.");
+
+        var blockedDates = await db.ProviderBlockedDates.AsNoTracking()
+            .Where(b => b.ProviderId == providerId && !b.IsDeleted)
+            .Select(b => b.BlockedDate)
+            .ToListAsync(ct);
+
+        var visits = await LoadAssignedMutableVisitsAsync(providerId, ct);
+        var toRelease = visits
+            .Where(v => VisitCalendar.ConflictsWithAvailability(v.ScheduledDate, provider.WorkingDaysMask, blockedDates))
+            .ToList();
+
+        return await ReleaseVisitsAsync(toRelease, ct);
+    }
+
     private async Task<int> ReleaseAssignedVisitsOnDateAsync(
         Guid providerId,
         DateOnly blockedDate,
         CancellationToken ct)
     {
-        var (dayStart, dayEnd) = VisitCalendar.ToUtcDayRange(blockedDate);
-        var visits = await db.JobVisits
+        var visits = await LoadAssignedMutableVisitsAsync(providerId, ct);
+        var toRelease = visits
+            .Where(v => VisitCalendar.ToVisitDate(v.ScheduledDate) == blockedDate)
+            .ToList();
+
+        return await ReleaseVisitsAsync(toRelease, ct);
+    }
+
+    private async Task<List<JobVisit>> LoadAssignedMutableVisitsAsync(Guid providerId, CancellationToken ct)
+    {
+        var today = DateTime.UtcNow.Date;
+        return await db.JobVisits
             .Where(v =>
                 v.AssignedProviderId == providerId
                 && !v.IsDeleted
-                && v.ScheduledDate >= dayStart
-                && v.ScheduledDate < dayEnd
-                && (v.Status == VisitStatus.Claimed || v.Status == VisitStatus.InProgress))
+                && v.ScheduledDate >= today
+                && (v.Status == VisitStatus.Claimed
+                    || v.Status == VisitStatus.InProgress
+                    || v.Status == VisitStatus.Rescheduled))
             .ToListAsync(ct);
+    }
 
+    private async Task<int> ReleaseVisitsAsync(IReadOnlyList<JobVisit> visits, CancellationToken ct)
+    {
         if (visits.Count == 0)
             return 0;
 
         var now = DateTime.UtcNow;
         var expiryDays = _jobOptions.DispatchOfferExpiryDays;
+        var visitIds = visits.Select(v => v.Id).ToList();
+        var offers = await db.DispatchOffers
+            .Where(o => visitIds.Contains(o.JobVisitId) && !o.IsDeleted)
+            .ToDictionaryAsync(o => o.JobVisitId, ct);
 
         foreach (var visit in visits)
         {
@@ -141,9 +180,7 @@ public class ProviderAvailabilityService(
             visit.ClaimedAtUtc = null;
             visit.UpdatedAtUtc = now;
 
-            var offer = await db.DispatchOffers
-                .FirstOrDefaultAsync(o => o.JobVisitId == visit.Id && !o.IsDeleted, ct);
-            if (offer is not null)
+            if (offers.TryGetValue(visit.Id, out var offer))
             {
                 offer.Status = DispatchOfferStatus.Open;
                 offer.ExpiresAtUtc = now.AddDays(expiryDays);
