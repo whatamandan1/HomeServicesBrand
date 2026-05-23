@@ -69,3 +69,12 @@ public record EscalationResponse(
     string? Notes);
 
 public record ResolveEscalationRequest(string? Notes);
+
+public record WorkflowEventResponse(
+    Guid Id,
+    string WorkflowName,
+    string EventName,
+    string? EntityType,
+    Guid? EntityId,
+    string PayloadJson,
+    DateTime CreatedAtUtc);

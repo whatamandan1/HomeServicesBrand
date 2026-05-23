@@ -68,6 +68,16 @@ export type Escalation = {
   notes: string | null;
 };
 
+export type WorkflowEvent = {
+  id: string;
+  workflowName: string;
+  eventName: string;
+  entityType: string | null;
+  entityId: string | null;
+  payloadJson: string;
+  createdAtUtc: string;
+};
+
 export type SubscriptionPlan = {
   id: string;
   name: string;
@@ -244,4 +254,15 @@ export const api = {
     request<void>(`/api/admin/providers/${id}/approve`, { method: "POST" }, token),
   adminOpenDispatch: (token: string) =>
     request<void>("/api/admin/scheduling/open-dispatch", { method: "POST" }, token),
+  adminWorkflowEvents: (token: string, workflow?: string, limit = 100) => {
+    const params = new URLSearchParams();
+    if (workflow) params.set("workflow", workflow);
+    params.set("limit", String(limit));
+    const qs = params.toString();
+    return request<WorkflowEvent[]>(
+      `/api/admin/workflow-events${qs ? `?${qs}` : ""}`,
+      {},
+      token
+    );
+  },
 };

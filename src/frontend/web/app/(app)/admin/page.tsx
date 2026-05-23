@@ -1,11 +1,12 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { api, type AdminCustomer, type AdminProvider, type Escalation, type JobVisit } from "@/lib/api";
+import { api, type AdminCustomer, type AdminProvider, type Escalation, type JobVisit, type WorkflowEvent } from "@/lib/api";
 import { useAuth } from "@/lib/use-auth";
 import { DataTable, StatCard } from "@/components/ui";
 import { VisitList } from "@/components/visits/VisitList";
 import { EscalationList } from "@/components/escalations/EscalationList";
+import { WorkflowEventList } from "@/components/workflow/WorkflowEventList";
 
 const DASH_LABELS: Record<string, string> = {
   customerCount: "Customers",
@@ -34,6 +35,7 @@ export default function AdminPage() {
   const [providers, setProviders] = useState<AdminProvider[]>([]);
   const [visits, setVisits] = useState<JobVisit[]>([]);
   const [escalations, setEscalations] = useState<Escalation[]>([]);
+  const [workflowEvents, setWorkflowEvents] = useState<WorkflowEvent[]>([]);
   const [dispatchMsg, setDispatchMsg] = useState<string | null>(null);
   const [visitError, setVisitError] = useState<string | null>(null);
   const [busyVisitId, setBusyVisitId] = useState<string | null>(null);
@@ -103,6 +105,7 @@ export default function AdminPage() {
     api.adminProviders(auth.token).then(setProviders);
     api.adminVisits(auth.token).then(setVisits);
     api.adminEscalations(auth.token).then(setEscalations);
+    api.adminWorkflowEvents(auth.token).then(setWorkflowEvents);
   }, [auth]);
 
   if (!ready) return <p className="text-stone-500">Loading…</p>;
@@ -274,6 +277,14 @@ export default function AdminPage() {
           />
         </section>
       )}
+
+      <section id="workflow" className="scroll-mt-6">
+        <h2 className="font-semibold">Workflow log</h2>
+        <p className="mt-1 text-sm text-stone-500">
+          Recent platform events — signup, billing, scheduling, dispatch, and support.
+        </p>
+        <WorkflowEventList events={workflowEvents} />
+      </section>
     </div>
   );
 }

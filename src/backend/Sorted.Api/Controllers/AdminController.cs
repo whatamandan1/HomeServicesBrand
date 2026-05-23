@@ -208,4 +208,32 @@ public class AdminController(
         await scheduling.OpenVisitsForDispatchAsync(ct);
         return NoContent();
     }
+
+    [HttpGet("workflow-events")]
+    public async Task<ActionResult<IEnumerable<WorkflowEventResponse>>> WorkflowEvents(
+        [FromQuery] string? workflow,
+        [FromQuery] int limit = 100,
+        CancellationToken ct = default)
+    {
+        limit = Math.Clamp(limit, 1, 500);
+        var query = db.WorkflowEvents.AsNoTracking().Where(e => !e.IsDeleted);
+
+        if (!string.IsNullOrWhiteSpace(workflow))
+            query = query.Where(e => e.WorkflowName == workflow.Trim());
+
+        var list = await query
+            .OrderByDescending(e => e.CreatedAtUtc)
+            .Take(limit)
+            .Select(e => new WorkflowEventResponse(
+                e.Id,
+                e.WorkflowName,
+                e.EventName,
+                e.EntityType,
+                e.EntityId,
+                e.PayloadJson,
+                e.CreatedAtUtc))
+            .ToListAsync(ct);
+
+        return Ok(list);
+    }
 }
