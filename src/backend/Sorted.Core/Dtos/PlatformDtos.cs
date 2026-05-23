@@ -31,6 +31,11 @@ public record JobVisitResponse(
 
 public record ClaimVisitRequest(Guid VisitId);
 
+public record TestNotificationsRequest(
+    string Email,
+    string? Phone = null,
+    string FirstName = "Test");
+
 public record RescheduleVisitRequest(DateTime ScheduledDate);
 
 public record ProviderProfileResponse(

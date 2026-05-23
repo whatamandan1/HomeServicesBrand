@@ -20,6 +20,7 @@ public static class DependencyInjection
         services.Configure<OpenAiOptions>(configuration.GetSection(OpenAiOptions.Section));
         services.Configure<TwilioOptions>(configuration.GetSection(TwilioOptions.Section));
         services.Configure<FeaturesOptions>(configuration.GetSection(FeaturesOptions.Section));
+        services.Configure<BackgroundJobsOptions>(configuration.GetSection(BackgroundJobsOptions.Section));
 
         var connectionString = DatabaseConfiguration.ResolveConnectionString(configuration);
         services.AddDbContext<SortedDbContext>(options =>
@@ -49,6 +50,7 @@ public static class DependencyInjection
         services.AddScoped<IWorkflowLogger, WorkflowLogger>();
 
         services.AddHostedService<DatabaseMigrationHostedService>();
+        services.AddHostedService<OperationalBackgroundService>();
         return services;
     }
 }

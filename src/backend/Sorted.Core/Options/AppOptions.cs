@@ -63,3 +63,15 @@ public class TwilioOptions
     /// <summary>E.164 format, e.g. +447700900000 (your Twilio number).</summary>
     public string FromPhoneNumber { get; set; } = string.Empty;
 }
+
+public class BackgroundJobsOptions
+{
+    public const string Section = "BackgroundJobs";
+    public bool Enabled { get; set; } = true;
+    public int IntervalMinutes { get; set; } = 60;
+    public int TargetFutureVisits { get; set; } = 4;
+    public int VisitIntervalDays { get; set; } = 7;
+    public int DispatchOfferExpiryDays { get; set; } = 3;
+    public int DispatchOpenWithinDays { get; set; } = 14;
+    public int ReminderLeadHours { get; set; } = 24;
+}

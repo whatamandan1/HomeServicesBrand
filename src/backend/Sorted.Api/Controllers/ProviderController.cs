@@ -15,6 +15,7 @@ namespace Sorted.Api.Controllers;
 [Authorize(Roles = nameof(UserRole.Provider))]
 public class ProviderController(
     SortedDbContext db,
+    IEmailService email,
     ISmsService sms,
     IWorkflowLogger workflow,
     IProviderCoverageService coverage) : ControllerBase
@@ -110,11 +111,18 @@ public class ProviderController(
 
         await db.SaveChangesAsync(ct);
 
-        var customerPhone = visit.Subscription.Customer.User.Phone;
-        if (!string.IsNullOrWhiteSpace(customerPhone))
+        var customer = visit.Subscription.Customer.User;
+        await email.SendVisitClaimedEmailAsync(
+            customer.Email,
+            visit.ScheduledDate,
+            visit.Property.Postcode,
+            visit.AvailabilityWindow,
+            ct);
+
+        if (!string.IsNullOrWhiteSpace(customer.Phone))
         {
             await sms.SendVisitClaimedSmsAsync(
-                customerPhone,
+                customer.Phone,
                 visit.ScheduledDate,
                 visit.Property.Postcode,
                 ct);

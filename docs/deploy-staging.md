@@ -2,10 +2,10 @@
 
 ## Overview
 
-| Component | Host | Notes |
-|-----------|------|--------|
-| Frontend | [Vercel](https://vercel.com) | Next.js in `src/frontend/web` |
-| API | [Railway](https://railway.app) | Docker from `src/backend/Dockerfile` |
+| Component | Host | URL |
+|-----------|------|-----|
+| Frontend | [Vercel](https://vercel.com) | https://home-services-brand.vercel.app |
+| API | [Railway](https://railway.app) | https://homeservicesbrand-production.up.railway.app |
 
 ## 1. Push code to GitHub
 
@@ -41,17 +41,22 @@ Ensure `appsettings.Development.local.json` is **not** committed (it is gitignor
 | `Plans__EssentialAnnual` | `299.95` — shown on site and synced to DB on startup |
 | `Stripe__SuccessUrl` | `https://YOUR-VERCEL-URL/signup/success` |
 | `Stripe__CancelUrl` | `https://YOUR-VERCEL-URL/signup` |
-| `SendGrid__ApiKey` | optional |
+| `SendGrid__ApiKey` | optional — see [dev-costs-and-email.md](dev-costs-and-email.md) |
+| `SendGrid__FromEmail` | verified sender (must match SendGrid single sender) |
+| `SendGrid__FromName` | `GardensSorted` |
+| `Twilio__AccountSid` | optional — see [twilio-sms-setup.md](twilio-sms-setup.md) |
+| `Twilio__AuthToken` | Twilio auth token |
+| `Twilio__FromPhoneNumber` | E.164, e.g. `+447...` |
 | `OpenAI__ApiKey` | optional |
 | `Cors__AllowedOrigins__0` | `https://YOUR-VERCEL-URL` |
 | `Cors__AllowedOrigins__1` | `http://localhost:3000` |
 
-4. Deploy → **Generate a public URL** (see below) → copy e.g. `https://sorted-api-production.up.railway.app`
+4. Deploy → **Generate a public URL** (see below) → production API: `https://homeservicesbrand-production.up.railway.app`
 
 **Stripe webhook (staging):**
 
 - Dashboard → Developers → Webhooks → Add endpoint  
-- URL: `https://YOUR-RAILWAY-URL/api/webhooks/stripe`  
+- URL: `https://homeservicesbrand-production.up.railway.app/api/webhooks/stripe`  
 - Events:
   - `checkout.session.completed`
   - `invoice.paid`
@@ -85,7 +90,7 @@ You need a URL on the **service**, not the project:
    - A **Domains** section on the service page → **Generate Domain**
    - Top-right of the service panel → **+ Domain** or globe icon
 3. When asked for a **port**, choose **8080** (or whatever `PORT` shows in Variables).
-4. Test: `https://YOUR-URL.up.railway.app/health` → `{"status":"ok"}`
+4. Test: `https://homeservicesbrand-production.up.railway.app/health` → `"database": "postgresql"`, `"canConnect": true`
 
 If you only see project-level settings, you clicked the wrong level — go back to the canvas and click the **API service card**.
 

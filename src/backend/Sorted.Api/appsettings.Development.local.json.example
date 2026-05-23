@@ -1,10 +1,15 @@
 {
+  "ConnectionStrings": {
+    "Default": "postgresql://USER:PASSWORD@HOST:PORT/railway"
+  },
   "Stripe": {
     "SecretKey": "sk_test_YOUR_KEY",
     "WebhookSecret": "whsec_YOUR_WEBHOOK_SECRET"
   },
   "SendGrid": {
-    "ApiKey": "SG.YOUR_KEY"
+    "ApiKey": "SG.YOUR_KEY",
+    "FromEmail": "your-verified@gmail.com",
+    "FromName": "GardensSorted"
   },
   "Twilio": {
     "AccountSid": "ACxxxxxxxx",

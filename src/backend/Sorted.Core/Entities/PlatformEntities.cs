@@ -110,6 +110,7 @@ public class JobVisit : AuditableEntity
     public Guid? AssignedProviderId { get; set; }
     public Provider? AssignedProvider { get; set; }
     public DateTime? ClaimedAtUtc { get; set; }
+    public DateTime? ReminderSentAtUtc { get; set; }
 }
 
 public class DispatchOffer : AuditableEntity

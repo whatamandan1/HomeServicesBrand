@@ -12,7 +12,9 @@ using Sorted.Infrastructure.Data;
 
 var builder = WebApplication.CreateBuilder(args);
 
-var port = Environment.GetEnvironmentVariable("PORT") ?? "8080";
+// Railway sets PORT; local dev defaults to 5080 (see launchSettings.json / scripts/dev-api.sh).
+var port = Environment.GetEnvironmentVariable("PORT")
+    ?? (builder.Environment.IsDevelopment() ? "5080" : "8080");
 builder.WebHost.UseUrls($"http://0.0.0.0:{port}");
 
 var localSettings = Path.Combine(builder.Environment.ContentRootPath, "appsettings.Development.local.json");

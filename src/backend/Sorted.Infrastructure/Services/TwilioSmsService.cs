@@ -27,6 +27,11 @@ public class TwilioSmsService(IOptions<TwilioOptions> options, ILogger<TwilioSms
             $"GardensSorted: visit confirmed for {visitDate:dd MMM} in {postcode}. Your gardener will arrive in your chosen window.",
             ct);
 
+    public Task SendVisitReminderSmsAsync(string toPhone, DateTime visitDate, string postcode, CancellationToken ct = default)
+        => SendAsync(toPhone,
+            $"GardensSorted reminder: garden visit on {visitDate:dd MMM} in {postcode}. We'll arrive in your chosen window.",
+            ct);
+
     private async Task SendAsync(string toPhone, string body, CancellationToken ct)
     {
         if (string.IsNullOrWhiteSpace(_options.AccountSid)

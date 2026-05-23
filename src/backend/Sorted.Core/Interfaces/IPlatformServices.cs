@@ -22,6 +22,8 @@ public interface IEmailService
 {
     Task SendWelcomeEmailAsync(string toEmail, string firstName, CancellationToken ct = default);
     Task SendSubscriptionConfirmedEmailAsync(string toEmail, string planName, CancellationToken ct = default);
+    Task SendVisitClaimedEmailAsync(string toEmail, DateTime visitDate, string postcode, string availabilityWindow, CancellationToken ct = default);
+    Task SendVisitReminderEmailAsync(string toEmail, DateTime visitDate, string postcode, string availabilityWindow, CancellationToken ct = default);
 }
 
 public interface ISmsService
@@ -29,6 +31,7 @@ public interface ISmsService
     Task SendWelcomeSmsAsync(string toPhone, string firstName, CancellationToken ct = default);
     Task SendSubscriptionConfirmedSmsAsync(string toPhone, string planName, CancellationToken ct = default);
     Task SendVisitClaimedSmsAsync(string toPhone, DateTime visitDate, string postcode, CancellationToken ct = default);
+    Task SendVisitReminderSmsAsync(string toPhone, DateTime visitDate, string postcode, CancellationToken ct = default);
 }
 
 public interface IAiSupportService
@@ -41,6 +44,10 @@ public interface IVisitSchedulingService
 {
     Task GenerateVisitsForSubscriptionAsync(Guid subscriptionId, int count = 4, CancellationToken ct = default);
     Task OpenVisitsForDispatchAsync(CancellationToken ct = default);
+    Task TopUpFutureVisitsAsync(int targetCount = 4, CancellationToken ct = default);
+    Task OpenUpcomingVisitsForDispatchAsync(int withinDays = 14, CancellationToken ct = default);
+    Task ExpireStaleDispatchOffersAsync(int renewalExpiryDays = 3, CancellationToken ct = default);
+    Task SendDueVisitRemindersAsync(int leadHours = 24, CancellationToken ct = default);
 }
 
 public interface IVisitManagementService

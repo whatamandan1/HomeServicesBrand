@@ -102,7 +102,18 @@ git push
 
 4. Redeploy API
 
-Emails sent on: welcome (signup), subscription confirmed (payment webhook).
+Emails sent on: welcome (signup), subscription confirmed (payment webhook), visit claimed, visit reminder (background job).
+
+### SendGrid test (local or staging)
+
+```bash
+curl http://localhost:5080/api/dev/communications-status
+curl -X POST http://localhost:5080/api/dev/test-notifications \
+  -H "Content-Type: application/json" \
+  -d '{"email":"YOUR_VERIFIED_SENDER_OR_INBOX","phone":"07..."}'
+```
+
+`FromEmail` must match a verified SendGrid sender.
 
 ---
 
@@ -122,7 +133,7 @@ See [twilio-sms-setup.md](./twilio-sms-setup.md) for full steps.
 
 4. Redeploy API — `/health` should show `twilioConfigured: true`
 
-SMS sent on: welcome (signup), subscription confirmed, visit claimed (customer notified).
+SMS sent on: welcome (signup), subscription confirmed, visit claimed, visit reminder (background job).
 
 ---
 
