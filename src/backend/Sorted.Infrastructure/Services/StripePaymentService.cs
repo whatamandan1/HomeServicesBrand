@@ -24,9 +24,13 @@ public class StripePaymentService(
     IHostEnvironment environment,
     ILogger<StripePaymentService> logger) : IStripePaymentService
 {
+    private const string ManagedPortalMetadataKey = "managed_by";
+    private const string ManagedPortalMetadataValue = "gardens-sorted";
+
     private readonly StripeOptions _options = stripeOptions.Value;
     private readonly PlanPricingOptions _planPricing = planPricingOptions.Value;
     private readonly IHostEnvironment _environment = environment;
+    private string? _billingPortalConfigurationId;
 
     public async Task<CheckoutSessionResponse> CreateSignupCheckoutAsync(
         CustomerSubscription subscription,
@@ -94,15 +98,76 @@ public class StripePaymentService(
             throw new InvalidOperationException("Billing is not available for this subscription yet.");
 
         EnsureApiKey();
+        var configurationId = await ResolveBillingPortalConfigurationIdAsync(ct);
         var session = await new Stripe.BillingPortal.SessionService().CreateAsync(
             new Stripe.BillingPortal.SessionCreateOptions
-        {
-            Customer = customerId,
-            ReturnUrl = _options.BillingPortalReturnUrl,
-        }, cancellationToken: ct);
+            {
+                Customer = customerId,
+                ReturnUrl = _options.BillingPortalReturnUrl,
+                Configuration = configurationId,
+            },
+            cancellationToken: ct);
 
         return new BillingPortalSessionResponse(session.Url);
     }
+
+    private async Task<string> ResolveBillingPortalConfigurationIdAsync(CancellationToken ct)
+    {
+        if (!string.IsNullOrWhiteSpace(_options.BillingPortalConfigurationId))
+            return _options.BillingPortalConfigurationId;
+
+        if (!string.IsNullOrWhiteSpace(_billingPortalConfigurationId))
+            return _billingPortalConfigurationId;
+
+        var configService = new Stripe.BillingPortal.ConfigurationService();
+        var existing = await configService.ListAsync(
+            new Stripe.BillingPortal.ConfigurationListOptions { Limit = 100 },
+            cancellationToken: ct);
+        var managed = existing.Data.FirstOrDefault(c =>
+            c.Metadata?.TryGetValue(ManagedPortalMetadataKey, out var value) == true
+            && value == ManagedPortalMetadataValue);
+
+        var features = BuildManagedPortalFeatures();
+
+        if (managed is not null)
+        {
+            if (managed.Features?.SubscriptionCancel?.Enabled == true
+                || managed.Features?.SubscriptionUpdate?.Enabled == true)
+            {
+                managed = await configService.UpdateAsync(
+                    managed.Id,
+                    new Stripe.BillingPortal.ConfigurationUpdateOptions { Features = features },
+                    cancellationToken: ct);
+            }
+
+            _billingPortalConfigurationId = managed.Id;
+            return managed.Id;
+        }
+
+        var created = await configService.CreateAsync(
+            new Stripe.BillingPortal.ConfigurationCreateOptions
+            {
+                Features = features,
+                Metadata = new Dictionary<string, string>
+                {
+                    [ManagedPortalMetadataKey] = ManagedPortalMetadataValue,
+                },
+            },
+            cancellationToken: ct);
+
+        _billingPortalConfigurationId = created.Id;
+        logger.LogInformation("Created Stripe billing portal configuration {ConfigurationId} (cancellation disabled)", created.Id);
+        return created.Id;
+    }
+
+    private static Stripe.BillingPortal.ConfigurationFeaturesOptions BuildManagedPortalFeatures() =>
+        new()
+        {
+            InvoiceHistory = new Stripe.BillingPortal.ConfigurationFeaturesInvoiceHistoryOptions { Enabled = true },
+            PaymentMethodUpdate = new Stripe.BillingPortal.ConfigurationFeaturesPaymentMethodUpdateOptions { Enabled = true },
+            SubscriptionCancel = new Stripe.BillingPortal.ConfigurationFeaturesSubscriptionCancelOptions { Enabled = false },
+            SubscriptionUpdate = new Stripe.BillingPortal.ConfigurationFeaturesSubscriptionUpdateOptions { Enabled = false },
+        };
 
     public async Task<CancelSubscriptionResponse> CancelSubscriptionAsync(
         CustomerSubscription subscription,

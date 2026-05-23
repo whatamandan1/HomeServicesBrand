@@ -17,6 +17,8 @@ public class StripeOptions
     public string SuccessUrl { get; set; } = "http://localhost:3000/signup/success";
     public string CancelUrl { get; set; } = "http://localhost:3000/signup";
     public string BillingPortalReturnUrl { get; set; } = "http://localhost:3000/portal";
+    /// <summary>Optional Stripe Customer Portal configuration (bpc_...). When unset, the API creates one with cancellation disabled.</summary>
+    public string BillingPortalConfigurationId { get; set; } = string.Empty;
     /// <summary>Optional pre-created Stripe Price IDs (recommended for production).</summary>
     public StripePriceOptions Prices { get; set; } = new();
 }
