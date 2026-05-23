@@ -25,6 +25,19 @@ export type CustomerSubscription = {
   availabilityPreference: string;
 };
 
+export type GardenSize = "Small" | "Medium" | "Large";
+
+export type CustomerProperty = {
+  id: string;
+  line1: string;
+  line2: string | null;
+  city: string;
+  postcode: string;
+  gardenSize: GardenSize;
+  accessNotes: string | null;
+  isPrimary: boolean;
+};
+
 export type JobVisit = {
   id: string;
   scheduledDate: string;
@@ -223,6 +236,24 @@ export const api = {
     ),
   customerSubscriptions: (token: string) =>
     request<CustomerSubscription[]>("/api/customer/subscriptions", {}, token),
+  customerProperties: (token: string) =>
+    request<CustomerProperty[]>("/api/customer/properties", {}, token),
+  customerUpdateProperty: (
+    token: string,
+    propertyId: string,
+    body: {
+      line1: string;
+      line2: string | null;
+      city: string;
+      postcode: string;
+      gardenSize: GardenSize;
+      accessNotes: string | null;
+    }
+  ) =>
+    request<CustomerProperty>(`/api/customer/properties/${propertyId}`, {
+      method: "PUT",
+      body: JSON.stringify(body),
+    }, token),
   customerVisits: (token: string) =>
     request<JobVisit[]>("/api/customer/visits", {}, token),
   customerCancelVisit: (token: string, visitId: string) =>

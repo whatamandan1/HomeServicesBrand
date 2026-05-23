@@ -21,6 +21,24 @@ public record CustomerSubscriptionResponse(
     DateTime? StartedAtUtc,
     string AvailabilityPreference);
 
+public record CustomerPropertyResponse(
+    Guid Id,
+    string Line1,
+    string? Line2,
+    string City,
+    string Postcode,
+    GardenSize GardenSize,
+    string? AccessNotes,
+    bool IsPrimary);
+
+public record UpdateCustomerPropertyRequest(
+    string Line1,
+    string? Line2,
+    string City,
+    string Postcode,
+    GardenSize GardenSize,
+    string? AccessNotes);
+
 public record JobVisitResponse(
     Guid Id,
     DateTime ScheduledDate,

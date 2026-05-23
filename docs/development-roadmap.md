@@ -73,7 +73,7 @@ Work through phases in order. Each phase builds on the last.
 - [ ] **SMS + email in production** — configure Twilio and SendGrid; visit/subscription notifications
 - [ ] **Admin workflow viewer** — browse `WorkflowEvent` log in admin UI
 - [x] **Admin AI log viewer** — browse `AIActionLog` and communication threads
-- [ ] **Customer property management** — edit property details, access notes, optional media upload
+- [x] **Customer property management** — edit property details, access notes, optional media upload *(media deferred)*
 - [ ] **Wire admin dispatch action** — expose `POST /api/admin/scheduling/open-dispatch` in admin UI *(done in admin portal)*
 
 ### Phase 3 — Platform maturity

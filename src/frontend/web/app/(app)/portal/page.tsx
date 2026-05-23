@@ -1,17 +1,19 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { api, type CustomerSubscription, type JobVisit } from "@/lib/api";
+import { api, type CustomerProperty, type CustomerSubscription, type JobVisit } from "@/lib/api";
 import { clearAuth } from "@/lib/auth-storage";
 import { useAuth } from "@/lib/use-auth";
 import { isActiveVisit } from "@/lib/visit-status";
 import { StatusBadge } from "@/components/ui";
 import { VisitList } from "@/components/visits/VisitList";
 import { SupportChat } from "@/components/support/SupportChat";
+import { PropertyList } from "@/components/properties/PropertyList";
 
 export default function PortalPage() {
   const { auth, setAuth, ready } = useAuth();
   const [subs, setSubs] = useState<CustomerSubscription[]>([]);
+  const [properties, setProperties] = useState<CustomerProperty[]>([]);
   const [visits, setVisits] = useState<JobVisit[]>([]);
   const [error, setError] = useState<string | null>(null);
   const [busyId, setBusyId] = useState<string | null>(null);
@@ -24,6 +26,7 @@ export default function PortalPage() {
   useEffect(() => {
     if (!auth?.token || auth.role !== "Customer") return;
     api.customerSubscriptions(auth.token).then(setSubs);
+    api.customerProperties(auth.token).then(setProperties);
     refreshVisits();
   }, [auth]);
 
@@ -112,6 +115,21 @@ export default function PortalPage() {
             ))}
           </ul>
         )}
+      </section>
+
+      <section>
+        <h2 className="font-semibold text-gardens-dark">My property</h2>
+        <p className="mt-1 text-sm text-stone-500">
+          Update your address, garden size, and access notes for your gardener.
+        </p>
+        <PropertyList
+          properties={properties}
+          onSave={async (id, body) => {
+            if (!auth?.token) return;
+            const updated = await api.customerUpdateProperty(auth.token, id, body);
+            setProperties((list) => list.map((p) => (p.id === id ? updated : p)));
+          }}
+        />
       </section>
 
       <section>

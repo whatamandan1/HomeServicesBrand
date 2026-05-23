@@ -3,7 +3,9 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Sorted.Core.Dtos;
+using Sorted.Core.Entities;
 using Sorted.Core.Enums;
+using Sorted.Core.Geo;
 using Sorted.Core.Interfaces;
 using Sorted.Infrastructure.Data;
 
@@ -16,7 +18,9 @@ public class CustomerController(
     SortedDbContext db,
     IStripePaymentService stripe,
     IAiSupportService ai,
-    IVisitManagementService visits) : ControllerBase
+    IVisitManagementService visits,
+    IPostcodeGeocodingService geocoding,
+    IWorkflowLogger workflow) : ControllerBase
 {
     private async Task<Guid> GetCustomerIdAsync(CancellationToken ct)
     {
@@ -120,5 +124,80 @@ public class CustomerController(
     {
         var customerId = await GetCustomerIdAsync(ct);
         return Ok(await ai.ChatAsync(customerId, request, ct));
+    }
+
+    [HttpGet("properties")]
+    public async Task<ActionResult<IEnumerable<CustomerPropertyResponse>>> Properties(CancellationToken ct)
+    {
+        var customerId = await GetCustomerIdAsync(ct);
+        var list = await db.CustomerProperties.AsNoTracking()
+            .Where(p => p.CustomerId == customerId && !p.IsDeleted)
+            .OrderByDescending(p => p.IsPrimary)
+            .ThenBy(p => p.CreatedAtUtc)
+            .Select(p => new CustomerPropertyResponse(
+                p.Id,
+                p.Line1,
+                p.Line2,
+                p.City,
+                p.Postcode,
+                p.GardenSize,
+                p.AccessNotes,
+                p.IsPrimary))
+            .ToListAsync(ct);
+        return Ok(list);
+    }
+
+    [HttpPut("properties/{propertyId:guid}")]
+    public async Task<ActionResult<CustomerPropertyResponse>> UpdateProperty(
+        Guid propertyId,
+        [FromBody] UpdateCustomerPropertyRequest request,
+        CancellationToken ct)
+    {
+        if (string.IsNullOrWhiteSpace(request.Line1)
+            || string.IsNullOrWhiteSpace(request.City)
+            || string.IsNullOrWhiteSpace(request.Postcode))
+            return BadRequest(new { error = "Address line 1, city, and postcode are required." });
+
+        var customerId = await GetCustomerIdAsync(ct);
+        var property = await db.CustomerProperties
+            .FirstOrDefaultAsync(p => p.Id == propertyId && p.CustomerId == customerId && !p.IsDeleted, ct);
+        if (property is null) return NotFound();
+
+        var normalizedPostcode = PostcodeFormat.Normalize(request.Postcode);
+        var postcodeChanged = !string.Equals(property.Postcode, normalizedPostcode, StringComparison.OrdinalIgnoreCase);
+
+        property.Line1 = request.Line1.Trim();
+        property.Line2 = string.IsNullOrWhiteSpace(request.Line2) ? null : request.Line2.Trim();
+        property.City = request.City.Trim();
+        property.Postcode = normalizedPostcode;
+        property.GardenSize = request.GardenSize;
+        property.AccessNotes = string.IsNullOrWhiteSpace(request.AccessNotes) ? null : request.AccessNotes.Trim();
+        property.UpdatedAtUtc = DateTime.UtcNow;
+
+        if (postcodeChanged)
+        {
+            var geo = await geocoding.LookupAsync(property.Postcode, ct);
+            property.Latitude = geo?.Latitude;
+            property.Longitude = geo?.Longitude;
+        }
+
+        await db.SaveChangesAsync(ct);
+        await workflow.LogAsync(
+            "customer_property",
+            "updated",
+            nameof(CustomerProperty),
+            property.Id,
+            new { property.Postcode, property.GardenSize },
+            ct);
+
+        return Ok(new CustomerPropertyResponse(
+            property.Id,
+            property.Line1,
+            property.Line2,
+            property.City,
+            property.Postcode,
+            property.GardenSize,
+            property.AccessNotes,
+            property.IsPrimary));
     }
 }
