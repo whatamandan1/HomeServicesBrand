@@ -20,6 +20,7 @@ public static class DependencyInjection
         services.Configure<OpenAiOptions>(configuration.GetSection(OpenAiOptions.Section));
         services.Configure<TwilioOptions>(configuration.GetSection(TwilioOptions.Section));
         services.Configure<FeaturesOptions>(configuration.GetSection(FeaturesOptions.Section));
+        services.Configure<AppOptions>(configuration.GetSection(AppOptions.Section));
         services.Configure<BackgroundJobsOptions>(configuration.GetSection(BackgroundJobsOptions.Section));
 
         var connectionString = DatabaseConfiguration.ResolveConnectionString(configuration);

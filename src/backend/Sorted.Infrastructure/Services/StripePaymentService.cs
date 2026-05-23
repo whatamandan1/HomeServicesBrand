@@ -1,4 +1,5 @@
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Sorted.Core.Dtos;
@@ -20,10 +21,12 @@ public class StripePaymentService(
     ISmsService sms,
     IVisitSchedulingService scheduling,
     IWorkflowLogger workflow,
+    IHostEnvironment environment,
     ILogger<StripePaymentService> logger) : IStripePaymentService
 {
     private readonly StripeOptions _options = stripeOptions.Value;
     private readonly PlanPricingOptions _planPricing = planPricingOptions.Value;
+    private readonly IHostEnvironment _environment = environment;
 
     public async Task<CheckoutSessionResponse> CreateSignupCheckoutAsync(
         CustomerSubscription subscription,
@@ -71,13 +74,86 @@ public class StripePaymentService(
         return new CheckoutSessionResponse(session.Id, session.Url);
     }
 
+    public async Task<BillingPortalSessionResponse> CreateBillingPortalSessionAsync(
+        CustomerSubscription subscription,
+        CancellationToken ct = default)
+    {
+        if (string.IsNullOrWhiteSpace(subscription.StripeCustomerId))
+            throw new InvalidOperationException("Billing is not available for this subscription yet.");
+
+        EnsureApiKey();
+        var session = await new Stripe.BillingPortal.SessionService().CreateAsync(
+            new Stripe.BillingPortal.SessionCreateOptions
+        {
+            Customer = subscription.StripeCustomerId,
+            ReturnUrl = _options.BillingPortalReturnUrl,
+        }, cancellationToken: ct);
+
+        return new BillingPortalSessionResponse(session.Url);
+    }
+
+    public async Task<CancelSubscriptionResponse> CancelSubscriptionAsync(
+        CustomerSubscription subscription,
+        CancellationToken ct = default)
+    {
+        if (subscription.Status is not (SubscriptionStatus.Active or SubscriptionStatus.PastDue))
+            throw new InvalidOperationException("Only active subscriptions can be cancelled.");
+        if (subscription.CancelsAtUtc is not null)
+            throw new InvalidOperationException("Cancellation is already scheduled.");
+        if (string.IsNullOrWhiteSpace(subscription.StripeSubscriptionId))
+            throw new InvalidOperationException("This subscription is not linked to Stripe billing yet.");
+
+        EnsureApiKey();
+        var now = DateTime.UtcNow;
+        var minimumTermEnd = subscription.EndsAtUtc is { } termEnd && termEnd > now ? termEnd : (DateTime?)null;
+        var subscriptionService = new SubscriptionService();
+        Subscription stripeSubscription;
+
+        if (minimumTermEnd is not null)
+        {
+            stripeSubscription = await subscriptionService.UpdateAsync(
+                subscription.StripeSubscriptionId,
+                new SubscriptionUpdateOptions { CancelAt = minimumTermEnd },
+                cancellationToken: ct);
+            subscription.CancelsAtUtc = minimumTermEnd;
+        }
+        else
+        {
+            stripeSubscription = await subscriptionService.UpdateAsync(
+                subscription.StripeSubscriptionId,
+                new SubscriptionUpdateOptions { CancelAtPeriodEnd = true },
+                cancellationToken: ct);
+            subscription.CancelsAtUtc = stripeSubscription.CurrentPeriodEnd;
+        }
+
+        await db.SaveChangesAsync(ct);
+        await workflow.LogAsync(
+            "billing",
+            "subscription_cancel_scheduled",
+            nameof(CustomerSubscription),
+            subscription.Id,
+            $"{{\"cancelsAtUtc\":\"{subscription.CancelsAtUtc:O}\"}}",
+            ct);
+
+        var message = minimumTermEnd is not null
+            ? $"Your subscription will end on {subscription.CancelsAtUtc:dddd d MMMM yyyy} when your minimum term finishes."
+            : $"Your subscription will end on {subscription.CancelsAtUtc:dddd d MMMM yyyy} at the end of the current billing period.";
+
+        return new CancelSubscriptionResponse(subscription.CancelsAtUtc!.Value, message);
+    }
+
     public async Task HandleWebhookAsync(string json, string stripeSignature, CancellationToken ct = default)
     {
         if (string.IsNullOrWhiteSpace(_options.WebhookSecret))
         {
+            if (!_environment.IsDevelopment())
+                throw new InvalidOperationException("Stripe webhook secret is not configured.");
             logger.LogWarning("Stripe webhook secret not set; skipping verification (dev only).");
             return;
         }
+
+        if (string.IsNullOrWhiteSpace(stripeSignature))
+            throw new InvalidOperationException("Missing Stripe-Signature header.");
 
         EnsureApiKey();
         var stripeEvent = EventUtility.ConstructEvent(
@@ -271,17 +347,29 @@ public class StripePaymentService(
             return;
 
         var mapped = MapStripeStatus(stripeSubscription.Status);
-        if (subscription.Status != mapped)
+        var previousStatus = subscription.Status;
+        var previousCancelAt = subscription.CancelsAtUtc;
+
+        if (stripeSubscription.CancelAt.HasValue)
+            subscription.CancelsAtUtc = stripeSubscription.CancelAt.Value.ToUniversalTime();
+        else if (!stripeSubscription.CancelAtPeriodEnd)
+            subscription.CancelsAtUtc = null;
+
+        subscription.Status = mapped;
+
+        if (subscription.Status != previousStatus || subscription.CancelsAtUtc != previousCancelAt)
         {
-            subscription.Status = mapped;
             await db.SaveChangesAsync(ct);
-            await workflow.LogAsync(
-                "billing",
-                "subscription_status_changed",
-                nameof(CustomerSubscription),
-                subscription.Id,
-                $"{{\"stripeStatus\":\"{stripeSubscription.Status}\"}}",
-                ct);
+            if (subscription.Status != previousStatus)
+            {
+                await workflow.LogAsync(
+                    "billing",
+                    "subscription_status_changed",
+                    nameof(CustomerSubscription),
+                    subscription.Id,
+                    $"{{\"stripeStatus\":\"{stripeSubscription.Status}\"}}",
+                    ct);
+            }
         }
     }
 

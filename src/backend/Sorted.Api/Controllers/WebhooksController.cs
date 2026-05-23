@@ -17,9 +17,13 @@ public class WebhooksController(IStripePaymentService stripe) : ControllerBase
             await stripe.HandleWebhookAsync(json, signature, ct);
             return Ok();
         }
-        catch (Exception ex)
+        catch (InvalidOperationException)
         {
-            return BadRequest(new { error = ex.Message });
+            return StatusCode(StatusCodes.Status503ServiceUnavailable);
+        }
+        catch (Stripe.StripeException)
+        {
+            return BadRequest();
         }
     }
 }

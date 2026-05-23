@@ -19,7 +19,15 @@ public record CustomerSubscriptionResponse(
     string PlanName,
     SubscriptionStatus Status,
     DateTime? StartedAtUtc,
-    string AvailabilityPreference);
+    string AvailabilityPreference,
+    DateTime? MinimumTermEndsAtUtc,
+    DateTime? CancelsAtUtc,
+    bool CanManageBilling,
+    bool CanCancel);
+
+public record BillingPortalSessionResponse(string Url);
+
+public record CancelSubscriptionResponse(DateTime CancelsAtUtc, string Message);
 
 public record CustomerPropertyResponse(
     Guid Id,

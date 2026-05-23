@@ -53,6 +53,17 @@ builder.Services.AddSwaggerGen(c =>
 });
 
 var jwt = builder.Configuration.GetSection(JwtOptions.Section).Get<JwtOptions>() ?? new JwtOptions();
+if (!builder.Environment.IsDevelopment())
+{
+    const string devJwtPlaceholder = "DEV_ONLY_CHANGE_IN_PRODUCTION_min_32_chars_long_secret";
+    if (string.IsNullOrWhiteSpace(jwt.Secret)
+        || jwt.Secret == devJwtPlaceholder
+        || jwt.Secret == "CHANGE_ME_IN_PRODUCTION_USE_LONG_SECRET"
+        || jwt.Secret.Length < 32)
+    {
+        throw new InvalidOperationException("Jwt:Secret must be set to a strong value (32+ characters) in production.");
+    }
+}
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
     .AddJwtBearer(options =>
     {
@@ -113,7 +124,6 @@ app.MapGet("/health", async (SortedDbContext db, IConfiguration config) =>
             databaseSource = DatabaseConfiguration.DescribeSource(config),
             canConnect = true,
             userCount = await db.Users.CountAsync(),
-            demoAdminExists = await db.Users.AnyAsync(u => u.Email == DataSeeder.AdminEmail),
             sendGridConfigured,
             openAiConfigured,
             twilioConfigured,
@@ -130,13 +140,11 @@ app.MapGet("/health", async (SortedDbContext db, IConfiguration config) =>
             : "Use DATABASE_PUBLIC_URL (cross-project) or link Postgres in the same project via PGHOST/PGUSER/PGPASSWORD.";
 
     var userCount = 0;
-    var demoAdminExists = false;
     if (canConnect)
     {
         try
         {
             userCount = await db.Users.CountAsync();
-            demoAdminExists = await db.Users.AnyAsync(u => u.Email == DataSeeder.AdminEmail);
         }
         catch
         {
@@ -156,7 +164,6 @@ app.MapGet("/health", async (SortedDbContext db, IConfiguration config) =>
         dbError,
         hint,
         userCount,
-        demoAdminExists,
         sendGridConfigured,
         openAiConfigured,
         twilioConfigured,

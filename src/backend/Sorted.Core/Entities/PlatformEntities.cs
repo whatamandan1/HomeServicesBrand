@@ -73,9 +73,20 @@ public class CustomerSubscription : AuditableEntity
     public SubscriptionStatus Status { get; set; } = SubscriptionStatus.PendingPayment;
     public DateTime? StartedAtUtc { get; set; }
     public DateTime? EndsAtUtc { get; set; }
+    /// <summary>When the subscription will end after the customer requests cancellation.</summary>
+    public DateTime? CancelsAtUtc { get; set; }
     public string? StripeSubscriptionId { get; set; }
     public string? StripeCustomerId { get; set; }
     public string AvailabilityPreference { get; set; } = string.Empty;
+}
+
+public class PasswordResetToken : AuditableEntity
+{
+    public Guid UserId { get; set; }
+    public UserAccount User { get; set; } = null!;
+    public string TokenHash { get; set; } = string.Empty;
+    public DateTime ExpiresAtUtc { get; set; }
+    public DateTime? UsedAtUtc { get; set; }
 }
 
 public class Provider : AuditableEntity

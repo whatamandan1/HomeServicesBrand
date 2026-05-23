@@ -16,6 +16,7 @@ public class StripeOptions
     public string WebhookSecret { get; set; } = string.Empty;
     public string SuccessUrl { get; set; } = "http://localhost:3000/signup/success";
     public string CancelUrl { get; set; } = "http://localhost:3000/signup";
+    public string BillingPortalReturnUrl { get; set; } = "http://localhost:3000/portal";
     /// <summary>Optional pre-created Stripe Price IDs (recommended for production).</summary>
     public StripePriceOptions Prices { get; set; } = new();
 }
@@ -48,11 +49,19 @@ public class OpenAiOptions
     public string Model { get; set; } = "gpt-4o-mini";
 }
 
+public class AppOptions
+{
+    public const string Section = "App";
+    public string FrontendBaseUrl { get; set; } = "http://localhost:3000";
+}
+
 public class FeaturesOptions
 {
     public const string Section = "Features";
     /// <summary>Skip Stripe checkout — activate subscription immediately (staging/dev only).</summary>
     public bool BypassStripeCheckout { get; set; }
+    /// <summary>Create demo admin/provider accounts and sample dispatch data on startup.</summary>
+    public bool SeedDemoData { get; set; } = true;
 }
 
 public class TwilioOptions

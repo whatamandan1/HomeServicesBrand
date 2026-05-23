@@ -24,15 +24,16 @@ public static class DataSeeder
     private const double DemoPropertyLatitude = 53.7991;
     private const double DemoPropertyLongitude = -1.5478;
 
-    public static async Task SeedAsync(SortedDbContext db, ILogger logger, CancellationToken ct = default)
+    public static async Task SeedAsync(SortedDbContext db, ILogger logger, bool seedDemoData, CancellationToken ct = default)
     {
         if (!await db.Brands.AnyAsync(ct))
         {
-            await SeedInitialDataAsync(db, logger, ct);
+            await SeedInitialDataAsync(db, logger, seedDemoData, ct);
             return;
         }
 
-        await EnsureDemoUsersAsync(db, logger, ct);
+        if (seedDemoData)
+            await EnsureDemoUsersAsync(db, logger, ct);
     }
 
     /// <summary>
@@ -49,7 +50,7 @@ public static class DataSeeder
         await EnsureDemoOpenVisitsAsync(db, logger, ct);
     }
 
-    private static async Task SeedInitialDataAsync(SortedDbContext db, ILogger logger, CancellationToken ct)
+    private static async Task SeedInitialDataAsync(SortedDbContext db, ILogger logger, bool seedDemoData, CancellationToken ct)
     {
         var brand = new Brand
         {
@@ -81,8 +82,15 @@ public static class DataSeeder
             });
 
         await db.SaveChangesAsync(ct);
-        await EnsureDemoUsersAsync(db, logger, ct);
-        logger.LogInformation("Database seeded with GardensSorted brand, plans, admin and demo provider.");
+        if (seedDemoData)
+        {
+            await EnsureDemoUsersAsync(db, logger, ct);
+            logger.LogInformation("Database seeded with GardensSorted brand, plans, admin and demo provider.");
+        }
+        else
+        {
+            logger.LogInformation("Database seeded with GardensSorted brand and plans (demo accounts disabled).");
+        }
     }
 
     private static async Task EnsureDemoUsersAsync(SortedDbContext db, ILogger logger, CancellationToken ct)

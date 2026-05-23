@@ -70,4 +70,27 @@ public class AuthController(IAuthService auth) : ControllerBase
         var profile = await auth.GetProfileAsync(userId, ct);
         return profile is null ? NotFound() : Ok(profile);
     }
+
+    [HttpPost("forgot-password")]
+    [AllowAnonymous]
+    public async Task<IActionResult> ForgotPassword([FromBody] ForgotPasswordRequest request, CancellationToken ct)
+    {
+        await auth.RequestPasswordResetAsync(request.Email, ct);
+        return Ok(new { message = "If that email is registered, we sent a reset link." });
+    }
+
+    [HttpPost("reset-password")]
+    [AllowAnonymous]
+    public async Task<IActionResult> ResetPassword([FromBody] ResetPasswordRequest request, CancellationToken ct)
+    {
+        try
+        {
+            await auth.ResetPasswordAsync(request.Token, request.NewPassword, ct);
+            return Ok(new { message = "Password updated. You can sign in now." });
+        }
+        catch (InvalidOperationException ex)
+        {
+            return BadRequest(new { error = ex.Message });
+        }
+    }
 }

@@ -19,7 +19,6 @@ public class DevController(
     IEmailService email,
     ISmsService sms,
     IHostEnvironment env,
-    IOptions<FeaturesOptions> features,
     IOptions<SendGridOptions> sendGrid,
     IOptions<TwilioOptions> twilio) : ControllerBase
 {
@@ -97,6 +96,7 @@ public class DevController(
 
         sub.Status = SubscriptionStatus.Active;
         sub.StartedAtUtc = DateTime.UtcNow;
+        sub.EndsAtUtc = DateTime.UtcNow.AddMonths(sub.Plan.MinimumTermMonths);
         await db.SaveChangesAsync(ct);
         await scheduling.GenerateVisitsForSubscriptionAsync(subscriptionId, ct: ct);
         await scheduling.OpenVisitsForDispatchAsync(ct);
@@ -122,6 +122,5 @@ public class DevController(
         return Ok(new { message = "Background jobs completed." });
     }
 
-    private bool CanUseDevTools() =>
-        env.IsDevelopment() || features.Value.BypassStripeCheckout;
+    private bool CanUseDevTools() => env.IsDevelopment();
 }

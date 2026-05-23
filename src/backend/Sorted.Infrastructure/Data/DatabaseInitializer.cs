@@ -23,7 +23,8 @@ public static class DatabaseInitializer
         try
         {
             await db.Database.MigrateAsync(ct);
-            await DataSeeder.SeedAsync(db, logger, ct);
+            var seedDemoData = configuration?.GetSection(FeaturesOptions.Section).Get<FeaturesOptions>()?.SeedDemoData ?? true;
+            await DataSeeder.SeedAsync(db, logger, seedDemoData, ct);
             await DataSeeder.EnsurePlanPricingAsync(db, logger, configuration, ct);
             if (configuration is not null)
                 await DataSeeder.ApplyStripePriceIdsAsync(db, configuration, logger, ct);

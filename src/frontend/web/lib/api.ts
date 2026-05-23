@@ -23,6 +23,10 @@ export type CustomerSubscription = {
   status: string;
   startedAtUtc: string | null;
   availabilityPreference: string;
+  minimumTermEndsAtUtc: string | null;
+  cancelsAtUtc: string | null;
+  canManageBilling: boolean;
+  canCancel: boolean;
 };
 
 export type GardenSize = "Small" | "Medium" | "Large";
@@ -157,6 +161,13 @@ async function request<T>(
 
   const res = await fetch(`${API_BASE}${path}`, { ...options, headers });
   if (!res.ok) {
+    if (res.status === 401 && typeof window !== "undefined") {
+      const { clearAuth } = await import("./auth-storage");
+      clearAuth();
+      if (!window.location.pathname.startsWith("/login")) {
+        window.location.href = `/login?next=${encodeURIComponent(window.location.pathname)}`;
+      }
+    }
     const text = await res.text();
     let message = res.statusText;
     try {
@@ -229,6 +240,16 @@ export const api = {
       method: "POST",
       body: JSON.stringify({ email, password }),
     }),
+  forgotPassword: (email: string) =>
+    request<{ message: string }>("/api/auth/forgot-password", {
+      method: "POST",
+      body: JSON.stringify({ email }),
+    }),
+  resetPassword: (token: string, newPassword: string) =>
+    request<{ message: string }>("/api/auth/reset-password", {
+      method: "POST",
+      body: JSON.stringify({ token, newPassword }),
+    }),
   checkout: (subscriptionId: string, token: string) =>
     request<{ sessionId: string; url: string }>(
       `/api/customer/subscriptions/${subscriptionId}/checkout`,
@@ -242,6 +263,18 @@ export const api = {
     ),
   customerSubscriptions: (token: string) =>
     request<CustomerSubscription[]>("/api/customer/subscriptions", {}, token),
+  customerBillingPortal: (token: string, subscriptionId: string) =>
+    request<{ url: string }>(
+      `/api/customer/subscriptions/${subscriptionId}/billing-portal`,
+      { method: "POST" },
+      token
+    ),
+  customerCancelSubscription: (token: string, subscriptionId: string) =>
+    request<{ cancelsAtUtc: string; message: string }>(
+      `/api/customer/subscriptions/${subscriptionId}/cancel`,
+      { method: "POST" },
+      token
+    ),
   customerProperties: (token: string) =>
     request<CustomerProperty[]>("/api/customer/properties", {}, token),
   customerUpdateProperty: (

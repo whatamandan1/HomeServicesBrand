@@ -1,9 +1,13 @@
+using System.Security.Cryptography;
+using System.Text;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Options;
 using Sorted.Core.Dtos;
 using Sorted.Core.Entities;
 using Sorted.Core.Enums;
 using Sorted.Core.Geo;
 using Sorted.Core.Interfaces;
+using Sorted.Core.Options;
 using Sorted.Infrastructure.Data;
 
 namespace Sorted.Infrastructure.Services;
@@ -15,8 +19,10 @@ public class AuthService(
     IEmailService email,
     ISmsService sms,
     IPostcodeGeocodingService geocoding,
-    IProviderCoverageService coverage) : IAuthService
+    IProviderCoverageService coverage,
+    IOptions<AppOptions> appOptions) : IAuthService
 {
+    private readonly AppOptions _appOptions = appOptions.Value;
     public async Task<AuthResponse> RegisterCustomerAsync(RegisterCustomerRequest request, CancellationToken ct = default)
     {
         if (await db.Users.AnyAsync(u => u.Email == request.Email, ct))
@@ -156,4 +162,49 @@ public class AuthService(
         var user = await db.Users.AsNoTracking().FirstOrDefaultAsync(u => u.Id == userId && !u.IsDeleted, ct);
         return user is null ? null : new UserProfileResponse(user.Id, user.Email, user.FirstName, user.LastName, user.Phone, user.Role);
     }
+
+    public async Task RequestPasswordResetAsync(string emailAddress, CancellationToken ct = default)
+    {
+        var normalized = emailAddress.Trim().ToLowerInvariant();
+        var user = await db.Users.FirstOrDefaultAsync(u => u.Email == normalized && u.IsActive && !u.IsDeleted, ct);
+        if (user is null) return;
+
+        var token = Convert.ToBase64String(RandomNumberGenerator.GetBytes(32));
+        var hash = HashResetToken(token);
+
+        db.PasswordResetTokens.Add(new PasswordResetToken
+        {
+            UserId = user.Id,
+            TokenHash = hash,
+            ExpiresAtUtc = DateTime.UtcNow.AddHours(1),
+        });
+        await db.SaveChangesAsync(ct);
+
+        var resetUrl =
+            $"{_appOptions.FrontendBaseUrl.TrimEnd('/')}/reset-password?token={Uri.EscapeDataString(token)}";
+        await email.SendPasswordResetEmailAsync(user.Email, resetUrl, ct);
+    }
+
+    public async Task ResetPasswordAsync(string token, string newPassword, CancellationToken ct = default)
+    {
+        if (string.IsNullOrWhiteSpace(token) || string.IsNullOrWhiteSpace(newPassword))
+            throw new InvalidOperationException("Token and new password are required.");
+        if (newPassword.Length < 8)
+            throw new InvalidOperationException("Password must be at least 8 characters.");
+
+        var hash = HashResetToken(token);
+        var reset = await db.PasswordResetTokens
+            .Include(t => t.User)
+            .FirstOrDefaultAsync(
+                t => t.TokenHash == hash && t.UsedAtUtc == null && t.ExpiresAtUtc > DateTime.UtcNow,
+                ct)
+            ?? throw new InvalidOperationException("This reset link is invalid or has expired.");
+
+        reset.User.PasswordHash = BCrypt.Net.BCrypt.HashPassword(newPassword);
+        reset.UsedAtUtc = DateTime.UtcNow;
+        await db.SaveChangesAsync(ct);
+    }
+
+    private static string HashResetToken(string token) =>
+        Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(token)));
 }

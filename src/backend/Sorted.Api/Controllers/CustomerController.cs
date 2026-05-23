@@ -34,9 +34,57 @@ public class CustomerController(
         var customerId = await GetCustomerIdAsync(ct);
         var subs = await db.CustomerSubscriptions.AsNoTracking()
             .Where(s => s.CustomerId == customerId && !s.IsDeleted)
-            .Select(s => new CustomerSubscriptionResponse(s.Id, s.Plan.Name, s.Status, s.StartedAtUtc, s.AvailabilityPreference))
+            .Select(s => new CustomerSubscriptionResponse(
+                s.Id,
+                s.Plan.Name,
+                s.Status,
+                s.StartedAtUtc,
+                s.AvailabilityPreference,
+                s.EndsAtUtc,
+                s.CancelsAtUtc,
+                s.StripeCustomerId != null && (s.Status == SubscriptionStatus.Active || s.Status == SubscriptionStatus.PastDue),
+                s.Status == SubscriptionStatus.Active && s.CancelsAtUtc == null))
             .ToListAsync(ct);
         return Ok(subs);
+    }
+
+    [HttpPost("subscriptions/{subscriptionId:guid}/billing-portal")]
+    public async Task<ActionResult<BillingPortalSessionResponse>> BillingPortal(Guid subscriptionId, CancellationToken ct)
+    {
+        var userId = Guid.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!);
+        var sub = await db.CustomerSubscriptions
+            .Include(s => s.Customer)
+            .FirstOrDefaultAsync(s => s.Id == subscriptionId && s.Customer.UserId == userId && !s.IsDeleted, ct);
+        if (sub is null) return NotFound();
+
+        try
+        {
+            return Ok(await stripe.CreateBillingPortalSessionAsync(sub, ct));
+        }
+        catch (InvalidOperationException ex)
+        {
+            return BadRequest(new { error = ex.Message });
+        }
+    }
+
+    [HttpPost("subscriptions/{subscriptionId:guid}/cancel")]
+    public async Task<ActionResult<CancelSubscriptionResponse>> CancelSubscription(Guid subscriptionId, CancellationToken ct)
+    {
+        var userId = Guid.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!);
+        var sub = await db.CustomerSubscriptions
+            .Include(s => s.Customer)
+            .Include(s => s.Plan)
+            .FirstOrDefaultAsync(s => s.Id == subscriptionId && s.Customer.UserId == userId && !s.IsDeleted, ct);
+        if (sub is null) return NotFound();
+
+        try
+        {
+            return Ok(await stripe.CancelSubscriptionAsync(sub, ct));
+        }
+        catch (InvalidOperationException ex)
+        {
+            return BadRequest(new { error = ex.Message });
+        }
     }
 
     [HttpPost("subscriptions/{subscriptionId:guid}/checkout")]

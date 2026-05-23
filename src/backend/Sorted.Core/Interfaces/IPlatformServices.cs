@@ -10,11 +10,15 @@ public interface IAuthService
     Task<AuthResponse> RegisterProviderAsync(RegisterProviderRequest request, CancellationToken ct = default);
     Task<AuthResponse> LoginAsync(LoginRequest request, CancellationToken ct = default);
     Task<UserProfileResponse?> GetProfileAsync(Guid userId, CancellationToken ct = default);
+    Task RequestPasswordResetAsync(string email, CancellationToken ct = default);
+    Task ResetPasswordAsync(string token, string newPassword, CancellationToken ct = default);
 }
 
 public interface IStripePaymentService
 {
     Task<CheckoutSessionResponse> CreateSignupCheckoutAsync(CustomerSubscription subscription, SubscriptionPlan plan, string customerEmail, CancellationToken ct = default);
+    Task<BillingPortalSessionResponse> CreateBillingPortalSessionAsync(CustomerSubscription subscription, CancellationToken ct = default);
+    Task<CancelSubscriptionResponse> CancelSubscriptionAsync(CustomerSubscription subscription, CancellationToken ct = default);
     Task HandleWebhookAsync(string json, string stripeSignature, CancellationToken ct = default);
 }
 
@@ -24,6 +28,7 @@ public interface IEmailService
     Task SendSubscriptionConfirmedEmailAsync(string toEmail, string planName, CancellationToken ct = default);
     Task SendVisitClaimedEmailAsync(string toEmail, DateTime visitDate, string postcode, string availabilityWindow, CancellationToken ct = default);
     Task SendVisitReminderEmailAsync(string toEmail, DateTime visitDate, string postcode, string availabilityWindow, CancellationToken ct = default);
+    Task SendPasswordResetEmailAsync(string toEmail, string resetUrl, CancellationToken ct = default);
 }
 
 public interface ISmsService

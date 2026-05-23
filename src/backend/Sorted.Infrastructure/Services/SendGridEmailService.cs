@@ -32,6 +32,13 @@ public class SendGridEmailService(IOptions<SendGridOptions> options, ILogger<Sen
             $"Your garden visit on {visitDate:dddd d MMMM} in {postcode} is confirmed. Your gardener will arrive during {window}.", ct);
     }
 
+    public Task SendPasswordResetEmailAsync(string toEmail, string resetUrl, CancellationToken ct = default)
+        => SendAsync(
+            toEmail,
+            "Reset your GardensSorted password",
+            $"We received a request to reset your password. Open this link within the next hour: {resetUrl} If you did not request this, you can ignore this email.",
+            ct);
+
     private async Task SendAsync(string toEmail, string subject, string plainText, CancellationToken ct)
     {
         if (string.IsNullOrWhiteSpace(_options.ApiKey))

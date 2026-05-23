@@ -16,7 +16,9 @@ export default function PortalPage() {
   const [properties, setProperties] = useState<CustomerProperty[]>([]);
   const [visits, setVisits] = useState<JobVisit[]>([]);
   const [error, setError] = useState<string | null>(null);
+  const [billingMsg, setBillingMsg] = useState<string | null>(null);
   const [busyId, setBusyId] = useState<string | null>(null);
+  const [busySubId, setBusySubId] = useState<string | null>(null);
 
   function refreshVisits() {
     if (!auth?.token) return;
@@ -90,6 +92,7 @@ export default function PortalPage() {
       </div>
 
       {error && <p className="text-sm text-red-600">{error}</p>}
+      {billingMsg && <p className="text-sm text-green-800">{billingMsg}</p>}
 
       <section>
         <h2 className="font-semibold text-gardens-dark">Subscriptions</h2>
@@ -111,6 +114,74 @@ export default function PortalPage() {
                     Since {new Date(s.startedAtUtc).toLocaleDateString("en-GB")}
                   </p>
                 )}
+                {s.minimumTermEndsAtUtc && (
+                  <p className="mt-1 text-xs text-stone-500">
+                    Minimum term until{" "}
+                    {new Date(s.minimumTermEndsAtUtc).toLocaleDateString("en-GB")}
+                  </p>
+                )}
+                {s.cancelsAtUtc && (
+                  <p className="mt-1 text-xs text-amber-700">
+                    Cancels on {new Date(s.cancelsAtUtc).toLocaleDateString("en-GB")}
+                  </p>
+                )}
+                <div className="mt-4 flex flex-wrap gap-2">
+                  {s.canManageBilling && (
+                    <button
+                      type="button"
+                      disabled={busySubId === s.id}
+                      className="rounded-lg border border-stone-200 px-3 py-2 text-sm font-medium text-stone-700 hover:bg-stone-50 disabled:opacity-50"
+                      onClick={async () => {
+                        if (!auth?.token) return;
+                        setBusySubId(s.id);
+                        setError(null);
+                        setBillingMsg(null);
+                        try {
+                          const { url } = await api.customerBillingPortal(auth.token, s.id);
+                          window.location.href = url;
+                        } catch (e) {
+                          setError(e instanceof Error ? e.message : "Could not open billing portal");
+                        } finally {
+                          setBusySubId(null);
+                        }
+                      }}
+                    >
+                      Manage billing
+                    </button>
+                  )}
+                  {s.canCancel && (
+                    <button
+                      type="button"
+                      disabled={busySubId === s.id}
+                      className="rounded-lg border border-red-200 px-3 py-2 text-sm font-medium text-red-700 hover:bg-red-50 disabled:opacity-50"
+                      onClick={async () => {
+                        if (!auth?.token) return;
+                        if (
+                          !window.confirm(
+                            "Cancel your subscription? You will keep access until the end of your minimum term or billing period."
+                          )
+                        ) {
+                          return;
+                        }
+                        setBusySubId(s.id);
+                        setError(null);
+                        setBillingMsg(null);
+                        try {
+                          const result = await api.customerCancelSubscription(auth.token, s.id);
+                          setBillingMsg(result.message);
+                          const refreshed = await api.customerSubscriptions(auth.token);
+                          setSubs(refreshed);
+                        } catch (e) {
+                          setError(e instanceof Error ? e.message : "Cancellation failed");
+                        } finally {
+                          setBusySubId(null);
+                        }
+                      }}
+                    >
+                      Cancel subscription
+                    </button>
+                  )}
+                </div>
               </li>
             ))}
           </ul>

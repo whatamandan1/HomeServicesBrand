@@ -44,3 +44,7 @@ public record UserProfileResponse(
     string LastName,
     string? Phone,
     UserRole Role);
+
+public record ForgotPasswordRequest(string Email);
+
+public record ResetPasswordRequest(string Token, string NewPassword);

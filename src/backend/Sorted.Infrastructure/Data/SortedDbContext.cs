@@ -21,6 +21,7 @@ public class SortedDbContext(DbContextOptions<SortedDbContext> options) : DbCont
     public DbSet<Message> Messages => Set<Message>();
     public DbSet<AIActionLog> AIActionLogs => Set<AIActionLog>();
     public DbSet<Escalation> Escalations => Set<Escalation>();
+    public DbSet<PasswordResetToken> PasswordResetTokens => Set<PasswordResetToken>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -46,6 +47,11 @@ public class SortedDbContext(DbContextOptions<SortedDbContext> options) : DbCont
             .HasOne(c => c.Brand).WithMany().HasForeignKey(c => c.BrandId);
         modelBuilder.Entity<Provider>()
             .HasOne(p => p.User).WithMany().HasForeignKey(p => p.UserId);
+        modelBuilder.Entity<PasswordResetToken>()
+            .HasIndex(t => t.TokenHash)
+            .IsUnique();
+        modelBuilder.Entity<PasswordResetToken>()
+            .HasOne(t => t.User).WithMany().HasForeignKey(t => t.UserId);
         modelBuilder.Entity<JobVisit>()
             .HasOne(v => v.Subscription).WithMany().HasForeignKey(v => v.CustomerSubscriptionId);
         modelBuilder.Entity<JobVisit>()

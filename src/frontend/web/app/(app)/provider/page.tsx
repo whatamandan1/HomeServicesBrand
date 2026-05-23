@@ -97,7 +97,7 @@ export default function ProviderPage() {
     return (
       <p>
         You are logged in as <strong>{auth.role}</strong>.{" "}
-        <a href="/login" className="underline">Sign in</a> with provider@gardenssorted.local / Provider123!
+        <a href="/login" className="underline">Sign in</a> with a provider account.
       </p>
     );
   }

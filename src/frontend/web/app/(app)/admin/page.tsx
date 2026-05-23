@@ -131,7 +131,7 @@ export default function AdminPage() {
     return (
       <p>
         You are logged in as <strong>{auth.role}</strong>.{" "}
-        <a href="/login" className="underline">Sign in</a> with admin@gardenssorted.local / Admin123!
+        <a href="/login" className="underline">Sign in</a> with an admin account.
       </p>
     );
   }

@@ -3,7 +3,9 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 using Sorted.Core.Interfaces;
+using Sorted.Core.Options;
 
 namespace Sorted.Infrastructure.Data;
 
@@ -18,19 +20,24 @@ public class DatabaseMigrationHostedService(
             using var scope = services.CreateScope();
             var db = scope.ServiceProvider.GetRequiredService<SortedDbContext>();
             var configuration = scope.ServiceProvider.GetService<IConfiguration>();
+            var features = scope.ServiceProvider.GetService<IOptions<FeaturesOptions>>()?.Value;
             var scheduling = scope.ServiceProvider.GetRequiredService<IVisitSchedulingService>();
             var coverage = scope.ServiceProvider.GetRequiredService<IProviderCoverageService>();
             await DatabaseInitializer.InitializeAsync(db, logger, configuration, cancellationToken);
-            await DataSeeder.EnsureDemoDispatchDataAsync(db, scheduling, logger, cancellationToken);
 
-            var demoProvider = await db.Providers
-                .Include(p => p.User)
-                .Include(p => p.Territories)
-                .FirstOrDefaultAsync(
-                    p => p.User.Email == DataSeeder.ProviderEmail && !p.IsDeleted,
-                    cancellationToken);
-            if (demoProvider?.CoverageLatitude is not null && demoProvider.Territories.Count == 0)
-                coverage.ScheduleTerritorySync(demoProvider.Id);
+            if (features?.SeedDemoData ?? true)
+            {
+                await DataSeeder.EnsureDemoDispatchDataAsync(db, scheduling, logger, cancellationToken);
+
+                var demoProvider = await db.Providers
+                    .Include(p => p.User)
+                    .Include(p => p.Territories)
+                    .FirstOrDefaultAsync(
+                        p => p.User.Email == DataSeeder.ProviderEmail && !p.IsDeleted,
+                        cancellationToken);
+                if (demoProvider?.CoverageLatitude is not null && demoProvider.Territories.Count == 0)
+                    coverage.ScheduleTerritorySync(demoProvider.Id);
+            }
         }
         catch (Exception ex)
         {
