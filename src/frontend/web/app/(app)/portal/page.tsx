@@ -17,7 +17,6 @@ export default function PortalPage() {
   const [visits, setVisits] = useState<JobVisit[]>([]);
   const [error, setError] = useState<string | null>(null);
   const [busyId, setBusyId] = useState<string | null>(null);
-  const [busySubId, setBusySubId] = useState<string | null>(null);
 
   function refreshVisits() {
     if (!auth?.token) return;
@@ -129,32 +128,16 @@ export default function PortalPage() {
                   {s.canManageBilling && (
                     <button
                       type="button"
-                      disabled={busySubId === s.id}
-                      className="rounded-lg border border-stone-200 px-3 py-2 text-sm font-medium text-stone-700 hover:bg-stone-50 disabled:opacity-50"
-                      onClick={async () => {
-                        if (!auth?.token) return;
-                        setBusySubId(s.id);
-                        setError(null);
-                        let billingTab: Window | null = null;
-                        try {
-                          billingTab = window.open("", "_blank");
-                          const { url } = await api.customerBillingPortal(auth.token, s.id);
-                          if (billingTab) {
-                            billingTab.location.href = url;
-                            billingTab.opener = null;
-                          } else {
-                            const opened = window.open(url, "_blank");
-                            if (!opened) {
-                              setError(
-                                "Pop-up blocked. Allow pop-ups for this site, or try again."
-                              );
-                            }
-                          }
-                        } catch (e) {
-                          billingTab?.close();
-                          setError(e instanceof Error ? e.message : "Could not open billing portal");
-                        } finally {
-                          setBusySubId(null);
+                      className="rounded-lg border border-stone-200 px-3 py-2 text-sm font-medium text-stone-700 hover:bg-stone-50"
+                      onClick={() => {
+                        const opened = window.open(
+                          `/portal/billing-redirect?subscriptionId=${encodeURIComponent(s.id)}`,
+                          "_blank"
+                        );
+                        if (!opened) {
+                          setError(
+                            "Pop-up blocked. Allow pop-ups for this site, or try again."
+                          );
                         }
                       }}
                     >
