@@ -16,7 +16,8 @@ public class AdminController(
     SortedDbContext db,
     IVisitSchedulingService scheduling,
     IVisitManagementService visits,
-    IWorkflowLogger workflow) : ControllerBase
+    IWorkflowLogger workflow,
+    IPostcodeGeocodingService geocoding) : ControllerBase
 {
     [HttpGet("dashboard")]
     public async Task<ActionResult<AdminDashboardResponse>> Dashboard(CancellationToken ct)
@@ -48,8 +49,36 @@ public class AdminController(
     [HttpGet("providers")]
     public async Task<ActionResult> Providers(CancellationToken ct)
     {
-        var list = await db.Providers.AsNoTracking()
+        var providers = await db.Providers
+            .Include(p => p.User)
+            .Include(p => p.Territories)
             .Where(p => !p.IsDeleted)
+            .ToListAsync(ct);
+
+        var backfilled = false;
+        foreach (var provider in providers)
+        {
+            if (provider.CoverageLatitude is not null && provider.CoverageLongitude is not null)
+                continue;
+            if (string.IsNullOrWhiteSpace(provider.CoveragePostcode))
+                continue;
+
+            var geo = await geocoding.LookupAsync(provider.CoveragePostcode, ct);
+            if (geo is null) continue;
+
+            provider.CoveragePostcode = geo.Postcode;
+            provider.CoverageLatitude = geo.Latitude;
+            provider.CoverageLongitude = geo.Longitude;
+            provider.UpdatedAtUtc = DateTime.UtcNow;
+            backfilled = true;
+        }
+
+        if (backfilled)
+            await db.SaveChangesAsync(ct);
+
+        var list = providers
+            .OrderBy(p => p.User.LastName)
+            .ThenBy(p => p.User.FirstName)
             .Select(p => new
             {
                 p.Id,
@@ -66,7 +95,8 @@ public class AdminController(
                     .OrderBy(s => s)
                     .ToList()
             })
-            .ToListAsync(ct);
+            .ToList();
+
         return Ok(list);
     }
 

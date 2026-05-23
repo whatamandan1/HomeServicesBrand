@@ -1,8 +1,13 @@
 "use client";
 
-import { useEffect, useRef } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import type { AdminProvider } from "@/lib/api";
 import { DEFAULT_MAP_CENTER, milesToMeters } from "@/lib/map-utils";
+import {
+  mappableProviders,
+  resolveProviderCoordinates,
+} from "@/lib/geocode-postcode";
+import { attachOsmBaseLayer, loadLeaflet, refreshMapSize } from "@/lib/leaflet-init";
 
 export function ProviderCoverageMap({
   providers,
@@ -13,23 +18,35 @@ export function ProviderCoverageMap({
 }) {
   const containerRef = useRef<HTMLDivElement>(null);
   const mapRef = useRef<import("leaflet").Map | null>(null);
+  const [resolvedProviders, setResolvedProviders] = useState<AdminProvider[] | null>(null);
 
-  const mappable = providers.filter(
-    (p) => p.coverageLatitude != null && p.coverageLongitude != null && p.coverageRadiusMiles > 0
+  useEffect(() => {
+    let cancelled = false;
+    setResolvedProviders(null);
+
+    void (async () => {
+      const resolved = await resolveProviderCoordinates(providers);
+      if (!cancelled) setResolvedProviders(resolved);
+    })();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [providers]);
+
+  const mappable = useMemo(
+    () => (resolvedProviders ? mappableProviders(resolvedProviders) : []),
+    [resolvedProviders]
   );
 
   useEffect(() => {
-    if (!containerRef.current) return;
-
-    const mappableNow = providers.filter(
-      (p) => p.coverageLatitude != null && p.coverageLongitude != null && p.coverageRadiusMiles > 0
-    );
-    if (mappableNow.length === 0) return;
+    if (!containerRef.current || mappable.length === 0) return;
 
     let cancelled = false;
+    const points = [...mappable];
 
     void (async () => {
-      const L = (await import("leaflet")).default;
+      const L = await loadLeaflet();
 
       if (cancelled || !containerRef.current) return;
 
@@ -40,16 +57,12 @@ export function ProviderCoverageMap({
 
       const map = L.map(containerRef.current, { scrollWheelZoom: false });
       mapRef.current = map;
-
-      L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
-        attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>',
-        maxZoom: 19,
-      }).addTo(map);
+      await attachOsmBaseLayer(map);
 
       const bounds = L.latLngBounds([]);
       const palette = ["#059669", "#0284c7", "#7c3aed", "#db2777", "#ca8a04"];
 
-      mappableNow.forEach((provider, index) => {
+      points.forEach((provider, index) => {
         const lat = provider.coverageLatitude!;
         const lon = provider.coverageLongitude!;
         const color = palette[index % palette.length];
@@ -82,6 +95,8 @@ export function ProviderCoverageMap({
       } else {
         map.setView(DEFAULT_MAP_CENTER, 11);
       }
+
+      refreshMapSize(map);
     })();
 
     return () => {
@@ -91,16 +106,27 @@ export function ProviderCoverageMap({
         mapRef.current = null;
       }
     };
-  }, [providers]);
+  }, [mappable]);
 
-  if (mappable.length === 0) {
-    return <p className="mt-2 text-sm text-stone-500">{emptyMessage}</p>;
+  if (resolvedProviders === null) {
+    return <p className="mt-2 text-sm text-stone-500">Loading map…</p>;
   }
 
-  const missingCount = providers.length - mappable.length;
+  if (mappable.length === 0) {
+    const withPostcode = resolvedProviders.filter((p) => p.coveragePostcode?.trim());
+    return (
+      <p className="mt-2 text-sm text-stone-500">
+        {withPostcode.length > 0
+          ? "Could not resolve map coordinates for provider postcodes."
+          : emptyMessage}
+      </p>
+    );
+  }
+
+  const missingCount = resolvedProviders.length - mappable.length;
 
   return (
-    <div>
+    <div className="mt-2">
       {missingCount > 0 && (
         <p className="mb-2 text-xs text-stone-500">
           {missingCount} provider{missingCount === 1 ? "" : "s"} without map coordinates.
@@ -108,7 +134,7 @@ export function ProviderCoverageMap({
       )}
       <div
         ref={containerRef}
-        className="h-[420px] w-full overflow-hidden rounded-lg border border-stone-200 shadow-sm"
+        className="h-[420px] w-full overflow-hidden rounded-lg border border-stone-200 bg-stone-100 shadow-sm"
         aria-label="Provider coverage map"
       />
     </div>

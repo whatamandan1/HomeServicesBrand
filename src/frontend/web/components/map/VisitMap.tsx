@@ -9,6 +9,7 @@ import {
   visitMarkerColor,
   visitsWithCoordinates,
 } from "@/lib/map-utils";
+import { attachOsmBaseLayer, loadLeaflet, refreshMapSize } from "@/lib/leaflet-init";
 
 type VisitMapProps = {
   visits: JobVisit[];
@@ -41,7 +42,7 @@ export function VisitMap({
     );
 
     void (async () => {
-      const L = (await import("leaflet")).default;
+      const L = await loadLeaflet();
 
       if (cancelled || !containerRef.current) return;
 
@@ -52,11 +53,7 @@ export function VisitMap({
 
       const map = L.map(containerRef.current, { scrollWheelZoom: false });
       mapRef.current = map;
-
-      L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
-        attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>',
-        maxZoom: 19,
-      }).addTo(map);
+      await attachOsmBaseLayer(map);
 
       const bounds = L.latLngBounds([]);
 
@@ -102,6 +99,8 @@ export function VisitMap({
       } else {
         map.setView(DEFAULT_MAP_CENTER, 11);
       }
+
+      refreshMapSize(map);
     })();
 
     return () => {

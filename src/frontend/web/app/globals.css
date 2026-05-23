@@ -2,8 +2,6 @@
 @tailwind components;
 @tailwind utilities;
 
-@import "leaflet/dist/leaflet.css";
-
 body {
   @apply bg-stone-50 font-sans text-stone-900 antialiased;
 }
