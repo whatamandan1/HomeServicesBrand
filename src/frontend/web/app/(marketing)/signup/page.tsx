@@ -8,7 +8,8 @@ import { api, type SubscriptionPlan } from "@/lib/api";
 import { formatGbp } from "@/lib/format";
 import { FALLBACK_PLANS, sortPlans } from "@/lib/plans";
 import { saveAuth } from "@/lib/auth-storage";
-import { compressImageFile } from "@/lib/compress-image";
+import { stashSignupPhotos } from "@/lib/pending-signup-photos";
+import type { AuthResponse } from "@/lib/api";
 
 const STEPS = ["Choose plan", "Your details", "Your garden"] as const;
 
@@ -78,6 +79,28 @@ export default function SignupPage() {
     return form.line1 && form.city && form.postcode && form.availability;
   }
 
+  async function continueToPayment(auth: AuthResponse) {
+    if (pendingPhotos.length > 0) {
+      await stashSignupPhotos(pendingPhotos);
+    }
+
+    let subId = auth.pendingSubscriptionId ?? null;
+    if (!subId) {
+      const subs = await api.customerSubscriptions(auth.token);
+      subId = subs.find((s) => s.status === "PendingPayment")?.id ?? null;
+    }
+    if (!subId) throw new Error("No subscription awaiting payment on this account.");
+
+    if (skipPayment) {
+      await api.devActivate(subId);
+      router.push("/portal");
+      return;
+    }
+
+    const checkout = await api.checkout(subId, auth.token);
+    window.location.href = checkout.url;
+  }
+
   async function submit() {
     setLoading(true);
     setError(null);
@@ -102,29 +125,35 @@ export default function SignupPage() {
         acceptedTerms: true,
       });
       saveAuth(auth);
+      await continueToPayment(auth);
+    } catch (err) {
+      const message = err instanceof Error ? err.message : "Signup failed";
+      const shouldRetryLogin =
+        /already registered/i.test(message) || /server took too long/i.test(message);
 
-      const properties = await api.customerProperties(auth.token);
-      const primary = properties.find((p) => p.isPrimary) ?? properties[0];
-      if (primary && pendingPhotos.length > 0) {
-        for (const photo of pendingPhotos.slice(0, 3)) {
-          const compressed = await compressImageFile(photo);
-          await api.customerUploadPropertyPhoto(auth.token, primary.id, compressed);
+      if (shouldRetryLogin) {
+        try {
+          const auth = await api.login(form.email, form.password);
+          saveAuth(auth);
+          await continueToPayment(auth);
+          return;
+        } catch (retryErr) {
+          if (/already registered/i.test(message)) {
+            setError(
+              "This email is already registered. Log in with your password to continue to payment."
+            );
+          } else {
+            setError(
+              retryErr instanceof Error
+                ? `${message} ${retryErr.message}`
+                : `${message} Try logging in to continue checkout.`
+            );
+          }
+          return;
         }
       }
 
-      const subId = auth.pendingSubscriptionId;
-      if (!subId) throw new Error("No subscription created");
-
-      if (skipPayment) {
-        await api.devActivate(subId);
-        router.push("/portal");
-        return;
-      }
-
-      const checkout = await api.checkout(subId, auth.token);
-      window.location.href = checkout.url;
-    } catch (err) {
-      setError(err instanceof Error ? err.message : "Signup failed");
+      setError(message);
     } finally {
       setLoading(false);
     }
@@ -262,7 +291,7 @@ export default function SignupPage() {
             <div className="space-y-3 border-t border-stone-100 pt-4">
               <div>
                 <p className="text-sm font-medium text-stone-700">Garden photos (optional)</p>
-                <p className="text-xs text-stone-500">Add up to 3 photos now, or upload later from your account.</p>
+                <p className="text-xs text-stone-500">Add up to 3 photos now — they&apos;ll upload after payment from your account.</p>
               </div>
               <div className="flex flex-wrap gap-3">
                 {pendingPhotos.map((photo, index) => (

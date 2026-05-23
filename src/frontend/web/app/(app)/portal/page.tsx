@@ -9,6 +9,7 @@ import { BillingSection } from "@/components/billing/BillingSection";
 import { VisitList } from "@/components/visits/VisitList";
 import { SupportChat } from "@/components/support/SupportChat";
 import { PropertyList } from "@/components/properties/PropertyList";
+import { stashedPhotoToFile, takeSignupPhotos } from "@/lib/pending-signup-photos";
 
 export default function PortalPage() {
   const { auth, setAuth, ready } = useAuth();
@@ -37,6 +38,31 @@ export default function PortalPage() {
     api.customerProperties(auth.token).then(setProperties);
     refreshVisits();
   }, [auth]);
+
+  useEffect(() => {
+    if (!auth?.token || properties.length === 0) return;
+
+    const stashed = takeSignupPhotos();
+    if (stashed.length === 0) return;
+
+    const primary = properties.find((p) => p.isPrimary) ?? properties[0];
+    if (!primary) return;
+
+    void (async () => {
+      for (const item of stashed) {
+        try {
+          await api.customerUploadPropertyPhoto(
+            auth.token,
+            primary.id,
+            stashedPhotoToFile(item)
+          );
+        } catch {
+          // Photos can be re-added manually in the portal if upload fails.
+        }
+      }
+      api.customerProperties(auth.token).then(setProperties);
+    })();
+  }, [auth, properties]);
 
   async function runVisitAction(
     visitId: string,

@@ -90,9 +90,23 @@ public class AuthService(
         }
 
         await workflow.LogAsync("customer_signup", "registered", nameof(Customer), customer.Id, new { user.Email, plan.Name }, ct);
-        await email.SendWelcomeEmailAsync(user.Email, user.FirstName, ct);
-        if (!string.IsNullOrWhiteSpace(user.Phone))
-            await sms.SendWelcomeSmsAsync(user.Phone, user.FirstName, ct);
+
+        var welcomeEmail = user.Email;
+        var welcomeFirstName = user.FirstName;
+        var welcomePhone = user.Phone;
+        _ = Task.Run(async () =>
+        {
+            try
+            {
+                await email.SendWelcomeEmailAsync(welcomeEmail, welcomeFirstName, CancellationToken.None);
+                if (!string.IsNullOrWhiteSpace(welcomePhone))
+                    await sms.SendWelcomeSmsAsync(welcomePhone, welcomeFirstName, CancellationToken.None);
+            }
+            catch
+            {
+                // Welcome notifications should not block signup completion.
+            }
+        });
 
         var (token, expires) = jwt.CreateToken(user, brand.Code);
         return new AuthResponse(token, expires, user.Id, user.Email, user.Role, brand.Code, subscription.Id);
@@ -161,8 +175,20 @@ public class AuthService(
         if (user.BrandId.HasValue)
             brandCode = await db.Brands.Where(b => b.Id == user.BrandId).Select(b => b.Code).FirstOrDefaultAsync(ct);
 
+        Guid? pendingSubscriptionId = null;
+        if (user.Role == UserRole.Customer)
+        {
+            pendingSubscriptionId = await db.Customers.AsNoTracking()
+                .Where(c => c.UserId == user.Id && !c.IsDeleted)
+                .SelectMany(c => c.Subscriptions)
+                .Where(s => s.Status == SubscriptionStatus.PendingPayment && !s.IsDeleted)
+                .OrderByDescending(s => s.CreatedAtUtc)
+                .Select(s => (Guid?)s.Id)
+                .FirstOrDefaultAsync(ct);
+        }
+
         var (token, expires) = jwt.CreateToken(user, brandCode);
-        return new AuthResponse(token, expires, user.Id, user.Email, user.Role, brandCode);
+        return new AuthResponse(token, expires, user.Id, user.Email, user.Role, brandCode, pendingSubscriptionId);
     }
 
     public async Task<AuthResponse> ImpersonateAsync(

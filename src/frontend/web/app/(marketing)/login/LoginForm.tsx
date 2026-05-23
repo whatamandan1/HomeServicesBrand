@@ -29,6 +29,18 @@ export default function LoginForm() {
         String(fd.get("password"))
       );
       saveAuth(auth);
+
+      let pendingId = auth.pendingSubscriptionId ?? null;
+      if (!pendingId && auth.role === "Customer") {
+        const subs = await api.customerSubscriptions(auth.token);
+        pendingId = subs.find((s) => s.status === "PendingPayment")?.id ?? null;
+      }
+      if (pendingId) {
+        const checkout = await api.checkout(pendingId, auth.token);
+        window.location.href = checkout.url;
+        return;
+      }
+
       const destination = resolvePostLoginPath(searchParams.get("next"), auth.role);
       window.location.assign(destination);
     } catch (err) {
