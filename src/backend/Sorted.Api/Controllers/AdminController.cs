@@ -14,6 +14,7 @@ namespace Sorted.Api.Controllers;
 [Authorize(Roles = nameof(UserRole.Admin))]
 public class AdminController(
     SortedDbContext db,
+    IStripePaymentService stripe,
     IVisitSchedulingService scheduling,
     IVisitManagementService visits,
     IWorkflowLogger workflow,
@@ -241,6 +242,24 @@ public class AdminController(
     {
         await scheduling.OpenVisitsForDispatchAsync(ct);
         return NoContent();
+    }
+
+    [HttpPost("subscriptions/{subscriptionId:guid}/cancel")]
+    public async Task<ActionResult<CancelSubscriptionResponse>> CancelSubscription(Guid subscriptionId, CancellationToken ct)
+    {
+        var sub = await db.CustomerSubscriptions
+            .Include(s => s.Plan)
+            .FirstOrDefaultAsync(s => s.Id == subscriptionId && !s.IsDeleted, ct);
+        if (sub is null) return NotFound();
+
+        try
+        {
+            return Ok(await stripe.CancelSubscriptionAsync(sub, ct));
+        }
+        catch (InvalidOperationException ex)
+        {
+            return BadRequest(new { error = ex.Message });
+        }
     }
 
     [HttpGet("workflow-events")]

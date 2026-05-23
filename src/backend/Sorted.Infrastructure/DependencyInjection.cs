@@ -14,13 +14,17 @@ public static class DependencyInjection
     public static IServiceCollection AddSortedInfrastructure(this IServiceCollection services, IConfiguration configuration)
     {
         services.Configure<JwtOptions>(configuration.GetSection(JwtOptions.Section));
-        services.Configure<StripeOptions>(configuration.GetSection(StripeOptions.Section));
+        services.AddOptions<StripeOptions>()
+            .Bind(configuration.GetSection(StripeOptions.Section))
+            .PostConfigure(ProductionUrlConfiguration.ApplyStripeUrls);
         services.Configure<PlanPricingOptions>(configuration.GetSection(PlanPricingOptions.Section));
         services.Configure<SendGridOptions>(configuration.GetSection(SendGridOptions.Section));
         services.Configure<OpenAiOptions>(configuration.GetSection(OpenAiOptions.Section));
         services.Configure<TwilioOptions>(configuration.GetSection(TwilioOptions.Section));
         services.Configure<FeaturesOptions>(configuration.GetSection(FeaturesOptions.Section));
-        services.Configure<AppOptions>(configuration.GetSection(AppOptions.Section));
+        services.AddOptions<AppOptions>()
+            .Bind(configuration.GetSection(AppOptions.Section))
+            .PostConfigure(options => ProductionUrlConfiguration.ApplyAppUrls(options, configuration));
         services.Configure<BackgroundJobsOptions>(configuration.GetSection(BackgroundJobsOptions.Section));
 
         var connectionString = DatabaseConfiguration.ResolveConnectionString(configuration);
@@ -54,4 +58,28 @@ public static class DependencyInjection
         services.AddHostedService<OperationalBackgroundService>();
         return services;
     }
+}
+
+internal static class ProductionUrlConfiguration
+{
+    public static void ApplyAppUrls(AppOptions options, IConfiguration configuration)
+    {
+        if (!UsesLocalhost(options.FrontendBaseUrl)) return;
+
+        var successUrl = configuration[$"{StripeOptions.Section}:SuccessUrl"];
+        if (Uri.TryCreate(successUrl, UriKind.Absolute, out var uri))
+            options.FrontendBaseUrl = uri.GetLeftPart(UriPartial.Authority);
+    }
+
+    public static void ApplyStripeUrls(StripeOptions options)
+    {
+        if (!UsesLocalhost(options.BillingPortalReturnUrl)) return;
+        if (!Uri.TryCreate(options.SuccessUrl, UriKind.Absolute, out var uri)) return;
+
+        options.BillingPortalReturnUrl = $"{uri.GetLeftPart(UriPartial.Authority).TrimEnd('/')}/portal";
+    }
+
+    private static bool UsesLocalhost(string? url) =>
+        string.IsNullOrWhiteSpace(url)
+        || url.Contains("localhost", StringComparison.OrdinalIgnoreCase);
 }

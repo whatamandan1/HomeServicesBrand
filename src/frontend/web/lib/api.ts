@@ -26,7 +26,6 @@ export type CustomerSubscription = {
   minimumTermEndsAtUtc: string | null;
   cancelsAtUtc: string | null;
   canManageBilling: boolean;
-  canCancel: boolean;
 };
 
 export type GardenSize = "Small" | "Medium" | "Large";
@@ -266,12 +265,6 @@ export const api = {
   customerBillingPortal: (token: string, subscriptionId: string) =>
     request<{ url: string }>(
       `/api/customer/subscriptions/${subscriptionId}/billing-portal`,
-      { method: "POST" },
-      token
-    ),
-  customerCancelSubscription: (token: string, subscriptionId: string) =>
-    request<{ cancelsAtUtc: string; message: string }>(
-      `/api/customer/subscriptions/${subscriptionId}/cancel`,
       { method: "POST" },
       token
     ),

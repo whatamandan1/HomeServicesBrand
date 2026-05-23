@@ -42,8 +42,8 @@ public class CustomerController(
                 s.AvailabilityPreference,
                 s.EndsAtUtc,
                 s.CancelsAtUtc,
-                s.StripeCustomerId != null && (s.Status == SubscriptionStatus.Active || s.Status == SubscriptionStatus.PastDue),
-                s.Status == SubscriptionStatus.Active && s.CancelsAtUtc == null))
+                (s.Status == SubscriptionStatus.Active || s.Status == SubscriptionStatus.PastDue)
+                    && (s.StripeCustomerId != null || s.StripeSubscriptionId != null)))
             .ToListAsync(ct);
         return Ok(subs);
     }
@@ -60,26 +60,6 @@ public class CustomerController(
         try
         {
             return Ok(await stripe.CreateBillingPortalSessionAsync(sub, ct));
-        }
-        catch (InvalidOperationException ex)
-        {
-            return BadRequest(new { error = ex.Message });
-        }
-    }
-
-    [HttpPost("subscriptions/{subscriptionId:guid}/cancel")]
-    public async Task<ActionResult<CancelSubscriptionResponse>> CancelSubscription(Guid subscriptionId, CancellationToken ct)
-    {
-        var userId = Guid.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!);
-        var sub = await db.CustomerSubscriptions
-            .Include(s => s.Customer)
-            .Include(s => s.Plan)
-            .FirstOrDefaultAsync(s => s.Id == subscriptionId && s.Customer.UserId == userId && !s.IsDeleted, ct);
-        if (sub is null) return NotFound();
-
-        try
-        {
-            return Ok(await stripe.CancelSubscriptionAsync(sub, ct));
         }
         catch (InvalidOperationException ex)
         {

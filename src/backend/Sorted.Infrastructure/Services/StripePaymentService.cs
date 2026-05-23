@@ -78,14 +78,26 @@ public class StripePaymentService(
         CustomerSubscription subscription,
         CancellationToken ct = default)
     {
-        if (string.IsNullOrWhiteSpace(subscription.StripeCustomerId))
+        var customerId = subscription.StripeCustomerId;
+        if (string.IsNullOrWhiteSpace(customerId) && !string.IsNullOrWhiteSpace(subscription.StripeSubscriptionId))
+        {
+            EnsureApiKey();
+            var stripeSubscription = await new SubscriptionService().GetAsync(
+                subscription.StripeSubscriptionId,
+                cancellationToken: ct);
+            customerId = stripeSubscription.CustomerId;
+            subscription.StripeCustomerId = customerId;
+            await db.SaveChangesAsync(ct);
+        }
+
+        if (string.IsNullOrWhiteSpace(customerId))
             throw new InvalidOperationException("Billing is not available for this subscription yet.");
 
         EnsureApiKey();
         var session = await new Stripe.BillingPortal.SessionService().CreateAsync(
             new Stripe.BillingPortal.SessionCreateOptions
         {
-            Customer = subscription.StripeCustomerId,
+            Customer = customerId,
             ReturnUrl = _options.BillingPortalReturnUrl,
         }, cancellationToken: ct);
 

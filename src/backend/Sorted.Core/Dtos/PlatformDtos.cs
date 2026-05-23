@@ -22,8 +22,7 @@ public record CustomerSubscriptionResponse(
     string AvailabilityPreference,
     DateTime? MinimumTermEndsAtUtc,
     DateTime? CancelsAtUtc,
-    bool CanManageBilling,
-    bool CanCancel);
+    bool CanManageBilling);
 
 public record BillingPortalSessionResponse(string Url);
 
