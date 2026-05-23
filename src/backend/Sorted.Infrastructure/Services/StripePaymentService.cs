@@ -330,7 +330,7 @@ public class StripePaymentService(
         {
             if (!_environment.IsDevelopment())
                 throw new InvalidOperationException("Stripe webhook secret is not configured.");
-            logger.LogWarning("Stripe webhook secret not set; skipping verification (dev only).");
+            logger.LogWarning("Stripe webhook secret not set; skipping webhook (dev only).");
             return;
         }
 

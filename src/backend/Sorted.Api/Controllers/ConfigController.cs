@@ -8,7 +8,10 @@ namespace Sorted.Api.Controllers;
 
 [ApiController]
 [Route("api/config")]
-public class ConfigController(IOptions<FeaturesOptions> features, SortedDbContext db) : ControllerBase
+public class ConfigController(
+    IOptions<FeaturesOptions> features,
+    SortedDbContext db,
+    IWebHostEnvironment env) : ControllerBase
 {
     [HttpGet("public")]
     public async Task<IActionResult> PublicConfig(CancellationToken ct)
@@ -17,7 +20,7 @@ public class ConfigController(IOptions<FeaturesOptions> features, SortedDbContex
         var applied = await db.Database.GetAppliedMigrationsAsync(ct);
         return Ok(new
         {
-            bypassStripeCheckout = features.Value.BypassStripeCheckout,
+            bypassStripeCheckout = env.IsDevelopment() && features.Value.BypassStripeCheckout,
             pendingMigrations = pending,
             appliedMigrations = applied,
             databaseReady = DatabaseMigrationState.IsReady && !pending.Any(),

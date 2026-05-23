@@ -37,8 +37,13 @@ Ensure `appsettings.Development.local.json` is **not** committed (it is gitignor
 | `Stripe__WebhookSecret` | from Stripe Dashboard webhook |
 | `Stripe__Prices__EssentialMonthly` | optional — `price_...` from Stripe Dashboard |
 | `Stripe__Prices__EssentialAnnual` | optional — `price_...` from Stripe Dashboard |
+| `Stripe__Prices__PremiumMonthly` | optional — `price_...` for Premium £49.95/mo |
+| `Stripe__Prices__PremiumAnnual` | optional — `price_...` for Premium £499.95/yr |
 | `Plans__EssentialMonthly` | `29.95` — shown on site and synced to DB on startup |
 | `Plans__EssentialAnnual` | `299.95` — shown on site and synced to DB on startup |
+| `Plans__PremiumMonthly` | `49.95` |
+| `Plans__PremiumAnnual` | `499.95` |
+| `Features__BypassStripeCheckout` | `false` — must be false in production (API refuses to start if true) |
 | `Stripe__SuccessUrl` | `https://YOUR-VERCEL-URL/signup/success` |
 | `Stripe__CancelUrl` | `https://YOUR-VERCEL-URL/signup` |
 | `SendGrid__ApiKey` | optional — see [dev-costs-and-email.md](dev-costs-and-email.md) |
@@ -108,6 +113,7 @@ If you only see project-level settings, you clicked the wrong level — go back 
 |----------|-------|
 | `API_URL` | Your Railway API URL (no trailing slash) — **required** for pricing/signup |
 | `NEXT_PUBLIC_SITE_URL` | `https://home-services-brand.vercel.app` |
+| `NEXT_PUBLIC_SHOW_DEMO_LOGIN` | **Leave unset** on production (demo credentials hidden). Set `true` only for local dev. |
 | `NEXT_PUBLIC_API_URL` | optional — leave unset; `/api` is proxied via `API_URL` |
 
 Legacy: if you already use `NEXT_PUBLIC_API_URL` pointing at Railway, that still works as a direct browser call.
@@ -139,6 +145,11 @@ Optional: add Vercel/Railway deploy hooks later.
 ## Local vs staging checklist
 
 - [ ] New `Jwt__Secret` in production (never use dev secret)  
+- [ ] `Stripe__WebhookSecret` set — API refuses to start without it in production  
+- [ ] `Features__BypassStripeCheckout=false` on Railway  
 - [ ] Stripe webhook points to Railway URL, not `stripe listen`  
 - [ ] CORS includes Vercel domain  
-- [ ] `NEXT_PUBLIC_API_URL` matches Railway URL  
+- [ ] `API_URL` on Vercel matches Railway URL  
+- [ ] `NEXT_PUBLIC_SHOW_DEMO_LOGIN` **not** set on Vercel (demo login hints hidden)  
+- [ ] Premium Stripe price IDs configured if testing upgrades  
+- [ ] `Features__SeedDemoData` still `true` until go-live gate (then set `false`)

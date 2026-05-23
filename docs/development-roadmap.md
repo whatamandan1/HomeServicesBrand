@@ -16,9 +16,8 @@ statuses as features ship.
 
 Phases 1–2 are **complete and verified on live**. Work through the items below in order; **do not** create the production admin account or turn off demo seed until everything else is done.
 
-1. **Auth & production security** — finish any remaining middleware/guard gaps; audit Railway/Vercel env vars; confirm Stripe webhook signatures enforced; hide demo logins (`NEXT_PUBLIC_SHOW_DEMO_LOGIN=false`).
-2. **Marketing & ops polish** — custom domain + `NEXT_PUBLIC_SITE_URL`; compress `og-image.png`; privacy/terms pages before ad spend.
-3. **Phase 3 (optional before launch)** — provider availability, automated tests, multi-brand — only if needed for pilot scope.
+1. **Marketing & ops polish** — custom domain + `NEXT_PUBLIC_SITE_URL`; compress `og-image.png`; privacy/terms pages before ad spend.
+2. **Phase 3 (optional before launch)** — provider availability, automated tests, multi-brand — only if needed for pilot scope.
 
 ### Last job before go-live (customer launch gate)
 
@@ -28,7 +27,7 @@ Do this **once**, immediately before inviting real paying customers:
 2. **Turn off demo seed on Railway** — set `Features__SeedDemoData=false` and redeploy API (only after the real admin exists and you have verified admin login).
 3. **Smoke-test on live** — admin login, customer signup, billing portal, provider claim flow, no demo credentials visible in UI.
 
-Recent session (2026-05-23): customer billing self-service (payment history, Stripe portal for payment method/invoices, cancellation via support chat only); marketing site refresh; admin/provider polish; billing redirect fix; admin impersonation; launch-readiness testing largely complete on live.
+Recent session (2026-05-23): auth & production security (role-based route middleware, production startup guards, demo login hidden by default); customer billing self-service with Premium upgrade and annual switch.
 
 ---
 
@@ -93,15 +92,15 @@ Work through phases in order. Each phase builds on the last.
 - [ ] **Recurring provider preference** — assign same gardener where possible
 - [ ] **Weather-aware rescheduling** — weather API + reschedule workflow
 - [ ] **Automated test suite** — unit + integration tests; CI fails on test failure
-- [x] **Auth hardening (core)** — middleware route guards, password reset, session handling *(refresh tokens still open)*
-- [x] **Production security (core)** — Stripe webhook verification, JWT secret check, dev endpoints gated *(demo seed still on until go-live gate)*
+- [x] **Auth hardening (core)** — role-based middleware route guards, password reset, session handling *(refresh tokens still open)*
+- [x] **Production security (core)** — startup checks for JWT/webhook/Stripe bypass; Stripe signature verification; dev endpoints gated *(demo seed still on until go-live gate)*
 - [ ] **Google Maps garden size estimation** — satellite/aerial imagery to suggest or calculate garden area at signup or property edit *(deferred; requires Google Maps Platform API)*
 
 ### Pre-launch gate (do last)
 
 - [ ] **Real admin account** — production admin user with your credentials (not demo seed)
 - [ ] **Disable demo seed** — `Features__SeedDemoData=false` on Railway after real admin verified
-- [ ] **Hide demo logins** — `NEXT_PUBLIC_SHOW_DEMO_LOGIN=false` on Vercel
+- [ ] **Hide demo logins** — do not set `NEXT_PUBLIC_SHOW_DEMO_LOGIN` on Vercel (hidden by default; only enable locally)
 
 ---
 
@@ -238,8 +237,8 @@ Modular boundaries to maintain as the platform grows.
 
 | Area | Status | Next step |
 |------|--------|-----------|
-| JWT + RBAC | ✅ Done (API) | Add Next.js middleware / server route guards |
-| Encrypted secrets | 🟡 Partial | Env vars documented; enforce in all environments |
+| JWT + RBAC | ✅ Done | API + Next.js role middleware on `/admin`, `/provider`, `/portal` |
+| Encrypted secrets | 🟡 Partial | Env vars documented; production startup validates JWT + Stripe webhook |
 | GDPR readiness | ⬜ Not started | Privacy flows, data export/delete |
 | Audit logging | 🟡 Partial | AI + workflow logs in DB; admin UI missing |
 | Structured logging | 🟡 Partial | Serilog + `/health`; add error tracking (e.g. Sentry) |

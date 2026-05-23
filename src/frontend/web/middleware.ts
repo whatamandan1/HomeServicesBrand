@@ -1,11 +1,24 @@
 import type { NextRequest } from "next/server";
 import { NextResponse } from "next/server";
 
-const protectedPrefixes = ["/admin", "/provider", "/portal"];
+const protectedPrefixes = ["/admin", "/provider", "/portal"] as const;
+
+const roleByPrefix: Record<(typeof protectedPrefixes)[number], string> = {
+  "/admin": "Admin",
+  "/provider": "Provider",
+  "/portal": "Customer",
+};
+
+function portalPathForRole(role: string) {
+  if (role === "Admin") return "/admin";
+  if (role === "Provider") return "/provider";
+  return "/portal";
+}
 
 export function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
-  if (!protectedPrefixes.some((prefix) => pathname.startsWith(prefix))) {
+  const prefix = protectedPrefixes.find((p) => pathname.startsWith(p));
+  if (!prefix) {
     return NextResponse.next();
   }
 
@@ -13,6 +26,12 @@ export function middleware(request: NextRequest) {
     const loginUrl = new URL("/login", request.url);
     loginUrl.searchParams.set("next", pathname);
     return NextResponse.redirect(loginUrl);
+  }
+
+  const requiredRole = roleByPrefix[prefix];
+  const sessionRole = request.cookies.get("sorted_role")?.value;
+  if (sessionRole && sessionRole !== requiredRole) {
+    return NextResponse.redirect(new URL(portalPathForRole(sessionRole), request.url));
   }
 
   return NextResponse.next();

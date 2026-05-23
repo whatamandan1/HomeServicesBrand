@@ -3,6 +3,7 @@ import type { AuthResponse } from "./api";
 const KEY = "sorted_auth";
 const ADMIN_BACKUP_KEY = "sorted_auth_admin";
 const SESSION_COOKIE = "sorted_session";
+const SESSION_ROLE_COOKIE = "sorted_role";
 
 function cookieSecure() {
   return typeof window !== "undefined" && window.location.protocol === "https:";
@@ -21,6 +22,7 @@ export function saveAuth(auth: AuthResponse) {
   );
   const secure = cookieSecure() ? "; Secure" : "";
   document.cookie = `${SESSION_COOKIE}=1; path=/; max-age=${maxAge}; SameSite=Lax${secure}`;
+  document.cookie = `${SESSION_ROLE_COOKIE}=${encodeURIComponent(auth.role)}; path=/; max-age=${maxAge}; SameSite=Lax${secure}`;
 }
 
 export function loadAuth(): AuthResponse | null {
@@ -44,6 +46,7 @@ export function clearAuth() {
   localStorage.removeItem(KEY);
   localStorage.removeItem(ADMIN_BACKUP_KEY);
   document.cookie = `${SESSION_COOKIE}=; path=/; max-age=0`;
+  document.cookie = `${SESSION_ROLE_COOKIE}=; path=/; max-age=0`;
 }
 
 export function isImpersonating(auth: AuthResponse | null) {

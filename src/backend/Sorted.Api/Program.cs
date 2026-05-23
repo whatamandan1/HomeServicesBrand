@@ -53,6 +53,7 @@ builder.Services.AddSwaggerGen(c =>
 });
 
 var jwt = builder.Configuration.GetSection(JwtOptions.Section).Get<JwtOptions>() ?? new JwtOptions();
+var features = builder.Configuration.GetSection(FeaturesOptions.Section).Get<FeaturesOptions>() ?? new FeaturesOptions();
 if (!builder.Environment.IsDevelopment())
 {
     const string devJwtPlaceholder = "DEV_ONLY_CHANGE_IN_PRODUCTION_min_32_chars_long_secret";
@@ -62,6 +63,16 @@ if (!builder.Environment.IsDevelopment())
         || jwt.Secret.Length < 32)
     {
         throw new InvalidOperationException("Jwt:Secret must be set to a strong value (32+ characters) in production.");
+    }
+
+    if (string.IsNullOrWhiteSpace(builder.Configuration["Stripe:WebhookSecret"]))
+    {
+        throw new InvalidOperationException("Stripe:WebhookSecret must be set in production.");
+    }
+
+    if (features.BypassStripeCheckout)
+    {
+        throw new InvalidOperationException("Features:BypassStripeCheckout must be false in production.");
     }
 }
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
