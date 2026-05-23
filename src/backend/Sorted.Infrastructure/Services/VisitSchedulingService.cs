@@ -15,6 +15,7 @@ public class VisitSchedulingService(
     IWorkflowLogger workflow,
     IEmailService email,
     ISmsService sms,
+    IProviderCoverageService coverage,
     IOptions<BackgroundJobsOptions> jobOptions,
     ILogger<VisitSchedulingService> logger) : IVisitSchedulingService
 {
@@ -107,8 +108,16 @@ public class VisitSchedulingService(
 
         var expiryDays = _jobOptions.DispatchOfferExpiryDays;
         var now = DateTime.UtcNow;
+        var opened = 0;
+        var autoAssigned = 0;
         foreach (var visit in visits)
         {
+            if (await TryAutoAssignPreferredProviderAsync(visit, ct))
+            {
+                autoAssigned++;
+                continue;
+            }
+
             visit.Status = VisitStatus.OpenForClaim;
             db.DispatchOffers.Add(new DispatchOffer
             {
@@ -116,10 +125,17 @@ public class VisitSchedulingService(
                 Status = DispatchOfferStatus.Open,
                 ExpiresAtUtc = now.AddDays(expiryDays)
             });
+            opened++;
         }
 
         await db.SaveChangesAsync(ct);
-        await workflow.LogAsync("dispatch", "visits_opened", null, null, new { count = visits.Count }, ct);
+        await workflow.LogAsync(
+            "dispatch",
+            "visits_opened",
+            null,
+            null,
+            new { count = opened, autoAssigned },
+            ct);
     }
 
     public async Task ExpireStaleDispatchOffersAsync(int renewalExpiryDays = 3, CancellationToken ct = default)
@@ -219,26 +235,92 @@ public class VisitSchedulingService(
         int count,
         CancellationToken ct)
     {
+        var created = new List<JobVisit>(count);
         for (var i = 0; i < count; i++)
         {
-            db.JobVisits.Add(new JobVisit
+            var visit = new JobVisit
             {
                 CustomerSubscriptionId = sub.Id,
                 CustomerPropertyId = property.Id,
                 ScheduledDate = startDate.AddDays(i * _jobOptions.VisitIntervalDays),
                 AvailabilityWindow = sub.AvailabilityPreference,
                 Status = VisitStatus.Scheduled
-            });
+            };
+            db.JobVisits.Add(visit);
+            created.Add(visit);
         }
 
         await db.SaveChangesAsync(ct);
+
+        var autoAssigned = 0;
+        foreach (var visit in created)
+        {
+            if (await TryAutoAssignPreferredProviderAsync(visit, ct))
+                autoAssigned++;
+        }
+
         await workflow.LogAsync(
             "scheduling",
             "visits_generated",
             nameof(CustomerSubscription),
             sub.Id,
-            new { count, startDate = startDate.ToString("yyyy-MM-dd") },
+            new { count, startDate = startDate.ToString("yyyy-MM-dd"), autoAssigned },
             ct);
+    }
+
+    private async Task<bool> TryAutoAssignPreferredProviderAsync(JobVisit visit, CancellationToken ct)
+    {
+        if (visit.Status is not (VisitStatus.Scheduled or VisitStatus.OpenForClaim))
+            return false;
+
+        var preferredProviderId = await db.CustomerSubscriptions
+            .Where(s => s.Id == visit.CustomerSubscriptionId && !s.IsDeleted)
+            .Select(s => s.PreferredProviderId)
+            .FirstOrDefaultAsync(ct);
+        if (preferredProviderId is null)
+            return false;
+
+        var provider = await db.Providers
+            .Include(p => p.Territories)
+            .FirstOrDefaultAsync(p => p.Id == preferredProviderId && p.IsApproved && !p.IsDeleted, ct);
+        if (provider is null)
+            return false;
+
+        var property = await db.CustomerProperties
+            .FirstOrDefaultAsync(p => p.Id == visit.CustomerPropertyId && !p.IsDeleted, ct);
+        if (property is null)
+            return false;
+
+        if (!await coverage.IsPropertyWithinCoverageAsync(provider, property, ct))
+            return false;
+
+        var conflict = await db.JobVisits.AnyAsync(v =>
+            v.AssignedProviderId == provider.Id
+            && v.ScheduledDate == visit.ScheduledDate
+            && v.Id != visit.Id
+            && v.Status != VisitStatus.Cancelled
+            && !v.IsDeleted, ct);
+        if (conflict)
+            return false;
+
+        visit.Status = VisitStatus.Claimed;
+        visit.AssignedProviderId = provider.Id;
+        visit.ClaimedAtUtc = DateTime.UtcNow;
+        visit.UpdatedAtUtc = DateTime.UtcNow;
+
+        var offer = await db.DispatchOffers.FirstOrDefaultAsync(o => o.JobVisitId == visit.Id && !o.IsDeleted, ct);
+        if (offer is not null)
+            offer.Status = DispatchOfferStatus.Claimed;
+
+        await db.SaveChangesAsync(ct);
+        await workflow.LogAsync(
+            "dispatch",
+            "preferred_provider_assigned",
+            nameof(JobVisit),
+            visit.Id,
+            new { providerId = provider.Id },
+            ct);
+        return true;
     }
 
     private async Task<CustomerSubscription?> LoadSubscriptionAsync(Guid subscriptionId, CancellationToken ct)

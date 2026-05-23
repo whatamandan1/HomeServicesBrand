@@ -10,14 +10,15 @@ statuses as features ship.
 **Live site:** https://home-services-brand.vercel.app/  
 **Live API:** https://homeservicesbrand-production.up.railway.app/
 
-**Current focus:** Go-live gate — real admin account + disable demo seed when ready for paying customers.
+**Current focus:** Optional polish and Phase 3 items — go-live gate when ready for paying customers.
 
 ### What's next (when you resume)
 
-Marketing polish is **done except custom domain** (add `NEXT_PUBLIC_SITE_URL` when `gardenssorted.co.uk` is on Vercel). Next:
+Recent batch shipped: terms acceptance on signup, property photos, admin KPI trends, same-gardener preference, automated tests.
 
-1. **Pre-launch gate** — real admin account, `Features__SeedDemoData=false`, live smoke-test (see below).
-2. **Phase 3 (optional)** — provider availability, automated tests, multi-brand — only if needed for pilot scope.
+1. **Custom domain** — point `gardenssorted.co.uk` at Vercel + set `NEXT_PUBLIC_SITE_URL` when ready.
+2. **Phase 3 (optional)** — provider availability calendar, multi-brand, GDPR export/delete self-service.
+3. **Pre-launch gate** — real admin account, `Features__SeedDemoData=false`, live smoke-test (see below).
 
 ### Last job before go-live (customer launch gate)
 
@@ -27,7 +28,7 @@ Do this **once**, immediately before inviting real paying customers:
 2. **Turn off demo seed on Railway** — set `Features__SeedDemoData=false` and redeploy API (only after the real admin exists and you have verified admin login).
 3. **Smoke-test on live** — admin login, customer signup, billing portal, provider claim flow, no demo credentials visible in UI.
 
-Recent session (2026-05-23): marketing polish (privacy/terms pages, compressed OG image, footer links); role-specific app header nav; auth account switching fixes.
+Recent session (2026-05-23): terms checkbox on signup, property photo upload, admin dashboard trends, same-gardener auto-assign, xUnit test suite + CI gate.
 
 ---
 
@@ -89,9 +90,9 @@ Work through phases in order. Each phase builds on the last.
 - [ ] **Multi-brand frontend** — theme/config per brand; remove hardcoded `gardens-sorted` in API client
 - [ ] **Provider availability** — calendar or availability windows
 - [ ] **Provider earnings / payouts** — ledger or Stripe Connect integration
-- [ ] **Recurring provider preference** — assign same gardener where possible
+- [ ] **Recurring provider preference** — assign same gardener where possible *(partial: auto-assign after first visit)*
 - [ ] **Weather-aware rescheduling** — weather API + reschedule workflow
-- [ ] **Automated test suite** — unit + integration tests; CI fails on test failure
+- [x] **Automated test suite** — xUnit core + API tests; CI fails on test failure
 - [x] **Auth hardening (core)** — role-based middleware route guards, password reset, session handling *(refresh tokens still open)*
 - [x] **Production security (core)** — startup checks for JWT/webhook/Stripe bypass; Stripe signature verification; dev endpoints gated *(demo seed still on until go-live gate)*
 - [ ] **Google Maps garden size estimation** — satellite/aerial imagery to suggest or calculate garden area at signup or property edit *(deferred; requires Google Maps Platform API)*
@@ -114,7 +115,7 @@ Work through phases in order. Each phase builds on the last.
 | Manage properties | 🟡 Partial | Edit property, access notes, multiple properties |
 | View upcoming visits | ✅ Done | Cancel/reschedule in customer portal |
 | Communicate with support | ✅ Done | Guest + authenticated AI chat |
-| Upload property media | ⬜ Not started | Photo upload during signup and in portal |
+| Upload property media | 🟡 Partial | Up to 3 photos per property in signup + portal (stored in DB) |
 
 ---
 
@@ -141,7 +142,7 @@ Work through phases in order. Each phase builds on the last.
 | Workflow monitoring | 🟡 Partial | UI for `WorkflowEvent` log |
 | Dispatch visibility | 🟡 Partial | Dispatch board + open-dispatch action in UI |
 | Escalation handling | ✅ Done | Take case and resolve in admin portal |
-| KPI monitoring | 🟡 Partial | Dashboard counts only; no trends or exports |
+| KPI monitoring | 🟡 Partial | Dashboard counts + 7/30/90-day trend charts |
 | AI action monitoring | 🟡 Partial | Admin view of `AIActionLog` + thread review |
 
 ---
@@ -154,7 +155,7 @@ Work through phases in order. Each phase builds on the last.
 | Availability windows | ⬜ Not started | Customer + provider time preferences |
 | Provider allocation | ✅ Done | Radius from base postcode; outcodes derived via postcodes.io; distance fallback |
 | Weather-aware adjustments | ⬜ Not started | Weather API + reschedule workflow |
-| Recurring provider preference | ⬜ Not started | "Same gardener" assignment logic |
+| Recurring provider preference | 🟡 Partial | Preferred provider set after first completed visit; auto-assign on new visits when available |
 | FCFS claiming | ✅ Done | — |
 | Double-booking prevention | ✅ Done | Conflict check on claim |
 | Travel-time validation | ⬜ Not started | Distance/travel checks before claim |
@@ -244,7 +245,7 @@ Modular boundaries to maintain as the platform grows.
 | Structured logging | 🟡 Partial | Serilog + `/health`; add error tracking (e.g. Sentry) |
 | Workflow tracing | 🟡 Partial | `WorkflowEvent` table; no admin viewer |
 | AI action logging | ✅ Done | `AIActionLog` persisted |
-| Automated tests | ⬜ Not started | Zero test projects; CI uses `continue-on-error` |
+| Automated tests | 🟡 Partial | xUnit core + API integration tests; CI fails on test failure |
 | Maintainability | ✅ Done | Clear module separation, domain naming |
 
 ---

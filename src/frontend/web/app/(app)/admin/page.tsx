@@ -1,8 +1,9 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { api, type AdminCustomer, type AdminProvider, type AiActionLog, type CommunicationThreadSummary, type Escalation, type JobVisit, type WorkflowEvent } from "@/lib/api";
+import { api, type AdminCustomer, type AdminDashboard, type AdminProvider, type AiActionLog, type CommunicationThreadSummary, type Escalation, type JobVisit, type WorkflowEvent } from "@/lib/api";
 import { useAuth } from "@/lib/use-auth";
+import { DashboardTrends } from "@/components/admin/DashboardTrends";
 import { CustomerDetailPanel } from "@/components/admin/CustomerDetailPanel";
 import { ProviderDetailPanel } from "@/components/admin/ProviderDetailPanel";
 import { ActAsUserButton } from "@/components/admin/ActAsUserButton";
@@ -39,7 +40,8 @@ function scrollToSection(id: string) {
 
 export default function AdminPage() {
   const { auth, ready } = useAuth();
-  const [dash, setDash] = useState<Record<string, number> | null>(null);
+  const [dash, setDash] = useState<AdminDashboard | null>(null);
+  const [trendDays, setTrendDays] = useState(30);
   const [customers, setCustomers] = useState<AdminCustomer[]>([]);
   const [providers, setProviders] = useState<AdminProvider[]>([]);
   const [visits, setVisits] = useState<JobVisit[]>([]);
@@ -62,13 +64,13 @@ export default function AdminPage() {
   function refreshVisits() {
     if (!auth?.token) return;
     api.adminVisits(auth.token).then(setVisits);
-    api.adminDashboard(auth.token).then(setDash);
+    api.adminDashboard(auth.token, trendDays).then(setDash);
   }
 
   function refreshEscalations() {
     if (!auth?.token) return;
     api.adminEscalations(auth.token).then(setEscalations);
-    api.adminDashboard(auth.token).then(setDash);
+    api.adminDashboard(auth.token, trendDays).then(setDash);
   }
 
   async function runVisitAction(
@@ -117,7 +119,7 @@ export default function AdminPage() {
 
   useEffect(() => {
     if (!auth?.token || auth.role !== "Admin") return;
-    api.adminDashboard(auth.token).then(setDash);
+    api.adminDashboard(auth.token, trendDays).then(setDash);
     api.adminCustomers(auth.token).then(setCustomers);
     api.adminProviders(auth.token).then(setProviders);
     api.adminVisits(auth.token).then(setVisits);
@@ -125,7 +127,7 @@ export default function AdminPage() {
     api.adminWorkflowEvents(auth.token).then(setWorkflowEvents);
     api.adminAiActions(auth.token).then(setAiActionLogs);
     api.adminCommunicationThreads(auth.token).then(setCommunicationThreads);
-  }, [auth]);
+  }, [auth, trendDays]);
 
   if (!ready) return <p className="text-stone-500">Loading…</p>;
   if (!auth) {
@@ -152,20 +154,46 @@ export default function AdminPage() {
       <h1 className="text-2xl font-bold">Operations CRM</h1>
 
       {dash && (
-        <div className="grid grid-cols-2 gap-4 md:grid-cols-5">
-          {Object.entries(dash).map(([k, v]) => (
-            <StatCard
-              key={k}
-              label={DASH_LABELS[k] ?? k}
-              value={v}
-              onClick={
-                DASH_SECTIONS[k]
-                  ? () => scrollToSection(DASH_SECTIONS[k])
-                  : undefined
-              }
-            />
-          ))}
-        </div>
+        <>
+          <div className="flex flex-wrap items-center justify-between gap-3">
+            <p className="text-sm text-stone-500">Snapshot counts — click a card to jump to that section.</p>
+            <label className="text-sm text-stone-600">
+              Trend range
+              <select
+                value={trendDays}
+                onChange={(e) => setTrendDays(Number(e.target.value))}
+                className="field-input ml-2 inline-block w-auto py-1.5"
+              >
+                <option value={7}>Last 7 days</option>
+                <option value={30}>Last 30 days</option>
+                <option value={90}>Last 90 days</option>
+              </select>
+            </label>
+          </div>
+          <div className="grid grid-cols-2 gap-4 md:grid-cols-5">
+            {(
+              [
+                ["customerCount", dash.customerCount],
+                ["activeSubscriptions", dash.activeSubscriptions],
+                ["providerCount", dash.providerCount],
+                ["openVisits", dash.openVisits],
+                ["openEscalations", dash.openEscalations],
+              ] as const
+            ).map(([k, v]) => (
+              <StatCard
+                key={k}
+                label={DASH_LABELS[k] ?? k}
+                value={v}
+                onClick={
+                  DASH_SECTIONS[k]
+                    ? () => scrollToSection(DASH_SECTIONS[k])
+                    : undefined
+                }
+              />
+            ))}
+          </div>
+          <DashboardTrends trends={dash.trends} />
+        </>
       )}
 
       <section id="providers" className="scroll-mt-6">
@@ -328,7 +356,7 @@ export default function AdminPage() {
                   onClose={() => setSelectedCustomerId(null)}
                   onError={setCustomerError}
                   onUpdated={() => {
-                    api.adminDashboard(auth.token).then(setDash);
+                    api.adminDashboard(auth.token, trendDays).then(setDash);
                     api.adminCustomers(auth.token).then(setCustomers);
                   }}
                 />

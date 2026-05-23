@@ -25,6 +25,9 @@ public class AuthService(
     private readonly AppOptions _appOptions = appOptions.Value;
     public async Task<AuthResponse> RegisterCustomerAsync(RegisterCustomerRequest request, CancellationToken ct = default)
     {
+        if (!request.AcceptedTerms)
+            throw new InvalidOperationException("You must accept the terms of service to sign up.");
+
         if (await db.Users.AnyAsync(u => u.Email == request.Email, ct))
             throw new InvalidOperationException("Email already registered.");
 
@@ -47,7 +50,12 @@ public class AuthService(
         db.Users.Add(user);
         await db.SaveChangesAsync(ct);
 
-        var customer = new Customer { UserId = user.Id, BrandId = brand.Id };
+        var customer = new Customer
+        {
+            UserId = user.Id,
+            BrandId = brand.Id,
+            TermsAcceptedAtUtc = DateTime.UtcNow
+        };
         db.Customers.Add(customer);
         await db.SaveChangesAsync(ct);
 

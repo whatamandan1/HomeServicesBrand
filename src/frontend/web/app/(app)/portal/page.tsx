@@ -99,6 +99,14 @@ export default function PortalPage() {
 
       {error && <p className="text-sm text-red-600">{error}</p>}
 
+      {subs.some((s) => s.preferredGardenerName) && (
+        <p className="rounded-xl border border-gardens-primary/15 bg-gardens-light/40 px-4 py-3 text-sm text-gardens-dark">
+          Your regular gardener is{" "}
+          <strong>{subs.find((s) => s.preferredGardenerName)?.preferredGardenerName}</strong>. We&apos;ll
+          assign them to future visits when they&apos;re available in your area.
+        </p>
+      )}
+
       {auth?.token && (
         <BillingSection
           token={auth.token}
@@ -119,6 +127,7 @@ export default function PortalPage() {
         </p>
         <PropertyList
           properties={properties}
+          token={auth.token}
           onSave={async (id, body) => {
             if (!auth?.token) return;
             const updated = await api.customerUpdateProperty(auth.token, id, body);

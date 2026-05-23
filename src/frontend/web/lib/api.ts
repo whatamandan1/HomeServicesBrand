@@ -30,6 +30,7 @@ export type CustomerSubscription = {
   cancelsAtUtc: string | null;
   canManageBilling: boolean;
   canUpgradeToPremium: boolean;
+  preferredGardenerName?: string | null;
 };
 
 export type CustomerPayment = {
@@ -52,6 +53,35 @@ export type CustomerProperty = {
   gardenSize: GardenSize;
   accessNotes: string | null;
   isPrimary: boolean;
+  photoCount?: number;
+};
+
+export type PropertyMedia = {
+  id: string;
+  fileName: string;
+  contentType: string;
+  sizeBytes: number;
+  uploadedAtUtc: string;
+};
+
+export type AdminDashboardTrendPoint = {
+  date: string;
+  count: number;
+};
+
+export type AdminDashboard = {
+  customerCount: number;
+  activeSubscriptions: number;
+  providerCount: number;
+  openVisits: number;
+  openEscalations: number;
+  trends: {
+    fromUtc: string;
+    toUtc: string;
+    newCustomers: AdminDashboardTrendPoint[];
+    newSubscriptions: AdminDashboardTrendPoint[];
+    completedVisits: AdminDashboardTrendPoint[];
+  };
 };
 
 export type JobVisit = {
@@ -242,6 +272,36 @@ async function request<T>(
   return res.json() as Promise<T>;
 }
 
+async function uploadForm<T>(path: string, file: File, token: string): Promise<T> {
+  const form = new FormData();
+  form.append("file", file);
+  const res = await fetch(`${API_BASE}${path}`, {
+    method: "POST",
+    headers: { Authorization: `Bearer ${token}` },
+    body: form,
+  });
+  if (!res.ok) {
+    const text = await res.text();
+    let message = res.statusText;
+    try {
+      const err = JSON.parse(text) as { error?: string };
+      message = err.error ?? message;
+    } catch {
+      if (text && !text.startsWith("<")) message = text.slice(0, 200);
+    }
+    throw new Error(message || "Upload failed");
+  }
+  return res.json() as Promise<T>;
+}
+
+async function fetchBlob(path: string, token: string): Promise<Blob> {
+  const res = await fetch(`${API_BASE}${path}`, {
+    headers: { Authorization: `Bearer ${token}` },
+  });
+  if (!res.ok) throw new Error("Could not load photo");
+  return res.blob();
+}
+
 export const api = {
   getPublicConfig: () =>
     request<{ bypassStripeCheckout: boolean }>("/api/config/public"),
@@ -338,6 +398,20 @@ export const api = {
       method: "PUT",
       body: JSON.stringify(body),
     }, token),
+  customerPropertyPhotos: async (token: string, propertyId: string) => {
+    const res = await request<{ propertyId: string; photos: PropertyMedia[] }>(
+      `/api/customer/properties/${propertyId}/photos`,
+      {},
+      token
+    );
+    return res.photos;
+  },
+  customerUploadPropertyPhoto: (token: string, propertyId: string, file: File) =>
+    uploadForm<PropertyMedia>(`/api/customer/properties/${propertyId}/photos`, file, token),
+  customerDeletePropertyPhoto: (token: string, photoId: string) =>
+    request<void>(`/api/customer/properties/photos/${photoId}`, { method: "DELETE" }, token),
+  customerFetchPropertyPhoto: (token: string, photoId: string) =>
+    fetchBlob(`/api/customer/properties/photos/${photoId}`, token),
   customerVisits: (token: string) =>
     request<JobVisit[]>("/api/customer/visits", {}, token),
   customerCancelVisit: (token: string, visitId: string) =>
@@ -382,14 +456,8 @@ export const api = {
     request<JobVisit>(`/api/provider/visits/${visitId}/start`, { method: "POST" }, token),
   completeVisit: (token: string, visitId: string) =>
     request<JobVisit>(`/api/provider/visits/${visitId}/complete`, { method: "POST" }, token),
-  adminDashboard: (token: string) =>
-    request<{
-      customerCount: number;
-      activeSubscriptions: number;
-      providerCount: number;
-      openVisits: number;
-      openEscalations: number;
-    }>("/api/admin/dashboard", {}, token),
+  adminDashboard: (token: string, days = 30) =>
+    request<AdminDashboard>(`/api/admin/dashboard?days=${days}`, {}, token),
   adminCustomers: (token: string) =>
     request<AdminCustomer[]>("/api/admin/customers", {}, token),
   adminCustomerDetail: (token: string, customerId: string) =>

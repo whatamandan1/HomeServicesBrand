@@ -20,7 +20,6 @@ jobs:
       - run: dotnet restore Sorted.sln
       - run: dotnet build Sorted.sln --configuration Release --no-restore
       - run: dotnet test Sorted.sln --configuration Release --no-build --verbosity normal
-        continue-on-error: true
 
   frontend:
     runs-on: ubuntu-latest

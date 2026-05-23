@@ -231,6 +231,18 @@ public class ProviderController(
 
         visit.Status = newStatus;
         visit.UpdatedAtUtc = DateTime.UtcNow;
+
+        if (newStatus == VisitStatus.Completed)
+        {
+            var subscription = await db.CustomerSubscriptions
+                .FirstOrDefaultAsync(s => s.Id == visit.CustomerSubscriptionId && !s.IsDeleted, ct);
+            if (subscription?.PreferredProviderId is null)
+            {
+                subscription!.PreferredProviderId = provider.Id;
+                subscription.UpdatedAtUtc = DateTime.UtcNow;
+            }
+        }
+
         await db.SaveChangesAsync(ct);
         await workflow.LogAsync("dispatch", workflowEvent, nameof(JobVisit), visit.Id, new { visit.Status }, ct);
 

@@ -8,6 +8,7 @@ import { api, type SubscriptionPlan } from "@/lib/api";
 import { formatGbp } from "@/lib/format";
 import { FALLBACK_PLANS, sortPlans } from "@/lib/plans";
 import { saveAuth } from "@/lib/auth-storage";
+import { compressImageFile } from "@/lib/compress-image";
 
 const STEPS = ["Choose plan", "Your details", "Your garden"] as const;
 
@@ -32,6 +33,8 @@ export default function SignupPage() {
     gardenSize: "Small",
     availability: "",
   });
+  const [acceptedTerms, setAcceptedTerms] = useState(false);
+  const [pendingPhotos, setPendingPhotos] = useState<File[]>([]);
 
   useEffect(() => {
     api.getPlans().then((p) => {
@@ -70,7 +73,7 @@ export default function SignupPage() {
   function canAdvance() {
     if (step === 0) return !!selectedPlanId;
     if (step === 1) {
-      return form.firstName && form.lastName && form.email && form.password && form.phone;
+      return form.firstName && form.lastName && form.email && form.password && form.phone && acceptedTerms;
     }
     return form.line1 && form.city && form.postcode && form.availability;
   }
@@ -96,8 +99,19 @@ export default function SignupPage() {
         gardenSize: form.gardenSize,
         availabilityPreference: form.availability,
         subscriptionPlanId: selectedPlanId,
+        acceptedTerms: true,
       });
       saveAuth(auth);
+
+      const properties = await api.customerProperties(auth.token);
+      const primary = properties.find((p) => p.isPrimary) ?? properties[0];
+      if (primary && pendingPhotos.length > 0) {
+        for (const photo of pendingPhotos.slice(0, 3)) {
+          const compressed = await compressImageFile(photo);
+          await api.customerUploadPropertyPhoto(auth.token, primary.id, compressed);
+        }
+      }
+
       const subId = auth.pendingSubscriptionId;
       if (!subId) throw new Error("No subscription created");
 
@@ -190,6 +204,26 @@ export default function SignupPage() {
             <Field label="Email" type="email" value={form.email} onChange={(v) => updateField("email", v)} required />
             <Field label="Password" type="password" value={form.password} onChange={(v) => updateField("password", v)} required />
             <Field label="Phone" type="tel" value={form.phone} onChange={(v) => updateField("phone", v)} required autoComplete="tel" />
+            <label className="flex items-start gap-3 rounded-xl border border-stone-200 bg-stone-50 p-4 text-sm text-stone-700">
+              <input
+                type="checkbox"
+                checked={acceptedTerms}
+                onChange={(e) => setAcceptedTerms(e.target.checked)}
+                className="mt-1 h-4 w-4 rounded border-stone-300 text-gardens-primary focus:ring-gardens-primary"
+                required
+              />
+              <span>
+                I agree to the{" "}
+                <Link href="/terms" className="font-medium text-gardens-primary hover:underline" target="_blank">
+                  terms of service
+                </Link>{" "}
+                and{" "}
+                <Link href="/privacy" className="font-medium text-gardens-primary hover:underline" target="_blank">
+                  privacy policy
+                </Link>
+                .
+              </span>
+            </label>
           </div>
         )}
 
@@ -225,6 +259,41 @@ export default function SignupPage() {
               onChange={(v) => updateField("availability", v)}
               required
             />
+            <div className="space-y-3 border-t border-stone-100 pt-4">
+              <div>
+                <p className="text-sm font-medium text-stone-700">Garden photos (optional)</p>
+                <p className="text-xs text-stone-500">Add up to 3 photos now, or upload later from your account.</p>
+              </div>
+              <div className="flex flex-wrap gap-3">
+                {pendingPhotos.map((photo, index) => (
+                  <div key={`${photo.name}-${index}`} className="rounded-xl border border-stone-200 bg-stone-50 px-3 py-2 text-xs text-stone-600">
+                    {photo.name}
+                    <button
+                      type="button"
+                      className="ml-2 text-red-600 hover:underline"
+                      onClick={() => setPendingPhotos((files) => files.filter((_, i) => i !== index))}
+                    >
+                      Remove
+                    </button>
+                  </div>
+                ))}
+                {pendingPhotos.length < 3 && (
+                  <label className="inline-flex cursor-pointer items-center rounded-full border border-stone-200 px-4 py-2 text-sm font-medium text-stone-700 hover:bg-stone-50">
+                    Add photo
+                    <input
+                      type="file"
+                      accept="image/jpeg,image/png,image/webp,image/*"
+                      className="sr-only"
+                      onChange={(e) => {
+                        const file = e.target.files?.[0];
+                        e.target.value = "";
+                        if (file) setPendingPhotos((files) => [...files, file].slice(0, 3));
+                      }}
+                    />
+                  </label>
+                )}
+              </div>
+            </div>
           </div>
         )}
 

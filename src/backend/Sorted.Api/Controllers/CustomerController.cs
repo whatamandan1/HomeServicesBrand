@@ -35,6 +35,7 @@ public class CustomerController(
         var customerId = await GetCustomerIdAsync(ct);
         var subs = await db.CustomerSubscriptions.AsNoTracking()
             .Include(s => s.Plan)
+            .Include(s => s.PreferredProvider).ThenInclude(p => p!.User)
             .Where(s => s.CustomerId == customerId && !s.IsDeleted)
             .ToListAsync(ct);
 
@@ -48,7 +49,10 @@ public class CustomerController(
             s.EndsAtUtc,
             s.CancelsAtUtc,
             CanManageBilling(s),
-            CanUpgradeToPremium(s))).ToList();
+            CanUpgradeToPremium(s),
+            s.PreferredProvider is null
+                ? null
+                : $"{s.PreferredProvider.User.FirstName} {s.PreferredProvider.User.LastName}".Trim())).ToList();
 
         return Ok(responses);
     }
@@ -249,7 +253,8 @@ public class CustomerController(
                 p.Postcode,
                 p.GardenSize,
                 p.AccessNotes,
-                p.IsPrimary))
+                p.IsPrimary,
+                db.PropertyMedia.Count(m => m.CustomerPropertyId == p.Id && !m.IsDeleted)))
             .ToListAsync(ct);
         return Ok(list);
     }
@@ -305,6 +310,132 @@ public class CustomerController(
             property.Postcode,
             property.GardenSize,
             property.AccessNotes,
-            property.IsPrimary));
+            property.IsPrimary,
+            await db.PropertyMedia.CountAsync(m => m.CustomerPropertyId == property.Id && !m.IsDeleted, ct)));
+    }
+
+    private const int MaxPhotosPerProperty = 3;
+    private const int MaxPhotoBytes = 512 * 1024;
+    private static readonly HashSet<string> AllowedPhotoContentTypes = new(StringComparer.OrdinalIgnoreCase)
+    {
+        "image/jpeg",
+        "image/png",
+        "image/webp"
+    };
+
+    [HttpGet("properties/{propertyId:guid}/photos")]
+    public async Task<ActionResult<PropertyMediaListResponse>> PropertyPhotos(Guid propertyId, CancellationToken ct)
+    {
+        var customerId = await GetCustomerIdAsync(ct);
+        var property = await db.CustomerProperties.AsNoTracking()
+            .FirstOrDefaultAsync(p => p.Id == propertyId && p.CustomerId == customerId && !p.IsDeleted, ct);
+        if (property is null) return NotFound();
+
+        var photos = await db.PropertyMedia.AsNoTracking()
+            .Where(m => m.CustomerPropertyId == propertyId && !m.IsDeleted)
+            .OrderBy(m => m.CreatedAtUtc)
+            .Select(m => new PropertyMediaResponse(
+                m.Id,
+                m.FileName,
+                m.ContentType,
+                m.SizeBytes,
+                m.CreatedAtUtc))
+            .ToListAsync(ct);
+
+        return Ok(new PropertyMediaListResponse(propertyId, photos));
+    }
+
+    [HttpGet("properties/photos/{photoId:guid}")]
+    public async Task<IActionResult> PropertyPhoto(Guid photoId, CancellationToken ct)
+    {
+        var customerId = await GetCustomerIdAsync(ct);
+        var photo = await db.PropertyMedia.AsNoTracking()
+            .Include(m => m.Property)
+            .FirstOrDefaultAsync(m => m.Id == photoId && !m.IsDeleted, ct);
+        if (photo is null || photo.Property.CustomerId != customerId)
+            return NotFound();
+
+        return File(photo.Data, photo.ContentType);
+    }
+
+    [HttpPost("properties/{propertyId:guid}/photos")]
+    [RequestSizeLimit(MaxPhotoBytes + 1024)]
+    public async Task<ActionResult<PropertyMediaResponse>> UploadPropertyPhoto(
+        Guid propertyId,
+        IFormFile file,
+        CancellationToken ct)
+    {
+        if (file.Length == 0)
+            return BadRequest(new { error = "Choose a photo to upload." });
+        if (file.Length > MaxPhotoBytes)
+            return BadRequest(new { error = "Photo must be 512 KB or smaller." });
+        if (!AllowedPhotoContentTypes.Contains(file.ContentType))
+            return BadRequest(new { error = "Only JPEG, PNG, and WebP photos are supported." });
+
+        var customerId = await GetCustomerIdAsync(ct);
+        var property = await db.CustomerProperties
+            .FirstOrDefaultAsync(p => p.Id == propertyId && p.CustomerId == customerId && !p.IsDeleted, ct);
+        if (property is null) return NotFound();
+
+        var existingCount = await db.PropertyMedia.CountAsync(
+            m => m.CustomerPropertyId == propertyId && !m.IsDeleted,
+            ct);
+        if (existingCount >= MaxPhotosPerProperty)
+            return BadRequest(new { error = $"You can upload up to {MaxPhotosPerProperty} photos per property." });
+
+        await using var stream = new MemoryStream();
+        await file.CopyToAsync(stream, ct);
+        var data = stream.ToArray();
+
+        var media = new PropertyMedia
+        {
+            CustomerPropertyId = propertyId,
+            FileName = Path.GetFileName(file.FileName),
+            ContentType = file.ContentType,
+            Data = data,
+            SizeBytes = data.Length
+        };
+        db.PropertyMedia.Add(media);
+        await db.SaveChangesAsync(ct);
+
+        await workflow.LogAsync(
+            "customer_property",
+            "photo_uploaded",
+            nameof(PropertyMedia),
+            media.Id,
+            new { propertyId, media.SizeBytes },
+            ct);
+
+        return Ok(new PropertyMediaResponse(
+            media.Id,
+            media.FileName,
+            media.ContentType,
+            media.SizeBytes,
+            media.CreatedAtUtc));
+    }
+
+    [HttpDelete("properties/photos/{photoId:guid}")]
+    public async Task<IActionResult> DeletePropertyPhoto(Guid photoId, CancellationToken ct)
+    {
+        var customerId = await GetCustomerIdAsync(ct);
+        var photo = await db.PropertyMedia
+            .Include(m => m.Property)
+            .FirstOrDefaultAsync(m => m.Id == photoId && !m.IsDeleted, ct);
+        if (photo is null || photo.Property.CustomerId != customerId)
+            return NotFound();
+
+        photo.IsDeleted = true;
+        photo.UpdatedAtUtc = DateTime.UtcNow;
+        await db.SaveChangesAsync(ct);
+
+        await workflow.LogAsync(
+            "customer_property",
+            "photo_deleted",
+            nameof(PropertyMedia),
+            photo.Id,
+            new { photo.CustomerPropertyId },
+            ct);
+
+        return NoContent();
     }
 }

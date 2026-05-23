@@ -31,6 +31,7 @@ public class Customer : AuditableEntity
     public UserAccount User { get; set; } = null!;
     public Guid BrandId { get; set; }
     public Brand Brand { get; set; } = null!;
+    public DateTime? TermsAcceptedAtUtc { get; set; }
     public ICollection<CustomerProperty> Properties { get; set; } = [];
     public ICollection<CustomerSubscription> Subscriptions { get; set; } = [];
 }
@@ -49,6 +50,17 @@ public class CustomerProperty : AuditableEntity
     public GardenSize GardenSize { get; set; }
     public string? AccessNotes { get; set; }
     public bool IsPrimary { get; set; }
+    public ICollection<PropertyMedia> Media { get; set; } = [];
+}
+
+public class PropertyMedia : AuditableEntity
+{
+    public Guid CustomerPropertyId { get; set; }
+    public CustomerProperty Property { get; set; } = null!;
+    public string FileName { get; set; } = string.Empty;
+    public string ContentType { get; set; } = "image/jpeg";
+    public byte[] Data { get; set; } = [];
+    public int SizeBytes { get; set; }
 }
 
 public class SubscriptionPlan : AuditableEntity
@@ -78,6 +90,8 @@ public class CustomerSubscription : AuditableEntity
     public string? StripeSubscriptionId { get; set; }
     public string? StripeCustomerId { get; set; }
     public string AvailabilityPreference { get; set; } = string.Empty;
+    public Guid? PreferredProviderId { get; set; }
+    public Provider? PreferredProvider { get; set; }
 }
 
 public class PasswordResetToken : AuditableEntity

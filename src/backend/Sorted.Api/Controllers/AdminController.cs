@@ -25,14 +25,67 @@ public class AdminController(
     IProviderCoverageService coverage) : ControllerBase
 {
     [HttpGet("dashboard")]
-    public async Task<ActionResult<AdminDashboardResponse>> Dashboard(CancellationToken ct)
+    public async Task<ActionResult<AdminDashboardResponse>> Dashboard([FromQuery] int days = 30, CancellationToken ct = default)
     {
         var customers = await db.Customers.CountAsync(c => !c.IsDeleted, ct);
         var activeSubs = await db.CustomerSubscriptions.CountAsync(s => s.Status == SubscriptionStatus.Active && !s.IsDeleted, ct);
         var providers = await db.Providers.CountAsync(p => !p.IsDeleted, ct);
         var openVisits = await db.JobVisits.CountAsync(v => v.Status == VisitStatus.OpenForClaim && !v.IsDeleted, ct);
         var escalations = await db.Escalations.CountAsync(e => e.Status == EscalationStatus.Open && !e.IsDeleted, ct);
-        return Ok(new AdminDashboardResponse(customers, activeSubs, providers, openVisits, escalations));
+
+        var rangeDays = Math.Clamp(days, 7, 90);
+        var toDate = DateTime.UtcNow.Date;
+        var fromDate = toDate.AddDays(-(rangeDays - 1));
+
+        var newCustomerDates = await db.Customers.AsNoTracking()
+            .Where(c => !c.IsDeleted && c.CreatedAtUtc.Date >= fromDate && c.CreatedAtUtc.Date <= toDate)
+            .Select(c => c.CreatedAtUtc)
+            .ToListAsync(ct);
+
+        var newSubscriptionDates = await db.CustomerSubscriptions.AsNoTracking()
+            .Where(s => !s.IsDeleted
+                && s.StartedAtUtc != null
+                && s.StartedAtUtc.Value.Date >= fromDate
+                && s.StartedAtUtc.Value.Date <= toDate)
+            .Select(s => s.StartedAtUtc!.Value)
+            .ToListAsync(ct);
+
+        var completedVisitDates = await db.JobVisits.AsNoTracking()
+            .Where(v => !v.IsDeleted
+                && v.Status == VisitStatus.Completed
+                && v.UpdatedAtUtc != null
+                && v.UpdatedAtUtc.Value.Date >= fromDate
+                && v.UpdatedAtUtc.Value.Date <= toDate)
+            .Select(v => v.UpdatedAtUtc!.Value)
+            .ToListAsync(ct);
+
+        var trends = new AdminDashboardTrends(
+            fromDate,
+            toDate,
+            BuildDailyTrend(newCustomerDates, fromDate, toDate),
+            BuildDailyTrend(newSubscriptionDates, fromDate, toDate),
+            BuildDailyTrend(completedVisitDates, fromDate, toDate));
+
+        return Ok(new AdminDashboardResponse(customers, activeSubs, providers, openVisits, escalations, trends));
+    }
+
+    private static IReadOnlyList<AdminDashboardTrendPoint> BuildDailyTrend(
+        IEnumerable<DateTime> timestamps,
+        DateTime fromDate,
+        DateTime toDate)
+    {
+        var counts = timestamps
+            .GroupBy(d => d.Date)
+            .ToDictionary(g => g.Key, g => g.Count());
+
+        var points = new List<AdminDashboardTrendPoint>();
+        for (var day = fromDate; day <= toDate; day = day.AddDays(1))
+        {
+            counts.TryGetValue(day, out var count);
+            points.Add(new AdminDashboardTrendPoint(day.ToString("yyyy-MM-dd"), count));
+        }
+
+        return points;
     }
 
     [HttpGet("customers")]
@@ -78,7 +131,8 @@ public class AdminController(
                 p.Postcode,
                 p.GardenSize,
                 p.AccessNotes,
-                p.IsPrimary))
+                p.IsPrimary,
+                db.PropertyMedia.Count(m => m.CustomerPropertyId == p.Id && !m.IsDeleted)))
             .ToListAsync(ct);
 
         var recentVisits = await db.JobVisits.AsNoTracking()

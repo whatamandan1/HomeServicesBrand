@@ -9,6 +9,7 @@ public class SortedDbContext(DbContextOptions<SortedDbContext> options) : DbCont
     public DbSet<UserAccount> Users => Set<UserAccount>();
     public DbSet<Customer> Customers => Set<Customer>();
     public DbSet<CustomerProperty> CustomerProperties => Set<CustomerProperty>();
+    public DbSet<PropertyMedia> PropertyMedia => Set<PropertyMedia>();
     public DbSet<SubscriptionPlan> SubscriptionPlans => Set<SubscriptionPlan>();
     public DbSet<CustomerSubscription> CustomerSubscriptions => Set<CustomerSubscription>();
     public DbSet<Provider> Providers => Set<Provider>();
@@ -56,6 +57,10 @@ public class SortedDbContext(DbContextOptions<SortedDbContext> options) : DbCont
             .HasOne(v => v.Subscription).WithMany().HasForeignKey(v => v.CustomerSubscriptionId);
         modelBuilder.Entity<JobVisit>()
             .HasOne(v => v.Property).WithMany().HasForeignKey(v => v.CustomerPropertyId);
+        modelBuilder.Entity<CustomerSubscription>()
+            .HasOne(s => s.PreferredProvider).WithMany().HasForeignKey(s => s.PreferredProviderId);
+        modelBuilder.Entity<PropertyMedia>()
+            .HasOne(m => m.Property).WithMany(p => p.Media).HasForeignKey(m => m.CustomerPropertyId);
 
         foreach (var entity in modelBuilder.Model.GetEntityTypes())
         {

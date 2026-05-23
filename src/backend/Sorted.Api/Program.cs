@@ -204,3 +204,5 @@ startupLogger.LogInformation(
     openAiConfigured ? "ok" : "missing");
 
 app.Run();
+
+public partial class Program { }

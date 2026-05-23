@@ -24,7 +24,8 @@ public record CustomerSubscriptionResponse(
     DateTime? MinimumTermEndsAtUtc,
     DateTime? CancelsAtUtc,
     bool CanManageBilling,
-    bool CanUpgradeToPremium);
+    bool CanUpgradeToPremium,
+    string? PreferredGardenerName = null);
 
 public record BillingPortalSessionResponse(string Url);
 
@@ -56,7 +57,19 @@ public record CustomerPropertyResponse(
     string Postcode,
     GardenSize GardenSize,
     string? AccessNotes,
-    bool IsPrimary);
+    bool IsPrimary,
+    int PhotoCount = 0);
+
+public record PropertyMediaResponse(
+    Guid Id,
+    string FileName,
+    string ContentType,
+    int SizeBytes,
+    DateTime UploadedAtUtc);
+
+public record PropertyMediaListResponse(
+    Guid PropertyId,
+    IReadOnlyList<PropertyMediaResponse> Photos);
 
 public record UpdateCustomerPropertyRequest(
     string Line1,
@@ -118,12 +131,22 @@ public record SupportChatResponse(
     bool Escalated,
     double Confidence);
 
+public record AdminDashboardTrendPoint(string Date, int Count);
+
+public record AdminDashboardTrends(
+    DateTime FromUtc,
+    DateTime ToUtc,
+    IReadOnlyList<AdminDashboardTrendPoint> NewCustomers,
+    IReadOnlyList<AdminDashboardTrendPoint> NewSubscriptions,
+    IReadOnlyList<AdminDashboardTrendPoint> CompletedVisits);
+
 public record AdminDashboardResponse(
     int CustomerCount,
     int ActiveSubscriptions,
     int ProviderCount,
     int OpenVisits,
-    int OpenEscalations);
+    int OpenEscalations,
+    AdminDashboardTrends Trends);
 
 public record AdminCustomerSubscriptionResponse(
     Guid Id,

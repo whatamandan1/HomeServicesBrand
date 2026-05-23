@@ -15,6 +15,7 @@ public record RegisterCustomerRequest(
     GardenSize GardenSize,
     Guid SubscriptionPlanId,
     string AvailabilityPreference,
+    bool AcceptedTerms,
     string BrandCode = "gardens-sorted");
 
 public record RegisterProviderRequest(

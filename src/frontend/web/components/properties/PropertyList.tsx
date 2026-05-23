@@ -1,6 +1,8 @@
 "use client";
 
 import { useState } from "react";
+import { PropertyPhotoUpload } from "@/components/properties/PropertyPhotoUpload";
+import { api } from "@/lib/api";
 import type { CustomerProperty, GardenSize } from "@/lib/api";
 
 type PropertyForm = {
@@ -34,9 +36,11 @@ type PropertyUpdate = {
 
 function PropertyCard({
   property,
+  token,
   onSave,
 }: {
   property: CustomerProperty;
+  token?: string;
   onSave: (id: string, body: PropertyUpdate) => Promise<void>;
 }) {
   const [form, setForm] = useState<PropertyForm>(() => toForm(property));
@@ -158,6 +162,19 @@ function PropertyCard({
         </label>
       </div>
 
+      {token && (
+        <div className="border-t border-stone-100 pt-4">
+          <PropertyPhotoUpload
+            token={token}
+            propertyId={property.id}
+            loadPhotos={api.customerPropertyPhotos}
+            uploadPhoto={api.customerUploadPropertyPhoto}
+            deletePhoto={api.customerDeletePropertyPhoto}
+            fetchPhotoBlob={api.customerFetchPropertyPhoto}
+          />
+        </div>
+      )}
+
       {error && <p className="mt-3 text-sm text-red-600">{error}</p>}
       {message && <p className="mt-3 text-sm text-emerald-700">{message}</p>}
 
@@ -175,9 +192,11 @@ function PropertyCard({
 
 export function PropertyList({
   properties,
+  token,
   onSave,
 }: {
   properties: CustomerProperty[];
+  token?: string;
   onSave: (id: string, body: PropertyUpdate) => Promise<void>;
 }) {
   if (properties.length === 0) {
@@ -187,7 +206,7 @@ export function PropertyList({
   return (
     <ul className="mt-3 space-y-4">
       {properties.map((p) => (
-        <PropertyCard key={p.id} property={p} onSave={onSave} />
+        <PropertyCard key={p.id} property={p} token={token} onSave={onSave} />
       ))}
     </ul>
   );
