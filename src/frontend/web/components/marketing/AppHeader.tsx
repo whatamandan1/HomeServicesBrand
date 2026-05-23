@@ -15,7 +15,7 @@ const switchAccountLink = { href: "/login", label: "Switch account" } as const;
 
 function navLinksForRole(role: AuthResponse["role"] | null) {
   if (role === "Admin") {
-    return [customerLink, providerLink, adminLink, switchAccountLink];
+    return [adminLink, switchAccountLink];
   }
   if (role === "Provider") {
     return [providerLink, switchAccountLink];
