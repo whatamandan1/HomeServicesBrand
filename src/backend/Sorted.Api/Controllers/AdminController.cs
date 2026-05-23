@@ -236,4 +236,104 @@ public class AdminController(
 
         return Ok(list);
     }
+
+    [HttpGet("ai-actions")]
+    public async Task<ActionResult<IEnumerable<AiActionLogResponse>>> AiActions(
+        [FromQuery] string? actionType,
+        [FromQuery] bool escalatedOnly = false,
+        [FromQuery] int limit = 100,
+        CancellationToken ct = default)
+    {
+        limit = Math.Clamp(limit, 1, 500);
+        var query = db.AIActionLogs.AsNoTracking().Where(a => !a.IsDeleted);
+
+        if (!string.IsNullOrWhiteSpace(actionType))
+            query = query.Where(a => a.ActionType == actionType.Trim());
+
+        if (escalatedOnly)
+            query = query.Where(a => a.Escalated);
+
+        var list = await query
+            .OrderByDescending(a => a.CreatedAtUtc)
+            .Take(limit)
+            .Select(a => new AiActionLogResponse(
+                a.Id,
+                a.CustomerId,
+                a.CustomerId != null
+                    ? db.Customers.Where(c => c.Id == a.CustomerId).Select(c => c.User.Email).FirstOrDefault()
+                    : null,
+                a.ActionType,
+                a.PromptSummary,
+                a.ResponseSummary,
+                a.ConfidenceScore,
+                a.Escalated,
+                a.CreatedAtUtc))
+            .ToListAsync(ct);
+
+        return Ok(list);
+    }
+
+    [HttpGet("communication-threads")]
+    public async Task<ActionResult<IEnumerable<CommunicationThreadSummaryResponse>>> CommunicationThreads(
+        [FromQuery] int limit = 50,
+        CancellationToken ct = default)
+    {
+        limit = Math.Clamp(limit, 1, 200);
+        var threads = await db.CommunicationThreads.AsNoTracking()
+            .Where(t => !t.IsDeleted)
+            .OrderByDescending(t => t.UpdatedAtUtc ?? t.CreatedAtUtc)
+            .Take(limit)
+            .Select(t => new
+            {
+                t.Id,
+                t.CustomerId,
+                CustomerEmail = t.Customer != null ? t.Customer.User.Email : null,
+                t.Subject,
+                t.CreatedAtUtc,
+                MessageCount = t.Messages.Count(m => !m.IsDeleted),
+                LastMessage = t.Messages
+                    .Where(m => !m.IsDeleted)
+                    .OrderByDescending(m => m.CreatedAtUtc)
+                    .Select(m => m.Body)
+                    .FirstOrDefault()
+            })
+            .ToListAsync(ct);
+
+        var list = threads.Select(t => new CommunicationThreadSummaryResponse(
+            t.Id,
+            t.CustomerId,
+            t.CustomerEmail,
+            t.Subject,
+            t.MessageCount,
+            t.LastMessage is null ? null : (t.LastMessage.Length > 120 ? t.LastMessage[..117] + "…" : t.LastMessage),
+            t.CreatedAtUtc)).ToList();
+
+        return Ok(list);
+    }
+
+    [HttpGet("communication-threads/{id:guid}")]
+    public async Task<ActionResult<CommunicationThreadDetailResponse>> CommunicationThread(Guid id, CancellationToken ct)
+    {
+        var thread = await db.CommunicationThreads.AsNoTracking()
+            .Where(t => t.Id == id && !t.IsDeleted)
+            .Select(t => new CommunicationThreadDetailResponse(
+                t.Id,
+                t.CustomerId,
+                t.Customer != null ? t.Customer.User.Email : null,
+                t.Subject,
+                t.Messages
+                    .Where(m => !m.IsDeleted)
+                    .OrderBy(m => m.CreatedAtUtc)
+                    .Select(m => new AdminMessageResponse(
+                        m.Id,
+                        m.SenderRole,
+                        m.Body,
+                        m.IsFromAi,
+                        m.CreatedAtUtc))
+                    .ToList()))
+            .FirstOrDefaultAsync(ct);
+
+        if (thread is null) return NotFound();
+        return Ok(thread);
+    }
 }

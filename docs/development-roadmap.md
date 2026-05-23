@@ -72,7 +72,7 @@ Work through phases in order. Each phase builds on the last.
 - [ ] **Background jobs** — ongoing visit generation, dispatch offer expiry, pre-visit reminders
 - [ ] **SMS + email in production** — configure Twilio and SendGrid; visit/subscription notifications
 - [ ] **Admin workflow viewer** — browse `WorkflowEvent` log in admin UI
-- [ ] **Admin AI log viewer** — browse `AIActionLog` and communication threads
+- [x] **Admin AI log viewer** — browse `AIActionLog` and communication threads
 - [ ] **Customer property management** — edit property details, access notes, optional media upload
 - [ ] **Wire admin dispatch action** — expose `POST /api/admin/scheduling/open-dispatch` in admin UI *(done in admin portal)*
 

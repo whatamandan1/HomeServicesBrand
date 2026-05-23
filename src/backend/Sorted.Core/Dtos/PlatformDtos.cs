@@ -78,3 +78,37 @@ public record WorkflowEventResponse(
     Guid? EntityId,
     string PayloadJson,
     DateTime CreatedAtUtc);
+
+public record AiActionLogResponse(
+    Guid Id,
+    Guid? CustomerId,
+    string? CustomerEmail,
+    string ActionType,
+    string PromptSummary,
+    string ResponseSummary,
+    double? ConfidenceScore,
+    bool Escalated,
+    DateTime CreatedAtUtc);
+
+public record AdminMessageResponse(
+    Guid Id,
+    string SenderRole,
+    string Body,
+    bool IsFromAi,
+    DateTime CreatedAtUtc);
+
+public record CommunicationThreadSummaryResponse(
+    Guid Id,
+    Guid? CustomerId,
+    string? CustomerEmail,
+    string Subject,
+    int MessageCount,
+    string? LastMessagePreview,
+    DateTime CreatedAtUtc);
+
+public record CommunicationThreadDetailResponse(
+    Guid Id,
+    Guid? CustomerId,
+    string? CustomerEmail,
+    string Subject,
+    IReadOnlyList<AdminMessageResponse> Messages);

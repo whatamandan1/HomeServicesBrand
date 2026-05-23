@@ -78,6 +78,44 @@ export type WorkflowEvent = {
   createdAtUtc: string;
 };
 
+export type AiActionLog = {
+  id: string;
+  customerId: string | null;
+  customerEmail: string | null;
+  actionType: string;
+  promptSummary: string;
+  responseSummary: string;
+  confidenceScore: number | null;
+  escalated: boolean;
+  createdAtUtc: string;
+};
+
+export type CommunicationThreadSummary = {
+  id: string;
+  customerId: string | null;
+  customerEmail: string | null;
+  subject: string;
+  messageCount: number;
+  lastMessagePreview: string | null;
+  createdAtUtc: string;
+};
+
+export type AdminMessage = {
+  id: string;
+  senderRole: string;
+  body: string;
+  isFromAi: boolean;
+  createdAtUtc: string;
+};
+
+export type CommunicationThreadDetail = {
+  id: string;
+  customerId: string | null;
+  customerEmail: string | null;
+  subject: string;
+  messages: AdminMessage[];
+};
+
 export type SubscriptionPlan = {
   id: string;
   name: string;
@@ -265,4 +303,20 @@ export const api = {
       token
     );
   },
+  adminAiActions: (token: string, actionType?: string, escalatedOnly = false, limit = 100) => {
+    const params = new URLSearchParams();
+    if (actionType) params.set("actionType", actionType);
+    if (escalatedOnly) params.set("escalatedOnly", "true");
+    params.set("limit", String(limit));
+    const qs = params.toString();
+    return request<AiActionLog[]>(`/api/admin/ai-actions?${qs}`, {}, token);
+  },
+  adminCommunicationThreads: (token: string, limit = 50) =>
+    request<CommunicationThreadSummary[]>(
+      `/api/admin/communication-threads?limit=${limit}`,
+      {},
+      token
+    ),
+  adminCommunicationThread: (token: string, id: string) =>
+    request<CommunicationThreadDetail>(`/api/admin/communication-threads/${id}`, {}, token),
 };

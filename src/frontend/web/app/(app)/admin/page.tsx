@@ -1,12 +1,14 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { api, type AdminCustomer, type AdminProvider, type Escalation, type JobVisit, type WorkflowEvent } from "@/lib/api";
+import { api, type AdminCustomer, type AdminProvider, type AiActionLog, type CommunicationThreadSummary, type Escalation, type JobVisit, type WorkflowEvent } from "@/lib/api";
 import { useAuth } from "@/lib/use-auth";
 import { DataTable, StatCard } from "@/components/ui";
 import { VisitList } from "@/components/visits/VisitList";
 import { EscalationList } from "@/components/escalations/EscalationList";
 import { WorkflowEventList } from "@/components/workflow/WorkflowEventList";
+import { AiActionLogList } from "@/components/ai/AiActionLogList";
+import { CommunicationThreadList } from "@/components/ai/CommunicationThreadList";
 
 const DASH_LABELS: Record<string, string> = {
   customerCount: "Customers",
@@ -36,6 +38,8 @@ export default function AdminPage() {
   const [visits, setVisits] = useState<JobVisit[]>([]);
   const [escalations, setEscalations] = useState<Escalation[]>([]);
   const [workflowEvents, setWorkflowEvents] = useState<WorkflowEvent[]>([]);
+  const [aiActionLogs, setAiActionLogs] = useState<AiActionLog[]>([]);
+  const [communicationThreads, setCommunicationThreads] = useState<CommunicationThreadSummary[]>([]);
   const [dispatchMsg, setDispatchMsg] = useState<string | null>(null);
   const [visitError, setVisitError] = useState<string | null>(null);
   const [busyVisitId, setBusyVisitId] = useState<string | null>(null);
@@ -106,6 +110,8 @@ export default function AdminPage() {
     api.adminVisits(auth.token).then(setVisits);
     api.adminEscalations(auth.token).then(setEscalations);
     api.adminWorkflowEvents(auth.token).then(setWorkflowEvents);
+    api.adminAiActions(auth.token).then(setAiActionLogs);
+    api.adminCommunicationThreads(auth.token).then(setCommunicationThreads);
   }, [auth]);
 
   if (!ready) return <p className="text-stone-500">Loading…</p>;
@@ -284,6 +290,25 @@ export default function AdminPage() {
           Recent platform events — signup, billing, scheduling, dispatch, and support.
         </p>
         <WorkflowEventList events={workflowEvents} />
+      </section>
+
+      <section id="ai-log" className="scroll-mt-6">
+        <h2 className="font-semibold">AI action log</h2>
+        <p className="mt-1 text-sm text-stone-500">
+          Support and website chat prompts, responses, confidence scores, and escalations.
+        </p>
+        <AiActionLogList logs={aiActionLogs} />
+      </section>
+
+      <section id="threads" className="scroll-mt-6">
+        <h2 className="font-semibold">Communication threads</h2>
+        <p className="mt-1 text-sm text-stone-500">
+          Customer and guest chat threads — click View to read the full conversation.
+        </p>
+        <CommunicationThreadList
+          threads={communicationThreads}
+          loadThread={(id) => api.adminCommunicationThread(auth!.token, id)}
+        />
       </section>
     </div>
   );
