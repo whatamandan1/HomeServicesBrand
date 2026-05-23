@@ -2,7 +2,8 @@
 
 import { useEffect, useState } from "react";
 import { ActAsUserButton } from "@/components/admin/ActAsUserButton";
-import { api, type AdminCustomerDetail, type AuthResponse } from "@/lib/api";
+import { CommunicationThreadList } from "@/components/ai/CommunicationThreadList";
+import { api, type AdminCustomerDetail, type AuthResponse, type CommunicationThreadSummary } from "@/lib/api";
 import { StatusBadge } from "@/components/ui";
 
 function formatDate(iso: string | null) {
@@ -32,6 +33,8 @@ export function CustomerDetailPanel({
   const [error, setError] = useState<string | null>(null);
   const [message, setMessage] = useState<string | null>(null);
   const [busySubId, setBusySubId] = useState<string | null>(null);
+  const [threads, setThreads] = useState<CommunicationThreadSummary[]>([]);
+  const [threadsLoading, setThreadsLoading] = useState(true);
 
   useEffect(() => {
     setLoading(true);
@@ -41,6 +44,15 @@ export function CustomerDetailPanel({
       .then(setDetail)
       .catch((e) => setError(e instanceof Error ? e.message : "Failed to load customer"))
       .finally(() => setLoading(false));
+  }, [customerId, token]);
+
+  useEffect(() => {
+    setThreadsLoading(true);
+    api
+      .adminCustomerCommunicationThreads(token, customerId)
+      .then(setThreads)
+      .catch(() => setThreads([]))
+      .finally(() => setThreadsLoading(false));
   }, [customerId, token]);
 
   async function cancelSubscription(subscriptionId: string) {
@@ -204,6 +216,19 @@ export function CustomerDetailPanel({
                   </li>
                 ))}
               </ul>
+            )}
+          </div>
+
+          <div>
+            <h4 className="text-sm font-semibold text-gardens-dark">Support conversations</h4>
+            {threadsLoading ? (
+              <p className="mt-2 text-sm text-stone-500">Loading chat history…</p>
+            ) : (
+              <CommunicationThreadList
+                threads={threads}
+                loadThread={(id) => api.adminCommunicationThread(token, id)}
+                emptyMessage="No support chats linked to this customer yet."
+              />
             )}
           </div>
         </div>

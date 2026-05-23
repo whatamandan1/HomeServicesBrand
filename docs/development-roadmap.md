@@ -123,8 +123,8 @@ Work through phases in order. Each phase builds on the last.
 | Requirement | Status | Next step |
 |-------------|--------|-----------|
 | Operational dashboards | 🟡 Partial | KPIs, trends, date filters |
-| Customer management | 🟡 Partial | Edit customer, cancel subscription, view comms history |
-| Provider management | 🟡 Partial | Approve providers; show coverage + outcodes; no edit coverage UI yet |
+| Provider management | 🟡 Partial | Approve providers; edit coverage in admin; provider self-service coverage update |
+| Customer management | 🟡 Partial | Customer detail with subs, visits, support chat history; admin cancel subscription |
 | Workflow monitoring | 🟡 Partial | UI for `WorkflowEvent` log |
 | Dispatch visibility | 🟡 Partial | Dispatch board + open-dispatch action in UI |
 | Escalation handling | ✅ Done | Take case and resolve in admin portal |

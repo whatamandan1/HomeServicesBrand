@@ -5,6 +5,7 @@ using Microsoft.EntityFrameworkCore;
 using Sorted.Core.Dtos;
 using Sorted.Core.Entities;
 using Sorted.Core.Enums;
+using Sorted.Core.Geo;
 using Sorted.Core.Interfaces;
 using Sorted.Infrastructure.Data;
 
@@ -20,7 +21,8 @@ public class AdminController(
     IVisitSchedulingService scheduling,
     IVisitManagementService visits,
     IWorkflowLogger workflow,
-    IPostcodeGeocodingService geocoding) : ControllerBase
+    IPostcodeGeocodingService geocoding,
+    IProviderCoverageService coverage) : ControllerBase
 {
     [HttpGet("dashboard")]
     public async Task<ActionResult<AdminDashboardResponse>> Dashboard(CancellationToken ct)
@@ -108,6 +110,48 @@ public class AdminController(
             recentVisits));
     }
 
+    [HttpGet("customers/{customerId:guid}/communication-threads")]
+    public async Task<ActionResult<IEnumerable<CommunicationThreadSummaryResponse>>> CustomerCommunicationThreads(
+        Guid customerId,
+        [FromQuery] int limit = 20,
+        CancellationToken ct = default)
+    {
+        var exists = await db.Customers.AnyAsync(c => c.Id == customerId && !c.IsDeleted, ct);
+        if (!exists) return NotFound();
+
+        limit = Math.Clamp(limit, 1, 100);
+        var threads = await db.CommunicationThreads.AsNoTracking()
+            .Where(t => t.CustomerId == customerId && !t.IsDeleted)
+            .OrderByDescending(t => t.UpdatedAtUtc ?? t.CreatedAtUtc)
+            .Take(limit)
+            .Select(t => new
+            {
+                t.Id,
+                t.CustomerId,
+                CustomerEmail = t.Customer != null ? t.Customer.User.Email : null,
+                t.Subject,
+                t.CreatedAtUtc,
+                MessageCount = t.Messages.Count(m => !m.IsDeleted),
+                LastMessage = t.Messages
+                    .Where(m => !m.IsDeleted)
+                    .OrderByDescending(m => m.CreatedAtUtc)
+                    .Select(m => m.Body)
+                    .FirstOrDefault()
+            })
+            .ToListAsync(ct);
+
+        var list = threads.Select(t => new CommunicationThreadSummaryResponse(
+            t.Id,
+            t.CustomerId,
+            t.CustomerEmail,
+            t.Subject,
+            t.MessageCount,
+            t.LastMessage is null ? null : (t.LastMessage.Length > 120 ? t.LastMessage[..117] + "…" : t.LastMessage),
+            t.CreatedAtUtc)).ToList();
+
+        return Ok(list);
+    }
+
     private static AdminCustomerSubscriptionResponse ToAdminSubscription(CustomerSubscription s)
     {
         var hasStripe = !string.IsNullOrWhiteSpace(s.StripeSubscriptionId);
@@ -158,27 +202,72 @@ public class AdminController(
         var list = providers
             .OrderBy(p => p.User.LastName)
             .ThenBy(p => p.User.FirstName)
-            .Select(p => new
-            {
-                p.Id,
-                p.UserId,
-                p.User.Email,
-                name = p.User.FirstName + " " + p.User.LastName,
-                p.IsApproved,
-                coveragePostcode = p.CoveragePostcode,
-                coverageRadiusMiles = p.CoverageRadiusMiles,
-                coverageLatitude = p.CoverageLatitude,
-                coverageLongitude = p.CoverageLongitude,
-                coveredOutcodes = p.Territories
-                    .Where(t => !t.IsDeleted)
-                    .Select(t => t.PostcodeSector)
-                    .OrderBy(s => s)
-                    .ToList()
-            })
+            .Select(ToAdminProvider)
             .ToList();
 
         return Ok(list);
     }
+
+    [HttpPatch("providers/{id:guid}/coverage")]
+    public async Task<ActionResult<AdminProviderResponse>> UpdateProviderCoverage(
+        Guid id,
+        [FromBody] UpdateProviderCoverageRequest request,
+        CancellationToken ct)
+    {
+        var provider = await db.Providers
+            .Include(p => p.User)
+            .Include(p => p.Territories)
+            .FirstOrDefaultAsync(p => p.Id == id && !p.IsDeleted, ct);
+        if (provider is null) return NotFound();
+
+        var radius = request.CoverageRadiusMiles;
+        if (radius is < 1 or > 50)
+            return BadRequest(new { error = "Coverage radius must be between 1 and 50 miles." });
+
+        var geo = await geocoding.LookupAsync(PostcodeFormat.Normalize(request.CoveragePostcode), ct);
+        if (geo is null)
+            return BadRequest(new { error = "Could not find that postcode. Check it is a valid UK postcode." });
+
+        provider.CoveragePostcode = geo.Postcode;
+        provider.CoverageLatitude = geo.Latitude;
+        provider.CoverageLongitude = geo.Longitude;
+        provider.CoverageRadiusMiles = radius;
+        provider.UpdatedAtUtc = DateTime.UtcNow;
+        await db.SaveChangesAsync(ct);
+
+        coverage.ScheduleTerritoryResync(provider.Id);
+
+        await workflow.LogAsync(
+            "provider_onboarding",
+            "coverage_updated",
+            nameof(Provider),
+            provider.Id,
+            new { geo.Postcode, radius, updatedBy = "admin" },
+            ct);
+
+        provider.Territories = await db.ProviderTerritories
+            .Where(t => t.ProviderId == provider.Id && !t.IsDeleted)
+            .ToListAsync(ct);
+
+        return Ok(ToAdminProvider(provider));
+    }
+
+    private static AdminProviderResponse ToAdminProvider(Provider p) =>
+        new(
+            p.Id,
+            p.UserId,
+            p.User.Email,
+            p.User.FirstName + " " + p.User.LastName,
+            p.IsApproved,
+            p.CoveragePostcode,
+            p.CoverageRadiusMiles,
+            p.CoverageLatitude,
+            p.CoverageLongitude,
+            p.Territories
+                .Where(t => !t.IsDeleted)
+                .Select(t => t.PostcodeSector)
+                .OrderBy(s => s, StringComparer.OrdinalIgnoreCase)
+                .ToList());
 
     [HttpPost("providers/{id:guid}/approve")]
     public async Task<IActionResult> ApproveProvider(Guid id, CancellationToken ct)

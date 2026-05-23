@@ -74,6 +74,22 @@ public record ProviderProfileResponse(
     double? CoverageLatitude = null,
     double? CoverageLongitude = null);
 
+public record UpdateProviderCoverageRequest(
+    string CoveragePostcode,
+    double CoverageRadiusMiles);
+
+public record AdminProviderResponse(
+    Guid Id,
+    Guid UserId,
+    string Email,
+    string Name,
+    bool IsApproved,
+    string? CoveragePostcode,
+    double CoverageRadiusMiles,
+    double? CoverageLatitude,
+    double? CoverageLongitude,
+    IReadOnlyList<string> CoveredOutcodes);
+
 public record SupportChatRequest(string Message, Guid? ThreadId);
 
 public record SupportChatResponse(

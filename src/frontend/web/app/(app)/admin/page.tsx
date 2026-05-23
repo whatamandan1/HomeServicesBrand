@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { api, type AdminCustomer, type AdminProvider, type AiActionLog, type CommunicationThreadSummary, type Escalation, type JobVisit, type WorkflowEvent } from "@/lib/api";
 import { useAuth } from "@/lib/use-auth";
 import { CustomerDetailPanel } from "@/components/admin/CustomerDetailPanel";
+import { ProviderDetailPanel } from "@/components/admin/ProviderDetailPanel";
 import { ActAsUserButton } from "@/components/admin/ActAsUserButton";
 import { StatCard } from "@/components/ui";
 import { isImpersonating } from "@/lib/auth-storage";
@@ -54,7 +55,9 @@ export default function AdminPage() {
   const [providerView, setProviderView] = useState<ViewMode>("list");
   const [visitView, setVisitView] = useState<ViewMode>("list");
   const [selectedCustomerId, setSelectedCustomerId] = useState<string | null>(null);
+  const [selectedProviderId, setSelectedProviderId] = useState<string | null>(null);
   const [customerError, setCustomerError] = useState<string | null>(null);
+  const [providerError, setProviderError] = useState<string | null>(null);
 
   function refreshVisits() {
     if (!auth?.token) return;
@@ -178,54 +181,92 @@ export default function AdminPage() {
         ) : (
         <div className="mt-2 space-y-2">
           {providers.map((p) => (
-            <div
-              key={p.id}
-              className="flex flex-wrap items-center justify-between gap-2 rounded-lg border bg-white p-3 text-sm shadow-sm"
-            >
-              <div>
-                <div className="font-medium">{p.name}</div>
-                <div className="text-stone-500">{p.email}</div>
-                <div className="text-xs text-stone-400">
-                  Coverage:{" "}
-                  {p.coveragePostcode
-                    ? `${p.coveragePostcode}, ${p.coverageRadiusMiles} miles`
-                    : "—"}
-                  {p.coveredOutcodes?.length ? (
-                    <span className="block text-stone-400">
-                      {p.coveredOutcodes.slice(0, 12).join(", ")}
-                      {p.coveredOutcodes.length > 12
-                        ? ` +${p.coveredOutcodes.length - 12} more`
-                        : ""}
-                    </span>
-                  ) : null}
+            <div key={p.id} id={`provider-${p.id}`} className="space-y-2">
+              <div className="flex flex-wrap items-center justify-between gap-2 rounded-lg border bg-white p-3 text-sm shadow-sm">
+                <div>
+                  <div className="font-medium">{p.name}</div>
+                  <div className="text-stone-500">{p.email}</div>
+                  <div className="text-xs text-stone-400">
+                    {p.isApproved ? (
+                      <span className="text-green-700">Approved</span>
+                    ) : (
+                      <span className="text-amber-700">Pending approval</span>
+                    )}
+                    {" · "}
+                    Coverage:{" "}
+                    {p.coveragePostcode
+                      ? `${p.coveragePostcode}, ${p.coverageRadiusMiles} miles`
+                      : "—"}
+                    {p.coveredOutcodes?.length ? (
+                      <span className="block text-stone-400">
+                        {p.coveredOutcodes.slice(0, 8).join(", ")}
+                        {p.coveredOutcodes.length > 8
+                          ? ` +${p.coveredOutcodes.length - 8} more`
+                          : ""}
+                      </span>
+                    ) : null}
+                  </div>
+                </div>
+                <div className="flex flex-wrap items-center gap-2">
+                  <button
+                    type="button"
+                    className="rounded-lg border border-stone-200 px-3 py-1.5 text-sm font-medium text-stone-700 hover:bg-stone-50"
+                    onClick={() => {
+                      setSelectedProviderId((current) => {
+                        const next = current === p.id ? null : p.id;
+                        if (next) {
+                          setSelectedCustomerId(null);
+                          requestAnimationFrame(() => {
+                            document
+                              .getElementById(`provider-${p.id}`)
+                              ?.scrollIntoView({ behavior: "smooth", block: "nearest" });
+                          });
+                        }
+                        return next;
+                      });
+                    }}
+                  >
+                    {selectedProviderId === p.id ? "Hide" : "View"}
+                  </button>
+                  {!p.isApproved && (
+                    <button
+                      className="rounded bg-gardens-primary px-3 py-1 text-white"
+                      onClick={() =>
+                        api.approveProvider(auth.token, p.id).then(() =>
+                          api.adminProviders(auth.token).then(setProviders)
+                        )
+                      }
+                    >
+                      Approve
+                    </button>
+                  )}
+                  {auth && auth.role === "Admin" && !isImpersonating(auth) && (
+                    <ActAsUserButton
+                      adminAuth={auth}
+                      userId={p.userId}
+                      label="Act as"
+                      onError={setProviderError}
+                    />
+                  )}
                 </div>
               </div>
-              <div className="flex flex-wrap items-center gap-2">
-                {p.isApproved ? (
-                  <span className="text-green-700">Approved</span>
-                ) : (
-                  <button
-                    className="rounded bg-gardens-primary px-3 py-1 text-white"
-                    onClick={() =>
-                      api.approveProvider(auth.token, p.id).then(() =>
-                        api.adminProviders(auth.token).then(setProviders)
-                      )
-                    }
-                  >
-                    Approve
-                  </button>
-                )}
-                {auth && auth.role === "Admin" && !isImpersonating(auth) && (
-                  <ActAsUserButton
-                    adminAuth={auth}
-                    userId={p.userId}
-                    label="Act as provider"
-                    onError={setCustomerError}
-                  />
-                )}
-              </div>
+              {selectedProviderId === p.id && auth?.token && (
+                <ProviderDetailPanel
+                  provider={p}
+                  token={auth.token}
+                  adminAuth={auth}
+                  onClose={() => setSelectedProviderId(null)}
+                  onUpdated={(updated) => {
+                    setProviders((list) =>
+                      list.map((item) => (item.id === updated.id ? updated : item))
+                    );
+                  }}
+                  onError={setProviderError}
+                />
+              )}
             </div>
           ))}
+          {providerError && <p className="text-sm text-red-600">{providerError}</p>}
           {providers.length === 0 && (
             <p className="text-sm text-stone-500">No providers yet.</p>
           )}
@@ -255,6 +296,7 @@ export default function AdminPage() {
                       setSelectedCustomerId((current) => {
                         const next = current === c.id ? null : c.id;
                         if (next) {
+                          setSelectedProviderId(null);
                           requestAnimationFrame(() => {
                             document
                               .getElementById(`customer-${c.id}`)

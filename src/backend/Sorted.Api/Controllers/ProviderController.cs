@@ -6,6 +6,7 @@ using Sorted.Core.Dtos;
 using Sorted.Core.Entities;
 using Sorted.Core.Interfaces;
 using Sorted.Core.Enums;
+using Sorted.Core.Geo;
 using Sorted.Infrastructure.Data;
 using Sorted.Infrastructure.Mapping;
 
@@ -51,6 +52,53 @@ public class ProviderController(
                 await db.SaveChangesAsync(ct);
             }
         }
+
+        return Ok(new ProviderProfileResponse(
+            provider.User.Email,
+            provider.IsApproved,
+            provider.CoveragePostcode,
+            provider.CoverageRadiusMiles,
+            provider.Territories
+                .Where(t => !t.IsDeleted)
+                .Select(t => t.PostcodeSector)
+                .OrderBy(s => s, StringComparer.OrdinalIgnoreCase)
+                .ToList(),
+            provider.CoverageLatitude,
+            provider.CoverageLongitude));
+    }
+
+    [HttpPatch("me/coverage")]
+    public async Task<ActionResult<ProviderProfileResponse>> UpdateCoverage(
+        [FromBody] UpdateProviderCoverageRequest request,
+        CancellationToken ct)
+    {
+        var provider = await GetProviderAsync(ct);
+        if (provider is null) return NotFound();
+
+        var radius = request.CoverageRadiusMiles;
+        if (radius is < 1 or > 50)
+            return BadRequest(new { error = "Coverage radius must be between 1 and 50 miles." });
+
+        var geo = await geocoding.LookupAsync(PostcodeFormat.Normalize(request.CoveragePostcode), ct);
+        if (geo is null)
+            return BadRequest(new { error = "Could not find that postcode. Check it is a valid UK postcode." });
+
+        provider.CoveragePostcode = geo.Postcode;
+        provider.CoverageLatitude = geo.Latitude;
+        provider.CoverageLongitude = geo.Longitude;
+        provider.CoverageRadiusMiles = radius;
+        provider.UpdatedAtUtc = DateTime.UtcNow;
+        await db.SaveChangesAsync(ct);
+
+        coverage.ScheduleTerritoryResync(provider.Id);
+
+        await workflow.LogAsync(
+            "provider_onboarding",
+            "coverage_updated",
+            nameof(Provider),
+            provider.Id,
+            new { geo.Postcode, radius, updatedBy = "provider" },
+            ct);
 
         return Ok(new ProviderProfileResponse(
             provider.User.Email,

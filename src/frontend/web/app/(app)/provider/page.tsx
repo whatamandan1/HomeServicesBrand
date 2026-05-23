@@ -19,6 +19,11 @@ export default function ProviderPage() {
   const [busyId, setBusyId] = useState<string | null>(null);
   const [openView, setOpenView] = useState<ViewMode>("list");
   const [myVisitsView, setMyVisitsView] = useState<ViewMode>("list");
+  const [editingCoverage, setEditingCoverage] = useState(false);
+  const [coveragePostcodeInput, setCoveragePostcodeInput] = useState("");
+  const [coverageRadiusInput, setCoverageRadiusInput] = useState(10);
+  const [coverageSaving, setCoverageSaving] = useState(false);
+  const [refreshing, setRefreshing] = useState(false);
 
   function scrollToMyVisits() {
     myVisitsRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
@@ -55,6 +60,48 @@ export default function ProviderPage() {
     if (!auth?.token || auth.role !== "Provider") return;
     refresh();
   }, [auth]);
+
+  useEffect(() => {
+    if (!profile) return;
+    setCoveragePostcodeInput(profile.coveragePostcode ?? "");
+    setCoverageRadiusInput(profile.coverageRadiusMiles || 10);
+  }, [profile]);
+
+  async function saveCoverage() {
+    if (!auth?.token) return;
+    const trimmed = coveragePostcodeInput.trim();
+    if (!trimmed) {
+      setError("Enter your base postcode.");
+      return;
+    }
+
+    setCoverageSaving(true);
+    setError(null);
+    setNotice(null);
+    try {
+      const updated = await api.providerUpdateCoverage(
+        auth.token,
+        trimmed,
+        coverageRadiusInput
+      );
+      setProfile(updated);
+      setEditingCoverage(false);
+      setNotice(
+        "Coverage updated. New jobs may take a minute to appear while postcode areas refresh."
+      );
+      await refresh();
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "Update failed");
+    } finally {
+      setCoverageSaving(false);
+    }
+  }
+
+  async function handleRefresh() {
+    setRefreshing(true);
+    await refresh();
+    setRefreshing(false);
+  }
 
   async function runVisitAction(
     visitId: string,
@@ -120,26 +167,82 @@ export default function ProviderPage() {
 
   return (
     <div className="space-y-8">
-      <h1 className="text-2xl font-bold">Provider jobs</h1>
-      <p className="text-sm text-stone-500">{auth.email}</p>
+      <div className="flex flex-wrap items-start justify-between gap-3">
+        <div>
+          <h1 className="text-2xl font-bold">Your jobs</h1>
+          <p className="mt-1 text-sm text-stone-500">{auth.email}</p>
+        </div>
+        <button
+          type="button"
+          onClick={handleRefresh}
+          disabled={refreshing}
+          className="rounded-lg border border-stone-200 px-3 py-1.5 text-sm font-medium text-stone-700 hover:bg-stone-50 disabled:opacity-50"
+        >
+          {refreshing ? "Refreshing…" : "Refresh"}
+        </button>
+      </div>
       {profile && !profile.isApproved && (
         <p className="rounded-lg border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-900">
-          Your account is pending admin approval — you will not see open jobs until approved.
+          Your account is pending admin approval — open jobs will appear here once approved.
         </p>
       )}
       {coveragePostcode && (
-        <div className="text-sm text-stone-600">
-          <p>
-            Your coverage area: <strong>{coveragePostcode}</strong>, within{" "}
-            <strong>{coverageRadiusMiles} miles</strong>
-          </p>
-          {coveredOutcodes.length > 0 && (
-            <p className="mt-1 text-xs text-stone-500">
-              Postcode areas: {coveredOutcodes.slice(0, 24).join(", ")}
-              {coveredOutcodes.length > 24
-                ? ` and ${coveredOutcodes.length - 24} more`
-                : ""}
-            </p>
+        <div className="rounded-lg border bg-white p-4 text-sm shadow-sm">
+          <div className="flex flex-wrap items-start justify-between gap-3">
+            <div>
+              <p className="font-medium text-gardens-dark">Your coverage area</p>
+              <p className="mt-1 text-stone-600">
+                Based at <strong>{coveragePostcode}</strong>, within{" "}
+                <strong>{coverageRadiusMiles} miles</strong>
+              </p>
+              {coveredOutcodes.length > 0 && (
+                <p className="mt-2 text-xs text-stone-500">
+                  Postcode areas: {coveredOutcodes.slice(0, 24).join(", ")}
+                  {coveredOutcodes.length > 24
+                    ? ` and ${coveredOutcodes.length - 24} more`
+                    : ""}
+                </p>
+              )}
+            </div>
+            <button
+              type="button"
+              onClick={() => setEditingCoverage((v) => !v)}
+              className="text-sm font-medium text-gardens-primary hover:underline"
+            >
+              {editingCoverage ? "Cancel" : "Update coverage"}
+            </button>
+          </div>
+          {editingCoverage && (
+            <div className="mt-4 space-y-3 border-t pt-4">
+              <label className="block text-sm font-medium text-stone-700">
+                Base postcode
+                <input
+                  value={coveragePostcodeInput}
+                  onChange={(e) => setCoveragePostcodeInput(e.target.value)}
+                  className="field-input mt-1"
+                  placeholder="LS1 4AP"
+                />
+              </label>
+              <label className="block text-sm font-medium text-stone-700">
+                Radius: {coverageRadiusInput} miles
+                <input
+                  type="range"
+                  min={1}
+                  max={50}
+                  value={coverageRadiusInput}
+                  onChange={(e) => setCoverageRadiusInput(Number(e.target.value))}
+                  className="mt-2 w-full accent-gardens-primary"
+                />
+              </label>
+              <button
+                type="button"
+                disabled={coverageSaving}
+                onClick={saveCoverage}
+                className="rounded-lg bg-gardens-primary px-4 py-2 text-sm font-semibold text-white disabled:opacity-50"
+              >
+                {coverageSaving ? "Saving…" : "Save coverage"}
+              </button>
+            </div>
           )}
         </div>
       )}
@@ -158,10 +261,12 @@ export default function ProviderPage() {
         {open.length === 0 ? (
           <div className="mt-2 space-y-2 text-sm text-stone-500">
             <p>No open visits in your coverage area right now.</p>
-            <p>
-              Demo provider covers jobs within <strong>15 miles</strong> of{" "}
-              <strong>LS1 4AP</strong>.
-            </p>
+            {process.env.NODE_ENV === "development" && (
+              <p>
+                Demo provider covers jobs within <strong>15 miles</strong> of{" "}
+                <strong>LS1 4AP</strong>.
+              </p>
+            )}
           </div>
         ) : openView === "map" ? (
           <VisitMap

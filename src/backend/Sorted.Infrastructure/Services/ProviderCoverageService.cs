@@ -22,7 +22,13 @@ public class ProviderCoverageService(
 
     private static readonly ConcurrentDictionary<Guid, byte> SyncInProgress = new();
 
-    public void ScheduleTerritorySync(Guid providerId)
+    public void ScheduleTerritorySync(Guid providerId) =>
+        ScheduleTerritoryWork(providerId, skipWhenTerritoriesExist: true);
+
+    public void ScheduleTerritoryResync(Guid providerId) =>
+        ScheduleTerritoryWork(providerId, skipWhenTerritoriesExist: false);
+
+    private void ScheduleTerritoryWork(Guid providerId, bool skipWhenTerritoriesExist)
     {
         if (!SyncInProgress.TryAdd(providerId, 0))
             return;
@@ -40,7 +46,7 @@ public class ProviderCoverageService(
                 if (provider?.CoverageLatitude is null || provider.CoverageLongitude is null)
                     return;
 
-                if (provider.Territories.Any(t => !t.IsDeleted))
+                if (skipWhenTerritoriesExist && provider.Territories.Any(t => !t.IsDeleted))
                     return;
 
                 var coverage = scope.ServiceProvider.GetRequiredService<IProviderCoverageService>();

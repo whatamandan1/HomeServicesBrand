@@ -337,6 +337,15 @@ export const api = {
     request<JobVisit[]>("/api/provider/visits/open", {}, token),
   providerProfile: (token: string) =>
     request<ProviderProfile>("/api/provider/me", {}, token),
+  providerUpdateCoverage: (
+    token: string,
+    coveragePostcode: string,
+    coverageRadiusMiles: number
+  ) =>
+    request<ProviderProfile>("/api/provider/me/coverage", {
+      method: "PATCH",
+      body: JSON.stringify({ coveragePostcode, coverageRadiusMiles }),
+    }, token),
   providerMyVisits: (token: string) =>
     request<JobVisit[]>("/api/provider/visits/mine", {}, token),
   claimVisit: (token: string, visitId: string) =>
@@ -390,6 +399,22 @@ export const api = {
     }, token),
   approveProvider: (token: string, id: string) =>
     request<void>(`/api/admin/providers/${id}/approve`, { method: "POST" }, token),
+  adminUpdateProviderCoverage: (
+    token: string,
+    providerId: string,
+    coveragePostcode: string,
+    coverageRadiusMiles: number
+  ) =>
+    request<AdminProvider>(`/api/admin/providers/${providerId}/coverage`, {
+      method: "PATCH",
+      body: JSON.stringify({ coveragePostcode, coverageRadiusMiles }),
+    }, token),
+  adminCustomerCommunicationThreads: (token: string, customerId: string, limit = 20) =>
+    request<CommunicationThreadSummary[]>(
+      `/api/admin/customers/${customerId}/communication-threads?limit=${limit}`,
+      {},
+      token
+    ),
   adminOpenDispatch: (token: string) =>
     request<void>("/api/admin/scheduling/open-dispatch", { method: "POST" }, token),
   adminWorkflowEvents: (token: string, workflow?: string, limit = 100) => {

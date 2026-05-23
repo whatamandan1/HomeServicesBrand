@@ -82,6 +82,7 @@ public interface IProviderCoverageService
 {
     Task SyncTerritoriesAsync(Provider provider, CancellationToken ct = default);
     void ScheduleTerritorySync(Guid providerId);
+    void ScheduleTerritoryResync(Guid providerId);
     Task<bool> IsPropertyWithinCoverageAsync(Provider provider, CustomerProperty property, CancellationToken ct = default);
 }
 
