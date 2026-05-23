@@ -1,6 +1,5 @@
 "use client";
 
-import L from "leaflet";
 import { useEffect } from "react";
 import { useMap } from "react-leaflet";
 
@@ -16,9 +15,17 @@ export function FitBounds({
   useEffect(() => {
     if (positions.length === 0) return;
 
-    map.fitBounds(L.latLngBounds(positions), { padding: [32, 32] });
-    const timer = window.setTimeout(() => map.invalidateSize(), 250);
+    try {
+      if (positions.length === 1) {
+        map.setView(positions[0], 13);
+      } else {
+        map.fitBounds(positions, { padding: [32, 32] });
+      }
+    } catch {
+      map.setView(positions[0], 11);
+    }
 
+    const timer = window.setTimeout(() => map.invalidateSize(), 250);
     return () => window.clearTimeout(timer);
   }, [map, boundsKey]);
 

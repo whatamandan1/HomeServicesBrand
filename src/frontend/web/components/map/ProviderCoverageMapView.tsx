@@ -1,6 +1,5 @@
 "use client";
 
-import { Fragment } from "react";
 import type { AdminProvider } from "@/lib/api";
 import { DEFAULT_MAP_CENTER, milesToMeters } from "@/lib/map-utils";
 import { Circle, CircleMarker, MapContainer, Popup, TileLayer } from "react-leaflet";
@@ -28,38 +27,38 @@ export function ProviderCoverageMapView({ providers }: { providers: AdminProvide
         <TileLayer url={MAP_TILE_URL} attribution={MAP_ATTRIBUTION} />
         <MapInvalidateSize />
         <FitBounds positions={positions} boundsKey={positions.join("|")} />
-        {providers.map((provider, index) => {
+        {providers.flatMap((provider, index) => {
           const lat = provider.coverageLatitude!;
           const lon = provider.coverageLongitude!;
           const color = PALETTE[index % PALETTE.length];
           const label = `${provider.coveragePostcode ?? "—"}, ${provider.coverageRadiusMiles} miles${provider.isApproved ? "" : " · pending approval"}`;
 
-          return (
-            <Fragment key={provider.id}>
-              <Circle
-                center={[lat, lon]}
-                radius={milesToMeters(provider.coverageRadiusMiles)}
-                pathOptions={{ color, fillColor: color, fillOpacity: 0.1, weight: 2 }}
-              >
-                <Popup>
-                  <strong>{provider.name}</strong>
-                  <br />
-                  {label}
-                </Popup>
-              </Circle>
-              <CircleMarker
-                center={[lat, lon]}
-                radius={6}
-                pathOptions={{ color, fillColor: color, fillOpacity: 1, weight: 2 }}
-              >
-                <Popup>
-                  <strong>{provider.name}</strong>
-                  <br />
-                  {label}
-                </Popup>
-              </CircleMarker>
-            </Fragment>
-          );
+          return [
+            <Circle
+              key={`${provider.id}-coverage`}
+              center={[lat, lon]}
+              radius={milesToMeters(provider.coverageRadiusMiles)}
+              pathOptions={{ color, fillColor: color, fillOpacity: 0.1, weight: 2 }}
+            >
+              <Popup>
+                <strong>{provider.name}</strong>
+                <br />
+                {label}
+              </Popup>
+            </Circle>,
+            <CircleMarker
+              key={`${provider.id}-marker`}
+              center={[lat, lon]}
+              radius={6}
+              pathOptions={{ color, fillColor: color, fillOpacity: 1, weight: 2 }}
+            >
+              <Popup>
+                <strong>{provider.name}</strong>
+                <br />
+                {label}
+              </Popup>
+            </CircleMarker>,
+          ];
         })}
       </MapContainer>
     </div>

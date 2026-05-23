@@ -61,7 +61,10 @@ export function VisitMapView({
         ))}
         {visits.map((visit) => {
           const color = visitMarkerColor(visit.status);
-          const date = visit.scheduledDate.slice(0, 10);
+          const date =
+            typeof visit.scheduledDate === "string"
+              ? visit.scheduledDate.slice(0, 10)
+              : "—";
 
           return (
             <CircleMarker

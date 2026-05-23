@@ -8,7 +8,16 @@ export function MapInvalidateSize() {
   const map = useMap();
 
   useEffect(() => {
-    const invalidate = () => map.invalidateSize({ animate: false });
+    let cancelled = false;
+
+    const invalidate = () => {
+      if (cancelled) return;
+      try {
+        map.invalidateSize({ animate: false });
+      } catch {
+        // Map was unmounted (e.g. React Strict Mode).
+      }
+    };
 
     const raf = requestAnimationFrame(invalidate);
     const timer = window.setTimeout(invalidate, 350);
@@ -17,9 +26,12 @@ export function MapInvalidateSize() {
     const observer = new ResizeObserver(invalidate);
     observer.observe(container);
 
-    map.whenReady(invalidate);
+    map.whenReady(() => {
+      if (!cancelled) invalidate();
+    });
 
     return () => {
+      cancelled = true;
       cancelAnimationFrame(raf);
       window.clearTimeout(timer);
       observer.disconnect();
