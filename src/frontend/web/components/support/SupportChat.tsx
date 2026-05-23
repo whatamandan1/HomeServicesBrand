@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 import { Loader2, MessageCircle, Send, X } from "lucide-react";
 import { api } from "@/lib/api";
 
@@ -186,9 +187,9 @@ export function SupportChat({
 }
 
 export function GuestChatWidget() {
+  const pathname = usePathname();
   const [open, setOpen] = useState(false);
   const [session, setSession] = useState(0);
-
   useEffect(() => {
     if (typeof window === "undefined" || window.location.hash !== "#chat") return;
     setOpen(true);
@@ -200,18 +201,23 @@ export function GuestChatWidget() {
     setSession((s) => s + 1);
   }
 
+  const fabPosition =
+    pathname === "/"
+      ? "fixed right-4 z-50 bottom-36 md:bottom-6"
+      : "fixed right-4 z-50 bottom-20 md:bottom-6";
+
   return (
     <>
       {open && (
         <div
-          className="fixed bottom-20 right-4 z-50 flex w-[min(calc(100vw-2rem),380px)] flex-col overflow-hidden rounded-2xl border border-stone-200 bg-white shadow-2xl md:bottom-6"
+          className={`${fabPosition} flex w-[min(calc(100vw-2rem),380px)] flex-col overflow-hidden rounded-2xl border border-stone-200 bg-white shadow-2xl`}
           role="dialog"
           aria-label="Live chat"
         >
           <div className="flex items-start justify-between gap-3 border-b border-stone-100 bg-gardens-light/30 px-4 py-3">
             <div className="min-w-0">
-              <p className="text-sm font-semibold text-gardens-dark">Chat with us</p>
-              <p className="text-xs text-stone-500">AI assistant · answers instantly</p>
+              <p className="text-sm font-semibold text-gardens-dark">Questions?</p>
+              <p className="text-xs text-stone-500">We typically reply instantly</p>
             </div>
             <div className="flex shrink-0 items-center gap-1">
               <button
@@ -245,7 +251,7 @@ export function GuestChatWidget() {
         <button
           type="button"
           onClick={() => setOpen(true)}
-          className="fixed bottom-20 right-4 z-50 flex min-h-[48px] items-center gap-2 rounded-full bg-gardens-primary px-4 py-3 text-sm font-semibold text-white shadow-lg transition hover:bg-gardens-dark md:bottom-6"
+          className={`${fabPosition} flex min-h-[48px] items-center gap-2 rounded-full bg-gardens-primary px-4 py-3 text-sm font-semibold text-white shadow-lg transition hover:bg-gardens-dark`}
           aria-label="Open live chat"
         >
           <MessageCircle className="h-5 w-5" />

@@ -26,12 +26,12 @@ export function MarketingFooter() {
           <ul className="mt-3 space-y-2 text-sm text-gardens-accent/80">
             <li><Link href="/providers" className="hover:text-white">Become a gardener</Link></li>
             <li><Link href="/login" className="hover:text-white">Log in</Link></li>
-            <li><Link href="/about" className="hover:text-white">About Sorted</Link></li>
+            <li><Link href="/about" className="hover:text-white">About us</Link></li>
           </ul>
         </div>
       </div>
       <div className="border-t border-white/10 py-6 text-center text-xs text-gardens-accent/60">
-        © {new Date().getFullYear()} GardensSorted · Powered by Sorted
+        © {new Date().getFullYear()} GardensSorted · Yorkshire garden care subscriptions
       </div>
     </footer>
   );

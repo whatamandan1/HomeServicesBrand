@@ -1,9 +1,14 @@
 import Link from "next/link";
+import type { Metadata } from "next";
 import { Banknote, Calendar, MapPin, Shield } from "lucide-react";
 import { Button, Section } from "@/components/marketing/ui";
 import { ProviderSignupForm } from "@/components/providers/ProviderSignupForm";
 
-export const metadata = { title: "For gardeners" };
+export const metadata: Metadata = {
+  title: "Work with GardensSorted",
+  description:
+    "Join our network of approved gardeners in Yorkshire. Claim recurring visits in your area and build a reliable route.",
+};
 
 const benefits = [
   {
@@ -19,12 +24,12 @@ const benefits = [
   {
     icon: Banknote,
     title: "Fair, transparent pay",
-    body: "Sorted handles customer billing. You focus on great gardening — we handle admin and dispatch.",
+    body: "GardensSorted handles customer billing. You focus on great gardening — we handle scheduling and dispatch.",
   },
   {
     icon: Shield,
     title: "Approved network",
-    body: "Join a vetted provider network with support from the Sorted platform team.",
+    body: "Join a vetted team of gardeners with support when you need it.",
   },
 ];
 

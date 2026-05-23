@@ -9,6 +9,7 @@ import { Logo } from "@/components/marketing/Logo";
 const links = [
   { href: "/#how-it-works", label: "How it works" },
   { href: "/#pricing", label: "Pricing" },
+  { href: "/about", label: "About us" },
   { href: "/providers", label: "For gardeners" },
 ];
 
@@ -89,15 +90,6 @@ export function MarketingHeader() {
                 onClick={() => setOpen(false)}
               >
                 Log in
-              </Link>
-            </li>
-            <li>
-              <Link
-                href="/about"
-                className="flex min-h-[48px] items-center rounded-xl px-3 text-base font-medium text-stone-700 hover:bg-gardens-light/50"
-                onClick={() => setOpen(false)}
-              >
-                About Sorted
               </Link>
             </li>
           </ul>

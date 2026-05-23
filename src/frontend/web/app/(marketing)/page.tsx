@@ -1,6 +1,8 @@
 import Link from "next/link";
+import type { Metadata } from "next";
 import {
   CalendarCheck,
+  CheckCircle2,
   MapPin,
   ShieldCheck,
   Sparkles,
@@ -11,36 +13,62 @@ import { PricingSection } from "@/components/marketing/PricingSection";
 import { HeroImage } from "@/components/marketing/HeroImage";
 import { SocialProofSection } from "@/components/marketing/SocialProofSection";
 
+export const metadata: Metadata = {
+  title: "Garden care subscriptions in Yorkshire",
+  description:
+    "Regular garden maintenance for Yorkshire homes. Subscribe online, choose your plan, and we schedule trusted local gardeners — from £29.95/month.",
+  openGraph: {
+    title: "GardensSorted — Garden care subscriptions in Yorkshire",
+    description:
+      "Regular garden maintenance for Yorkshire homes. Subscribe online and we handle scheduling.",
+  },
+};
+
 const steps = [
   {
     icon: Sparkles,
-    title: "Pick your plan",
-    body: "Choose monthly or annual garden care. Sign up in minutes with your address and availability.",
+    title: "Choose your plan",
+    body: "Pick monthly or annual care for your garden size. Sign up in a few minutes with your address and when you're usually home.",
   },
   {
     icon: CalendarCheck,
-    title: "We schedule visits",
-    body: "Recurring visits land in your preferred window — weekday mornings, afternoons, or weekends.",
+    title: "We book your visits",
+    body: "Recurring visits are scheduled in your preferred window — weekday mornings, afternoons, or weekends.",
   },
   {
     icon: Users,
-    title: "Local gardeners visit",
-    body: "Approved gardeners in your area take on your visits. You always know who's coming and when.",
+    title: "Your gardener arrives",
+    body: "Approved local gardeners take on your visits. View upcoming dates and details anytime in your online account.",
   },
+];
+
+const included = [
+  "Regular lawn and border maintenance",
+  "Visits matched to your garden size",
+  "Online account to view and manage visits",
+  "Support when you need to reschedule",
 ];
 
 const faqs = [
   {
-    q: "What's included?",
-    a: "Regular garden maintenance visits on a subscription — lawn, borders, and general upkeep depending on your garden size.",
+    q: "What's included in a visit?",
+    a: "Routine garden maintenance — keeping lawns, borders, and general upkeep tidy. We'll match the work to the garden size you tell us at signup.",
   },
   {
-    q: "Can I cancel?",
-    a: "Plans have a minimum term. After that, manage changes through your account or get in touch with our team.",
+    q: "Which areas do you cover?",
+    a: "We're launching across Yorkshire, starting with Leeds, York, Wakefield, and surrounding postcodes. Enter yours at signup — we'll confirm availability.",
   },
   {
-    q: "Where do you operate?",
-    a: "Launching across Yorkshire, starting with Leeds, York, and surrounding areas.",
+    q: "How does billing work?",
+    a: "You subscribe online with a clear monthly or annual price. After your minimum term, get in touch if you need to make changes to your plan.",
+  },
+  {
+    q: "Can I reschedule a visit?",
+    a: "Yes. Log in to your account to reschedule or cancel a visit before your gardener is on the way.",
+  },
+  {
+    q: "How do I get help?",
+    a: "Use the chat on our website or message us through your customer account. We're happy to answer questions before and after you sign up.",
   },
 ];
 
@@ -53,25 +81,25 @@ export default function HomePage() {
           <div className="text-white">
             <p className="inline-flex items-center gap-2 rounded-full bg-white/10 px-4 py-1.5 text-sm font-medium text-gardens-accent backdrop-blur">
               <MapPin className="h-4 w-4 shrink-0" />
-              Now launching in Yorkshire
+              Serving Yorkshire homeowners
             </p>
             <h1 className="mt-4 font-display text-3xl font-bold leading-tight sm:mt-6 sm:text-4xl md:text-5xl lg:text-6xl text-balance">
-              Garden care, sorted.
+              Your garden, looked after all year.
             </h1>
             <p className="mt-4 max-w-lg text-base text-gardens-accent/95 text-balance sm:mt-6 sm:text-lg">
-              Subscribe once. We handle scheduling and your local gardener — so your garden stays sorted all year.
+              One simple subscription. We schedule regular visits and match you with trusted local gardeners — so you can enjoy your garden, not worry about it.
             </p>
             <div className="mt-6 flex flex-col gap-3 sm:mt-8 sm:flex-row sm:flex-wrap sm:gap-4">
               <Button href="/signup" className="w-full sm:w-auto !bg-white !text-gardens-dark hover:!bg-gardens-light">
-                Start your subscription
+                See plans & sign up
               </Button>
               <Button href="/#how-it-works" variant="secondary" className="w-full sm:w-auto !border-white/30 !bg-white/10 !text-white hover:!bg-white/20">
-                See how it works
+                How it works
               </Button>
             </div>
             <div className="mt-8 flex flex-col gap-3 text-sm text-gardens-accent/90 sm:mt-10 sm:flex-row sm:flex-wrap sm:gap-6">
-              <span className="flex items-center gap-2"><ShieldCheck className="h-4 w-4" /> Vetted gardeners</span>
-              <span className="flex items-center gap-2"><CalendarCheck className="h-4 w-4" /> Recurring visits</span>
+              <span className="flex items-center gap-2"><ShieldCheck className="h-4 w-4" /> Approved gardeners</span>
+              <span className="flex items-center gap-2"><CalendarCheck className="h-4 w-4" /> Regular visits</span>
               <span className="flex items-center gap-2"><MapPin className="h-4 w-4" /> From £29.95/month</span>
             </div>
           </div>
@@ -82,8 +110,8 @@ export default function HomePage() {
 
       <Section
         id="how-it-works"
-        title="How GardensSorted works"
-        subtitle="Subscription garden care without the hassle of finding and chasing a gardener every time."
+        title="How it works"
+        subtitle="Garden care made simple — no chasing quotes or hunting for someone reliable each time."
       >
         <div className="grid gap-8 md:grid-cols-3">
           {steps.map((step, i) => (
@@ -103,26 +131,48 @@ export default function HomePage() {
 
       <section className="border-y border-gardens-primary/10 bg-gardens-light/40 py-16">
         <div className="mx-auto max-w-6xl px-4">
-          <div className="grid gap-10 md:grid-cols-3 md:text-center">
-            {[
-              ["500+", "Gardens we're building for"],
-              ["100%", "Subscription — no one-off quotes"],
-              ["Local", "Yorkshire gardeners, your area"],
-            ].map(([stat, label]) => (
-              <div key={label}>
-                <p className="font-display text-4xl font-bold text-gardens-primary">{stat}</p>
-                <p className="mt-2 text-sm text-stone-600">{label}</p>
-              </div>
-            ))}
+          <div className="grid gap-10 md:grid-cols-2 md:items-center">
+            <div>
+              <p className="text-sm font-semibold uppercase tracking-wide text-gardens-primary">What you get</p>
+              <h2 className="mt-2 font-display text-3xl font-semibold text-gardens-dark md:text-4xl text-balance">
+                Everything you need for a garden that stays sorted
+              </h2>
+              <p className="mt-4 text-stone-600 leading-relaxed">
+                Whether you&apos;re short on time or just want someone dependable, GardensSorted keeps your outdoor space maintained on a schedule that suits you.
+              </p>
+            </div>
+            <ul className="space-y-3 rounded-2xl border border-stone-200 bg-white p-6 shadow-soft">
+              {included.map((item) => (
+                <li key={item} className="flex items-start gap-3 text-sm text-stone-700">
+                  <CheckCircle2 className="mt-0.5 h-5 w-5 shrink-0 text-gardens-primary" aria-hidden />
+                  {item}
+                </li>
+              ))}
+            </ul>
           </div>
         </div>
       </section>
 
-      <Section id="pricing" title="Simple, transparent pricing" subtitle="Two plans. No hidden fees. Cancel after your minimum term.">
+      <section className="border-b border-gardens-primary/10 bg-white py-12">
+        <div className="mx-auto grid max-w-6xl gap-8 px-4 md:grid-cols-3 md:text-center">
+          {[
+            ["Weekly", "Visits on a regular schedule"],
+            ["Local", "Gardeners in your area"],
+            ["Online", "Manage visits in your account"],
+          ].map(([stat, label]) => (
+            <div key={label}>
+              <p className="font-display text-3xl font-bold text-gardens-primary">{stat}</p>
+              <p className="mt-2 text-sm text-stone-600">{label}</p>
+            </div>
+          ))}
+        </div>
+      </section>
+
+      <Section id="pricing" title="Simple, transparent pricing" subtitle="Two plans. No hidden fees. Clear minimum terms shown before you pay.">
         <PricingSection />
       </Section>
 
-      <Section title="Questions" subtitle="Quick answers before you sign up.">
+      <Section id="questions" title="Common questions" subtitle="Still unsure? Chat with us — we're happy to help before you sign up.">
         <div className="mx-auto max-w-2xl divide-y divide-stone-200 rounded-2xl border border-stone-200 bg-white shadow-soft">
           {faqs.map((faq) => (
             <div key={faq.q} className="p-6">
@@ -131,21 +181,32 @@ export default function HomePage() {
             </div>
           ))}
         </div>
+        <p className="mx-auto mt-6 max-w-2xl text-center text-sm text-stone-600">
+          Have a question we haven&apos;t answered?{" "}
+          <Link href="/#chat" className="font-medium text-gardens-primary hover:underline">
+            Start a chat
+          </Link>{" "}
+          or{" "}
+          <Link href="/signup" className="font-medium text-gardens-primary hover:underline">
+            begin signup
+          </Link>
+          .
+        </p>
       </Section>
 
       <section className="bg-gardens-dark py-20 text-center text-white">
         <div className="mx-auto max-w-2xl px-4">
-          <h2 className="font-display text-3xl font-bold md:text-4xl">Ready to sort your garden?</h2>
-          <p className="mt-4 text-gardens-accent">Join Yorkshire homeowners who want reliable, recurring garden care.</p>
+          <h2 className="font-display text-3xl font-bold md:text-4xl">Ready for a garden you&apos;re proud of?</h2>
+          <p className="mt-4 text-gardens-accent">Join Yorkshire homeowners who want reliable care without the hassle.</p>
           <div className="mt-8 flex flex-wrap justify-center gap-4">
             <Button href="/signup" className="!bg-white !text-gardens-dark hover:!bg-gardens-light">
               Get started
             </Button>
             <Link
-              href="/providers"
+              href="/#chat"
               className="inline-flex items-center rounded-full border border-white/30 px-6 py-3 text-sm font-semibold text-white transition hover:bg-white/10"
             >
-              Become a gardener
+              Ask a question
             </Link>
           </div>
         </div>

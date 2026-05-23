@@ -1,5 +1,6 @@
 import { AppHeader } from "@/components/marketing/AppHeader";
 import { ImpersonationBanner } from "@/components/admin/ImpersonationBanner";
+import "leaflet/dist/leaflet.css";
 
 export default function AppLayout({ children }: { children: React.ReactNode }) {
   return (

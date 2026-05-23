@@ -1,7 +1,7 @@
 import { MarketingFooter } from "@/components/marketing/MarketingFooter";
 import { MarketingHeader } from "@/components/marketing/MarketingHeader";
 import { MobileCtaBar } from "@/components/marketing/MobileCtaBar";
-import { GuestChatWidget } from "@/components/support/SupportChat";
+import { LazyGuestChat } from "@/components/marketing/LazyGuestChat";
 
 export default function MarketingLayout({ children }: { children: React.ReactNode }) {
   return (
@@ -10,7 +10,7 @@ export default function MarketingLayout({ children }: { children: React.ReactNod
       <main className="pb-20 md:pb-0">{children}</main>
       <MarketingFooter />
       <MobileCtaBar />
-      <GuestChatWidget />
+      <LazyGuestChat />
     </>
   );
 }

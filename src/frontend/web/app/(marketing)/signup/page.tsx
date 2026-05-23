@@ -54,7 +54,11 @@ export default function SignupPage() {
       } else if (sorted[0]) {
         setSelectedPlanId(sorted[0].id);
       }
-      setError("Could not load live plans — showing standard pricing. Signup may fail until the API is reachable.");
+      setError(
+        process.env.NODE_ENV === "development"
+          ? "Could not load live plans — showing standard pricing. Signup may fail until the API is reachable."
+          : "We're having trouble loading plans. Please refresh the page or try again in a moment."
+      );
     });
     api.getPublicConfig().then((c) => setSkipPayment(c.bypassStripeCheckout)).catch(() => {});
   }, []);
@@ -131,7 +135,9 @@ export default function SignupPage() {
 
         {plans.length > 0 && plans[0]?.id.startsWith("fallback-") && (
           <p className="mt-4 rounded-xl bg-amber-50 p-3 text-sm text-amber-900">
-            Live plans could not be loaded. Signup will work once the API connection is restored.
+            {process.env.NODE_ENV === "development"
+              ? "Live plans could not be loaded. Signup will work once the API connection is restored."
+              : "We're having trouble loading the latest plans. Please refresh the page before continuing."}
           </p>
         )}
 
@@ -195,9 +201,11 @@ export default function SignupPage() {
               <Field label="City" value={form.city} onChange={(v) => updateField("city", v)} required autoComplete="address-level2" />
               <Field label="Postcode" value={form.postcode} onChange={(v) => updateField("postcode", v)} required autoComplete="postal-code" />
             </div>
-            <p className="text-xs text-stone-500">
-              Demo provider covers LS1, LS2, and WF1 (e.g. LS1 4AP) — use a matching postcode to test job claiming.
-            </p>
+            {process.env.NODE_ENV === "development" && (
+              <p className="text-xs text-stone-400">
+                Dev note: demo provider covers LS1, LS2, and WF1 for testing job claiming.
+              </p>
+            )}
             <label className="block text-sm font-medium text-stone-700">
               Garden size
               <select
