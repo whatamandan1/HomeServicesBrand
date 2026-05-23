@@ -101,6 +101,7 @@ export function StatusBadge({ status }: { status: string }) {
     Scheduled: "bg-stone-100 text-stone-700",
     InProgress: "bg-amber-100 text-amber-900",
     Completed: "bg-green-100 text-green-800",
+    Succeeded: "bg-green-100 text-green-800",
     Rescheduled: "bg-purple-100 text-purple-800",
     Cancelled: "bg-stone-100 text-stone-600",
     Expired: "bg-stone-100 text-stone-600",

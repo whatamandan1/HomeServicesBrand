@@ -55,6 +55,28 @@ public class CustomerController(
         && (!string.IsNullOrWhiteSpace(s.StripeCustomerId)
             || !string.IsNullOrWhiteSpace(s.StripeSubscriptionId));
 
+    [HttpGet("payments")]
+    public async Task<ActionResult<IEnumerable<CustomerPaymentResponse>>> Payments(CancellationToken ct)
+    {
+        var customerId = await GetCustomerIdAsync(ct);
+        var payments = await db.Payments.AsNoTracking()
+            .Include(p => p.Subscription).ThenInclude(s => s.Plan)
+            .Where(p => p.Subscription.CustomerId == customerId
+                && !p.IsDeleted
+                && p.Status == PaymentStatus.Succeeded)
+            .OrderByDescending(p => p.CreatedAtUtc)
+            .Select(p => new CustomerPaymentResponse(
+                p.Id,
+                p.Subscription.Plan.Name,
+                p.AmountGbp,
+                p.Status,
+                p.CreatedAtUtc,
+                p.StripeInvoiceId))
+            .ToListAsync(ct);
+
+        return Ok(payments);
+    }
+
     [HttpPost("subscriptions/{subscriptionId:guid}/billing-portal")]
     public async Task<ActionResult<BillingPortalSessionResponse>> BillingPortal(Guid subscriptionId, CancellationToken ct)
     {

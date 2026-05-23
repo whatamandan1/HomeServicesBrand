@@ -10,17 +10,25 @@ statuses as features ship.
 **Live site:** https://home-services-brand.vercel.app/  
 **Live API:** https://homeservicesbrand-production.up.railway.app/
 
-**Current focus:** Phase 3 — platform maturity (multi-brand, provider availability, auth hardening).
+**Current focus:** Pre-launch hardening — finish customer-facing gaps, then **real admin + disable demo seed** as the final gate before opening to paying customers.
 
-### Start here tomorrow
+### What's next (when you resume)
 
-Phase 1 is **complete and verified on live** (including provider coverage). Pick up with:
+Phases 1–2 are **complete and verified on live**. Work through the items below in order; **do not** create the production admin account or turn off demo seed until everything else is done.
 
-1. **Background jobs** — ongoing visit generation (beyond initial 4-visit batch), dispatch offer expiry, pre-visit reminders. No job runner exists yet; `DatabaseMigrationHostedService` only handles migrations/seed on startup.
-2. **SMS + email in production** — Twilio/SendGrid are wired but often no-op; configure on Railway and test visit/subscription notifications.
-3. **Admin workflow viewer** — browse `WorkflowEvent` log in `/admin` (logging exists; UI missing).
+1. **Auth & production security** — finish any remaining middleware/guard gaps; audit Railway/Vercel env vars; confirm Stripe webhook signatures enforced; hide demo logins (`NEXT_PUBLIC_SHOW_DEMO_LOGIN=false`).
+2. **Marketing & ops polish** — custom domain + `NEXT_PUBLIC_SITE_URL`; compress `og-image.png`; privacy/terms pages before ad spend.
+3. **Phase 3 (optional before launch)** — provider availability, automated tests, multi-brand — only if needed for pilot scope.
 
-Recent session (2026-05-22): provider coverage changed from manual postcode sectors to **base postcode + radius**; outcodes derived via postcodes.io; signup returns instantly (coverage sync runs in background). Tested end-to-end: signup → admin approve → claim jobs.
+### Last job before go-live (customer launch gate)
+
+Do this **once**, immediately before inviting real paying customers:
+
+1. **Create a real admin account** (your email, strong password) — do not rely on `admin@gardenssorted.local` / seeded demo users.
+2. **Turn off demo seed on Railway** — set `Features__SeedDemoData=false` and redeploy API (only after the real admin exists and you have verified admin login).
+3. **Smoke-test on live** — admin login, customer signup, billing portal, provider claim flow, no demo credentials visible in UI.
+
+Recent session (2026-05-23): customer billing self-service (payment history, Stripe portal for payment method/invoices, cancellation via support chat only); marketing site refresh; admin/provider polish; billing redirect fix; admin impersonation; launch-readiness testing largely complete on live.
 
 ---
 
@@ -46,9 +54,9 @@ These are the spec's top priorities for initial launch.
 | Payment processing | ✅ Done | Renewals, past_due, cancellation via webhooks |
 | Provider onboarding | ✅ Done | Self-signup at `/providers#apply` + admin approval; base postcode + radius |
 | Provider job claiming | ✅ Done | Radius/outcode coverage + distance fallback; claim with conflict check |
-| Operational CRM | 🟡 Partial | Admin dashboard, visits, escalations; workflow/AI viewers still missing |
-| Recurring scheduling | 🟡 Partial | Generates initial batch of 4 weekly visits only |
-| Communication systems | 🟡 Partial | Email/SMS services wired; often no-op without config |
+| Operational CRM | 🟡 Partial | Dashboard, visits, escalations, workflow/AI viewers, customer detail, provider coverage edit |
+| Recurring scheduling | 🟡 Partial | Background jobs top up visits; tune cadence if needed |
+| Communication systems | 🟡 Partial | SendGrid live; Twilio deferred (UK regulatory) |
 | AI support assistant | ✅ Done | Customer portal chat + guest homepage chat |
 
 ---
@@ -77,7 +85,7 @@ Work through phases in order. Each phase builds on the last.
 - [x] **Wire admin dispatch action** — expose `POST /api/admin/scheduling/open-dispatch` in admin UI
 - [x] **Map views (admin + provider)** — list/map toggle for visits and provider coverage (OpenStreetMap + Leaflet)
 
-### Phase 3 — Platform maturity
+### Phase 3 — Platform maturity (post-pilot / optional pre-launch)
 
 - [ ] **Multi-brand frontend** — theme/config per brand; remove hardcoded `gardens-sorted` in API client
 - [ ] **Provider availability** — calendar or availability windows
@@ -85,9 +93,15 @@ Work through phases in order. Each phase builds on the last.
 - [ ] **Recurring provider preference** — assign same gardener where possible
 - [ ] **Weather-aware rescheduling** — weather API + reschedule workflow
 - [ ] **Automated test suite** — unit + integration tests; CI fails on test failure
-- [ ] **Auth hardening** — Next.js middleware route guards, password reset, refresh tokens
-- [ ] **Production security** — enforce Stripe webhook signatures; hide demo logins (`NEXT_PUBLIC_SHOW_DEMO_LOGIN`)
+- [x] **Auth hardening (core)** — middleware route guards, password reset, session handling *(refresh tokens still open)*
+- [x] **Production security (core)** — Stripe webhook verification, JWT secret check, dev endpoints gated *(demo seed still on until go-live gate)*
 - [ ] **Google Maps garden size estimation** — satellite/aerial imagery to suggest or calculate garden area at signup or property edit *(deferred; requires Google Maps Platform API)*
+
+### Pre-launch gate (do last)
+
+- [ ] **Real admin account** — production admin user with your credentials (not demo seed)
+- [ ] **Disable demo seed** — `Features__SeedDemoData=false` on Railway after real admin verified
+- [ ] **Hide demo logins** — `NEXT_PUBLIC_SHOW_DEMO_LOGIN=false` on Vercel
 
 ---
 
@@ -96,8 +110,8 @@ Work through phases in order. Each phase builds on the last.
 | Requirement | Status | Next step |
 |-------------|--------|-----------|
 | Register / login | ✅ Done | — |
-| Manage subscriptions | 🟡 Partial | Cancel, upgrade/downgrade, minimum-term enforcement |
-| Manage billing | 🟡 Partial | Billing portal, payment method updates, invoice history |
+| Manage subscriptions | ✅ Done | View status & minimum term; cancel via support chat (admin processes) |
+| Manage billing | ✅ Done | Stripe portal for payment method + PDF invoices; payment history in portal |
 | Manage properties | 🟡 Partial | Edit property, access notes, multiple properties |
 | View upcoming visits | ✅ Done | Cancel/reschedule in customer portal |
 | Communicate with support | ✅ Done | Guest + authenticated AI chat |
@@ -256,20 +270,20 @@ Do not build these until core MVP is production-stable.
 Quick snapshot of implemented features as of last review.
 
 ### Backend
-- Auth: register/login, JWT, role-based controllers
-- Customer: signup creates account, property, subscription
-- Stripe: subscription Checkout + renewal/past_due/cancel webhooks
-- Visits: scheduling service, open-for-claim, provider claim/start/complete, cancel/reschedule
-- Provider coverage: postcodes.io geocoding, radius + derived outcodes, background territory sync
-- Admin: dashboard (clickable stats), customers, providers, visits, escalation take/resolve
+- Auth: register/login, JWT, password reset, role-based controllers, admin impersonation
+- Customer: signup creates account, property, subscription; property edit in portal
+- Stripe: subscription Checkout + renewal/past_due/cancel webhooks; billing portal (cancel disabled — support/admin only); customer payment history API
+- Visits: scheduling service, background jobs (top-up, dispatch expiry, reminders), claim/start/complete, cancel/reschedule
+- Provider coverage: postcodes.io geocoding, radius + derived outcodes, admin/provider coverage edit
+- Admin: dashboard, customer detail (subs, visits, chat history), provider detail, workflow/AI/comms viewers, maps
 - AI: customer + guest chat, escalation creation, audit logs
-- SMS/email: Twilio + SendGrid services (no-op when unconfigured)
+- SMS/email: SendGrid live on Railway; Twilio wired (deferred)
 - Brands API, workflow event logging, health checks
 
 ### Frontend
-- Marketing: `/`, `/about`, `/providers`, pricing, FAQ, guest live chat
+- Marketing: customer-focused `/`, `/about`, `/providers`; SEO (sitemap, robots); compressed hero; lazy chat
 - Signup: 3-step customer wizard; provider apply form (postcode + radius slider)
-- Portals: `/portal`, `/provider`, `/admin`
+- Portals: `/portal` (billing section, payment history, support-led cancellation), `/provider` (coverage self-service), `/admin` (CRM polish)
 - Mobile UX: responsive layouts, hamburger nav, mobile CTA bar
 - API proxy via Next.js rewrites for Vercel production
 
@@ -278,10 +292,11 @@ Quick snapshot of implemented features as of last review.
 - GitHub Actions CI (build only)
 - Docker, env examples, Stripe/Twilio setup guides
 
-### Recent commits (2026-05-22)
-- `a0dd1dc` — location + radius provider coverage (replaces manual sectors)
-- `73307a8` — fix postcodes.io URL encoding (`%20` not `+`)
-- `4bc18fc` — instant signup; coverage sync in background
+### Recent commits (2026-05-23)
+- `e8847b5` — admin/provider polish (coverage edit, customer chat history in CRM)
+- `1fc2645` — marketing site content, performance, SEO
+- `2d7d96a` — Manage billing fix via billing-redirect page
+- `0dd8962` — admin impersonation for customers and providers
 
 ---
 
@@ -294,4 +309,4 @@ When shipping a feature:
 3. Update **Last reviewed** at the top.
 4. Add a one-line note under **What's already shipped** if useful.
 
-When scoping a sprint, start from **Phase 2** unchecked items (Phase 1 is complete).
+When scoping a sprint, start from **What's next** at the top; run the **Pre-launch gate** only when ready for real customers.

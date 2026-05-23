@@ -23,6 +23,7 @@ type SupportChatProps = {
   className?: string;
   hideHeader?: boolean;
   compact?: boolean;
+  promptSeed?: { key: number; text: string } | null;
 };
 
 export function SupportChat({
@@ -35,6 +36,7 @@ export function SupportChat({
   className = "",
   hideHeader = false,
   compact = false,
+  promptSeed = null,
 }: SupportChatProps) {
   const threadStorageKey = storageKey ?? (mode === "guest" ? "gardens-guest-thread" : "gardens-support-thread");
   const [messages, setMessages] = useState<ChatMessage[]>([]);
@@ -53,6 +55,11 @@ export function SupportChat({
     const saved = localStorage.getItem(threadStorageKey);
     if (saved) setThreadId(saved);
   }, [threadStorageKey]);
+
+  useEffect(() => {
+    if (!promptSeed) return;
+    setInput(promptSeed.text);
+  }, [promptSeed?.key, promptSeed?.text]);
 
   useEffect(() => {
     const el = scrollRef.current;

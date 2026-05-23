@@ -28,6 +28,14 @@ public record BillingPortalSessionResponse(string Url);
 
 public record CancelSubscriptionResponse(DateTime CancelsAtUtc, string Message);
 
+public record CustomerPaymentResponse(
+    Guid Id,
+    string PlanName,
+    decimal AmountGbp,
+    PaymentStatus Status,
+    DateTime PaidAtUtc,
+    string? StripeInvoiceId);
+
 public record CustomerPropertyResponse(
     Guid Id,
     string Line1,

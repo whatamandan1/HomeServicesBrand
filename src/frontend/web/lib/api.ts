@@ -30,6 +30,15 @@ export type CustomerSubscription = {
   canManageBilling: boolean;
 };
 
+export type CustomerPayment = {
+  id: string;
+  planName: string;
+  amountGbp: number;
+  status: string;
+  paidAtUtc: string;
+  stripeInvoiceId: string | null;
+};
+
 export type GardenSize = "Small" | "Medium" | "Large";
 
 export type CustomerProperty = {
@@ -289,6 +298,8 @@ export const api = {
     ),
   customerSubscriptions: (token: string) =>
     request<CustomerSubscription[]>("/api/customer/subscriptions", {}, token),
+  customerPayments: (token: string) =>
+    request<CustomerPayment[]>("/api/customer/payments", {}, token),
   customerBillingPortal: (token: string, subscriptionId: string) =>
     request<{ url: string }>(
       `/api/customer/subscriptions/${subscriptionId}/billing-portal`,

@@ -5,7 +5,7 @@ import { api, type CustomerProperty, type CustomerSubscription, type JobVisit } 
 import { clearAuth } from "@/lib/auth-storage";
 import { useAuth } from "@/lib/use-auth";
 import { isActiveVisit } from "@/lib/visit-status";
-import { StatusBadge } from "@/components/ui";
+import { BillingSection } from "@/components/billing/BillingSection";
 import { VisitList } from "@/components/visits/VisitList";
 import { SupportChat } from "@/components/support/SupportChat";
 import { PropertyList } from "@/components/properties/PropertyList";
@@ -17,6 +17,7 @@ export default function PortalPage() {
   const [visits, setVisits] = useState<JobVisit[]>([]);
   const [error, setError] = useState<string | null>(null);
   const [busyId, setBusyId] = useState<string | null>(null);
+  const [chatPrompt, setChatPrompt] = useState<{ key: number; text: string } | null>(null);
 
   function refreshVisits() {
     if (!auth?.token) return;
@@ -93,63 +94,17 @@ export default function PortalPage() {
 
       {error && <p className="text-sm text-red-600">{error}</p>}
 
-      <section>
-        <h2 className="font-semibold text-gardens-dark">Subscriptions</h2>
-        {subs.length === 0 ? (
-          <p className="mt-2 text-sm text-stone-500">No subscriptions yet.</p>
-        ) : (
-          <ul className="mt-3 space-y-3">
-            {subs.map((s) => (
-              <li key={s.id} className="rounded-xl border border-stone-200 bg-white p-5 shadow-soft">
-                <div className="flex flex-wrap items-center gap-2">
-                  <span className="font-medium">{s.planName}</span>
-                  <StatusBadge status={s.status} />
-                </div>
-                <p className="mt-1 text-sm text-stone-600">
-                  Availability: {s.availabilityPreference}
-                </p>
-                {s.startedAtUtc && (
-                  <p className="text-xs text-stone-400">
-                    Since {new Date(s.startedAtUtc).toLocaleDateString("en-GB")}
-                  </p>
-                )}
-                {s.minimumTermEndsAtUtc && (
-                  <p className="mt-1 text-xs text-stone-500">
-                    Minimum term until{" "}
-                    {new Date(s.minimumTermEndsAtUtc).toLocaleDateString("en-GB")}
-                  </p>
-                )}
-                {s.cancelsAtUtc && (
-                  <p className="mt-1 text-xs text-amber-700">
-                    Cancels on {new Date(s.cancelsAtUtc).toLocaleDateString("en-GB")}
-                  </p>
-                )}
-                <div className="mt-4 flex flex-wrap gap-2">
-                  {s.canManageBilling && (
-                    <button
-                      type="button"
-                      className="rounded-lg border border-stone-200 px-3 py-2 text-sm font-medium text-stone-700 hover:bg-stone-50"
-                      onClick={() => {
-                        const opened = window.open(
-                          `/portal/billing-redirect?subscriptionId=${encodeURIComponent(s.id)}`,
-                          "_blank"
-                        );
-                        if (!opened) {
-                          setError(
-                            "Pop-up blocked. Allow pop-ups for this site, or try again."
-                          );
-                        }
-                      }}
-                    >
-                      Manage billing
-                    </button>
-                  )}
-                </div>
-              </li>
-            ))}
-          </ul>
-        )}
-      </section>
+      {auth?.token && (
+        <BillingSection
+          token={auth.token}
+          subscriptions={subs}
+          onError={setError}
+          onContactSupport={(message) => {
+            setChatPrompt({ key: Date.now(), text: message });
+            document.getElementById("support-chat")?.scrollIntoView({ behavior: "smooth" });
+          }}
+        />
+      )}
 
       <section>
         <h2 className="font-semibold text-gardens-dark">My property</h2>
@@ -194,8 +149,15 @@ export default function PortalPage() {
         </section>
       )}
 
-      <section>
-        <SupportChat token={auth.token} mode="customer" />
+      <section id="support-chat">
+        <SupportChat
+          token={auth.token}
+          mode="customer"
+          title="Customer service"
+          subtitle="Ask about your plan, visits, or cancellation requests"
+          emptyHint="Ask about your visits, plan, or billing — e.g. “When is my next visit?”"
+          promptSeed={chatPrompt}
+        />
       </section>
     </div>
   );
