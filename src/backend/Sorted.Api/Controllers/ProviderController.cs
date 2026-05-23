@@ -7,6 +7,7 @@ using Sorted.Core.Entities;
 using Sorted.Core.Interfaces;
 using Sorted.Core.Enums;
 using Sorted.Infrastructure.Data;
+using Sorted.Infrastructure.Mapping;
 
 namespace Sorted.Api.Controllers;
 
@@ -43,7 +44,9 @@ public class ProviderController(
                 .Where(t => !t.IsDeleted)
                 .Select(t => t.PostcodeSector)
                 .OrderBy(s => s, StringComparer.OrdinalIgnoreCase)
-                .ToList()));
+                .ToList(),
+            provider.CoverageLatitude,
+            provider.CoverageLongitude));
     }
 
     [HttpGet("visits/open")]
@@ -65,13 +68,7 @@ public class ProviderController(
             if (!await coverage.IsPropertyWithinCoverageAsync(provider, visit.Property, ct))
                 continue;
 
-            filtered.Add(new JobVisitResponse(
-                visit.Id,
-                visit.ScheduledDate,
-                visit.AvailabilityWindow,
-                visit.Status,
-                visit.Property.Postcode,
-                null));
+            filtered.Add(JobVisitResponseMapper.FromEntity(visit));
         }
 
         return Ok(filtered);
@@ -128,7 +125,7 @@ public class ProviderController(
                 ct);
         }
 
-        return Ok(new JobVisitResponse(visit.Id, visit.ScheduledDate, visit.AvailabilityWindow, visit.Status, visit.Property.Postcode, provider.User.FirstName + " " + provider.User.LastName));
+        return Ok(JobVisitResponseMapper.FromEntity(visit, provider.User.FirstName + " " + provider.User.LastName));
     }
 
     [HttpPost("visits/{visitId:guid}/start")]
@@ -172,13 +169,7 @@ public class ProviderController(
         await db.SaveChangesAsync(ct);
         await workflow.LogAsync("dispatch", workflowEvent, nameof(JobVisit), visit.Id, new { visit.Status }, ct);
 
-        return Ok(new JobVisitResponse(
-            visit.Id,
-            visit.ScheduledDate,
-            visit.AvailabilityWindow,
-            visit.Status,
-            visit.Property.Postcode,
-            provider.User.FirstName + " " + provider.User.LastName));
+        return Ok(JobVisitResponseMapper.FromEntity(visit, provider.User.FirstName + " " + provider.User.LastName));
     }
 
     [HttpGet("visits/mine")]
@@ -188,10 +179,11 @@ public class ProviderController(
         if (provider is null) return NotFound();
 
         var visits = await db.JobVisits.AsNoTracking()
+            .Include(v => v.Property)
             .Where(v => v.AssignedProviderId == provider.Id && !v.IsDeleted)
             .OrderBy(v => v.ScheduledDate)
-            .Select(v => new JobVisitResponse(v.Id, v.ScheduledDate, v.AvailabilityWindow, v.Status, v.Property.Postcode, provider.User.FirstName + " " + provider.User.LastName))
             .ToListAsync(ct);
-        return Ok(visits);
+
+        return Ok(visits.Select(v => JobVisitResponseMapper.FromEntity(v, provider.User.FirstName + " " + provider.User.LastName)));
     }
 }

@@ -4,6 +4,7 @@ using Sorted.Core.Entities;
 using Sorted.Core.Enums;
 using Sorted.Core.Interfaces;
 using Sorted.Infrastructure.Data;
+using Sorted.Infrastructure.Mapping;
 
 namespace Sorted.Infrastructure.Services;
 
@@ -109,13 +110,5 @@ public class VisitManagementService(SortedDbContext db, IWorkflowLogger workflow
     }
 
     private static JobVisitResponse ToResponse(JobVisit visit) =>
-        new(
-            visit.Id,
-            visit.ScheduledDate,
-            visit.AvailabilityWindow,
-            visit.Status,
-            visit.Property.Postcode,
-            visit.AssignedProvider is null
-                ? null
-                : visit.AssignedProvider.User.FirstName + " " + visit.AssignedProvider.User.LastName);
+        JobVisitResponseMapper.FromEntity(visit);
 }

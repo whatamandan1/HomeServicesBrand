@@ -10,7 +10,7 @@ statuses as features ship.
 **Live site:** https://home-services-brand.vercel.app/  
 **Live API:** https://homeservicesbrand-production.up.railway.app/
 
-**Current focus:** Phase 2 — day-to-day operations (background jobs, production comms).
+**Current focus:** Phase 3 — platform maturity (multi-brand, provider availability, auth hardening).
 
 ### Start here tomorrow
 
@@ -67,14 +67,15 @@ Work through phases in order. Each phase builds on the last.
 - [x] **Provider self-signup UI** — registration on `/providers#apply` linked to admin approval
 - [x] **Provider coverage (location + radius)** — base postcode + mile radius; postcodes.io geocoding; derived outcode list; partial overlap included; background sync on signup
 
-### Phase 2 — Day-to-day operations ← **next**
+### Phase 2 — Day-to-day operations ✅
 
-- [ ] **Background jobs** — ongoing visit generation, dispatch offer expiry, pre-visit reminders
-- [ ] **SMS + email in production** — configure Twilio and SendGrid; visit/subscription notifications
-- [ ] **Admin workflow viewer** — browse `WorkflowEvent` log in admin UI
+- [x] **Background jobs** — ongoing visit generation, dispatch offer expiry, pre-visit reminders
+- [x] **SMS + email in production** — SendGrid configured; Twilio deferred (UK regulatory)
+- [x] **Admin workflow viewer** — browse `WorkflowEvent` log in admin UI
 - [x] **Admin AI log viewer** — browse `AIActionLog` and communication threads
 - [x] **Customer property management** — edit property details, access notes, optional media upload *(media deferred)*
-- [ ] **Wire admin dispatch action** — expose `POST /api/admin/scheduling/open-dispatch` in admin UI *(done in admin portal)*
+- [x] **Wire admin dispatch action** — expose `POST /api/admin/scheduling/open-dispatch` in admin UI
+- [x] **Map views (admin + provider)** — list/map toggle for visits and provider coverage (OpenStreetMap + Leaflet)
 
 ### Phase 3 — Platform maturity
 
@@ -86,6 +87,7 @@ Work through phases in order. Each phase builds on the last.
 - [ ] **Automated test suite** — unit + integration tests; CI fails on test failure
 - [ ] **Auth hardening** — Next.js middleware route guards, password reset, refresh tokens
 - [ ] **Production security** — enforce Stripe webhook signatures; hide demo logins (`NEXT_PUBLIC_SHOW_DEMO_LOGIN`)
+- [ ] **Google Maps garden size estimation** — satellite/aerial imagery to suggest or calculate garden area at signup or property edit *(deferred; requires Google Maps Platform API)*
 
 ---
 

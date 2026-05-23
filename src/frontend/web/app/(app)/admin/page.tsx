@@ -9,6 +9,9 @@ import { EscalationList } from "@/components/escalations/EscalationList";
 import { WorkflowEventList } from "@/components/workflow/WorkflowEventList";
 import { AiActionLogList } from "@/components/ai/AiActionLogList";
 import { CommunicationThreadList } from "@/components/ai/CommunicationThreadList";
+import { ListMapToggle, type ViewMode } from "@/components/map/ListMapToggle";
+import { ProviderCoverageMap } from "@/components/map/ProviderCoverageMap";
+import { VisitMap } from "@/components/map/VisitMap";
 
 const DASH_LABELS: Record<string, string> = {
   customerCount: "Customers",
@@ -45,6 +48,8 @@ export default function AdminPage() {
   const [busyVisitId, setBusyVisitId] = useState<string | null>(null);
   const [escalationError, setEscalationError] = useState<string | null>(null);
   const [busyEscalationId, setBusyEscalationId] = useState<string | null>(null);
+  const [providerView, setProviderView] = useState<ViewMode>("list");
+  const [visitView, setVisitView] = useState<ViewMode>("list");
 
   function refreshVisits() {
     if (!auth?.token) return;
@@ -156,7 +161,16 @@ export default function AdminPage() {
       )}
 
       <section id="providers" className="scroll-mt-6">
-        <h2 className="font-semibold">Providers</h2>
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <h2 className="font-semibold">Providers</h2>
+          <ListMapToggle value={providerView} onChange={setProviderView} />
+        </div>
+        {providerView === "map" ? (
+          <ProviderCoverageMap
+            providers={providers}
+            emptyMessage="No provider coverage areas with coordinates yet."
+          />
+        ) : (
         <div className="mt-2 space-y-2">
           {providers.map((p) => (
             <div
@@ -203,6 +217,7 @@ export default function AdminPage() {
             <p className="text-sm text-stone-500">No providers yet.</p>
           )}
         </div>
+        )}
       </section>
 
       <section id="customers" className="scroll-mt-6">
@@ -224,27 +239,37 @@ export default function AdminPage() {
 
       <section id="visits" className="scroll-mt-6">
         <div className="flex flex-wrap items-center justify-between gap-3">
-          <h2 className="font-semibold">Visits</h2>
-          <button
-            type="button"
-            className="rounded-lg bg-gardens-primary px-4 py-2 text-sm font-semibold text-white"
-            onClick={async () => {
-              if (!auth?.token) return;
-              setDispatchMsg(null);
-              try {
-                await api.adminOpenDispatch(auth.token);
-                setDispatchMsg("Scheduled visits opened for provider claiming.");
-                refreshVisits();
-              } catch (e) {
-                setDispatchMsg(e instanceof Error ? e.message : "Dispatch failed");
-              }
-            }}
-          >
-            Open visits for dispatch
-          </button>
+          <div className="flex flex-wrap items-center gap-3">
+            <h2 className="font-semibold">Visits</h2>
+            <button
+              type="button"
+              className="rounded-lg bg-gardens-primary px-4 py-2 text-sm font-semibold text-white"
+              onClick={async () => {
+                if (!auth?.token) return;
+                setDispatchMsg(null);
+                try {
+                  await api.adminOpenDispatch(auth.token);
+                  setDispatchMsg("Scheduled visits opened for provider claiming.");
+                  refreshVisits();
+                } catch (e) {
+                  setDispatchMsg(e instanceof Error ? e.message : "Dispatch failed");
+                }
+              }}
+            >
+              Open visits for dispatch
+            </button>
+          </div>
+          <ListMapToggle value={visitView} onChange={setVisitView} />
         </div>
         {dispatchMsg && <p className="mt-2 text-sm text-stone-600">{dispatchMsg}</p>}
         {visitError && <p className="mt-2 text-sm text-red-600">{visitError}</p>}
+        {visitView === "map" ? (
+          <VisitMap
+            visits={visits}
+            className="mt-2"
+            emptyMessage="No visits with map coordinates yet."
+          />
+        ) : (
         <VisitList
           visits={visits}
           busyId={busyVisitId}
@@ -253,6 +278,7 @@ export default function AdminPage() {
           onReschedule={(id, date) => runVisitAction(id, "reschedule", date)}
           emptyMessage="No visits scheduled."
         />
+        )}
       </section>
 
       <section id="escalations" className="scroll-mt-6">

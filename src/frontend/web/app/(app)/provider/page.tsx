@@ -5,6 +5,9 @@ import { api, type JobVisit, type ProviderProfile } from "@/lib/api";
 import { useAuth } from "@/lib/use-auth";
 import { isActiveVisit, normalizeVisitStatus, visitNextAction } from "@/lib/visit-status";
 import { StatusBadge } from "@/components/ui";
+import { ListMapToggle, type ViewMode } from "@/components/map/ListMapToggle";
+import { VisitMap } from "@/components/map/VisitMap";
+import type { MapCoverageArea } from "@/lib/map-utils";
 
 export default function ProviderPage() {
   const { auth, ready } = useAuth();
@@ -15,6 +18,8 @@ export default function ProviderPage() {
   const [error, setError] = useState<string | null>(null);
   const [notice, setNotice] = useState<string | null>(null);
   const [busyId, setBusyId] = useState<string | null>(null);
+  const [openView, setOpenView] = useState<ViewMode>("list");
+  const [myVisitsView, setMyVisitsView] = useState<ViewMode>("list");
 
   function scrollToMyVisits() {
     myVisitsRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
@@ -99,8 +104,19 @@ export default function ProviderPage() {
   }
 
   const coveragePostcode = profile?.coveragePostcode;
-  const coverageRadiusMiles = profile?.coverageRadiusMiles;
+  const coverageRadiusMiles = profile?.coverageRadiusMiles ?? 0;
+  const coverageLatitude = profile?.coverageLatitude;
+  const coverageLongitude = profile?.coverageLongitude;
   const coveredOutcodes = profile?.coveredOutcodes ?? [];
+  const coverageAreas: MapCoverageArea[] =
+    coverageLatitude != null && coverageLongitude != null && coverageRadiusMiles > 0
+      ? [{
+          latitude: coverageLatitude,
+          longitude: coverageLongitude,
+          radiusMiles: coverageRadiusMiles,
+          label: coveragePostcode ? `Your coverage (${coveragePostcode})` : "Your coverage",
+        }]
+      : [];
   const upcoming = mine.filter((v) => isActiveVisit(v.status));
   const done = mine.filter((v) => normalizeVisitStatus(v.status) === "completed");
 
@@ -137,7 +153,10 @@ export default function ProviderPage() {
       {error && <p className="text-sm text-red-600">{error}</p>}
 
       <section>
-        <h2 className="font-semibold">Open in your area</h2>
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <h2 className="font-semibold">Open in your area</h2>
+          {open.length > 0 && <ListMapToggle value={openView} onChange={setOpenView} />}
+        </div>
         {open.length === 0 ? (
           <div className="mt-2 space-y-2 text-sm text-stone-500">
             <p>No open visits in your coverage area right now.</p>
@@ -146,6 +165,13 @@ export default function ProviderPage() {
               <strong>LS1 4AP</strong>.
             </p>
           </div>
+        ) : openView === "map" ? (
+          <VisitMap
+            visits={open}
+            coverageAreas={coverageAreas}
+            className="mt-2"
+            emptyMessage="No open visits with map coordinates."
+          />
         ) : (
           <ul className="mt-2 space-y-3">
             {open.map((v) => (
@@ -194,12 +220,24 @@ export default function ProviderPage() {
       </section>
 
       <section ref={myVisitsRef} id="my-visits">
-        <h2 className="font-semibold">My visits</h2>
-        <p className="mt-1 text-sm text-stone-500">
-          After claiming, use <strong>Start visit</strong> on arrival, then <strong>Mark complete</strong> when finished.
-        </p>
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <div>
+            <h2 className="font-semibold">My visits</h2>
+            <p className="mt-1 text-sm text-stone-500">
+              After claiming, use <strong>Start visit</strong> on arrival, then <strong>Mark complete</strong> when finished.
+            </p>
+          </div>
+          {upcoming.length > 0 && <ListMapToggle value={myVisitsView} onChange={setMyVisitsView} />}
+        </div>
         {upcoming.length === 0 ? (
           <p className="mt-2 text-sm text-stone-500">No active visits — claim a job above.</p>
+        ) : myVisitsView === "map" ? (
+          <VisitMap
+            visits={upcoming}
+            coverageAreas={coverageAreas}
+            className="mt-2"
+            emptyMessage="No active visits with map coordinates."
+          />
         ) : (
           <ul className="mt-2 space-y-3">
             {upcoming.map((v) => {

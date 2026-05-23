@@ -58,6 +58,8 @@ public class AdminController(
                 p.IsApproved,
                 coveragePostcode = p.CoveragePostcode,
                 coverageRadiusMiles = p.CoverageRadiusMiles,
+                coverageLatitude = p.CoverageLatitude,
+                coverageLongitude = p.CoverageLongitude,
                 coveredOutcodes = p.Territories
                     .Where(t => !t.IsDeleted)
                     .Select(t => t.PostcodeSector)
@@ -91,7 +93,9 @@ public class AdminController(
                 v.AvailabilityWindow,
                 v.Status,
                 v.Property.Postcode,
-                v.AssignedProvider != null ? v.AssignedProvider.User.FirstName + " " + v.AssignedProvider.User.LastName : null))
+                v.AssignedProvider != null ? v.AssignedProvider.User.FirstName + " " + v.AssignedProvider.User.LastName : null,
+                v.Property.Latitude,
+                v.Property.Longitude))
             .ToListAsync(ct);
         return Ok(visits);
     }

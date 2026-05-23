@@ -45,6 +45,8 @@ export type JobVisit = {
   status: string;
   postcode: string;
   assignedProviderName: string | null;
+  latitude: number | null;
+  longitude: number | null;
 };
 
 export type AdminCustomer = {
@@ -61,6 +63,8 @@ export type AdminProvider = {
   isApproved: boolean;
   coveragePostcode: string | null;
   coverageRadiusMiles: number;
+  coverageLatitude: number | null;
+  coverageLongitude: number | null;
   coveredOutcodes: string[];
 };
 
@@ -69,6 +73,8 @@ export type ProviderProfile = {
   isApproved: boolean;
   coveragePostcode: string | null;
   coverageRadiusMiles: number;
+  coverageLatitude: number | null;
+  coverageLongitude: number | null;
   coveredOutcodes: string[];
 };
 

@@ -45,7 +45,9 @@ public record JobVisitResponse(
     string AvailabilityWindow,
     VisitStatus Status,
     string Postcode,
-    string? AssignedProviderName);
+    string? AssignedProviderName,
+    double? Latitude = null,
+    double? Longitude = null);
 
 public record ClaimVisitRequest(Guid VisitId);
 
@@ -61,7 +63,9 @@ public record ProviderProfileResponse(
     bool IsApproved,
     string? CoveragePostcode,
     double CoverageRadiusMiles,
-    IReadOnlyList<string> CoveredOutcodes);
+    IReadOnlyList<string> CoveredOutcodes,
+    double? CoverageLatitude = null,
+    double? CoverageLongitude = null);
 
 public record SupportChatRequest(string Message, Guid? ThreadId);
 
