@@ -1,4 +1,5 @@
-import type { AdminProvider } from "@/lib/api";
+import type { AdminProvider, JobVisit } from "@/lib/api";
+import type { MapCoverageArea } from "@/lib/map-utils";
 
 type PostcodesIoResponse = {
   result?: { latitude: number; longitude: number; postcode: string } | null;
@@ -24,6 +25,64 @@ export async function geocodeUkPostcode(
   } catch {
     return null;
   }
+}
+
+export async function resolveVisitCoordinates(visits: JobVisit[]): Promise<JobVisit[]> {
+  return Promise.all(
+    visits.map(async (visit) => {
+      if (visit.latitude != null && visit.longitude != null) return visit;
+      if (!visit.postcode?.trim()) return visit;
+
+      const geo = await geocodeUkPostcode(visit.postcode);
+      if (!geo) return visit;
+
+      return {
+        ...visit,
+        latitude: geo.latitude,
+        longitude: geo.longitude,
+      };
+    })
+  );
+}
+
+export type CoverageFallback = {
+  postcode: string;
+  radiusMiles: number;
+  latitude?: number | null;
+  longitude?: number | null;
+  label?: string;
+};
+
+export async function resolveCoverageAreas(
+  coverageAreas: MapCoverageArea[],
+  fallback?: CoverageFallback
+): Promise<MapCoverageArea[]> {
+  const resolved = [...coverageAreas.filter(
+    (c) => c.latitude != null && c.longitude != null && c.radiusMiles > 0
+  )];
+
+  if (resolved.length > 0 || !fallback?.postcode?.trim() || fallback.radiusMiles <= 0) {
+    return resolved;
+  }
+
+  let latitude = fallback.latitude ?? null;
+  let longitude = fallback.longitude ?? null;
+
+  if (latitude == null || longitude == null) {
+    const geo = await geocodeUkPostcode(fallback.postcode);
+    if (!geo) return resolved;
+    latitude = geo.latitude;
+    longitude = geo.longitude;
+  }
+
+  resolved.push({
+    latitude,
+    longitude,
+    radiusMiles: fallback.radiusMiles,
+    label: fallback.label ?? `Coverage (${fallback.postcode})`,
+  });
+
+  return resolved;
 }
 
 export async function resolveProviderCoordinates(

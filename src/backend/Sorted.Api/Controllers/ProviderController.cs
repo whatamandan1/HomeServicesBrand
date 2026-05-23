@@ -19,7 +19,8 @@ public class ProviderController(
     IEmailService email,
     ISmsService sms,
     IWorkflowLogger workflow,
-    IProviderCoverageService coverage) : ControllerBase
+    IProviderCoverageService coverage,
+    IPostcodeGeocodingService geocoding) : ControllerBase
 {
     private async Task<Provider?> GetProviderAsync(CancellationToken ct)
     {
@@ -35,6 +36,22 @@ public class ProviderController(
     {
         var provider = await GetProviderAsync(ct);
         if (provider is null) return NotFound();
+
+        if (provider.CoverageLatitude is null
+            && provider.CoverageLongitude is null
+            && !string.IsNullOrWhiteSpace(provider.CoveragePostcode))
+        {
+            var geo = await geocoding.LookupAsync(provider.CoveragePostcode, ct);
+            if (geo is not null)
+            {
+                provider.CoveragePostcode = geo.Postcode;
+                provider.CoverageLatitude = geo.Latitude;
+                provider.CoverageLongitude = geo.Longitude;
+                provider.UpdatedAtUtc = DateTime.UtcNow;
+                await db.SaveChangesAsync(ct);
+            }
+        }
+
         return Ok(new ProviderProfileResponse(
             provider.User.Email,
             provider.IsApproved,

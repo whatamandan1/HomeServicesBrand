@@ -7,7 +7,6 @@ import { isActiveVisit, normalizeVisitStatus, visitNextAction } from "@/lib/visi
 import { StatusBadge } from "@/components/ui";
 import { ListMapToggle, type ViewMode } from "@/components/map/ListMapToggle";
 import { VisitMap } from "@/components/map/VisitMap";
-import type { MapCoverageArea } from "@/lib/map-utils";
 
 export default function ProviderPage() {
   const { auth, ready } = useAuth();
@@ -105,18 +104,17 @@ export default function ProviderPage() {
 
   const coveragePostcode = profile?.coveragePostcode;
   const coverageRadiusMiles = profile?.coverageRadiusMiles ?? 0;
-  const coverageLatitude = profile?.coverageLatitude;
-  const coverageLongitude = profile?.coverageLongitude;
   const coveredOutcodes = profile?.coveredOutcodes ?? [];
-  const coverageAreas: MapCoverageArea[] =
-    coverageLatitude != null && coverageLongitude != null && coverageRadiusMiles > 0
-      ? [{
-          latitude: coverageLatitude,
-          longitude: coverageLongitude,
+  const coverageFallback =
+    profile?.coveragePostcode && coverageRadiusMiles > 0
+      ? {
+          postcode: profile.coveragePostcode,
           radiusMiles: coverageRadiusMiles,
-          label: coveragePostcode ? `Your coverage (${coveragePostcode})` : "Your coverage",
-        }]
-      : [];
+          latitude: profile.coverageLatitude,
+          longitude: profile.coverageLongitude,
+          label: `Your coverage (${profile.coveragePostcode})`,
+        }
+      : undefined;
   const upcoming = mine.filter((v) => isActiveVisit(v.status));
   const done = mine.filter((v) => normalizeVisitStatus(v.status) === "completed");
 
@@ -168,7 +166,7 @@ export default function ProviderPage() {
         ) : openView === "map" ? (
           <VisitMap
             visits={open}
-            coverageAreas={coverageAreas}
+            coverageFallback={coverageFallback}
             className="mt-2"
             emptyMessage="No open visits with map coordinates."
           />
@@ -234,7 +232,7 @@ export default function ProviderPage() {
         ) : myVisitsView === "map" ? (
           <VisitMap
             visits={upcoming}
-            coverageAreas={coverageAreas}
+            coverageFallback={coverageFallback}
             className="mt-2"
             emptyMessage="No active visits with map coordinates."
           />
