@@ -21,6 +21,7 @@ public class ProviderController(
     ISmsService sms,
     IWorkflowLogger workflow,
     IProviderCoverageService coverage,
+    IProviderAvailabilityService availability,
     IPostcodeGeocodingService geocoding,
     IVisitSchedulingService scheduling) : ControllerBase
 {
@@ -115,6 +116,83 @@ public class ProviderController(
             provider.CoverageLongitude));
     }
 
+    [HttpGet("me/availability")]
+    public async Task<ActionResult<ProviderAvailabilityResponse>> Availability(CancellationToken ct)
+    {
+        var provider = await GetProviderAsync(ct);
+        if (provider is null) return NotFound();
+
+        try
+        {
+            return Ok(await availability.GetAvailabilityAsync(provider.Id, ct));
+        }
+        catch (InvalidOperationException ex)
+        {
+            return BadRequest(new { error = ex.Message });
+        }
+    }
+
+    [HttpPut("me/availability")]
+    public async Task<ActionResult<ProviderAvailabilityResponse>> UpdateAvailability(
+        [FromBody] UpdateProviderAvailabilityRequest request,
+        CancellationToken ct)
+    {
+        var provider = await GetProviderAsync(ct);
+        if (provider is null) return NotFound();
+
+        try
+        {
+            var updated = await availability.UpdateAvailabilityAsync(provider.Id, request, ct);
+            await workflow.LogAsync(
+                "provider_onboarding",
+                "availability_updated",
+                nameof(Provider),
+                provider.Id,
+                new { request.WorkingDaysMask, request.WorkDayStart, request.WorkDayEnd },
+                ct);
+            return Ok(updated);
+        }
+        catch (InvalidOperationException ex)
+        {
+            return BadRequest(new { error = ex.Message });
+        }
+    }
+
+    [HttpPost("me/blocked-dates")]
+    public async Task<ActionResult<ProviderBlockedDateResponse>> AddBlockedDate(
+        [FromBody] AddProviderBlockedDateRequest request,
+        CancellationToken ct)
+    {
+        var provider = await GetProviderAsync(ct);
+        if (provider is null) return NotFound();
+
+        try
+        {
+            return Ok(await availability.AddBlockedDateAsync(provider.Id, request, ct));
+        }
+        catch (InvalidOperationException ex)
+        {
+            return BadRequest(new { error = ex.Message });
+        }
+    }
+
+    [HttpDelete("me/blocked-dates/{blockedDateId:guid}")]
+    public async Task<IActionResult> RemoveBlockedDate(Guid blockedDateId, CancellationToken ct)
+    {
+        var provider = await GetProviderAsync(ct);
+        if (provider is null) return NotFound();
+
+        try
+        {
+            await availability.RemoveBlockedDateAsync(provider.Id, blockedDateId, ct);
+            return NoContent();
+        }
+        catch (InvalidOperationException ex)
+        {
+            return BadRequest(new { error = ex.Message });
+        }
+    }
+
     [HttpGet("visits/open")]
     public async Task<ActionResult<IEnumerable<JobVisitResponse>>> OpenVisits(CancellationToken ct)
     {
@@ -132,6 +210,9 @@ public class ProviderController(
         foreach (var visit in visits)
         {
             if (!await coverage.IsPropertyWithinCoverageAsync(provider, visit.Property, ct))
+                continue;
+
+            if (!await availability.IsAvailableAsync(provider, visit.ScheduledDate, ct))
                 continue;
 
             filtered.Add(JobVisitResponseMapper.FromEntity(visit));
@@ -156,6 +237,9 @@ public class ProviderController(
 
         if (!await coverage.IsPropertyWithinCoverageAsync(provider, visit.Property, ct))
             return BadRequest(new { error = "Visit is outside your coverage area." });
+
+        if (!await availability.IsAvailableAsync(provider, visit.ScheduledDate, ct))
+            return BadRequest(new { error = "This visit falls on a day you have marked unavailable." });
 
         var conflict = await db.JobVisits.AnyAsync(v =>
             v.AssignedProviderId == provider.Id &&

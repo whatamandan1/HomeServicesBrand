@@ -91,6 +91,32 @@ internal static class PostgresSchemaRepair
         END $$;
         """;
 
+    private const string ProviderAvailabilitySql = """
+        ALTER TABLE "Providers"
+        ADD COLUMN IF NOT EXISTS "WorkingDaysMask" integer NOT NULL DEFAULT 31;
+
+        ALTER TABLE "Providers"
+        ADD COLUMN IF NOT EXISTS "WorkDayStartMinutes" integer NOT NULL DEFAULT 480;
+
+        ALTER TABLE "Providers"
+        ADD COLUMN IF NOT EXISTS "WorkDayEndMinutes" integer NOT NULL DEFAULT 960;
+
+        CREATE TABLE IF NOT EXISTS "ProviderBlockedDates" (
+            "Id" uuid NOT NULL,
+            "ProviderId" uuid NOT NULL,
+            "BlockedDate" date NOT NULL,
+            "Reason" text NULL,
+            "CreatedAtUtc" timestamp with time zone NOT NULL,
+            "UpdatedAtUtc" timestamp with time zone NULL,
+            "IsDeleted" boolean NOT NULL DEFAULT FALSE,
+            CONSTRAINT "PK_ProviderBlockedDates" PRIMARY KEY ("Id"),
+            CONSTRAINT "FK_ProviderBlockedDates_Providers_ProviderId" FOREIGN KEY ("ProviderId") REFERENCES "Providers" ("Id") ON DELETE CASCADE
+        );
+
+        CREATE UNIQUE INDEX IF NOT EXISTS "IX_ProviderBlockedDates_ProviderId_BlockedDate"
+            ON "ProviderBlockedDates" ("ProviderId", "BlockedDate");
+        """;
+
     public static async Task ApplyAsync(SortedDbContext db, ILogger logger, CancellationToken ct = default)
     {
         if (!(db.Database.ProviderName ?? "").Contains("Npgsql", StringComparison.OrdinalIgnoreCase))
@@ -101,6 +127,7 @@ internal static class PostgresSchemaRepair
             await db.Database.ExecuteSqlRawAsync(AddStripeInvoiceIdSql, ct);
             await db.Database.ExecuteSqlRawAsync(PasswordResetAndCancelSql, ct);
             await db.Database.ExecuteSqlRawAsync(TermsPropertyMediaSql, ct);
+            await db.Database.ExecuteSqlRawAsync(ProviderAvailabilitySql, ct);
             logger.LogInformation("PostgreSQL schema repair completed");
         }
         catch (Exception ex)

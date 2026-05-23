@@ -149,6 +149,19 @@ export type ProviderProfile = {
   coveredOutcodes: string[];
 };
 
+export type ProviderBlockedDate = {
+  id: string;
+  blockedDate: string;
+  reason: string | null;
+};
+
+export type ProviderAvailability = {
+  workingDaysMask: number;
+  workDayStart: string;
+  workDayEnd: string;
+  blockedDates: ProviderBlockedDate[];
+};
+
 export type Escalation = {
   id: string;
   reason: string;
@@ -451,6 +464,26 @@ export const api = {
       method: "PATCH",
       body: JSON.stringify({ coveragePostcode, coverageRadiusMiles }),
     }, token),
+  providerAvailability: (token: string) =>
+    request<ProviderAvailability>("/api/provider/me/availability", {}, token),
+  providerUpdateAvailability: (
+    token: string,
+    body: { workingDaysMask: number; workDayStart: string; workDayEnd: string }
+  ) =>
+    request<ProviderAvailability>("/api/provider/me/availability", {
+      method: "PUT",
+      body: JSON.stringify(body),
+    }, token),
+  providerAddBlockedDate: (
+    token: string,
+    body: { blockedDate: string; reason: string | null }
+  ) =>
+    request<ProviderBlockedDate>("/api/provider/me/blocked-dates", {
+      method: "POST",
+      body: JSON.stringify(body),
+    }, token),
+  providerRemoveBlockedDate: (token: string, blockedDateId: string) =>
+    request<void>(`/api/provider/me/blocked-dates/${blockedDateId}`, { method: "DELETE" }, token),
   providerMyVisits: (token: string) =>
     request<JobVisit[]>("/api/provider/visits/mine", {}, token),
   claimVisit: (token: string, visitId: string) =>

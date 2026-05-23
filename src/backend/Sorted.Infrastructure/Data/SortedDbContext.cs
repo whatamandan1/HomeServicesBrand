@@ -14,6 +14,7 @@ public class SortedDbContext(DbContextOptions<SortedDbContext> options) : DbCont
     public DbSet<CustomerSubscription> CustomerSubscriptions => Set<CustomerSubscription>();
     public DbSet<Provider> Providers => Set<Provider>();
     public DbSet<ProviderTerritory> ProviderTerritories => Set<ProviderTerritory>();
+    public DbSet<ProviderBlockedDate> ProviderBlockedDates => Set<ProviderBlockedDate>();
     public DbSet<JobVisit> JobVisits => Set<JobVisit>();
     public DbSet<DispatchOffer> DispatchOffers => Set<DispatchOffer>();
     public DbSet<PaymentRecord> Payments => Set<PaymentRecord>();
@@ -48,6 +49,11 @@ public class SortedDbContext(DbContextOptions<SortedDbContext> options) : DbCont
             .HasOne(c => c.Brand).WithMany().HasForeignKey(c => c.BrandId);
         modelBuilder.Entity<Provider>()
             .HasOne(p => p.User).WithMany().HasForeignKey(p => p.UserId);
+        modelBuilder.Entity<ProviderBlockedDate>()
+            .HasOne(b => b.Provider).WithMany(p => p.BlockedDates).HasForeignKey(b => b.ProviderId);
+        modelBuilder.Entity<ProviderBlockedDate>()
+            .HasIndex(b => new { b.ProviderId, b.BlockedDate })
+            .IsUnique();
         modelBuilder.Entity<PasswordResetToken>()
             .HasIndex(t => t.TokenHash)
             .IsUnique();

@@ -113,6 +113,26 @@ public record UpdateProviderCoverageRequest(
     string CoveragePostcode,
     double CoverageRadiusMiles);
 
+public record ProviderBlockedDateResponse(
+    Guid Id,
+    string BlockedDate,
+    string? Reason);
+
+public record ProviderAvailabilityResponse(
+    int WorkingDaysMask,
+    string WorkDayStart,
+    string WorkDayEnd,
+    IReadOnlyList<ProviderBlockedDateResponse> BlockedDates);
+
+public record UpdateProviderAvailabilityRequest(
+    int WorkingDaysMask,
+    string WorkDayStart,
+    string WorkDayEnd);
+
+public record AddProviderBlockedDateRequest(
+    string BlockedDate,
+    string? Reason);
+
 public record AdminProviderResponse(
     Guid Id,
     Guid UserId,

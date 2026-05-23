@@ -10,15 +10,16 @@ statuses as features ship.
 **Live site:** https://home-services-brand.vercel.app/  
 **Live API:** https://homeservicesbrand-production.up.railway.app/
 
-**Current focus:** Optional polish and Phase 3 items — go-live gate when ready for paying customers.
+**Current focus:** Phase 3 product — provider payouts, SMS, admin polish. Pilot flows verified on live.
 
 ### What's next (when you resume)
 
-Recent batch shipped: terms acceptance on signup, property photos, admin KPI trends, same-gardener preference, automated tests.
+Recent batch shipped: provider availability v1, billing portal recovery, signup/Postgres fixes, admin trend charts, same-gardener auto-assign, property photos.
 
-1. **Custom domain** — point `gardenssorted.co.uk` at Vercel + set `NEXT_PUBLIC_SITE_URL` when ready.
-2. **Phase 3 (optional)** — provider availability calendar, multi-brand, GDPR export/delete self-service.
-3. **Pre-launch gate** — real admin account, `Features__SeedDemoData=false`, live smoke-test (see below).
+1. **Provider earnings / payouts** — Stripe Connect or visit ledger + payout history
+2. **Twilio SMS** — UK sender registration + visit/reminder texts in prod
+3. **Admin polish** — photo thumbnails in CRM, provider availability read-only in admin
+4. **Pre-launch gate** (when ready) — real admin account, `Features__SeedDemoData=false`, custom domain
 
 ### Last job before go-live (customer launch gate)
 
@@ -28,7 +29,7 @@ Do this **once**, immediately before inviting real paying customers:
 2. **Turn off demo seed on Railway** — set `Features__SeedDemoData=false` and redeploy API (only after the real admin exists and you have verified admin login).
 3. **Smoke-test on live** — admin login, customer signup, billing portal, provider claim flow, no demo credentials visible in UI.
 
-Recent session (2026-05-23): terms checkbox on signup, property photo upload, admin dashboard trends, same-gardener auto-assign, xUnit test suite + CI gate.
+Recent session (2026-05-23): provider availability (working days, hours, blocked dates), billing sync + Manage billing, PostgreSQL migration fix for signup, 90-day weekly trend charts, gardener auto-assign + provider refresh, property photos, terms on signup.
 
 ---
 
@@ -87,10 +88,11 @@ Work through phases in order. Each phase builds on the last.
 
 ### Phase 3 — Platform maturity (post-pilot / optional pre-launch)
 
+- [x] **Provider availability (v1)** — working days + default hours + blocked dates on `/provider`; claim, open jobs, and preferred-provider auto-assign respect schedule
+- [ ] **Provider availability (v2)** — match visit times to customer text windows; admin view/edit
 - [ ] **Multi-brand frontend** — theme/config per brand; remove hardcoded `gardens-sorted` in API client
-- [ ] **Provider availability** — calendar or availability windows
 - [ ] **Provider earnings / payouts** — ledger or Stripe Connect integration
-- [ ] **Recurring provider preference** — assign same gardener where possible *(partial: auto-assign after first visit)*
+- [x] **Recurring provider preference** — preferred provider after first visit; auto-assign pending visits on complete + scheduling
 - [ ] **Weather-aware rescheduling** — weather API + reschedule workflow
 - [x] **Automated test suite** — xUnit core + API tests; CI fails on test failure
 - [x] **Auth hardening (core)** — role-based middleware route guards, password reset, session handling *(refresh tokens still open)*
@@ -125,9 +127,9 @@ Work through phases in order. Each phase builds on the last.
 |-------------|--------|-----------|
 | Onboard | ✅ Done | Apply at `/providers#apply` (postcode + radius); admin approves on `/admin` |
 | Claim jobs | ✅ Done | Matched by derived outcodes / distance within radius |
-| Manage availability | ⬜ Not started | Availability calendar / time windows |
+| Manage availability | 🟡 Partial | Working days, hours, blocked dates on `/provider`; v2 = time-window matching + admin view |
 | View earnings | ⬜ Not started | Payout ledger + Stripe Connect or manual tracking |
-| View recurring assignments | 🟡 Partial | Show assigned recurring visits; add preference logic |
+| View recurring assignments | ✅ Done | Preferred gardener auto-assign; portal shows assigned gardener name |
 | Communicate with operations | ⬜ Not started | Provider messaging or ops notifications |
 
 ---
@@ -142,7 +144,7 @@ Work through phases in order. Each phase builds on the last.
 | Workflow monitoring | 🟡 Partial | UI for `WorkflowEvent` log |
 | Dispatch visibility | 🟡 Partial | Dispatch board + open-dispatch action in UI |
 | Escalation handling | ✅ Done | Take case and resolve in admin portal |
-| KPI monitoring | 🟡 Partial | Dashboard counts + 7/30/90-day trend charts |
+| KPI monitoring | ✅ Done | Dashboard counts + 7/30/90-day trend charts (weekly buckets at 90d) |
 | AI action monitoring | 🟡 Partial | Admin view of `AIActionLog` + thread review |
 
 ---
@@ -152,10 +154,10 @@ Work through phases in order. Each phase builds on the last.
 | Requirement | Status | Next step |
 |-------------|--------|-----------|
 | Recurring visits | 🟡 Partial | Background job to generate future visits indefinitely |
-| Availability windows | ⬜ Not started | Customer + provider time preferences |
+| Availability windows | 🟡 Partial | Customer free-text preference on signup; provider schedule enforced on dispatch |
 | Provider allocation | ✅ Done | Radius from base postcode; outcodes derived via postcodes.io; distance fallback |
 | Weather-aware adjustments | ⬜ Not started | Weather API + reschedule workflow |
-| Recurring provider preference | 🟡 Partial | Preferred provider set after first completed visit; auto-assign on new visits when available |
+| Recurring provider preference | ✅ Done | Set on first completed visit; auto-assign on scheduling + after complete |
 | FCFS claiming | ✅ Done | — |
 | Double-booking prevention | ✅ Done | Conflict check on claim |
 | Travel-time validation | ⬜ Not started | Distance/travel checks before claim |
@@ -202,12 +204,12 @@ Modular boundaries to maintain as the platform grows.
 | Identity | ✅ Done | JWT, BCrypt, roles (Customer, Provider, Admin) |
 | Brands | 🟡 Partial | Entity + API; frontend not multi-brand yet |
 | Customers | ✅ Done | Registration, portal, subscriptions |
-| Providers | 🟡 Partial | Self-signup, coverage area, claiming; availability and earnings missing |
+| Providers | 🟡 Partial | Self-signup, coverage, claiming, availability v1; earnings missing |
 | Services | 🟡 Partial | Garden care only; subscription plans seeded |
 | Subscriptions | ✅ Done | Plans + Stripe subscription Checkout + renewal webhooks |
-| Scheduling | 🟡 Partial | Initial visit batch; no ongoing generation |
-| Dispatch | 🟡 Partial | FCFS claim; offer expiry and travel validation missing |
-| CRM | 🟡 Partial | Admin read views + escalation resolve; workflow viewer missing |
+| Scheduling | 🟡 Partial | Visit batch + top-up jobs; provider availability enforced |
+| Dispatch | 🟡 Partial | FCFS claim + preferred auto-assign; travel validation missing |
+| CRM | 🟡 Partial | Admin read views + trends + escalation resolve |
 | Communications | 🟡 Partial | Chat done; email/SMS/WhatsApp incomplete |
 | Billing | ✅ Done | Stripe subscription Checkout + renewals/past_due/cancel webhooks |
 | AI Orchestration | ✅ Done | OpenAI chat, escalation, audit logging |
@@ -274,7 +276,11 @@ Quick snapshot of implemented features as of last review.
 - Customer: signup creates account, property, subscription; property edit in portal
 - Stripe: subscription Checkout + renewal/past_due/cancel webhooks; billing portal (cancel disabled — support/admin only); customer payment history API
 - Visits: scheduling service, background jobs (top-up, dispatch expiry, reminders), claim/start/complete, cancel/reschedule
-- Provider coverage: postcodes.io geocoding, radius + derived outcodes, admin/provider coverage edit
+- Provider availability: `WorkingDaysMask`, default hours, `ProviderBlockedDates`; API + provider UI; enforced on open jobs, claim, auto-assign
+- Signup: terms acceptance, deferred photo upload, checkout session sync, PostgreSQL migration repair
+- Billing: Manage billing for active subs; Stripe link recovery from checkout session
+- Admin: KPI trend charts (daily 7/30d, weekly 90d); customer photo count in CRM
+- Gardener preference: auto-assign pending visits after complete; provider list auto-refresh
 - Admin: dashboard, customer detail (subs, visits, chat history), provider detail, workflow/AI/comms viewers, maps
 - AI: customer + guest chat, escalation creation, audit logs
 - SMS/email: SendGrid live on Railway; Twilio wired (deferred)
@@ -283,7 +289,7 @@ Quick snapshot of implemented features as of last review.
 ### Frontend
 - Marketing: customer-focused `/`, `/about`, `/providers`; SEO (sitemap, robots); compressed hero; lazy chat; `/privacy` and `/terms`; OG image (~200KB JPEG)
 - Signup: 3-step customer wizard; provider apply form (postcode + radius slider)
-- Portals: `/portal` (billing section, payment history, support-led cancellation), `/provider` (coverage self-service), `/admin` (CRM polish)
+- Portals: `/portal` (Manage billing, photos, preferred gardener), `/provider` (coverage + availability schedule), `/admin` (CRM + trends)
 - Mobile UX: responsive layouts, hamburger nav, mobile CTA bar
 - API proxy via Next.js rewrites for Vercel production
 
@@ -293,10 +299,11 @@ Quick snapshot of implemented features as of last review.
 - Docker, env examples, Stripe/Twilio setup guides
 
 ### Recent commits (2026-05-23)
-- `e8847b5` — admin/provider polish (coverage edit, customer chat history in CRM)
-- `1fc2645` — marketing site content, performance, SEO
-- `2d7d96a` — Manage billing fix via billing-redirect page
-- `0dd8962` — admin impersonation for customers and providers
+- `5e14953` — 90-day weekly trend charts; provider refresh after complete
+- `0555109` — billing portal, admin trends/photos, gardener auto-assign on complete
+- `ae236be` — PostgreSQL migration fix (signup blocked on Railway)
+- `ceb7b02` / `95b9416` — signup photo deferral + checkout recovery
+- `f5f310a` — terms, property photos, admin trends, gardener preference, tests
 
 ---
 

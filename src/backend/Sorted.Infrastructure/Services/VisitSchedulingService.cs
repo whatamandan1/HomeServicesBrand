@@ -16,6 +16,7 @@ public class VisitSchedulingService(
     IEmailService email,
     ISmsService sms,
     IProviderCoverageService coverage,
+    IProviderAvailabilityService availability,
     IOptions<BackgroundJobsOptions> jobOptions,
     ILogger<VisitSchedulingService> logger) : IVisitSchedulingService
 {
@@ -292,6 +293,9 @@ public class VisitSchedulingService(
             return false;
 
         if (!await coverage.IsPropertyWithinCoverageAsync(provider, property, ct))
+            return false;
+
+        if (!await availability.IsAvailableAsync(provider, visit.ScheduledDate, ct))
             return false;
 
         var conflict = await db.JobVisits.AnyAsync(v =>

@@ -7,6 +7,7 @@ import { isActiveVisit, normalizeVisitStatus, visitNextAction } from "@/lib/visi
 import { StatusBadge } from "@/components/ui";
 import { ListMapToggle, type ViewMode } from "@/components/map/ListMapToggle";
 import { VisitMap } from "@/components/map/VisitMap";
+import { ProviderAvailabilitySection } from "@/components/provider/ProviderAvailabilitySection";
 
 export default function ProviderPage() {
   const { auth, ready } = useAuth();
@@ -247,6 +248,14 @@ export default function ProviderPage() {
             </div>
           )}
         </div>
+      )}
+      {auth?.token && (
+        <ProviderAvailabilitySection
+          token={auth.token}
+          onNotice={setNotice}
+          onError={setError}
+          onUpdated={() => void refresh()}
+        />
       )}
       {notice && (
         <p className="rounded-lg border border-green-200 bg-green-50 px-4 py-3 text-sm text-green-900">

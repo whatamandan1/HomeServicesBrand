@@ -1,3 +1,4 @@
+using Sorted.Core;
 using Sorted.Core.Common;
 using Sorted.Core.Enums;
 
@@ -113,7 +114,20 @@ public class Provider : AuditableEntity
     public double? CoverageLatitude { get; set; }
     public double? CoverageLongitude { get; set; }
     public double CoverageRadiusMiles { get; set; } = 10;
+    /// <summary>Bitmask: Mon=1 … Sun=64. See <see cref="ProviderWorkingDays"/>.</summary>
+    public int WorkingDaysMask { get; set; } = ProviderWorkingDays.DefaultWeekdays;
+    public int WorkDayStartMinutes { get; set; } = ProviderWorkHours.DefaultStartMinutes;
+    public int WorkDayEndMinutes { get; set; } = ProviderWorkHours.DefaultEndMinutes;
     public ICollection<ProviderTerritory> Territories { get; set; } = [];
+    public ICollection<ProviderBlockedDate> BlockedDates { get; set; } = [];
+}
+
+public class ProviderBlockedDate : AuditableEntity
+{
+    public Guid ProviderId { get; set; }
+    public Provider Provider { get; set; } = null!;
+    public DateOnly BlockedDate { get; set; }
+    public string? Reason { get; set; }
 }
 
 public class ProviderTerritory : AuditableEntity

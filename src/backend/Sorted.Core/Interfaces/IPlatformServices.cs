@@ -90,6 +90,21 @@ public interface IProviderCoverageService
     Task<bool> IsPropertyWithinCoverageAsync(Provider provider, CustomerProperty property, CancellationToken ct = default);
 }
 
+public interface IProviderAvailabilityService
+{
+    Task<bool> IsAvailableAsync(Provider provider, DateTime scheduledDate, CancellationToken ct = default);
+    Task<ProviderAvailabilityResponse> GetAvailabilityAsync(Guid providerId, CancellationToken ct = default);
+    Task<ProviderAvailabilityResponse> UpdateAvailabilityAsync(
+        Guid providerId,
+        UpdateProviderAvailabilityRequest request,
+        CancellationToken ct = default);
+    Task<ProviderBlockedDateResponse> AddBlockedDateAsync(
+        Guid providerId,
+        AddProviderBlockedDateRequest request,
+        CancellationToken ct = default);
+    Task RemoveBlockedDateAsync(Guid providerId, Guid blockedDateId, CancellationToken ct = default);
+}
+
 public interface IWorkflowLogger
 {
     Task LogAsync(string workflowName, string eventName, string? entityType, Guid? entityId, object? payload = null, CancellationToken ct = default);
