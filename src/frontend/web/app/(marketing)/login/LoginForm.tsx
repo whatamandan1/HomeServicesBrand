@@ -1,15 +1,14 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useSearchParams } from "next/navigation";
 import Link from "next/link";
-import { clearAuth, portalPathForRole, saveAuth } from "@/lib/auth-storage";
+import { clearAuth, resolvePostLoginPath, saveAuth } from "@/lib/auth-storage";
 import { api } from "@/lib/api";
 
 const showDemo = process.env.NEXT_PUBLIC_SHOW_DEMO_LOGIN === "true";
 
 export default function LoginForm() {
-  const router = useRouter();
   const searchParams = useSearchParams();
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
@@ -22,6 +21,7 @@ export default function LoginForm() {
     e.preventDefault();
     setError(null);
     setLoading(true);
+    clearAuth();
     const fd = new FormData(e.currentTarget);
     try {
       const auth = await api.login(
@@ -29,11 +29,10 @@ export default function LoginForm() {
         String(fd.get("password"))
       );
       saveAuth(auth);
-      const next = searchParams.get("next");
-      router.push(next && next.startsWith("/") ? next : portalPathForRole(auth.role));
+      const destination = resolvePostLoginPath(searchParams.get("next"), auth.role);
+      window.location.assign(destination);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Login failed");
-    } finally {
       setLoading(false);
     }
   }

@@ -16,6 +16,12 @@ export function isAuthExpired(auth: AuthResponse) {
 export function saveAuth(auth: AuthResponse) {
   if (typeof window === "undefined") return;
   localStorage.setItem(KEY, JSON.stringify(auth));
+  syncSessionCookies(auth);
+}
+
+/** Keep middleware cookies aligned with localStorage (e.g. after switching accounts). */
+export function syncSessionCookies(auth: AuthResponse) {
+  if (typeof window === "undefined") return;
   const maxAge = Math.max(
     60,
     Math.floor((new Date(auth.expiresAtUtc).getTime() - Date.now()) / 1000)
@@ -81,4 +87,16 @@ export function portalPathForRole(role: AuthResponse["role"]) {
   if (role === "Admin") return "/admin";
   if (role === "Provider") return "/provider";
   return "/portal";
+}
+
+export function resolvePostLoginPath(next: string | null, role: AuthResponse["role"]) {
+  if (!next || !next.startsWith("/") || next.startsWith("//")) {
+    return portalPathForRole(role);
+  }
+
+  if (next.startsWith("/admin") && role !== "Admin") return portalPathForRole(role);
+  if (next.startsWith("/provider") && role !== "Provider") return portalPathForRole(role);
+  if (next.startsWith("/portal") && role !== "Customer") return portalPathForRole(role);
+
+  return next;
 }

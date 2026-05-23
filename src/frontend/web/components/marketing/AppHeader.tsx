@@ -1,20 +1,23 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { Menu, X } from "lucide-react";
 import { Logo } from "@/components/marketing/Logo";
+import { loadAuth, syncSessionCookies } from "@/lib/auth-storage";
 
-const links = [
+const baseLinks = [
   { href: "/portal", label: "Customer portal" },
   { href: "/provider", label: "Provider jobs" },
-  { href: "/admin", label: "Admin CRM" },
   { href: "/login", label: "Switch account" },
-];
+] as const;
+
+const adminLink = { href: "/admin", label: "Admin CRM" } as const;
 
 export function AppHeader() {
   const [open, setOpen] = useState(false);
+  const [showAdmin, setShowAdmin] = useState(false);
   const pathname = usePathname();
 
   useEffect(() => {
@@ -27,6 +30,17 @@ export function AppHeader() {
       document.body.style.overflow = "";
     };
   }, [open]);
+
+  useEffect(() => {
+    const auth = loadAuth();
+    if (auth) syncSessionCookies(auth);
+    setShowAdmin(auth?.role === "Admin");
+  }, [pathname]);
+
+  const links = useMemo(
+    () => (showAdmin ? [...baseLinks.slice(0, 2), adminLink, ...baseLinks.slice(2)] : [...baseLinks]),
+    [showAdmin]
+  );
 
   return (
     <header className="sticky top-0 z-50 border-b border-gardens-primary/10 bg-white/95 backdrop-blur-md">

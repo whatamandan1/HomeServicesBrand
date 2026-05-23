@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import type { AuthResponse } from "./api";
-import { loadAuth } from "./auth-storage";
+import { loadAuth, syncSessionCookies } from "./auth-storage";
 
 /** Load auth from localStorage after mount to avoid SSR hydration mismatch. */
 export function useAuth() {
@@ -10,7 +10,9 @@ export function useAuth() {
   const [ready, setReady] = useState(false);
 
   useEffect(() => {
-    setAuth(loadAuth());
+    const stored = loadAuth();
+    if (stored) syncSessionCookies(stored);
+    setAuth(stored);
     setReady(true);
   }, []);
 
