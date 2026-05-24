@@ -20,4 +20,15 @@ public class PlanCatalogTests
         Assert.Equal("Premium", PlanCatalog.GetTier("Premium Monthly"));
         Assert.Equal("Essential", PlanCatalog.GetTier("Essential Annual"));
     }
+
+    [Theory]
+    [InlineData("Essential Monthly", 1, 30)]
+    [InlineData("Essential Annual", 1, 30)]
+    [InlineData("Premium Monthly", 2, 15)]
+    [InlineData("Premium Annual", 2, 15)]
+    public void Visit_cadence_matches_plan(string planName, int visitsPerMonth, int intervalDays)
+    {
+        Assert.Equal(visitsPerMonth, PlanCatalog.VisitsPerMonth(planName));
+        Assert.Equal(intervalDays, PlanCatalog.VisitIntervalDays(planName));
+    }
 }

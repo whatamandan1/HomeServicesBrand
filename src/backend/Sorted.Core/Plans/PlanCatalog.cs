@@ -19,4 +19,12 @@ public static class PlanCatalog
             return EssentialToken;
         return planName;
     }
+
+    /// <summary>Included garden visits per calendar month of an active subscription.</summary>
+    public static int VisitsPerMonth(string planName) =>
+        IsPremium(planName) ? 2 : 1;
+
+    /// <summary>Days between scheduled visits for a plan (30-day month basis).</summary>
+    public static int VisitIntervalDays(string planName) =>
+        30 / VisitsPerMonth(planName);
 }

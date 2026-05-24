@@ -5,7 +5,7 @@ export const FALLBACK_PLANS: SubscriptionPlan[] = [
   {
     id: "fallback-essential-monthly",
     name: "Essential Monthly",
-    description: "Weekly garden maintenance, 3-month minimum.",
+    description: "One garden visit per month, 3-month minimum.",
     billingInterval: "Monthly",
     minimumTermMonths: 3,
     priceGbp: 29.95,
@@ -13,7 +13,7 @@ export const FALLBACK_PLANS: SubscriptionPlan[] = [
   {
     id: "fallback-premium-monthly",
     name: "Premium Monthly",
-    description: "Premium weekly garden maintenance with enhanced service, 3-month minimum.",
+    description: "Two garden visits per month with enhanced service, 3-month minimum.",
     billingInterval: "Monthly",
     minimumTermMonths: 3,
     priceGbp: 49.95,
@@ -21,7 +21,7 @@ export const FALLBACK_PLANS: SubscriptionPlan[] = [
   {
     id: "fallback-essential-annual",
     name: "Essential Annual",
-    description: "Weekly garden maintenance, 12-month commitment, discounted.",
+    description: "One garden visit per month, 12-month commitment, discounted.",
     billingInterval: "Annual",
     minimumTermMonths: 12,
     priceGbp: 299.95,
@@ -29,7 +29,7 @@ export const FALLBACK_PLANS: SubscriptionPlan[] = [
   {
     id: "fallback-premium-annual",
     name: "Premium Annual",
-    description: "Premium weekly garden maintenance, 12-month commitment, discounted.",
+    description: "Two garden visits per month, 12-month commitment, discounted.",
     billingInterval: "Annual",
     minimumTermMonths: 12,
     priceGbp: 499.95,

@@ -68,7 +68,7 @@ public static class DataSeeder
             {
                 BrandId = brand.Id,
                 Name = "Essential Monthly",
-                Description = "Weekly garden maintenance, 3-month minimum.",
+                Description = "One garden visit per month, 3-month minimum.",
                 BillingInterval = SubscriptionBillingInterval.Monthly,
                 MinimumTermMonths = 3,
                 PriceGbp = 29.95m
@@ -77,7 +77,7 @@ public static class DataSeeder
             {
                 BrandId = brand.Id,
                 Name = "Essential Annual",
-                Description = "Weekly garden maintenance, 12-month commitment, discounted.",
+                Description = "One garden visit per month, 12-month commitment, discounted.",
                 BillingInterval = SubscriptionBillingInterval.Annual,
                 MinimumTermMonths = 12,
                 PriceGbp = 299.95m
@@ -86,7 +86,7 @@ public static class DataSeeder
             {
                 BrandId = brand.Id,
                 Name = "Premium Monthly",
-                Description = "Premium weekly garden maintenance with enhanced service, 3-month minimum.",
+                Description = "Two garden visits per month with enhanced service, 3-month minimum.",
                 BillingInterval = SubscriptionBillingInterval.Monthly,
                 MinimumTermMonths = 3,
                 PriceGbp = 49.95m
@@ -95,7 +95,7 @@ public static class DataSeeder
             {
                 BrandId = brand.Id,
                 Name = "Premium Annual",
-                Description = "Premium weekly garden maintenance, 12-month commitment, discounted.",
+                Description = "Two garden visits per month, 12-month commitment, discounted.",
                 BillingInterval = SubscriptionBillingInterval.Annual,
                 MinimumTermMonths = 12,
                 PriceGbp = 499.95m
@@ -424,7 +424,7 @@ public static class DataSeeder
             {
                 BrandId = brandId,
                 Name = "Premium Monthly",
-                Description = "Premium weekly garden maintenance with enhanced service, 3-month minimum.",
+                Description = "Two garden visits per month with enhanced service, 3-month minimum.",
                 BillingInterval = SubscriptionBillingInterval.Monthly,
                 MinimumTermMonths = 3,
                 PriceGbp = 49.95m,
@@ -437,7 +437,7 @@ public static class DataSeeder
             {
                 BrandId = brandId,
                 Name = "Premium Annual",
-                Description = "Premium weekly garden maintenance, 12-month commitment, discounted.",
+                Description = "Two garden visits per month, 12-month commitment, discounted.",
                 BillingInterval = SubscriptionBillingInterval.Annual,
                 MinimumTermMonths = 12,
                 PriceGbp = 499.95m,

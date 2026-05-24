@@ -85,6 +85,7 @@ public class BackgroundJobsOptions
     public bool Enabled { get; set; } = true;
     public int IntervalMinutes { get; set; } = 60;
     public int TargetFutureVisits { get; set; } = 4;
+    /// <summary>Legacy default — visit spacing now comes from <see cref="Plans.PlanCatalog.VisitIntervalDays"/> per plan.</summary>
     public int VisitIntervalDays { get; set; } = 7;
     public int DispatchOfferExpiryDays { get; set; } = 3;
     public int DispatchOpenWithinDays { get; set; } = 14;

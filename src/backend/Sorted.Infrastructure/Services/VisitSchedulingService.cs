@@ -6,6 +6,7 @@ using Sorted.Core.Enums;
 using Sorted.Core.Geo;
 using Sorted.Core.Interfaces;
 using Sorted.Core.Options;
+using Sorted.Core.Plans;
 using Sorted.Infrastructure.Data;
 
 namespace Sorted.Infrastructure.Services;
@@ -28,7 +29,8 @@ public class VisitSchedulingService(
             ?? throw new InvalidOperationException("Subscription not found.");
 
         var property = ResolveProperty(sub);
-        var start = DateTime.UtcNow.Date.AddDays(_jobOptions.VisitIntervalDays);
+        var intervalDays = PlanCatalog.VisitIntervalDays(sub.Plan.Name);
+        var start = DateTime.UtcNow.Date.AddDays(intervalDays);
         await AddVisitsAsync(sub, property, start, count, ct);
     }
 
@@ -73,7 +75,8 @@ public class VisitSchedulingService(
                         || v.Status == VisitStatus.Rescheduled))
                 .MaxAsync(v => (DateTime?)v.ScheduledDate, ct);
 
-            var start = lastScheduled?.AddDays(_jobOptions.VisitIntervalDays) ?? today.AddDays(_jobOptions.VisitIntervalDays);
+            var intervalDays = PlanCatalog.VisitIntervalDays(sub.Plan.Name);
+            var start = lastScheduled?.AddDays(intervalDays) ?? today.AddDays(intervalDays);
             await AddVisitsAsync(sub, property, start, needed, ct);
             toppedUp++;
         }
@@ -236,6 +239,7 @@ public class VisitSchedulingService(
         int count,
         CancellationToken ct)
     {
+        var intervalDays = PlanCatalog.VisitIntervalDays(sub.Plan.Name);
         var created = new List<JobVisit>(count);
         for (var i = 0; i < count; i++)
         {
@@ -243,7 +247,7 @@ public class VisitSchedulingService(
             {
                 CustomerSubscriptionId = sub.Id,
                 CustomerPropertyId = property.Id,
-                ScheduledDate = startDate.AddDays(i * _jobOptions.VisitIntervalDays),
+                ScheduledDate = startDate.AddDays(i * intervalDays),
                 AvailabilityWindow = sub.AvailabilityPreference,
                 Status = VisitStatus.Scheduled
             };
@@ -358,6 +362,7 @@ public class VisitSchedulingService(
 
     private async Task<CustomerSubscription?> LoadSubscriptionAsync(Guid subscriptionId, CancellationToken ct)
         => await db.CustomerSubscriptions
+            .Include(s => s.Plan)
             .Include(s => s.Customer).ThenInclude(c => c.Properties)
             .FirstOrDefaultAsync(s => s.Id == subscriptionId && !s.IsDeleted, ct);
 

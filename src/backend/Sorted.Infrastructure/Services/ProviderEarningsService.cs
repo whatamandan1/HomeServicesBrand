@@ -13,11 +13,9 @@ namespace Sorted.Infrastructure.Services;
 public class ProviderEarningsService(
     SortedDbContext db,
     IOptions<ProviderPayoutOptions> payoutOptions,
-    IOptions<BackgroundJobsOptions> jobOptions,
     IWorkflowLogger workflow) : IProviderEarningsService
 {
     private readonly ProviderPayoutOptions _payoutOptions = payoutOptions.Value;
-    private readonly BackgroundJobsOptions _jobOptions = jobOptions.Value;
 
     public async Task AccrueForCompletedVisitAsync(Guid jobVisitId, Guid providerId, CancellationToken ct = default)
     {
@@ -39,7 +37,7 @@ public class ProviderEarningsService(
         var amount = ProviderEarningsCalculator.CalculateVisitEarningGbp(
             visit.Subscription.Plan.PriceGbp,
             visit.Subscription.Plan.BillingInterval,
-            _jobOptions.VisitIntervalDays,
+            visit.Subscription.Plan.Name,
             _payoutOptions.SharePercent);
 
         var earning = new ProviderEarning
