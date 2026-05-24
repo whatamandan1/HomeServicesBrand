@@ -50,6 +50,7 @@ public static class DependencyInjection
         services.AddScoped<IProviderCoverageService, ProviderCoverageService>();
         services.AddScoped<IProviderAvailabilityService, ProviderAvailabilityService>();
         services.AddScoped<IProviderEarningsService, ProviderEarningsService>();
+        services.AddScoped<IPortfolioEnquiryService, PortfolioEnquiryService>();
         services.AddHttpClient<IPostcodeGeocodingService, PostcodesIoGeocodingService>(client =>
         {
             client.Timeout = TimeSpan.FromSeconds(15);

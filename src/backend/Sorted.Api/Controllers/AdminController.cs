@@ -24,7 +24,8 @@ public class AdminController(
     IPostcodeGeocodingService geocoding,
     IProviderCoverageService coverage,
     IProviderAvailabilityService availability,
-    IProviderEarningsService earnings) : ControllerBase
+    IProviderEarningsService earnings,
+    IPortfolioEnquiryService portfolioEnquiries) : ControllerBase
 {
     [HttpGet("dashboard")]
     public async Task<ActionResult<AdminDashboardResponse>> Dashboard([FromQuery] int days = 30, CancellationToken ct = default)
@@ -34,6 +35,9 @@ public class AdminController(
         var providers = await db.Providers.CountAsync(p => !p.IsDeleted, ct);
         var openVisits = await db.JobVisits.CountAsync(v => v.Status == VisitStatus.OpenForClaim && !v.IsDeleted, ct);
         var escalations = await db.Escalations.CountAsync(e => e.Status == EscalationStatus.Open && !e.IsDeleted, ct);
+        var newPortfolioEnquiries = await db.PortfolioEnquiries.CountAsync(
+            e => e.Status == PortfolioEnquiryStatus.New && !e.IsDeleted,
+            ct);
 
         var rangeDays = Math.Clamp(days, 7, 90);
         var toDate = DateTime.UtcNow.Date;
@@ -68,7 +72,7 @@ public class AdminController(
             BuildDailyTrend(newSubscriptionDates, fromDate, toDate),
             BuildDailyTrend(completedVisitDates, fromDate, toDate));
 
-        return Ok(new AdminDashboardResponse(customers, activeSubs, providers, openVisits, escalations, trends));
+        return Ok(new AdminDashboardResponse(customers, activeSubs, providers, openVisits, escalations, newPortfolioEnquiries, trends));
     }
 
     private static IReadOnlyList<AdminDashboardTrendPoint> BuildDailyTrend(
@@ -788,5 +792,32 @@ public class AdminController(
 
         if (thread is null) return NotFound();
         return Ok(thread);
+    }
+
+    [HttpGet("portfolios/enquiries")]
+    public async Task<ActionResult<IReadOnlyList<PortfolioEnquirySummaryResponse>>> PortfolioEnquiries(CancellationToken ct)
+        => Ok(await portfolioEnquiries.ListForAdminAsync(ct));
+
+    [HttpGet("portfolios/enquiries/{id:guid}")]
+    public async Task<ActionResult<PortfolioEnquiryDetailResponse>> PortfolioEnquiry(Guid id, CancellationToken ct)
+    {
+        var enquiry = await portfolioEnquiries.GetForAdminAsync(id, ct);
+        return enquiry is null ? NotFound() : Ok(enquiry);
+    }
+
+    [HttpPatch("portfolios/enquiries/{id:guid}/status")]
+    public async Task<ActionResult<PortfolioEnquiryDetailResponse>> UpdatePortfolioEnquiryStatus(
+        Guid id,
+        [FromBody] UpdatePortfolioEnquiryStatusRequest request,
+        CancellationToken ct)
+    {
+        try
+        {
+            return Ok(await portfolioEnquiries.UpdateStatusAsync(id, request.Status, ct));
+        }
+        catch (InvalidOperationException ex)
+        {
+            return BadRequest(new { error = ex.Message });
+        }
     }
 }

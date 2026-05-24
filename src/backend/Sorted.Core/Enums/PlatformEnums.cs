@@ -69,3 +69,13 @@ public enum ProviderEarningStatus
     Paid = 2,
     Cancelled = 3
 }
+
+public enum PortfolioEnquiryStatus
+{
+    New = 1,
+    Quoted = 2,
+    UnderReview = 3,
+    Accepted = 4,
+    Active = 5,
+    Closed = 6
+}

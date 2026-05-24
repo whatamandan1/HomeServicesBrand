@@ -92,7 +92,7 @@ Customers must be able to:
 - communicate with support
 - upload property media
 
-## Portfolio accounts (For portfolios)
+## Portfolio accounts (Multi-Property Solutions)
 Portfolio account holders (landlords, letting agents, multi-property owners with **2+ properties**) must be able to:
 - submit enquiries and (later) complete a separate signup journey with the same UX feel as consumer signup
 - manage multiple properties under **one login / one portfolio** (v1)
@@ -105,7 +105,7 @@ Portfolio account holders (landlords, letting agents, multi-property owners with
 
 Portfolio accounts use **invoicing**, not consumer Stripe subscriptions. Tenants never receive platform access.
 
-See [`docs/for-portfolios-requirements.md`](docs/for-portfolios-requirements.md) for full product rules, phases, and marketing copy.
+See [`docs/multi-property-solutions-requirements.md`](docs/multi-property-solutions-requirements.md) for full product rules, phases, and marketing copy.
 
 ## Providers
 Providers must be able to:
@@ -173,10 +173,10 @@ Support:
 - renewals
 - payment retries
 
-Consumer subscriptions use Stripe Checkout / subscription webhooks. Portfolio accounts use **invoicing** (see For portfolios below).
+Consumer subscriptions use Stripe Checkout / subscription webhooks. Portfolio accounts use **invoicing** (see Multi-Property Solutions below).
 
-## For portfolios (multi-property)
-Support a separate **For portfolios** commercial track alongside consumer signup:
+## Multi-Property Solutions
+Support a separate **Multi-Property Solutions** commercial track alongside consumer signup:
 
 - **Audience:** private landlords, letting agents, holiday-let owners — **minimum 2 properties**
 - **Pricing:** personalised rates from calculation rules (property count, postcodes/clustering, per-property visit frequency, service level, garden size, seasonality) — **not** fixed Essential/Premium tiers
@@ -189,7 +189,7 @@ Support a separate **For portfolios** commercial track alongside consumer signup
 - **Terms:** portfolio-specific terms where appropriate (separate from consumer T&Cs)
 - **Phasing:** (1) enquiry form + marketing page at consumer go-live → (2) AI quote + signup → (3) portal + bulk import → (4) invoicing
 
-Full requirements: [`docs/for-portfolios-requirements.md`](docs/for-portfolios-requirements.md)
+Full requirements: [`docs/multi-property-solutions-requirements.md`](docs/multi-property-solutions-requirements.md)
 
 ## Scheduling
 Support:
@@ -330,13 +330,13 @@ Prioritize:
 - scheduling engine
 - communication systems
 - AI support assistant
-- for portfolios phase 1 (enquiry) at consumer go-live
+- Multi-Property Solutions phase 1 (enquiry) at consumer go-live
 
 Deprioritize:
 - advanced AI autonomy
 - native mobile apps
 - advanced analytics
-- dynamic pricing (consumer plans — portfolio personalised pricing is in scope via For portfolios)
+- dynamic pricing (consumer plans — portfolio personalised pricing is in scope via Multi-Property Solutions)
 - route optimization
 - referral systems
 

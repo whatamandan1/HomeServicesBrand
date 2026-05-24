@@ -44,6 +44,53 @@ export type CustomerPayment = {
 
 export type GardenSize = "Small" | "Medium" | "Large";
 
+export type PortfolioEnquiryStatus =
+  | "New"
+  | "Quoted"
+  | "UnderReview"
+  | "Accepted"
+  | "Active"
+  | "Closed";
+
+export type PortfolioEnquiryPropertyInput = {
+  line1: string;
+  line2?: string;
+  city: string;
+  postcode: string;
+  gardenSize: GardenSize;
+};
+
+export type PortfolioEnquirySummary = {
+  id: string;
+  contactName: string;
+  email: string;
+  phone: string;
+  companyName: string | null;
+  status: PortfolioEnquiryStatus;
+  propertyCount: number;
+  createdAtUtc: string;
+};
+
+export type PortfolioEnquiryDetail = {
+  id: string;
+  contactName: string;
+  email: string;
+  phone: string;
+  companyName: string | null;
+  notes: string | null;
+  status: PortfolioEnquiryStatus;
+  createdAtUtc: string;
+  properties: Array<{
+    id: string;
+    sortOrder: number;
+    line1: string;
+    line2: string | null;
+    city: string;
+    postcode: string;
+    gardenSize: GardenSize;
+  }>;
+};
+
 export type CustomerProperty = {
   id: string;
   line1: string;
@@ -75,6 +122,7 @@ export type AdminDashboard = {
   providerCount: number;
   openVisits: number;
   openEscalations: number;
+  newPortfolioEnquiries: number;
   trends: {
     fromUtc: string;
     toUtc: string;
@@ -651,4 +699,26 @@ export const api = {
     ),
   adminCommunicationThread: (token: string, id: string) =>
     request<CommunicationThreadDetail>(`/api/admin/communication-threads/${id}`, {}, token),
+  submitPortfolioEnquiry: (body: {
+    contactName: string;
+    email: string;
+    phone: string;
+    companyName?: string;
+    notes?: string;
+    brandCode: string;
+    properties: PortfolioEnquiryPropertyInput[];
+  }) =>
+    request<{ enquiryId: string; message: string }>("/api/portfolios/enquiries", {
+      method: "POST",
+      body: JSON.stringify(body),
+    }),
+  adminPortfolioEnquiries: (token: string) =>
+    request<PortfolioEnquirySummary[]>("/api/admin/portfolios/enquiries", {}, token),
+  adminPortfolioEnquiry: (token: string, id: string) =>
+    request<PortfolioEnquiryDetail>(`/api/admin/portfolios/enquiries/${id}`, {}, token),
+  adminUpdatePortfolioEnquiryStatus: (token: string, id: string, status: PortfolioEnquiryStatus) =>
+    request<PortfolioEnquiryDetail>(`/api/admin/portfolios/enquiries/${id}/status`, {
+      method: "PATCH",
+      body: JSON.stringify({ status }),
+    }, token),
 };

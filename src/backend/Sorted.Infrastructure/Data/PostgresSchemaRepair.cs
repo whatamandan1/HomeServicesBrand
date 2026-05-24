@@ -141,6 +141,46 @@ internal static class PostgresSchemaRepair
             ON "ProviderEarnings" ("ProviderId");
         """;
 
+    private const string PortfolioEnquiriesSql = """
+        CREATE TABLE IF NOT EXISTS "PortfolioEnquiries" (
+            "Id" uuid NOT NULL,
+            "BrandId" uuid NOT NULL,
+            "ContactName" text NOT NULL,
+            "Email" text NOT NULL,
+            "Phone" text NOT NULL,
+            "CompanyName" text NULL,
+            "Notes" text NULL,
+            "Status" integer NOT NULL,
+            "CreatedAtUtc" timestamp with time zone NOT NULL,
+            "UpdatedAtUtc" timestamp with time zone NULL,
+            "IsDeleted" boolean NOT NULL DEFAULT FALSE,
+            CONSTRAINT "PK_PortfolioEnquiries" PRIMARY KEY ("Id"),
+            CONSTRAINT "FK_PortfolioEnquiries_Brands_BrandId" FOREIGN KEY ("BrandId") REFERENCES "Brands" ("Id") ON DELETE CASCADE
+        );
+
+        CREATE INDEX IF NOT EXISTS "IX_PortfolioEnquiries_Email"
+            ON "PortfolioEnquiries" ("Email");
+
+        CREATE TABLE IF NOT EXISTS "PortfolioEnquiryProperties" (
+            "Id" uuid NOT NULL,
+            "PortfolioEnquiryId" uuid NOT NULL,
+            "SortOrder" integer NOT NULL,
+            "Line1" text NOT NULL,
+            "Line2" text NULL,
+            "City" text NOT NULL,
+            "Postcode" text NOT NULL,
+            "GardenSize" integer NOT NULL,
+            "CreatedAtUtc" timestamp with time zone NOT NULL,
+            "UpdatedAtUtc" timestamp with time zone NULL,
+            "IsDeleted" boolean NOT NULL DEFAULT FALSE,
+            CONSTRAINT "PK_PortfolioEnquiryProperties" PRIMARY KEY ("Id"),
+            CONSTRAINT "FK_PortfolioEnquiryProperties_PortfolioEnquiries_PortfolioEnquiryId" FOREIGN KEY ("PortfolioEnquiryId") REFERENCES "PortfolioEnquiries" ("Id") ON DELETE CASCADE
+        );
+
+        CREATE INDEX IF NOT EXISTS "IX_PortfolioEnquiryProperties_PortfolioEnquiryId"
+            ON "PortfolioEnquiryProperties" ("PortfolioEnquiryId");
+        """;
+
     public static async Task ApplyAsync(SortedDbContext db, ILogger logger, CancellationToken ct = default)
     {
         if (!(db.Database.ProviderName ?? "").Contains("Npgsql", StringComparison.OrdinalIgnoreCase))
@@ -153,6 +193,7 @@ internal static class PostgresSchemaRepair
             await db.Database.ExecuteSqlRawAsync(TermsPropertyMediaSql, ct);
             await db.Database.ExecuteSqlRawAsync(ProviderAvailabilitySql, ct);
             await db.Database.ExecuteSqlRawAsync(ProviderEarningsSql, ct);
+            await db.Database.ExecuteSqlRawAsync(PortfolioEnquiriesSql, ct);
             logger.LogInformation("PostgreSQL schema repair completed");
         }
         catch (Exception ex)

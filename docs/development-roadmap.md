@@ -6,25 +6,25 @@ Living checklist comparing the current GardensSorted / Sorted platform build aga
 Use this document to track what is done, what is partial, and what to build next. Update
 statuses as features ship.
 
-**Last reviewed:** 2026-05-23 (For portfolios requirements)  
+**Last reviewed:** 2026-05-23 (Multi-Property Solutions)  
 **Live site:** https://home-services-brand.vercel.app/  
 **Live API:** https://homeservicesbrand-production.up.railway.app/
 
-**Current focus:** Demo phase — polish consumer pilot; spec **For portfolios** ready for phase 1 at go-live.
+**Current focus:** Demo phase — Multi-Property Solutions phase 1 shipped; polish consumer pilot.
 
 ### What's next (demo phase)
 
 1. **Operational polish** — whatever surfaces during demo testing (CRM, scheduling edge cases)
-2. **For portfolios phase 1** — marketing page + enquiry form (ships at consumer go-live)
+2. **Multi-Property Solutions phase 2** — pricing rules + AI indicative quote + admin review
 3. **Multi-brand frontend** — when a second brand is ready
 
-**For portfolios** (full requirements: [`for-portfolios-requirements.md`](for-portfolios-requirements.md)):
+**Multi-Property Solutions** (full requirements: [`multi-property-solutions-requirements.md`](multi-property-solutions-requirements.md)):
 
 | Phase | Scope | Target |
 |-------|--------|--------|
-| 1 | `/for-portfolios` page + enquiry (2+ properties, address + garden size) | Consumer go-live |
+| 1 | `/multi-property-solutions` page + enquiry (2+ properties, address + garden size) | ✅ Shipped |
 | 2 | Pricing rules + AI indicative quote + admin review | Post go-live |
-| 3 | Portfolio account, portal, bulk import | Post go-live |
+| 3 | Multi-property account, portal, bulk import | Post go-live |
 | 4 | Monthly invoicing in arrears (card &lt; £200 / BACS ≥ £200) | Post go-live |
 
 ### Deferred until post-demo / go-live
@@ -50,8 +50,8 @@ Do this **once**, immediately before inviting real paying customers (not needed 
 
 1. **Create a real admin account** (your email, strong password) — do not rely on `admin@gardenssorted.local` / seeded demo users.
 2. **Turn off demo seed on Railway** — set `Features__SeedDemoData=false` and redeploy API (only after the real admin exists and you have verified admin login).
-3. **Ship For portfolios phase 1** — `/for-portfolios` marketing page + enquiry form (2+ properties, address + garden size); admin lead notification.
-4. **Smoke-test on live** — admin login, customer signup, portfolio enquiry, billing portal, provider claim flow, no demo credentials visible in UI.
+3. **Ship Multi-Property Solutions phase 1** — `/multi-property-solutions` marketing page + enquiry form (2+ properties, address + garden size); admin lead notification.
+4. **Smoke-test on live** — admin login, customer signup, multi-property enquiry, billing portal, provider claim flow, no demo credentials visible in UI.
 
 Recent session (2026-05-23): plan cadence + earnings fix (`PlanCatalog`: Essential 1 visit/mo, Premium 2/mo); provider earnings ledger; admin availability edit + photo lightbox + richer customer CRM; day-off visit release; billing/signup/trends/auto-assign from earlier in session — all verified on live.
 
@@ -83,7 +83,7 @@ These are the spec's top priorities for initial launch.
 | Recurring scheduling | 🟡 Partial | Plan cadence via `PlanCatalog` (Essential 30d, Premium 15d); background top-up; legacy weekly visits may remain in demo DB |
 | Communication systems | 🟡 Partial | SendGrid live; Twilio deferred (UK regulatory) |
 | AI support assistant | ✅ Done | Customer portal chat + guest homepage chat |
-| For portfolios (phase 1) | ⬜ Not started | Enquiry form at go-live — see [`for-portfolios-requirements.md`](for-portfolios-requirements.md) |
+| Multi-Property Solutions (phase 1) | ✅ Done | `/multi-property-solutions` + enquiry + admin section |
 
 ---
 
@@ -125,14 +125,14 @@ Work through phases in order. Each phase builds on the last.
 - [x] **Production security (core)** — startup checks for JWT/webhook/Stripe bypass; Stripe signature verification; dev endpoints gated *(demo seed still on until go-live gate)*
 - [ ] **Google Maps garden size estimation** — satellite/aerial imagery to suggest or calculate garden area at signup or property edit *(deferred; requires Google Maps Platform API)*
 
-### Phase 4 — For portfolios (multi-property)
+### Phase 4 — Multi-Property Solutions
 
-Requirements: [`for-portfolios-requirements.md`](for-portfolios-requirements.md)
+Requirements: [`multi-property-solutions-requirements.md`](multi-property-solutions-requirements.md)
 
-- [ ] **For portfolios phase 1** — `/for-portfolios` marketing page; enquiry form (min 2 properties, address + garden size per property); admin lead inbox; ships at consumer go-live
-- [ ] **For portfolios phase 2** — portfolio pricing calculator rules; separate signup journey; AI indicative quote (immediate, pending admin review); per-property visit requirements
-- [ ] **For portfolios phase 3** — portfolio account + portal (dashboard, per-property visits, bulk import); out-of-area waitlist / find-a-gardener ops flow
-- [ ] **For portfolios phase 4** — monthly invoicing in arrears; card if &lt; £200/mo, BACS if ≥ £200/mo; per-property 3-month commitment billing; portfolio terms
+- [x] **Multi-Property Solutions phase 1** — `/multi-property-solutions` marketing page; enquiry form (min 2 properties, address + garden size per property); admin lead inbox; ships at consumer go-live
+- [ ] **Multi-Property Solutions phase 2** — pricing calculator rules; separate signup journey; AI indicative quote (immediate, pending admin review); per-property visit requirements
+- [ ] **Multi-Property Solutions phase 3** — multi-property account + portal (dashboard, per-property visits, bulk import); out-of-area waitlist / find-a-gardener ops flow
+- [ ] **Multi-Property Solutions phase 4** — monthly invoicing in arrears; card if &lt; £200/mo, BACS if ≥ £200/mo; per-property 3-month commitment billing; multi-property terms
 
 ### Pre-launch gate (do last) 🔵 Deferred until demo ends
 
@@ -156,20 +156,20 @@ Requirements: [`for-portfolios-requirements.md`](for-portfolios-requirements.md)
 
 ---
 
-## For portfolios requirements (spec + [`for-portfolios-requirements.md`](for-portfolios-requirements.md))
+## Multi-Property Solutions requirements (spec + [`multi-property-solutions-requirements.md`](multi-property-solutions-requirements.md))
 
 | Requirement | Status | Next step |
 |-------------|--------|-----------|
-| Marketing page | ⬜ Not started | `/for-portfolios` — copy in requirements doc |
-| Enquiry form (phase 1) | ⬜ Not started | 2+ properties, address + garden size; admin notification |
+| Marketing page | ✅ Done | `/multi-property-solutions` |
+| Enquiry form (phase 1) | ✅ Done | 2+ properties, address + garden size; ack email + ops notify |
 | Personalised pricing rules | ⬜ Not started | Calculator module; all inputs: count, clustering, frequency, service level, garden size, seasonality |
 | AI indicative quote | ⬜ Not started | Immediate quote + admin review queue (phase 2) |
-| Portfolio signup journey | ⬜ Not started | Separate flow, same UX feel; per-property visit requirements |
-| Portfolio portal | ⬜ Not started | Dashboard, bulk import, add/remove with recalc (phase 3) |
+| Multi-property signup journey | ⬜ Not started | Separate flow, same UX feel; per-property visit requirements |
+| Multi-property portal | ⬜ Not started | Dashboard, bulk import, add/remove with recalc (phase 3) |
 | Invoicing (not subscription) | ⬜ Not started | Monthly arrears; card &lt; £200 / BACS ≥ £200 (phase 4) |
 | Per-property 3-month commitment | ⬜ Not started | Remove mid-term still bills quoted amount |
-| Admin portfolios section | ⬜ Not started | Leads, quotes, price override, reporting |
-| Portfolio terms | ⬜ Not started | Separate from consumer T&Cs |
+| Admin Multi-Property Solutions section | 🟡 Partial | Enquiry leads + status; quotes/invoicing phase 2+ |
+| Multi-property terms | ⬜ Not started | Separate from consumer T&Cs |
 | Out-of-area handling | ⬜ Not started | Waitlist or ops find-a-gardener |
 
 ---
@@ -194,7 +194,7 @@ Requirements: [`for-portfolios-requirements.md`](for-portfolios-requirements.md)
 | Operational dashboards | 🟡 Partial | KPIs, trends, date filters |
 | Provider management | 🟡 Partial | Approve providers; edit coverage + availability; earnings mark-paid |
 | Customer management | 🟡 Partial | Customer detail with subs (preferred times, gardener), visit gardener names, photo lightbox |
-| Portfolio management | ⬜ Not started | Dedicated admin section — leads, quotes, overrides, invoicing (see For portfolios) |
+| Multi-property management | 🟡 Partial | Multi-Property Solutions section — enquiry leads + status; quotes/invoicing phase 2+ |
 | Workflow monitoring | 🟡 Partial | UI for `WorkflowEvent` log on `/admin` |
 | Dispatch visibility | 🟡 Partial | Dispatch board + open-dispatch action in UI |
 | Escalation handling | ✅ Done | Take case and resolve in admin portal |
@@ -260,7 +260,7 @@ Modular boundaries to maintain as the platform grows.
 | Identity | ✅ Done | JWT, BCrypt, roles (Customer, Provider, Admin) |
 | Brands | 🟡 Partial | Entity + API; frontend not multi-brand yet |
 | Customers | ✅ Done | Registration, portal, subscriptions |
-| Portfolios | ⬜ Not started | Spec complete; phase 1 enquiry at go-live — invoicing track separate from subscriptions |
+| Multi-Property Solutions | 🟡 Partial | Phase 1 enquiry + admin leads; invoicing track phase 4 |
 | Providers | 🟡 Partial | Self-signup, coverage, claiming, availability v1+v2, earnings ledger v1 |
 | Services | 🟡 Partial | Essential (1 visit/mo) + Premium (2 visits/mo); plan copy aligned |
 | Subscriptions | ✅ Done | Plans + Stripe subscription Checkout + renewal webhooks |
@@ -318,7 +318,7 @@ Do not build these until core MVP is production-stable.
 | Advanced AI autonomy | 🔵 Deferred |
 | Native mobile apps | 🔵 Deferred (responsive web in place) |
 | Advanced analytics | 🔵 Deferred |
-| Dynamic pricing | 🔵 Deferred (consumer) | Portfolio personalised pricing in scope via For portfolios phases 2–4 |
+| Dynamic pricing | 🔵 Deferred (consumer) | Multi-property personalised pricing in scope via Multi-Property Solutions phases 2–4 |
 | Route optimization | 🔵 Deferred |
 | Referral systems | 🔵 Deferred |
 
@@ -348,7 +348,7 @@ Quick snapshot of implemented features as of last review.
 - Brands API, workflow event logging, health checks
 
 ### Frontend
-- Marketing: customer-focused `/`, `/about`, `/providers`; **For portfolios** `/for-portfolios` ⬜ phase 1 at go-live; SEO (sitemap, robots); compressed hero; lazy chat; `/privacy` and `/terms`; OG image (~200KB JPEG)
+- Marketing: customer-focused `/`, `/about`, `/providers`; **Multi-Property Solutions** `/multi-property-solutions`; SEO (sitemap, robots); compressed hero; lazy chat; `/privacy` and `/terms`; OG image (~200KB JPEG)
 - Signup: 3-step customer wizard; provider apply form (postcode + radius slider)
 - Portals: `/portal` (Manage billing, photos, preferred gardener), `/provider` (coverage, availability, earnings), `/admin` (CRM + trends + photo lightbox)
 - Mobile UX: responsive layouts, hamburger nav, mobile CTA bar

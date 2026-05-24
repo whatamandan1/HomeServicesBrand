@@ -1,10 +1,11 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { api, type AdminCustomer, type AdminDashboard, type AdminProvider, type AiActionLog, type CommunicationThreadSummary, type Escalation, type JobVisit, type WorkflowEvent } from "@/lib/api";
+import { api, type AdminCustomer, type AdminDashboard, type AdminProvider, type AiActionLog, type CommunicationThreadSummary, type Escalation, type JobVisit, type PortfolioEnquirySummary, type WorkflowEvent } from "@/lib/api";
 import { useAuth } from "@/lib/use-auth";
 import { DashboardTrends } from "@/components/admin/DashboardTrends";
 import { CustomerDetailPanel } from "@/components/admin/CustomerDetailPanel";
+import { PortfolioEnquiryList } from "@/components/admin/PortfolioEnquiryList";
 import { ProviderDetailPanel } from "@/components/admin/ProviderDetailPanel";
 import { ActAsUserButton } from "@/components/admin/ActAsUserButton";
 import { StatCard } from "@/components/ui";
@@ -24,6 +25,7 @@ const DASH_LABELS: Record<string, string> = {
   providerCount: "Providers",
   openVisits: "Open visits",
   openEscalations: "Escalations",
+  newPortfolioEnquiries: "Multi-property leads",
 };
 
 const DASH_SECTIONS: Record<string, string> = {
@@ -32,6 +34,7 @@ const DASH_SECTIONS: Record<string, string> = {
   providerCount: "providers",
   openVisits: "visits",
   openEscalations: "escalations",
+  newPortfolioEnquiries: "multi-property-solutions",
 };
 
 function scrollToSection(id: string) {
@@ -60,6 +63,8 @@ export default function AdminPage() {
   const [selectedProviderId, setSelectedProviderId] = useState<string | null>(null);
   const [customerError, setCustomerError] = useState<string | null>(null);
   const [providerError, setProviderError] = useState<string | null>(null);
+  const [portfolioEnquiries, setPortfolioEnquiries] = useState<PortfolioEnquirySummary[]>([]);
+  const [portfolioError, setPortfolioError] = useState<string | null>(null);
 
   function refreshVisits() {
     if (!auth?.token) return;
@@ -127,6 +132,7 @@ export default function AdminPage() {
     api.adminWorkflowEvents(auth.token).then(setWorkflowEvents);
     api.adminAiActions(auth.token).then(setAiActionLogs);
     api.adminCommunicationThreads(auth.token).then(setCommunicationThreads);
+    api.adminPortfolioEnquiries(auth.token).then(setPortfolioEnquiries);
   }, [auth, trendDays]);
 
   if (!ready) return <p className="text-stone-500">Loading…</p>;
@@ -170,7 +176,7 @@ export default function AdminPage() {
               </select>
             </label>
           </div>
-          <div className="grid grid-cols-2 gap-4 md:grid-cols-5">
+          <div className="grid grid-cols-2 gap-4 md:grid-cols-3 lg:grid-cols-6">
             {(
               [
                 ["customerCount", dash.customerCount],
@@ -178,6 +184,7 @@ export default function AdminPage() {
                 ["providerCount", dash.providerCount],
                 ["openVisits", dash.openVisits],
                 ["openEscalations", dash.openEscalations],
+                ["newPortfolioEnquiries", dash.newPortfolioEnquiries],
               ] as const
             ).map(([k, v]) => (
               <StatCard
@@ -195,6 +202,25 @@ export default function AdminPage() {
           <DashboardTrends trends={dash.trends} />
         </>
       )}
+
+      <section id="multi-property-solutions" className="scroll-mt-6">
+        <h2 className="font-semibold">Multi-Property Solutions</h2>
+        <p className="mt-1 text-sm text-stone-500">Enquiry leads for multi-property accounts — separate from consumer customers.</p>
+        {portfolioError && <p className="mt-2 text-sm text-red-600">{portfolioError}</p>}
+        <div className="mt-3">
+          {auth?.token && (
+            <PortfolioEnquiryList
+              token={auth.token}
+              enquiries={portfolioEnquiries}
+              onRefresh={() => {
+                api.adminPortfolioEnquiries(auth.token).then(setPortfolioEnquiries);
+                api.adminDashboard(auth.token, trendDays).then(setDash);
+              }}
+              onError={setPortfolioError}
+            />
+          )}
+        </div>
+      </section>
 
       <section id="providers" className="scroll-mt-6">
         <div className="flex flex-wrap items-center justify-between gap-3">

@@ -24,6 +24,7 @@ export function MarketingFooter() {
         <div>
           <p className="text-sm font-semibold text-white">Company</p>
           <ul className="mt-3 space-y-2 text-sm text-gardens-accent/80">
+            <li><Link href="/multi-property-solutions" className="hover:text-white">Multi-Property Solutions</Link></li>
             <li><Link href="/providers" className="hover:text-white">Become a gardener</Link></li>
             <li><Link href="/login" className="hover:text-white">Log in</Link></li>
             <li><Link href="/about" className="hover:text-white">About us</Link></li>

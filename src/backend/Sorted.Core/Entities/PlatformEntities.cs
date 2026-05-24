@@ -227,3 +227,28 @@ public class Escalation : AuditableEntity
     public EscalationStatus Status { get; set; } = EscalationStatus.Open;
     public string? Notes { get; set; }
 }
+
+public class PortfolioEnquiry : AuditableEntity
+{
+    public Guid BrandId { get; set; }
+    public Brand Brand { get; set; } = null!;
+    public string ContactName { get; set; } = string.Empty;
+    public string Email { get; set; } = string.Empty;
+    public string Phone { get; set; } = string.Empty;
+    public string? CompanyName { get; set; }
+    public string? Notes { get; set; }
+    public PortfolioEnquiryStatus Status { get; set; } = PortfolioEnquiryStatus.New;
+    public ICollection<PortfolioEnquiryProperty> Properties { get; set; } = [];
+}
+
+public class PortfolioEnquiryProperty : AuditableEntity
+{
+    public Guid PortfolioEnquiryId { get; set; }
+    public PortfolioEnquiry Enquiry { get; set; } = null!;
+    public int SortOrder { get; set; }
+    public string Line1 { get; set; } = string.Empty;
+    public string? Line2 { get; set; }
+    public string City { get; set; } = string.Empty;
+    public string Postcode { get; set; } = string.Empty;
+    public GardenSize GardenSize { get; set; }
+}

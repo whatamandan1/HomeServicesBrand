@@ -1,6 +1,6 @@
-# For Portfolios — Product Requirements
+# Multi-Property Solutions — Product Requirements
 
-**Status:** Requirements agreed (2026-05-23) — not yet built  
+**Status:** Phase 1 shipped (2026-05-23)  
 **Launch:** Same release window and geography as consumer GardensSorted (pilot coverage area)  
 **Related:** [`sorted_cursor_ai_technical_spec_v_1.md`](../sorted_cursor_ai_technical_spec_v_1.md), [`development-roadmap.md`](development-roadmap.md)
 
@@ -8,9 +8,9 @@
 
 ## Summary
 
-**For portfolios** is a separate commercial track for people who manage **two or more properties** — private landlords, holiday-let owners, and letting agents. It is **not** a discount tier on consumer Essential/Premium subscriptions. Each portfolio receives **personalised pricing** from calculation rules, **per-property visit requirements**, and **monthly invoicing in arrears** (not Stripe subscriptions).
+**Multi-Property Solutions** is a separate commercial track for people who manage **two or more properties** — private landlords, holiday-let owners, and letting agents. It is **not** a discount tier on consumer Essential/Premium subscriptions. Each account receives **personalised pricing** from calculation rules, **per-property visit requirements**, and **monthly invoicing in arrears** (not Stripe subscriptions).
 
-Tenants never interact with the platform. One login maps to one portfolio for v1.
+Tenants never interact with the platform. One login maps to one multi-property account for v1.
 
 ---
 
@@ -32,19 +32,20 @@ Tenants never interact with the platform. One login maps to one portfolio for v1
 
 | Context | Label |
 |---------|--------|
-| Marketing | **For portfolios** |
-| Account type | Portfolio account |
-| Admin CRM | Portfolios section (distinct from consumer customers) |
+| Marketing | **Multi-Property Solutions** |
+| URL | `/multi-property-solutions` |
+| Account type | Multi-property account |
+| Admin CRM | Multi-Property Solutions section (distinct from consumer customers) |
 
 ### Marketing copy (phase 1)
 
-**Headline:** Garden care for your whole portfolio
+**Headline:** Garden care for every property you manage
 
 **Subline:** Whether you own two holiday lets or manage dozens of rentals, tell us about your properties and we’ll put together a personalised plan and price.
 
 **Body (short):**
 - One account for every property you manage
-- Personalised pricing based on your portfolio — not one-size-fits-all plans
+- Personalised pricing based on your properties — not one-size-fits-all plans
 - Per-property visit schedules that match how you let and maintain each home
 - Monthly invoicing with card or BACS
 - Tenants never need to sign up — you stay in control
@@ -56,10 +57,10 @@ Tenants never interact with the platform. One login maps to one portfolio for v1
 
 ---
 
-## Consumer vs portfolio
+## Consumer vs multi-property
 
-| | Consumer (homeowner) | For portfolios |
-|--|---------------------|----------------|
+| | Consumer (homeowner) | Multi-Property Solutions |
+|--|---------------------|--------------------------|
 | Properties | Typically 1 | 2+ required |
 | Pricing | Fixed Essential / Premium | Personalised from rules |
 | Visits | Plan cadence (1 or 2 / month) | Per-property requirements |
@@ -75,11 +76,11 @@ Tenants never interact with the platform. One login maps to one portfolio for v1
 
 ### Calculation inputs (all apply)
 
-Rules to be defined in a separate **portfolio pricing calculator**; the platform must support these inputs:
+Rules to be defined in a separate **multi-property pricing calculator**; the platform must support these inputs:
 
-1. **Number of properties** in the portfolio
-2. **Postcode / travel clustering** (efficiency across the portfolio)
-3. **Visit frequency** — per property (not portfolio-wide default)
+1. **Number of properties** in the account
+2. **Postcode / travel clustering** (efficiency across properties)
+3. **Visit frequency** — per property (not account-wide default)
 4. **Service level** — e.g. basic tidy vs full maintenance (per property)
 5. **Garden size** — collected at enquiry and signup
 6. **Seasonality** — e.g. holiday-let peak/off-peak patterns
@@ -97,7 +98,7 @@ Rules to be defined in a separate **portfolio pricing calculator**; the platform
 |------|--------|
 | Minimum term | **3 months per property** |
 | Remove property mid-term | Customer still pays the **quoted amount** for that property for the commitment period |
-| Add property | **Recalculates** portfolio total; **new property gets its own 3-month lock-in** |
+| Add property | **Recalculates** account total; **new property gets its own 3-month lock-in** |
 | Invoicing | **Monthly in arrears** |
 
 ---
@@ -117,24 +118,24 @@ Collect:
 
 **Out of scope for phase 1:** instant quote, account creation, invoicing, portal.
 
-Deliverables: admin notification, CRM portfolio lead record, email acknowledgement to enquirer.
+Deliverables: admin notification, CRM lead record, email acknowledgement to enquirer.
 
-### Phase 2+ — Portfolio signup (separate journey)
+### Phase 2+ — Multi-property signup (separate journey)
 
-Same visual language as consumer signup. Customer builds the portfolio to **get a price**:
+Same visual language as consumer signup. Customer builds the property list to **get a price**:
 
 - Per property: address, garden size, **visit requirements** (frequency, service level, seasonality notes, access notes)
 - Minimum 2 properties at signup
-- AI returns indicative portfolio quote immediately → **pending review** state
+- AI returns indicative quote immediately → **pending review** state
 - Bulk address import deferred to **portal (phase 3)**, not signup
 
 ---
 
 ## Portal (phase 3)
 
-Portfolio account holder can:
+Account holder can:
 
-- View **portfolio dashboard** — all properties, status, next visits, monthly spend
+- View **dashboard** — all properties, status, next visits, monthly spend
 - Drill into **per-property** visits, requirements, access notes, assigned gardener
 - See **consolidated spend** and savings vs standard consumer rates (when calculable)
 - **Bulk import** properties (CSV or paste) — not available at initial signup
@@ -148,33 +149,33 @@ Tenants do not receive logins or communications from the platform (landlord/agen
 ## Billing (phase 4)
 
 - **Invoicing**, not recurring Stripe subscriptions.
-- **Monthly in arrears** against the active portfolio agreement.
+- **Monthly in arrears** against the active agreement.
 - **&lt; £200/month total:** card payment (Stripe Invoicing or equivalent).
 - **≥ £200/month:** BACS option.
 - **Invoicee:** account holder; letting agents decide whether they or the property owner is billed (offline arrangement; platform invoices the account holder).
 
-Separate **portfolio terms** (minimum term, BACS, cancellation, indicative quotes) — distinct from consumer `/terms` where appropriate.
+Separate **multi-property terms** (minimum term, BACS, cancellation, indicative quotes) — distinct from consumer `/terms` where appropriate.
 
 ---
 
 ## Admin / CRM
 
-Dedicated **Portfolios** area in admin (not mixed with consumer customer list):
+Dedicated **Multi-Property Solutions** area in admin (not mixed with consumer customer list):
 
-- Portfolio leads and active portfolio accounts
+- Enquiry leads and active multi-property accounts
 - Enquiry pipeline: new → quoted → under review → accepted → active
 - View/edit per-property requirements and **override pricing**
 - Approve AI-generated quotes before agreement goes live
-- Reporting similar to consumer CRM: portfolio count, properties per account, portfolio MRR, churn — scoped to portfolio segment
+- Reporting similar to consumer CRM: account count, properties per account, MRR, churn — scoped to multi-property segment
 
 ---
 
 ## Workflows (to implement)
 
-1. **Portfolio enquiry received** — log event, notify admin, ack email
-2. **Portfolio quote generated** — AI + rules, indicative, pending review
+1. **Multi-property enquiry received** — log event, notify admin, ack email
+2. **Quote generated** — AI + rules, indicative, pending review
 3. **Quote approved / adjusted** — admin action, customer notified
-4. **Portfolio agreement activated** — account + properties + visit schedules
+4. **Agreement activated** — account + properties + visit schedules
 5. **Monthly invoice generated** — arrears, card vs BACS routing
 6. **Property added / removed** — recalc, lock-in rules, commitment billing
 7. **Out-of-area property** — waitlist or ops “find a gardener” task
@@ -185,9 +186,9 @@ Dedicated **Portfolios** area in admin (not mixed with consumer customer list):
 
 | Phase | Scope | Status |
 |-------|--------|--------|
-| **1** | Marketing page `/for-portfolios`, enquiry form (2+ props, address + garden size), admin lead inbox | ⬜ Not started |
-| **2** | Pricing calculator rules, AI indicative quote on portfolio signup, admin quote review queue | ⬜ Not started |
-| **3** | Portfolio account + portal, per-property ops, bulk import | ⬜ Not started |
+| **1** | Marketing page `/multi-property-solutions`, enquiry form (2+ props, address + garden size), admin lead inbox | ✅ Shipped |
+| **2** | Pricing calculator rules, AI indicative quote on signup, admin quote review queue | ⬜ Not started |
+| **3** | Multi-property account + portal, per-property ops, bulk import | ⬜ Not started |
 | **4** | Invoicing (monthly arrears), card &lt; £200 / BACS ≥ £200 | ⬜ Not started |
 
 **Release:** Phase 1 ships at **consumer go-live** (same pre-launch gate). Later phases follow without a separate geographic expansion.
@@ -196,8 +197,8 @@ Dedicated **Portfolios** area in admin (not mixed with consumer customer list):
 
 ## Open items (implementation time)
 
-- [ ] Document exact portfolio pricing formula (spreadsheet or `PlanCatalog`-style module)
-- [ ] Draft portfolio-specific terms & conditions
+- [ ] Document exact multi-property pricing formula (spreadsheet or calculator module)
+- [ ] Draft multi-property-specific terms & conditions
 - [ ] Choose Stripe Invoicing vs manual invoice + BACS reconciliation for phase 4
 - [ ] Define “service level” enum/options per property in UI
 - [ ] Define waitlist / find-a-gardener admin workflow for out-of-area properties
@@ -206,4 +207,4 @@ Dedicated **Portfolios** area in admin (not mixed with consumer customer list):
 
 ## How to update this document
 
-When portfolio phases ship, update the phase table, link from the roadmap, and move detailed behaviour notes here from the master spec if the spec grows too large.
+When phases ship, update the phase table, link from the roadmap, and move detailed behaviour notes here from the master spec if the spec grows too large.

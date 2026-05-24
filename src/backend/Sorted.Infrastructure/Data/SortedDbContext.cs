@@ -25,6 +25,8 @@ public class SortedDbContext(DbContextOptions<SortedDbContext> options) : DbCont
     public DbSet<AIActionLog> AIActionLogs => Set<AIActionLog>();
     public DbSet<Escalation> Escalations => Set<Escalation>();
     public DbSet<PasswordResetToken> PasswordResetTokens => Set<PasswordResetToken>();
+    public DbSet<PortfolioEnquiry> PortfolioEnquiries => Set<PortfolioEnquiry>();
+    public DbSet<PortfolioEnquiryProperty> PortfolioEnquiryProperties => Set<PortfolioEnquiryProperty>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -75,6 +77,12 @@ public class SortedDbContext(DbContextOptions<SortedDbContext> options) : DbCont
         modelBuilder.Entity<ProviderEarning>()
             .HasIndex(e => e.JobVisitId)
             .IsUnique();
+        modelBuilder.Entity<PortfolioEnquiryProperty>()
+            .HasOne(p => p.Enquiry).WithMany(e => e.Properties).HasForeignKey(p => p.PortfolioEnquiryId);
+        modelBuilder.Entity<PortfolioEnquiry>()
+            .HasOne(e => e.Brand).WithMany().HasForeignKey(e => e.BrandId);
+        modelBuilder.Entity<PortfolioEnquiry>()
+            .HasIndex(e => e.Email);
 
         foreach (var entity in modelBuilder.Model.GetEntityTypes())
         {

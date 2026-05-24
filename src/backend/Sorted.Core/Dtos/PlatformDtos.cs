@@ -186,6 +186,7 @@ public record AdminDashboardResponse(
     int ProviderCount,
     int OpenVisits,
     int OpenEscalations,
+    int NewPortfolioEnquiries,
     AdminDashboardTrends Trends);
 
 public record AdminCustomerSubscriptionResponse(
@@ -263,3 +264,55 @@ public record CommunicationThreadDetailResponse(
     string? CustomerEmail,
     string Subject,
     IReadOnlyList<AdminMessageResponse> Messages);
+
+public record SubmitPortfolioEnquiryPropertyRequest(
+    string Line1,
+    string? Line2,
+    string City,
+    string Postcode,
+    GardenSize GardenSize);
+
+public record SubmitPortfolioEnquiryRequest(
+    string ContactName,
+    string Email,
+    string Phone,
+    string? CompanyName,
+    string? Notes,
+    string BrandCode,
+    IReadOnlyList<SubmitPortfolioEnquiryPropertyRequest> Properties);
+
+public record PortfolioEnquirySubmittedResponse(
+    Guid EnquiryId,
+    string Message);
+
+public record PortfolioEnquiryPropertyResponse(
+    Guid Id,
+    int SortOrder,
+    string Line1,
+    string? Line2,
+    string City,
+    string Postcode,
+    GardenSize GardenSize);
+
+public record PortfolioEnquirySummaryResponse(
+    Guid Id,
+    string ContactName,
+    string Email,
+    string Phone,
+    string? CompanyName,
+    PortfolioEnquiryStatus Status,
+    int PropertyCount,
+    DateTime CreatedAtUtc);
+
+public record PortfolioEnquiryDetailResponse(
+    Guid Id,
+    string ContactName,
+    string Email,
+    string Phone,
+    string? CompanyName,
+    string? Notes,
+    PortfolioEnquiryStatus Status,
+    DateTime CreatedAtUtc,
+    IReadOnlyList<PortfolioEnquiryPropertyResponse> Properties);
+
+public record UpdatePortfolioEnquiryStatusRequest(PortfolioEnquiryStatus Status);

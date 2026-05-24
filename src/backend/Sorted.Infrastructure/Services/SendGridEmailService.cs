@@ -39,6 +39,26 @@ public class SendGridEmailService(IOptions<SendGridOptions> options, ILogger<Sen
             $"We received a request to reset your password. Open this link within the next hour: {resetUrl} If you did not request this, you can ignore this email.",
             ct);
 
+    public Task SendPortfolioEnquiryAckAsync(string toEmail, string contactName, CancellationToken ct = default)
+        => SendAsync(
+            toEmail,
+            "We received your Multi-Property Solutions enquiry",
+            $"Hi {contactName}, thanks for your enquiry. We've received your property details and will review them shortly. We'll be in touch with a personalised indicative quote — subject to review before any agreement is confirmed.",
+            ct);
+
+    public Task SendPortfolioEnquiryAdminNotifyAsync(
+        string opsEmail,
+        string contactName,
+        string email,
+        string phone,
+        int propertyCount,
+        CancellationToken ct = default)
+        => SendAsync(
+            opsEmail,
+            "New Multi-Property Solutions enquiry",
+            $"New multi-property enquiry from {contactName} ({email}, {phone}) — {propertyCount} properties. Review in the admin Multi-Property Solutions section.",
+            ct);
+
     private async Task SendAsync(string toEmail, string subject, string plainText, CancellationToken ct)
     {
         if (string.IsNullOrWhiteSpace(_options.ApiKey))

@@ -59,6 +59,8 @@ public class AppOptions
 {
     public const string Section = "App";
     public string FrontendBaseUrl { get; set; } = "http://localhost:3000";
+    /// <summary>Ops inbox for portfolio enquiries and similar alerts.</summary>
+    public string OpsNotificationEmail { get; set; } = string.Empty;
 }
 
 public class FeaturesOptions
