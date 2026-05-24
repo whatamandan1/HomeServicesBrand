@@ -25,3 +25,7 @@ out/
 # Logs
 *.log
 .vercel
+
+# Local temp / build artifacts
+.tmp_pylibs/
+*.tsbuildinfo
