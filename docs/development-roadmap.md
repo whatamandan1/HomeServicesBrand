@@ -6,20 +6,27 @@ Living checklist comparing the current GardensSorted / Sorted platform build aga
 Use this document to track what is done, what is partial, and what to build next. Update
 statuses as features ship.
 
-**Last reviewed:** 2026-05-23 (post cadence fix)  
+**Last reviewed:** 2026-05-23 (availability v2)  
 **Live site:** https://home-services-brand.vercel.app/  
 **Live API:** https://homeservicesbrand-production.up.railway.app/
 
-**Current focus:** Twilio SMS (blocked on UK sender reg) + pre-launch gate. Core pilot flows verified on live.
+**Current focus:** Demo phase — provider availability v2 shipped; keep `Features__SeedDemoData` on and iterate on pilot UX.
 
-### What's next (when you resume)
+### What's next (demo phase)
 
-Recent batch shipped: plan-based visit cadence (Essential 1/mo, Premium 2/mo), corrected provider pay, earnings ledger, admin CRM polish, day-off release.
+Recent batch: customer time-window matching on open jobs, claim, auto-assign, and day-off release.
 
-1. **Twilio SMS** — UK sender registration + visit/reminder texts in prod *(deferred until reg complete)*
-2. **Provider availability v2** — match visit times to customer text windows
-3. **Stripe Connect (v2 payouts)** — when manual mark-paid becomes tedious
-4. **Pre-launch gate** (when ready) — real admin account, `Features__SeedDemoData=false`, custom domain
+1. **Provider availability v2** — match visit times to customer text windows ✅ *(shipped)*
+2. **Operational polish** — whatever surfaces during demo testing (CRM, scheduling edge cases)
+3. **Multi-brand frontend** — when a second brand is ready
+
+### Deferred until post-demo / go-live
+
+| Item | Why deferred |
+|------|----------------|
+| **Twilio SMS** | UK sender registration pending; email covers demo |
+| **Stripe Connect (v2 payouts)** | Manual admin mark-paid is fine for demo |
+| **Pre-launch gate** | Real admin, `Features__SeedDemoData=false`, custom domain — only when inviting paying customers |
 
 ### Plan visit cadence (product truth)
 
@@ -30,9 +37,9 @@ Recent batch shipped: plan-based visit cadence (Essential 1/mo, Premium 2/mo), c
 
 Legacy demo data may still have weekly-spaced visits from before `ecdf9ea`; new signups and top-ups use plan cadence.
 
-### Last job before go-live (customer launch gate)
+### Last job before go-live (customer launch gate) 🔵 Deferred
 
-Do this **once**, immediately before inviting real paying customers:
+Do this **once**, immediately before inviting real paying customers (not needed during demo):
 
 1. **Create a real admin account** (your email, strong password) — do not rely on `admin@gardenssorted.local` / seeded demo users.
 2. **Turn off demo seed on Railway** — set `Features__SeedDemoData=false` and redeploy API (only after the real admin exists and you have verified admin login).
@@ -98,10 +105,10 @@ Work through phases in order. Each phase builds on the last.
 ### Phase 3 — Platform maturity (post-pilot / optional pre-launch)
 
 - [x] **Provider availability (v1)** — working days + default hours + blocked dates on `/provider`; claim, open jobs, and preferred-provider auto-assign respect schedule; blocking a day or changing working days releases assigned visits back to open pool (incl. rescheduled)
-- [ ] **Provider availability (v2)** — match visit times to customer text windows *(admin edit shipped)*
+- [x] **Provider availability (v2)** — customer text windows (morning/afternoon/evening) matched to provider work hours on open jobs, claim, auto-assign, and day-off release
 - [ ] **Multi-brand frontend** — theme/config per brand; remove hardcoded `gardens-sorted` in API client
 - [x] **Provider earnings / payouts (v1)** — visit ledger accrues on complete (60% share ÷ plan visits/mo); Essential ~£17.97, Premium ~£14.99; provider + admin views; admin marks paid manually
-- [ ] **Provider earnings / payouts (v2)** — Stripe Connect automated transfers
+- [ ] **Provider earnings / payouts (v2)** — Stripe Connect automated transfers 🔵 Deferred (demo phase)
 - [x] **Recurring provider preference** — preferred provider after first visit; auto-assign pending visits on complete + scheduling
 - [ ] **Weather-aware rescheduling** — weather API + reschedule workflow
 - [x] **Automated test suite** — xUnit core + API tests; CI fails on test failure
@@ -109,7 +116,7 @@ Work through phases in order. Each phase builds on the last.
 - [x] **Production security (core)** — startup checks for JWT/webhook/Stripe bypass; Stripe signature verification; dev endpoints gated *(demo seed still on until go-live gate)*
 - [ ] **Google Maps garden size estimation** — satellite/aerial imagery to suggest or calculate garden area at signup or property edit *(deferred; requires Google Maps Platform API)*
 
-### Pre-launch gate (do last)
+### Pre-launch gate (do last) 🔵 Deferred until demo ends
 
 - [ ] **Real admin account** — production admin user with your credentials (not demo seed)
 - [ ] **Disable demo seed** — `Features__SeedDemoData=false` on Railway after real admin verified
@@ -137,8 +144,8 @@ Work through phases in order. Each phase builds on the last.
 |-------------|--------|-----------|
 | Onboard | ✅ Done | Apply at `/providers#apply` (postcode + radius); admin approves on `/admin` |
 | Claim jobs | ✅ Done | Matched by derived outcodes / distance within radius |
-| Manage availability | 🟡 Partial | Provider self-service + **admin edit** on `/admin`; v2 = time-window matching |
-| View earnings | 🟡 Partial | Accrued/paid ledger on `/provider`; plan-based per-visit amounts; admin mark paid; Stripe Connect deferred |
+| Manage availability | ✅ Done | Provider self-service + admin edit; v2 time-window matching on dispatch |
+| View earnings | 🟡 Partial | Accrued/paid ledger on `/provider`; plan-based per-visit amounts; admin mark paid; Stripe Connect 🔵 deferred |
 | View recurring assignments | ✅ Done | Preferred gardener auto-assign; portal shows assigned gardener name |
 | Communicate with operations | ⬜ Not started | Provider messaging or ops notifications |
 
@@ -164,7 +171,7 @@ Work through phases in order. Each phase builds on the last.
 | Requirement | Status | Next step |
 |-------------|--------|-----------|
 | Recurring visits | 🟡 Partial | `PlanCatalog`: Essential 1/mo, Premium 2/mo; top-up job maintains buffer; initial batch on signup |
-| Availability windows | 🟡 Partial | Customer free-text preference on signup; provider schedule enforced on dispatch; day-off unassigns conflicting visits |
+| Availability windows | ✅ Done | Customer free-text preference; provider schedule + work hours enforced on dispatch; day-off unassigns conflicting visits |
 | Provider allocation | ✅ Done | Radius from base postcode; outcodes derived via postcodes.io; distance fallback |
 | Weather-aware adjustments | ⬜ Not started | Weather API + reschedule workflow |
 | Recurring provider preference | ✅ Done | Set on first completed visit; auto-assign on scheduling + after complete |
@@ -181,7 +188,7 @@ Work through phases in order. Each phase builds on the last.
 |-------------|--------|-----------|
 | Live chat | ✅ Done | Guest homepage + customer portal |
 | Email notifications | 🟡 Partial | SendGrid live; visit-claimed + pre-visit reminder emails in job loop |
-| SMS notifications | 🟡 Partial | Twilio wired; blocked on UK sender registration |
+| SMS notifications | 🔵 Deferred | Twilio wired; blocked on UK sender registration — demo uses email |
 | WhatsApp provider workflows | ⬜ Not started | — |
 | Centralized communication logs | ✅ Done | DB persistence; admin UI to browse still needed |
 
@@ -198,7 +205,7 @@ Work through phases in order. Each phase builds on the last.
 | Provider claim | ✅ Done | Email always; SMS when Twilio configured |
 | Reminders | 🟡 Partial | Pre-visit email in background job; SMS when Twilio configured |
 | Weather rescheduling | ⬜ Not started | — |
-| Payout generation | 🟡 Partial | Plan-based accrual on visit complete; admin marks paid manually |
+| Payout generation | 🟡 Partial | Plan-based accrual on visit complete; admin marks paid manually; Stripe Connect 🔵 deferred |
 | Churn prevention | ⬜ Not started | — |
 
 All workflow transitions should be logged — logging exists; automation and admin visibility are the gaps.
@@ -214,10 +221,10 @@ Modular boundaries to maintain as the platform grows.
 | Identity | ✅ Done | JWT, BCrypt, roles (Customer, Provider, Admin) |
 | Brands | 🟡 Partial | Entity + API; frontend not multi-brand yet |
 | Customers | ✅ Done | Registration, portal, subscriptions |
-| Providers | 🟡 Partial | Self-signup, coverage, claiming, availability v1, earnings ledger v1 |
+| Providers | 🟡 Partial | Self-signup, coverage, claiming, availability v1+v2, earnings ledger v1 |
 | Services | 🟡 Partial | Essential (1 visit/mo) + Premium (2 visits/mo); plan copy aligned |
 | Subscriptions | ✅ Done | Plans + Stripe subscription Checkout + renewal webhooks |
-| Scheduling | 🟡 Partial | `PlanCatalog` cadence; top-up jobs; provider availability enforced |
+| Scheduling | 🟡 Partial | `PlanCatalog` cadence; top-up jobs; provider availability + time windows enforced |
 | Dispatch | 🟡 Partial | FCFS claim + preferred auto-assign; travel validation missing |
 | CRM | 🟡 Partial | Customer/provider detail, photo lightbox, earnings, availability edit, trends |
 | Communications | 🟡 Partial | Chat done; email/SMS/WhatsApp incomplete |
@@ -288,7 +295,7 @@ Quick snapshot of implemented features as of last review.
 - Visits: scheduling service, background jobs (top-up, dispatch expiry, reminders), claim/start/complete, cancel/reschedule
 - Provider earnings: `ProviderEarning` ledger; plan-based accrual on complete (60% ÷ visits/mo — Essential ~£17.97, Premium ~£14.99); admin mark paid
 - Plan cadence: `PlanCatalog.VisitsPerMonth` — Essential 1/mo (30d interval), Premium 2/mo (15d interval); scheduling + payouts aligned
-- Provider availability: working days, hours, blocked dates; day-off releases assigned visits; admin can edit provider schedule
+- Provider availability: working days, hours, blocked dates; **v2** customer time-window matching (morning/afternoon/evening); day-off releases assigned visits; admin can edit provider schedule
 - Admin CRM: photo lightbox, customer preferred times/gardener, provider earnings + availability edit
 - Signup/plan copy: Essential “1 visit per month”, Premium “2 visits per month”
 - Signup: terms acceptance, deferred photo upload, checkout session sync, PostgreSQL migration repair
@@ -313,6 +320,7 @@ Quick snapshot of implemented features as of last review.
 - Docker, env examples, Stripe/Twilio setup guides
 
 ### Recent commits (2026-05-23)
+- *(pending)* — provider availability v2 (customer time-window matching)
 - `ecdf9ea` — plan visit cadence + provider pay (Essential 1/mo, Premium 2/mo)
 - `7e5b4d7` — admin CRM polish (availability edit, photo lightbox, earnings refresh)
 - `62069a3` — provider earnings ledger v1 + admin photo thumbnails

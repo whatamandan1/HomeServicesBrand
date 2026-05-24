@@ -222,7 +222,7 @@ public class ProviderController(
             if (!await coverage.IsPropertyWithinCoverageAsync(provider, visit.Property, ct))
                 continue;
 
-            if (!await availability.IsAvailableAsync(provider, visit.ScheduledDate, ct))
+            if (!await availability.IsAvailableAsync(provider, visit.ScheduledDate, visit.AvailabilityWindow, ct))
                 continue;
 
             filtered.Add(JobVisitResponseMapper.FromEntity(visit));
@@ -248,8 +248,8 @@ public class ProviderController(
         if (!await coverage.IsPropertyWithinCoverageAsync(provider, visit.Property, ct))
             return BadRequest(new { error = "Visit is outside your coverage area." });
 
-        if (!await availability.IsAvailableAsync(provider, visit.ScheduledDate, ct))
-            return BadRequest(new { error = "This visit falls on a day you have marked unavailable." });
+        if (!await availability.IsAvailableAsync(provider, visit.ScheduledDate, visit.AvailabilityWindow, ct))
+            return BadRequest(new { error = "This visit falls on a day or time you have marked unavailable." });
 
         var conflict = await db.JobVisits.AnyAsync(v =>
             v.AssignedProviderId == provider.Id &&

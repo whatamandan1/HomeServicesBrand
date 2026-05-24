@@ -28,7 +28,10 @@ public class VisitCalendarTests
         Assert.True(VisitCalendar.ConflictsWithAvailability(
             scheduled,
             ProviderWorkingDays.DefaultWeekdays,
-            blocked));
+            blocked,
+            ProviderWorkHours.DefaultStartMinutes,
+            ProviderWorkHours.DefaultEndMinutes,
+            customerAvailabilityWindow: null));
     }
 
     [Fact]
@@ -43,6 +46,23 @@ public class VisitCalendarTests
         Assert.True(VisitCalendar.ConflictsWithAvailability(
             thursday,
             weekdaysWithoutThursday,
-            Array.Empty<DateOnly>()));
+            Array.Empty<DateOnly>(),
+            ProviderWorkHours.DefaultStartMinutes,
+            ProviderWorkHours.DefaultEndMinutes,
+            customerAvailabilityWindow: null));
+    }
+
+    [Fact]
+    public void ConflictsWithAvailability_matches_customer_evening_outside_provider_hours()
+    {
+        var scheduled = new DateTime(2026, 6, 25, 12, 0, 0, DateTimeKind.Utc);
+
+        Assert.True(VisitCalendar.ConflictsWithAvailability(
+            scheduled,
+            ProviderWorkingDays.DefaultWeekdays,
+            Array.Empty<DateOnly>(),
+            providerStartMinutes: 8 * 60,
+            providerEndMinutes: 16 * 60,
+            customerAvailabilityWindow: "Evening only"));
     }
 }

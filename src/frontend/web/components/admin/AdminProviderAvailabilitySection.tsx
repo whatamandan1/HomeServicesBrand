@@ -137,7 +137,7 @@ export function AdminProviderAvailabilitySection({
       <div>
         <p className="font-medium text-gardens-dark">Availability</p>
         <p className="mt-1 text-stone-600">
-          Edit on behalf of the provider. Changes release conflicting assigned visits.
+          Edit on behalf of the provider. Open jobs and auto-assign respect work hours against each customer&apos;s preferred time window. Changes release conflicting assigned visits.
         </p>
       </div>
 

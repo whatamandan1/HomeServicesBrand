@@ -299,7 +299,7 @@ public class VisitSchedulingService(
         if (!await coverage.IsPropertyWithinCoverageAsync(provider, property, ct))
             return false;
 
-        if (!await availability.IsAvailableAsync(provider, visit.ScheduledDate, ct))
+        if (!await availability.IsAvailableAsync(provider, visit.ScheduledDate, visit.AvailabilityWindow, ct))
             return false;
 
         var conflict = await db.JobVisits.AnyAsync(v =>

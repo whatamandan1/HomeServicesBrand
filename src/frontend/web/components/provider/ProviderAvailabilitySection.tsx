@@ -150,7 +150,7 @@ export function ProviderAvailabilitySection({
         <div>
           <p className="font-medium text-gardens-dark">Your availability</p>
           <p className="mt-1 text-stone-600">
-            Open jobs and auto-assignments only appear on days you work. Block individual dates for holidays.
+            Open jobs and auto-assignments match your working days, hours, and blocked dates to each customer&apos;s preferred time window (e.g. mornings, afternoons).
           </p>
         </div>
       </div>

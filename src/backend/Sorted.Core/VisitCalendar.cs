@@ -24,17 +24,26 @@ public static class VisitCalendar
 
     /// <summary>
     /// Returns true when an assigned visit should be returned to the open pool
-    /// because it falls on a non-working day or blocked date.
+    /// because it falls on a non-working day, blocked date, or outside working hours / customer window.
     /// </summary>
     public static bool ConflictsWithAvailability(
         DateTime scheduledDate,
         int workingDaysMask,
-        IEnumerable<DateOnly> blockedDates)
+        IEnumerable<DateOnly> blockedDates,
+        int providerStartMinutes,
+        int providerEndMinutes,
+        string? customerAvailabilityWindow)
     {
         var visitDate = ToVisitDate(scheduledDate);
         if (!ProviderWorkingDays.IsWorkingDay(workingDaysMask, visitDate.DayOfWeek))
             return true;
 
-        return blockedDates.Contains(visitDate);
+        if (blockedDates.Contains(visitDate))
+            return true;
+
+        return !CustomerAvailabilityWindow.OverlapsProviderHours(
+            customerAvailabilityWindow,
+            providerStartMinutes,
+            providerEndMinutes);
     }
 }

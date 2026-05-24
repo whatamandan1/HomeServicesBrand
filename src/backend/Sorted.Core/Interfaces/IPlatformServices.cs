@@ -92,7 +92,11 @@ public interface IProviderCoverageService
 
 public interface IProviderAvailabilityService
 {
-    Task<bool> IsAvailableAsync(Provider provider, DateTime scheduledDate, CancellationToken ct = default);
+    Task<bool> IsAvailableAsync(
+        Provider provider,
+        DateTime scheduledDate,
+        string? customerAvailabilityWindow = null,
+        CancellationToken ct = default);
     Task<ProviderAvailabilityResponse> GetAvailabilityAsync(Guid providerId, CancellationToken ct = default);
     Task<ProviderAvailabilityResponse> UpdateAvailabilityAsync(
         Guid providerId,

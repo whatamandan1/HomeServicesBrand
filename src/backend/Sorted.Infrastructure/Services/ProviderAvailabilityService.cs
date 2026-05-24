@@ -16,15 +16,30 @@ public class ProviderAvailabilityService(
 {
     private readonly BackgroundJobsOptions _jobOptions = jobOptions.Value;
 
-    public async Task<bool> IsAvailableAsync(Provider provider, DateTime scheduledDate, CancellationToken ct = default)
+    public Task<bool> IsAvailableAsync(
+        Provider provider,
+        DateTime scheduledDate,
+        string? customerAvailabilityWindow = null,
+        CancellationToken ct = default)
     {
         var visitDate = VisitCalendar.ToVisitDate(scheduledDate);
         if (!ProviderWorkingDays.IsWorkingDay(provider.WorkingDaysMask, visitDate.DayOfWeek))
-            return false;
+            return Task.FromResult(false);
 
-        return !await db.ProviderBlockedDates.AsNoTracking()
-            .AnyAsync(b => b.ProviderId == provider.Id && !b.IsDeleted && b.BlockedDate == visitDate, ct);
+        if (!CustomerAvailabilityWindow.OverlapsProviderHours(
+                customerAvailabilityWindow,
+                provider.WorkDayStartMinutes,
+                provider.WorkDayEndMinutes))
+        {
+            return Task.FromResult(false);
+        }
+
+        return IsCalendarDayOpenAsync(provider, visitDate, ct);
     }
+
+    private async Task<bool> IsCalendarDayOpenAsync(Provider provider, DateOnly visitDate, CancellationToken ct)
+        => !await db.ProviderBlockedDates.AsNoTracking()
+            .AnyAsync(b => b.ProviderId == provider.Id && !b.IsDeleted && b.BlockedDate == visitDate, ct);
 
     public async Task<ProviderAvailabilityResponse> GetAvailabilityAsync(Guid providerId, CancellationToken ct = default)
     {
@@ -128,7 +143,13 @@ public class ProviderAvailabilityService(
 
         var visits = await LoadAssignedMutableVisitsAsync(providerId, ct);
         var toRelease = visits
-            .Where(v => VisitCalendar.ConflictsWithAvailability(v.ScheduledDate, provider.WorkingDaysMask, blockedDates))
+            .Where(v => VisitCalendar.ConflictsWithAvailability(
+                v.ScheduledDate,
+                provider.WorkingDaysMask,
+                blockedDates,
+                provider.WorkDayStartMinutes,
+                provider.WorkDayEndMinutes,
+                v.AvailabilityWindow))
             .ToList();
 
         return await ReleaseVisitsAsync(toRelease, ct);
