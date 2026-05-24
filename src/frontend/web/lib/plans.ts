@@ -1,4 +1,5 @@
 import type { SubscriptionPlan } from "@/lib/api";
+import { findTierPlanForBilling, type BillingChoice, type PlanTier } from "@/lib/consumer-plans";
 
 /** Shown when live plan API is unavailable (matches seeded backend plans). */
 export const FALLBACK_PLANS: SubscriptionPlan[] = [
@@ -64,6 +65,16 @@ export function planSignupIndex(plans: SubscriptionPlan[], planId: string): numb
   const sorted = sortPlans(plans);
   const idx = sorted.findIndex((p) => p.id === planId);
   return idx >= 0 ? idx : 0;
+}
+
+export function planSignupHref(
+  plans: SubscriptionPlan[],
+  tier: PlanTier,
+  billing: BillingChoice
+): string {
+  const plan = findTierPlanForBilling(plans, tier, billing);
+  if (!plan) return "/signup";
+  return `/signup?plan=${planSignupIndex(plans, plan.id)}`;
 }
 
 /** @deprecated Use nextUpgradePlanLabel from consumer-plans */

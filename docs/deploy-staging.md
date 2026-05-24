@@ -35,14 +35,18 @@ Ensure `appsettings.Development.local.json` is **not** committed (it is gitignor
 | `Jwt__Secret` | long random string (32+ chars) |
 | `Stripe__SecretKey` | `sk_test_...` or live later |
 | `Stripe__WebhookSecret` | from Stripe Dashboard webhook |
-| `Stripe__Prices__EssentialMonthly` | optional — `price_...` from Stripe Dashboard |
-| `Stripe__Prices__EssentialAnnual` | optional — `price_...` from Stripe Dashboard |
-| `Stripe__Prices__PremiumMonthly` | optional — `price_...` for Premium £49.95/mo |
-| `Stripe__Prices__PremiumAnnual` | optional — `price_...` for Premium £499.95/yr |
-| `Plans__EssentialMonthly` | `29.95` — shown on site and synced to DB on startup |
-| `Plans__EssentialAnnual` | `299.95` — shown on site and synced to DB on startup |
-| `Plans__PremiumMonthly` | `49.95` |
-| `Plans__PremiumAnnual` | `499.95` |
+| `Stripe__Prices__EssentialMonthly` | `price_...` — Essential **£29.95/mo** (small garden) |
+| `Stripe__Prices__EssentialAnnual` | `price_...` — Essential **£299.95/yr** |
+| `Stripe__Prices__PremiumMonthly` | `price_...` — Premium **£54.95/mo** |
+| `Stripe__Prices__PremiumAnnual` | `price_...` — Premium **£549.95/yr** |
+| `Stripe__Prices__EliteMonthly` | `price_...` — Elite **£89.95/mo** |
+| `Stripe__Prices__EliteAnnual` | `price_...` — Elite **£899.95/yr** |
+| `Plans__EssentialMonthly` | `29.95` |
+| `Plans__EssentialAnnual` | `299.95` |
+| `Plans__PremiumMonthly` | `54.95` |
+| `Plans__PremiumAnnual` | `549.95` |
+| `Plans__EliteMonthly` | `89.95` |
+| `Plans__EliteAnnual` | `899.95` |
 | `Features__BypassStripeCheckout` | `false` — must be false in production (API refuses to start if true) |
 | `Stripe__SuccessUrl` | `https://YOUR-VERCEL-URL/signup/success` |
 | `Stripe__CancelUrl` | `https://YOUR-VERCEL-URL/signup` |
@@ -151,5 +155,6 @@ Optional: add Vercel/Railway deploy hooks later.
 - [ ] CORS includes Vercel domain  
 - [ ] `API_URL` on Vercel matches Railway URL  
 - [ ] `NEXT_PUBLIC_SHOW_DEMO_LOGIN` **not** set on Vercel (demo login hints hidden)  
-- [ ] Premium Stripe price IDs configured if testing upgrades  
+- [ ] All **six** Stripe Price IDs set — see [`stripe-price-ids-checklist.md`](stripe-price-ids-checklist.md)
+- [ ] `Plans__*` amounts match Stripe and [`consumer-plans-and-pricing.md`](consumer-plans-and-pricing.md)
 - [ ] `Features__SeedDemoData` still `true` until go-live gate (then set `false`)

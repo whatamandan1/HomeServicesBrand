@@ -33,14 +33,20 @@ Edit `appsettings.Development.local.json`:
 
 Leave `SuccessUrl` / `CancelUrl` as in `appsettings.json` unless you changed ports.
 
-**Optional (production):** create recurring **Prices** in Stripe Dashboard → Products, then set:
+**Optional (production):** create recurring **Prices** in Stripe Dashboard → Products for all six plans, then set:
 
 ```json
 "Prices": {
   "EssentialMonthly": "price_xxx",
-  "EssentialAnnual": "price_yyy"
+  "EssentialAnnual": "price_yyy",
+  "PremiumMonthly": "price_xxx",
+  "PremiumAnnual": "price_yyy",
+  "EliteMonthly": "price_xxx",
+  "EliteAnnual": "price_yyy"
 }
 ```
+
+Full amounts and pre-deploy checklist: [`stripe-price-ids-checklist.md`](stripe-price-ids-checklist.md).
 
 If omitted, Checkout creates dynamic recurring prices from plan amounts (fine for local dev).
 
@@ -136,8 +142,17 @@ Local development should use **Stripe CLI** (`stripe listen`), not a Dashboard U
 
 ## Creating Stripe Prices (production)
 
-1. Stripe Dashboard → **Products** → Add product "GardensSorted Essential Monthly"
-2. Add recurring price £29.95/month
-3. Copy Price ID (`price_...`) → `Stripe__Prices__EssentialMonthly` on Railway
-4. Repeat for annual £299.95/year → `Stripe__Prices__EssentialAnnual`
-5. Redeploy API — Price IDs sync to plans on startup
+Use [`stripe-price-ids-checklist.md`](stripe-price-ids-checklist.md) for the full matrix (Essential, Premium, Elite × monthly/annual).
+
+Quick summary — create each recurring price, copy `price_...` to Railway, redeploy API:
+
+| Plan | Amount |
+|------|--------|
+| Essential Monthly | £29.95/mo |
+| Essential Annual | £299.95/yr |
+| Premium Monthly | £54.95/mo |
+| Premium Annual | £549.95/yr |
+| Elite Monthly | £89.95/mo |
+| Elite Annual | £899.95/yr |
+
+Medium/large gardens use dynamic checkout amounts (+£10/£20 monthly uplift); fixed Price IDs apply to **small gardens only**.

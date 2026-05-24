@@ -79,6 +79,36 @@ export const SHARED_FEATURES = [
   "Online account for visits and billing",
 ];
 
+export type PlanTier = "essential" | "premium" | "elite";
+export type BillingChoice = "Monthly" | "Annual";
+
+export type PlanCompareRow = {
+  label: string;
+  essential: boolean | string;
+  premium: boolean | string;
+  elite: boolean | string;
+};
+
+/** Side-by-side feature matrix for Essential / Premium / Elite. */
+export const PLAN_COMPARE_ROWS: PlanCompareRow[] = [
+  { label: "Visits included", essential: "1 / month", premium: "2 / month", elite: "3 / month" },
+  { label: "Lawn mowing & edging", essential: true, premium: true, elite: true },
+  { label: "Border & bed tidy", essential: true, premium: true, elite: true },
+  { label: "Clippings removed", essential: true, premium: true, elite: true },
+  { label: "Light watering while on site", essential: true, premium: true, elite: true },
+  { label: "Hedge trim & shaping", essential: false, premium: true, elite: true },
+  { label: "Bed weeding", essential: false, premium: true, elite: true },
+  { label: "Seasonal tidy & leaf blow", essential: false, premium: true, elite: true },
+  { label: "Priority scheduling", essential: false, premium: true, elite: true },
+  { label: "Reschedule in your account", essential: true, premium: true, elite: true },
+];
+
+export const PLAN_TIERS: { id: PlanTier; label: string; tagline: string }[] = [
+  { id: "essential", label: "Essential", tagline: "Monthly upkeep" },
+  { id: "premium", label: "Premium", tagline: "Twice-monthly + hedges" },
+  { id: "elite", label: "Elite", tagline: "Most frequent visits" },
+];
+
 function isElitePlan(name: string) {
   return name.toLowerCase().includes("elite");
 }
@@ -125,9 +155,9 @@ export function planVisitSummary(plan: SubscriptionPlan) {
   return "1 visit per month";
 }
 
-function findMonthlyPlan(basePlans: SubscriptionPlan[], tier: "essential" | "premium" | "elite") {
+function findTierPlan(basePlans: SubscriptionPlan[], tier: PlanTier, billing: BillingChoice) {
   return basePlans.find((p) => {
-    if (p.billingInterval !== "Monthly") return false;
+    if (p.billingInterval !== billing) return false;
     const name = p.name.toLowerCase();
     if (tier === "elite") return name.includes("elite");
     if (tier === "premium") return name.includes("premium");
@@ -135,11 +165,19 @@ function findMonthlyPlan(basePlans: SubscriptionPlan[], tier: "essential" | "pre
   });
 }
 
+export function findTierPlanForBilling(
+  basePlans: SubscriptionPlan[],
+  tier: PlanTier,
+  billing: BillingChoice
+) {
+  return findTierPlan(basePlans, tier, billing);
+}
+
 /** Monthly prices for the pricing matrix (small-garden base from API). */
 export function monthlyPriceMatrix(basePlans: SubscriptionPlan[]) {
-  const essential = findMonthlyPlan(basePlans, "essential");
-  const premium = findMonthlyPlan(basePlans, "premium");
-  const elite = findMonthlyPlan(basePlans, "elite");
+  const essential = findTierPlan(basePlans, "essential", "Monthly");
+  const premium = findTierPlan(basePlans, "premium", "Monthly");
+  const elite = findTierPlan(basePlans, "elite", "Monthly");
   if (!essential || !premium || !elite) return null;
 
   const sizes: GardenSize[] = ["Small", "Medium", "Large"];

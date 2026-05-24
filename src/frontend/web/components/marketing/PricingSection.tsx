@@ -6,22 +6,26 @@ import { Check } from "lucide-react";
 import { api, type SubscriptionPlan } from "@/lib/api";
 import { FALLBACK_PLANS, sortPlans } from "@/lib/plans";
 import {
-  monthlyPriceMatrix,
+  findTierPlanForBilling,
   NOT_INCLUDED,
   ON_VISIT_WHEN_POSSIBLE,
+  PLAN_TIERS,
   planFeatures,
   planPriceForGarden,
-  planTierLabel,
   planVisitSummary,
+  monthlyPriceMatrix,
   SEASONAL_ADDONS,
   SHARED_FEATURES,
+  type BillingChoice,
 } from "@/lib/consumer-plans";
 import { formatGbp } from "@/lib/format";
+import { PlanCompareTable } from "@/components/marketing/PlanCompareTable";
 
 export function PricingSection() {
   const [plans, setPlans] = useState<SubscriptionPlan[]>([]);
   const [loaded, setLoaded] = useState(false);
   const [offline, setOffline] = useState(false);
+  const [billing, setBilling] = useState<BillingChoice>("Monthly");
 
   useEffect(() => {
     api.getPlans()
@@ -38,19 +42,26 @@ export function PricingSection() {
 
   if (!loaded) {
     return (
-      <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-        {[0, 1, 2].map((i) => (
-          <div key={i} className="animate-pulse rounded-2xl border bg-white p-8 shadow-soft">
-            <div className="h-6 w-32 rounded bg-stone-200" />
-            <div className="mt-4 h-10 w-24 rounded bg-stone-200" />
-          </div>
-        ))}
+      <div className="space-y-8">
+        <div className="animate-pulse rounded-2xl border bg-white p-8 shadow-soft h-64" />
+        <div className="grid gap-6 md:grid-cols-3">
+          {[0, 1, 2].map((i) => (
+            <div key={i} className="animate-pulse rounded-2xl border bg-white p-8 shadow-soft">
+              <div className="h-6 w-32 rounded bg-stone-200" />
+              <div className="mt-4 h-10 w-24 rounded bg-stone-200" />
+            </div>
+          ))}
+        </div>
       </div>
     );
   }
 
   const displayPlans = sortPlans(plans);
   const matrix = monthlyPriceMatrix(displayPlans);
+  const visibleTiers = PLAN_TIERS.map((tier) => ({
+    ...tier,
+    plan: findTierPlanForBilling(displayPlans, tier.id, billing),
+  })).filter((t) => t.plan);
 
   return (
     <div className="space-y-8">
@@ -60,35 +71,33 @@ export function PricingSection() {
         </p>
       )}
 
-      <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-        {displayPlans.map((plan, index) => {
-          const isAnnual = plan.billingInterval !== "Monthly";
-          const isElite = plan.name.toLowerCase().includes("elite");
+      <PlanCompareTable plans={displayPlans} billing={billing} onBillingChange={setBilling} />
+
+      <div className="grid gap-6 md:grid-cols-3">
+        {visibleTiers.map(({ id, label, plan }) => {
+          if (!plan) return null;
+          const index = displayPlans.findIndex((p) => p.id === plan.id);
+          const isElite = id === "elite";
+          const isAnnual = billing === "Annual";
           const features = planFeatures(plan);
           return (
             <div
               key={plan.id}
               className={`relative rounded-2xl border bg-white p-6 shadow-soft sm:p-8 ${
-                isAnnual
-                  ? "border-gardens-primary ring-2 ring-gardens-primary/20"
-                  : isElite
-                    ? "border-gardens-dark ring-2 ring-gardens-dark/10"
-                    : "border-stone-200"
+                isElite ? "border-gardens-dark ring-2 ring-gardens-dark/10" : "border-stone-200"
               }`}
             >
               {isAnnual && (
                 <span className="absolute -top-3 left-1/2 -translate-x-1/2 rounded-full bg-gardens-accent px-4 py-1 text-xs font-semibold text-gardens-dark">
-                  Best value
+                  Save ~2 months
                 </span>
               )}
-                {!isAnnual && isElite && (
+              {!isAnnual && isElite && (
                 <span className="absolute -top-3 left-1/2 -translate-x-1/2 rounded-full bg-gardens-dark px-4 py-1 text-xs font-semibold text-white">
                   Most frequent
                 </span>
               )}
-              <p className="text-xs font-semibold uppercase tracking-wide text-gardens-primary">
-                {planTierLabel(plan)}
-              </p>
+              <p className="text-xs font-semibold uppercase tracking-wide text-gardens-primary">{label}</p>
               <h3 className="font-display text-xl font-semibold text-gardens-dark">{plan.name}</h3>
               <p className="mt-2 text-sm text-stone-600">{planVisitSummary(plan)}</p>
               <div className="mt-6 flex items-baseline gap-1">
@@ -100,7 +109,7 @@ export function PricingSection() {
               <p className="mt-1 text-xs text-stone-500">Small garden — see table below for medium &amp; large</p>
               <p className="mt-2 text-xs text-stone-500">{plan.minimumTermMonths}-month minimum term</p>
               <ul className="mt-6 space-y-3">
-                {features.map((f) => (
+                {features.slice(0, 5).map((f) => (
                   <li key={f} className="flex items-start gap-2 text-sm text-stone-700">
                     <Check className="mt-0.5 h-4 w-4 shrink-0 text-gardens-primary" />
                     {f}
@@ -108,14 +117,14 @@ export function PricingSection() {
                 ))}
               </ul>
               <Link
-                href={`/signup?plan=${index}`}
+                href={`/signup?plan=${index >= 0 ? index : 0}`}
                 className={`mt-8 block w-full min-h-[48px] rounded-full py-3 text-center text-base font-semibold leading-[48px] sm:text-sm sm:leading-normal sm:py-3 ${
-                  isAnnual
+                  id === "premium"
                     ? "bg-gardens-primary text-white hover:bg-gardens-dark"
                     : "border border-gardens-primary text-gardens-primary hover:bg-gardens-light"
                 }`}
               >
-                Choose {plan.name}
+                Choose {label}
               </Link>
             </div>
           );

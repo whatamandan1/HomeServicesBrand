@@ -133,6 +133,8 @@ Implementation: `Sorted.Core/Plans/ConsumerPlanPricing.cs`, frontend mirror in `
 
 When a fixed Stripe Price ID is configured, it applies to **small gardens only**; medium/large checkout uses dynamic Stripe `price_data` with the uplifted amount.
 
+**Pre-deploy:** configure all six Stripe Price IDs — [`stripe-price-ids-checklist.md`](stripe-price-ids-checklist.md).
+
 ---
 
 ## Provider pay (internal)
