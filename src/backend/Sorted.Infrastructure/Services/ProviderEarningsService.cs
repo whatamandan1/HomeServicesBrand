@@ -1,6 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 using Sorted.Core;
+using Sorted.Core.Plans;
 using Sorted.Core.Dtos;
 using Sorted.Core.Entities;
 using Sorted.Core.Enums;
@@ -13,9 +14,11 @@ namespace Sorted.Infrastructure.Services;
 public class ProviderEarningsService(
     SortedDbContext db,
     IOptions<ProviderPayoutOptions> payoutOptions,
+    IOptions<PlanPricingOptions> planPricingOptions,
     IWorkflowLogger workflow) : IProviderEarningsService
 {
     private readonly ProviderPayoutOptions _payoutOptions = payoutOptions.Value;
+    private readonly PlanPricingOptions _planPricing = planPricingOptions.Value;
 
     public async Task AccrueForCompletedVisitAsync(Guid jobVisitId, Guid providerId, CancellationToken ct = default)
     {
@@ -34,8 +37,13 @@ public class ProviderEarningsService(
         if (visit.Status != VisitStatus.Completed)
             throw new InvalidOperationException("Earnings can only accrue for completed visits.");
 
+        var planPrice = PlanPricing.ResolvePrice(
+            visit.Subscription.Plan,
+            _planPricing,
+            visit.Property.GardenSize);
+
         var amount = ProviderEarningsCalculator.CalculateVisitEarningGbp(
-            visit.Subscription.Plan.PriceGbp,
+            planPrice,
             visit.Subscription.Plan.BillingInterval,
             visit.Subscription.Plan.Name,
             _payoutOptions.SharePercent);

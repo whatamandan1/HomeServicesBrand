@@ -43,16 +43,36 @@ const steps = [
 ];
 
 const included = [
-  "Regular lawn and border maintenance",
-  "Visits matched to your garden size",
-  "Online account to view and manage visits",
-  "Support when you need to reschedule",
+  "Essential: monthly lawn, borders, and tidy",
+  "Premium: twice-monthly visits plus hedges & beds",
+  "Pricing scales for small, medium, and large gardens",
+  "Online account to view and manage every visit",
 ];
 
 const faqs = [
   {
-    q: "What's included in a visit?",
-    a: "Routine garden maintenance — keeping lawns, borders, and general upkeep tidy. We'll match the work to the garden size you tell us at signup.",
+    q: "What's included in Essential?",
+    a: "One visit each month: lawn mowing and edging, light border and bed tidy, and clippings removed. Manage visits and get support through your online account.",
+  },
+  {
+    q: "What's included in Premium?",
+    a: "Two visits each month (about every two weeks), plus everything in Essential — light hedge trim, bed weeding, and seasonal tidy work like leaves and light pruning.",
+  },
+  {
+    q: "How does garden size affect price?",
+    a: "Small gardens are our base price (from £29.95/month Essential). Medium gardens add £10/month; large gardens add £20/month. Premium follows the same pattern from £49.95/month. Annual plans use the same uplifts (£100 medium / £200 large per year).",
+  },
+  {
+    q: "What's not included?",
+    a: "Major clearance, tree surgery, tall hedge reduction, and landscaping. We don't make separate trips just for watering, patio cleaning, leaf blowing, or gutter clearing — but we can quote those as seasonal add-ons.",
+  },
+  {
+    q: "Do you water the garden?",
+    a: "While we're on a scheduled visit, we'll water pots, containers, and obvious dry spots if you have an outdoor tap and hose. We don't run separate watering visits between maintenance — ask us about seasonal options if you need more.",
+  },
+  {
+    q: "Can you clean the patio, blow leaves, or clear gutters?",
+    a: "Premium includes light leaf blow and clear in the garden on visit days in season, and we'll lightly sweep garden-adjacent paving while we're there. Thorough patio cleaning, large leaf clearances, and gutter clearing are optional add-ons — message us for a quote.",
   },
   {
     q: "Which areas do you cover?",
@@ -172,7 +192,7 @@ export default function HomePage() {
         <PricingSection />
       </Section>
 
-      <Section id="questions" title="Common questions" subtitle="Still unsure? Chat with us — we're happy to help before you sign up.">
+      <Section id="faq" title="Common questions" subtitle="Still unsure? Chat with us — we're happy to help before you sign up.">
         <div className="mx-auto max-w-2xl divide-y divide-stone-200 rounded-2xl border border-stone-200 bg-white shadow-soft">
           {faqs.map((faq) => (
             <div key={faq.q} className="p-6">

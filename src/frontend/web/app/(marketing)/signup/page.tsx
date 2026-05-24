@@ -4,13 +4,18 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { Check, ChevronLeft, ChevronRight } from "lucide-react";
-import { api, type SubscriptionPlan } from "@/lib/api";
+import { api, type AuthResponse, type GardenSize, type SubscriptionPlan } from "@/lib/api";
 import { formatGbp } from "@/lib/format";
 import { FALLBACK_PLANS, sortPlans } from "@/lib/plans";
+import {
+  GARDEN_SIZE_GUIDE,
+  planFeatures,
+  planPriceForGarden,
+  planVisitSummary,
+} from "@/lib/consumer-plans";
 import { saveAuth } from "@/lib/auth-storage";
 import { stashSignupPhotos } from "@/lib/pending-signup-photos";
 import { compressImageFile } from "@/lib/compress-image";
-import type { AuthResponse } from "@/lib/api";
 
 const STEPS = ["Choose plan", "Your details", "Your garden"] as const;
 
@@ -32,7 +37,7 @@ export default function SignupPage() {
     line2: "",
     city: "",
     postcode: "",
-    gardenSize: "Small",
+    gardenSize: "Small" as GardenSize,
     availability: "",
   });
   const [acceptedTerms, setAcceptedTerms] = useState(false);
@@ -169,6 +174,12 @@ export default function SignupPage() {
     }
   }
 
+  const selectedPlan = plans.find((p) => p.id === selectedPlanId);
+  const checkoutPrice =
+    selectedPlan && form.gardenSize
+      ? planPriceForGarden(selectedPlan, form.gardenSize as GardenSize)
+      : null;
+
   return (
     <div className="pb-28 pt-8 md:pb-12 md:pt-12">
       <div className="mx-auto max-w-xl px-4">
@@ -207,6 +218,7 @@ export default function SignupPage() {
             {plans.map((p) => {
               const selected = selectedPlanId === p.id;
               const isMonthly = p.billingInterval === "Monthly";
+              const features = planFeatures(p).slice(0, 3);
               return (
                 <button
                   key={p.id}
@@ -221,10 +233,17 @@ export default function SignupPage() {
                   <div className="flex items-start justify-between gap-3">
                     <div>
                       <p className="font-semibold text-gardens-dark">{p.name}</p>
-                      <p className="mt-1 text-2xl font-bold text-gardens-primary">
-                        £{formatGbp(p.priceGbp)}
+                      <p className="mt-1 text-sm text-stone-600">{planVisitSummary(p)}</p>
+                      <p className="mt-2 text-2xl font-bold text-gardens-primary">
+                        from £{formatGbp(planPriceForGarden(p, "Small"))}
                         <span className="text-sm font-normal text-stone-500">/{isMonthly ? "mo" : "yr"}</span>
                       </p>
+                      <p className="mt-1 text-xs text-stone-500">Small garden — price adjusts for medium/large</p>
+                      <ul className="mt-3 space-y-1 text-xs text-stone-600">
+                        {features.map((f) => (
+                          <li key={f}>• {f}</li>
+                        ))}
+                      </ul>
                     </div>
                     {selected && <Check className="h-5 w-5 shrink-0 text-gardens-primary" />}
                   </div>
@@ -287,11 +306,28 @@ export default function SignupPage() {
                 className="field-input"
                 required
               >
-                <option value="Small">Small</option>
-                <option value="Medium">Medium</option>
-                <option value="Large">Large</option>
+                {(Object.keys(GARDEN_SIZE_GUIDE) as GardenSize[]).map((size) => (
+                  <option key={size} value={size}>
+                    {GARDEN_SIZE_GUIDE[size].label}
+                  </option>
+                ))}
               </select>
             </label>
+            <p className="rounded-xl bg-stone-50 px-4 py-3 text-sm text-stone-600">
+              <strong>{GARDEN_SIZE_GUIDE[form.gardenSize as GardenSize].label}:</strong>{" "}
+              {GARDEN_SIZE_GUIDE[form.gardenSize as GardenSize].description}{" "}
+              {GARDEN_SIZE_GUIDE[form.gardenSize as GardenSize].examples}
+            </p>
+            {checkoutPrice != null && selectedPlan && (
+              <p className="rounded-xl border border-gardens-primary/20 bg-gardens-light/40 px-4 py-3 text-sm text-gardens-dark">
+                Your subscription:{" "}
+                <strong>
+                  £{formatGbp(checkoutPrice)}
+                  /{selectedPlan.billingInterval === "Monthly" ? "month" : "year"}
+                </strong>{" "}
+                for a {form.gardenSize.toLowerCase()} garden on {selectedPlan.name}.
+              </p>
+            )}
             <Field
               label="Preferred availability (e.g. Weekday mornings)"
               value={form.availability}

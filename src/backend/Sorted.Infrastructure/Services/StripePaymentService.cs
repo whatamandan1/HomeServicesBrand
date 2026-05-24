@@ -41,8 +41,14 @@ public class StripePaymentService(
     {
         EnsureApiKey();
 
-        var chargePrice = PlanPricing.ResolvePrice(plan, _planPricing);
-        var lineItem = BuildSubscriptionLineItem(plan, chargePrice);
+        var gardenSize = await db.CustomerProperties.AsNoTracking()
+            .Where(p => p.CustomerId == subscription.CustomerId && !p.IsDeleted)
+            .OrderByDescending(p => p.IsPrimary)
+            .Select(p => p.GardenSize)
+            .FirstOrDefaultAsync(ct);
+
+        var chargePrice = PlanPricing.ResolvePrice(plan, _planPricing, gardenSize);
+        var lineItem = BuildSubscriptionLineItem(plan, chargePrice, gardenSize);
         var sessionService = new SessionService();
         var session = await sessionService.CreateAsync(new SessionCreateOptions
         {
@@ -388,9 +394,12 @@ public class StripePaymentService(
         }
     }
 
-    private SessionLineItemOptions BuildSubscriptionLineItem(SubscriptionPlan plan, decimal chargePrice)
+    private SessionLineItemOptions BuildSubscriptionLineItem(
+        SubscriptionPlan plan,
+        decimal chargePrice,
+        GardenSize gardenSize = GardenSize.Small)
     {
-        if (!string.IsNullOrWhiteSpace(plan.StripePriceId))
+        if (!string.IsNullOrWhiteSpace(plan.StripePriceId) && gardenSize == GardenSize.Small)
         {
             if (plan.StripePriceId.StartsWith("prod_", StringComparison.OrdinalIgnoreCase))
             {
@@ -422,7 +431,9 @@ public class StripePaymentService(
                 ProductData = new SessionLineItemPriceDataProductDataOptions
                 {
                     Name = plan.Name,
-                    Description = plan.Description
+                    Description = gardenSize == GardenSize.Small
+                        ? plan.Description
+                        : $"{plan.Description} ({gardenSize} garden)"
                 }
             }
         };
