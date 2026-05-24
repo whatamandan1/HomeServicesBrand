@@ -86,7 +86,32 @@ export function CommunicationThreadList({
 
   return (
     <div className="mt-2 space-y-3">
-      <div className="overflow-x-auto rounded-lg border bg-white shadow-sm">
+      <div className="space-y-3 md:hidden">
+        {threads.map((t) => (
+          <div key={t.id} className="rounded-xl border bg-white p-4 shadow-sm">
+            <p className="font-medium text-gardens-dark">{t.subject}</p>
+            <p className="mt-1 text-xs text-stone-500">{formatWhen(t.createdAtUtc)}</p>
+            <p className="mt-2 text-sm text-stone-600">
+              {t.customerEmail ?? (t.customerId ? t.customerId.slice(0, 8) : "Guest")}
+            </p>
+            <p className="mt-1 text-sm text-stone-500">
+              {t.messageCount} message{t.messageCount === 1 ? "" : "s"}
+            </p>
+            {t.lastMessagePreview && (
+              <p className="mt-2 line-clamp-2 text-sm text-stone-600">{t.lastMessagePreview}</p>
+            )}
+            <button
+              type="button"
+              onClick={() => toggleThread(t.id)}
+              className="mt-3 text-sm font-medium text-emerald-700 underline hover:text-emerald-900"
+            >
+              {expandedId === t.id ? "Hide" : "View conversation"}
+            </button>
+          </div>
+        ))}
+      </div>
+
+      <div className="hidden overflow-x-auto rounded-lg border bg-white shadow-sm md:block">
         <table className="min-w-full text-left text-sm">
           <thead className="border-b bg-stone-50 text-xs uppercase text-stone-500">
             <tr>

@@ -87,6 +87,9 @@ export default function LandlordPortalPage() {
             <h2 className="font-semibold text-gardens-dark">
               Properties ({account.properties.length})
             </h2>
+            {account.properties.length === 0 ? (
+              <p className="mt-3 text-sm text-stone-500">No properties on this account yet.</p>
+            ) : (
             <ul className="mt-3 space-y-3">
               {account.properties.map((property) => (
                 <li
@@ -116,6 +119,7 @@ export default function LandlordPortalPage() {
                 </li>
               ))}
             </ul>
+            )}
           </section>
 
           <p className="rounded-lg border border-dashed border-stone-200 bg-stone-50 px-4 py-3 text-sm text-stone-500">

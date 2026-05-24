@@ -32,7 +32,12 @@ export function middleware(request: NextRequest) {
 
   const requiredRole = roleByPrefix[prefix];
   const sessionRole = request.cookies.get("sorted_role")?.value;
-  if (sessionRole && sessionRole !== requiredRole) {
+  if (!sessionRole) {
+    const loginUrl = new URL("/login", request.url);
+    loginUrl.searchParams.set("next", pathname);
+    return NextResponse.redirect(loginUrl);
+  }
+  if (sessionRole !== requiredRole) {
     return NextResponse.redirect(new URL(portalPathForRole(sessionRole), request.url));
   }
 

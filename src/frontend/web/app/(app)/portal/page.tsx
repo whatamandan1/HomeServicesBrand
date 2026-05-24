@@ -12,11 +12,12 @@ import { PropertyList } from "@/components/properties/PropertyList";
 import { stashedPhotoToFile, takeSignupPhotos } from "@/lib/pending-signup-photos";
 
 export default function PortalPage() {
-  const { auth, setAuth, ready } = useAuth();
+  const { auth, ready } = useAuth();
   const [subs, setSubs] = useState<CustomerSubscription[]>([]);
   const [properties, setProperties] = useState<CustomerProperty[]>([]);
   const [visits, setVisits] = useState<JobVisit[]>([]);
   const [error, setError] = useState<string | null>(null);
+  const [loading, setLoading] = useState(true);
   const [busyId, setBusyId] = useState<string | null>(null);
   const [chatPrompt, setChatPrompt] = useState<{ key: number; text: string } | null>(null);
 
@@ -32,11 +33,38 @@ export default function PortalPage() {
 
   useEffect(() => {
     if (!auth?.token || auth.role !== "Customer") return;
-    api.customerSubscriptions(auth.token)
-      .then(setSubs)
-      .catch((e) => setError(e instanceof Error ? e.message : "Could not load subscriptions"));
-    api.customerProperties(auth.token).then(setProperties);
-    refreshVisits();
+
+    let cancelled = false;
+    setLoading(true);
+    setError(null);
+
+    void Promise.allSettled([
+      api.customerSubscriptions(auth.token),
+      api.customerProperties(auth.token),
+      api.customerVisits(auth.token),
+    ]).then(([subsResult, propsResult, visitsResult]) => {
+      if (cancelled) return;
+      if (subsResult.status === "fulfilled") setSubs(subsResult.value);
+      if (propsResult.status === "fulfilled") setProperties(propsResult.value);
+      if (visitsResult.status === "fulfilled") setVisits(visitsResult.value);
+
+      const failures = [subsResult, propsResult, visitsResult].filter(
+        (r) => r.status === "rejected"
+      );
+      if (failures.length > 0) {
+        const first = failures[0];
+        setError(
+          first.status === "rejected" && first.reason instanceof Error
+            ? first.reason.message
+            : "Could not load account data"
+        );
+      }
+      setLoading(false);
+    });
+
+    return () => {
+      cancelled = true;
+    };
   }, [auth]);
 
   useEffect(() => {
@@ -115,7 +143,7 @@ export default function PortalPage() {
         <button
           onClick={() => {
             clearAuth();
-            setAuth(null);
+            window.location.href = "/login";
           }}
           className="min-h-[44px] text-sm text-stone-500 hover:text-stone-800"
         >
@@ -125,7 +153,9 @@ export default function PortalPage() {
 
       {error && <p className="text-sm text-red-600">{error}</p>}
 
-      {subs.some((s) => s.preferredGardenerName) && (
+      {loading && <p className="text-sm text-stone-500">Loading your account…</p>}
+
+      {!loading && subs.some((s) => s.preferredGardenerName) && (
         <p className="rounded-xl border border-gardens-primary/15 bg-gardens-light/40 px-4 py-3 text-sm text-gardens-dark">
           Your regular gardener is{" "}
           <strong>{subs.find((s) => s.preferredGardenerName)?.preferredGardenerName}</strong>. We&apos;ll
@@ -133,7 +163,7 @@ export default function PortalPage() {
         </p>
       )}
 
-      {auth?.token && (
+      {!loading && auth?.token && (
         <BillingSection
           token={auth.token}
           subscriptions={subs}
@@ -151,6 +181,9 @@ export default function PortalPage() {
         <p className="mt-1 text-sm text-stone-500">
           Update your address, garden size, and access notes for your gardener.
         </p>
+        {loading ? (
+          <p className="mt-3 text-sm text-stone-500">Loading properties…</p>
+        ) : (
         <PropertyList
           properties={properties}
           token={auth.token}
@@ -160,6 +193,7 @@ export default function PortalPage() {
             setProperties((list) => list.map((p) => (p.id === id ? updated : p)));
           }}
         />
+        )}
       </section>
 
       <section>
@@ -167,6 +201,9 @@ export default function PortalPage() {
         <p className="mt-1 text-sm text-stone-500">
           Reschedule or cancel before your gardener starts the visit.
         </p>
+        {loading ? (
+          <p className="mt-3 text-sm text-stone-500">Loading visits…</p>
+        ) : (
         <VisitList
           visits={upcoming}
           busyId={busyId}
@@ -174,6 +211,7 @@ export default function PortalPage() {
           onReschedule={(id, date) => runVisitAction(id, "reschedule", date)}
           emptyMessage="No visits scheduled yet."
         />
+        )}
       </section>
 
       {past.length > 0 && (

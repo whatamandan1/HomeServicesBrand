@@ -26,6 +26,7 @@ export default function ProviderPage() {
   const [coverageRadiusInput, setCoverageRadiusInput] = useState(10);
   const [coverageSaving, setCoverageSaving] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
+  const [initialLoading, setInitialLoading] = useState(true);
   const [earningsRefreshKey, setEarningsRefreshKey] = useState(0);
 
   function scrollToMyVisits() {
@@ -57,6 +58,7 @@ export default function ProviderPage() {
           : "Failed to load jobs"
       );
     }
+    setInitialLoading(false);
   }
 
   useEffect(() => {
@@ -275,7 +277,9 @@ export default function ProviderPage() {
           <h2 className="font-semibold">Open in your area</h2>
           {open.length > 0 && <ListMapToggle value={openView} onChange={setOpenView} />}
         </div>
-        {open.length === 0 ? (
+        {initialLoading ? (
+          <p className="mt-2 text-sm text-stone-500">Loading open jobs…</p>
+        ) : open.length === 0 ? (
           <div className="mt-2 space-y-2 text-sm text-stone-500">
             <p>No open visits in your coverage area right now.</p>
             {process.env.NODE_ENV === "development" && (
@@ -349,7 +353,9 @@ export default function ProviderPage() {
           </div>
           {upcoming.length > 0 && <ListMapToggle value={myVisitsView} onChange={setMyVisitsView} />}
         </div>
-        {upcoming.length === 0 ? (
+        {initialLoading ? (
+          <p className="mt-2 text-sm text-stone-500">Loading your visits…</p>
+        ) : upcoming.length === 0 ? (
           <p className="mt-2 text-sm text-stone-500">No active visits — claim a job above.</p>
         ) : myVisitsView === "map" ? (
           <VisitMap

@@ -27,7 +27,7 @@ function navLinksForRole(role: AuthResponse["role"] | null) {
   if (role === "Customer") {
     return [customerLink, switchAccountLink];
   }
-  return [customerLink, providerLink, landlordLink, switchAccountLink];
+  return [{ href: "/login", label: "Log in" }];
 }
 
 export function AppHeader() {

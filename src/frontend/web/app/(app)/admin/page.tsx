@@ -52,7 +52,6 @@ export default function AdminPage() {
   const [workflowEvents, setWorkflowEvents] = useState<WorkflowEvent[]>([]);
   const [aiActionLogs, setAiActionLogs] = useState<AiActionLog[]>([]);
   const [communicationThreads, setCommunicationThreads] = useState<CommunicationThreadSummary[]>([]);
-  const [dispatchMsg, setDispatchMsg] = useState<string | null>(null);
   const [visitError, setVisitError] = useState<string | null>(null);
   const [busyVisitId, setBusyVisitId] = useState<string | null>(null);
   const [escalationError, setEscalationError] = useState<string | null>(null);
@@ -65,6 +64,11 @@ export default function AdminPage() {
   const [providerError, setProviderError] = useState<string | null>(null);
   const [portfolioEnquiries, setPortfolioEnquiries] = useState<PortfolioEnquirySummary[]>([]);
   const [portfolioError, setPortfolioError] = useState<string | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [pageError, setPageError] = useState<string | null>(null);
+  const [dispatchNotice, setDispatchNotice] = useState<string | null>(null);
+  const [dispatchError, setDispatchError] = useState<string | null>(null);
+  const [approvingProviderId, setApprovingProviderId] = useState<string | null>(null);
 
   function refreshVisits() {
     if (!auth?.token) return;
@@ -124,16 +128,83 @@ export default function AdminPage() {
 
   useEffect(() => {
     if (!auth?.token || auth.role !== "Admin") return;
-    api.adminDashboard(auth.token, trendDays).then(setDash);
-    api.adminCustomers(auth.token).then(setCustomers);
-    api.adminProviders(auth.token).then(setProviders);
-    api.adminVisits(auth.token).then(setVisits);
-    api.adminEscalations(auth.token).then(setEscalations);
-    api.adminWorkflowEvents(auth.token).then(setWorkflowEvents);
-    api.adminAiActions(auth.token).then(setAiActionLogs);
-    api.adminCommunicationThreads(auth.token).then(setCommunicationThreads);
-    api.adminPortfolioEnquiries(auth.token).then(setPortfolioEnquiries);
+
+    let cancelled = false;
+    setLoading(true);
+    setPageError(null);
+
+    void (async () => {
+      const results = await Promise.allSettled([
+        api.adminDashboard(auth.token, trendDays),
+        api.adminCustomers(auth.token),
+        api.adminProviders(auth.token),
+        api.adminVisits(auth.token),
+        api.adminEscalations(auth.token),
+        api.adminWorkflowEvents(auth.token),
+        api.adminAiActions(auth.token),
+        api.adminCommunicationThreads(auth.token),
+        api.adminPortfolioEnquiries(auth.token),
+      ]);
+
+      if (cancelled) return;
+
+      const [
+        dashResult,
+        customersResult,
+        providersResult,
+        visitsResult,
+        escalationsResult,
+        workflowResult,
+        aiResult,
+        threadsResult,
+        portfolioResult,
+      ] = results;
+
+      if (dashResult.status === "fulfilled") setDash(dashResult.value);
+      if (customersResult.status === "fulfilled") setCustomers(customersResult.value);
+      if (providersResult.status === "fulfilled") setProviders(providersResult.value);
+      if (visitsResult.status === "fulfilled") setVisits(visitsResult.value);
+      if (escalationsResult.status === "fulfilled") setEscalations(escalationsResult.value);
+      if (workflowResult.status === "fulfilled") setWorkflowEvents(workflowResult.value);
+      if (aiResult.status === "fulfilled") setAiActionLogs(aiResult.value);
+      if (threadsResult.status === "fulfilled") setCommunicationThreads(threadsResult.value);
+      if (portfolioResult.status === "fulfilled") setPortfolioEnquiries(portfolioResult.value);
+
+      const failures = results.filter((r) => r.status === "rejected");
+      if (failures.length > 0) {
+        const first = failures[0];
+        const message =
+          first.status === "rejected" && first.reason instanceof Error
+            ? first.reason.message
+            : "Could not load CRM data";
+        setPageError(
+          failures.length === results.length
+            ? message
+            : `${message} — some sections may be incomplete. Refresh to retry.`
+        );
+      }
+
+      setLoading(false);
+    })();
+
+    return () => {
+      cancelled = true;
+    };
   }, [auth, trendDays]);
+
+  async function approveProvider(providerId: string) {
+    if (!auth?.token) return;
+    setApprovingProviderId(providerId);
+    setProviderError(null);
+    try {
+      await api.approveProvider(auth.token, providerId);
+      setProviders(await api.adminProviders(auth.token));
+    } catch (e) {
+      setProviderError(e instanceof Error ? e.message : "Approval failed");
+    } finally {
+      setApprovingProviderId(null);
+    }
+  }
 
   if (!ready) return <p className="text-stone-500">Loading…</p>;
   if (!auth) {
@@ -158,6 +229,9 @@ export default function AdminPage() {
   return (
     <div className="space-y-8">
       <h1 className="text-2xl font-bold">Operations CRM</h1>
+
+      {loading && <p className="text-sm text-stone-500">Loading CRM data…</p>}
+      {pageError && <p className="text-sm text-red-600">{pageError}</p>}
 
       {dash && (
         <>
@@ -284,14 +358,12 @@ export default function AdminPage() {
                   </button>
                   {!p.isApproved && (
                     <button
-                      className="rounded bg-gardens-primary px-3 py-1 text-white"
-                      onClick={() =>
-                        api.approveProvider(auth.token, p.id).then(() =>
-                          api.adminProviders(auth.token).then(setProviders)
-                        )
-                      }
+                      type="button"
+                      className="rounded bg-gardens-primary px-3 py-1 text-white disabled:opacity-50"
+                      disabled={approvingProviderId === p.id}
+                      onClick={() => approveProvider(p.id)}
                     >
-                      Approve
+                      {approvingProviderId === p.id ? "Approving…" : "Approve"}
                     </button>
                   )}
                   {auth && auth.role === "Admin" && !isImpersonating(auth) && (
@@ -404,13 +476,14 @@ export default function AdminPage() {
               className="rounded-lg bg-gardens-primary px-4 py-2 text-sm font-semibold text-white"
               onClick={async () => {
                 if (!auth?.token) return;
-                setDispatchMsg(null);
+                setDispatchNotice(null);
+                setDispatchError(null);
                 try {
                   await api.adminOpenDispatch(auth.token);
-                  setDispatchMsg("Scheduled visits opened for provider claiming.");
+                  setDispatchNotice("Scheduled visits opened for provider claiming.");
                   refreshVisits();
                 } catch (e) {
-                  setDispatchMsg(e instanceof Error ? e.message : "Dispatch failed");
+                  setDispatchError(e instanceof Error ? e.message : "Dispatch failed");
                 }
               }}
             >
@@ -419,7 +492,10 @@ export default function AdminPage() {
           </div>
           <ListMapToggle value={visitView} onChange={setVisitView} />
         </div>
-        {dispatchMsg && <p className="mt-2 text-sm text-stone-600">{dispatchMsg}</p>}
+        {dispatchNotice && (
+          <p className="mt-2 text-sm text-green-800">{dispatchNotice}</p>
+        )}
+        {dispatchError && <p className="mt-2 text-sm text-red-600">{dispatchError}</p>}
         {visitError && <p className="mt-2 text-sm text-red-600">{visitError}</p>}
         {visitView === "map" ? (
           <VisitMap

@@ -365,7 +365,7 @@ async function request<T>(
     }
     if (res.status === 403) {
       message =
-        "Access denied — you may be logged in with the wrong account (customer vs admin vs provider).";
+        "Access denied — you may be logged in with the wrong account (customer, provider, landlord, or admin).";
     }
     if (res.status >= 500 && !text.trim()) {
       message =

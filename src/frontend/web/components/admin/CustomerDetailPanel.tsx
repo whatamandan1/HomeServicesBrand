@@ -36,6 +36,7 @@ export function CustomerDetailPanel({
   const [busySubId, setBusySubId] = useState<string | null>(null);
   const [threads, setThreads] = useState<CommunicationThreadSummary[]>([]);
   const [threadsLoading, setThreadsLoading] = useState(true);
+  const [threadsError, setThreadsError] = useState<string | null>(null);
 
   useEffect(() => {
     setLoading(true);
@@ -49,10 +50,14 @@ export function CustomerDetailPanel({
 
   useEffect(() => {
     setThreadsLoading(true);
+    setThreadsError(null);
     api
       .adminCustomerCommunicationThreads(token, customerId)
       .then(setThreads)
-      .catch(() => setThreads([]))
+      .catch((e) => {
+        setThreads([]);
+        setThreadsError(e instanceof Error ? e.message : "Failed to load chat history");
+      })
       .finally(() => setThreadsLoading(false));
   }, [customerId, token]);
 
@@ -243,6 +248,7 @@ export function CustomerDetailPanel({
 
           <div>
             <h4 className="text-sm font-semibold text-gardens-dark">Support conversations</h4>
+            {threadsError && <p className="mt-2 text-sm text-red-600">{threadsError}</p>}
             {threadsLoading ? (
               <p className="mt-2 text-sm text-stone-500">Loading chat history…</p>
             ) : (

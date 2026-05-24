@@ -6,7 +6,7 @@ Living checklist comparing the current GardensSorted / Sorted platform build aga
 Use this document to track what is done, what is partial, and what to build next. Update
 statuses as features ship.
 
-**Last reviewed:** 2026-05-23 (Multi-Property Solutions)  
+**Last reviewed:** 2026-05-24 (demo polish + landlord portal)  
 **Live site:** https://home-services-brand.vercel.app/  
 **Live API:** https://homeservicesbrand-production.up.railway.app/
 
@@ -14,7 +14,7 @@ statuses as features ship.
 
 ### What's next (demo phase)
 
-1. **Operational polish** — whatever surfaces during demo testing (CRM, scheduling edge cases)
+1. **Operational polish** — loading states, error feedback, mobile CRM (in progress)
 2. **Multi-Property Solutions phase 2** — pricing rules + AI indicative quote + admin review
 3. **Multi-brand frontend** — when a second brand is ready
 
@@ -257,7 +257,7 @@ Modular boundaries to maintain as the platform grows.
 
 | Module | Status | Notes |
 |--------|--------|-------|
-| Identity | ✅ Done | JWT, BCrypt, roles (Customer, Provider, Admin) |
+| Identity | ✅ Done | JWT, BCrypt, roles (Customer, Provider, Admin, Landlord) |
 | Brands | 🟡 Partial | Entity + API; frontend not multi-brand yet |
 | Customers | ✅ Done | Registration, portal, subscriptions |
 | Multi-Property Solutions | 🟡 Partial | Phase 1 enquiry + admin leads; invoicing track phase 4 |
@@ -297,7 +297,7 @@ Modular boundaries to maintain as the platform grows.
 
 | Area | Status | Next step |
 |------|--------|-----------|
-| JWT + RBAC | ✅ Done | API + Next.js role middleware on `/admin`, `/provider`, `/portal` |
+| JWT + RBAC | ✅ Done | API + Next.js role middleware on `/admin`, `/provider`, `/portal`, `/landlord` |
 | Encrypted secrets | 🟡 Partial | Env vars documented; production startup validates JWT + Stripe webhook |
 | GDPR readiness | 🟡 Partial | Privacy policy at `/privacy`; data export/delete flows still open |
 | Audit logging | 🟡 Partial | AI + workflow logs in DB; admin UI missing |
@@ -350,7 +350,7 @@ Quick snapshot of implemented features as of last review.
 ### Frontend
 - Marketing: customer-focused `/`, `/about`, `/providers`; **For landlords** `/multi-property-solutions`; SEO (sitemap, robots); compressed hero; lazy chat; `/privacy` and `/terms`; OG image (~200KB JPEG)
 - Signup: 3-step customer wizard; provider apply form (postcode + radius slider)
-- Portals: `/portal` (Manage billing, photos, preferred gardener), `/provider` (coverage, availability, earnings), `/admin` (CRM + trends + photo lightbox)
+- Portals: `/portal` (Manage billing, photos, preferred gardener), `/provider` (coverage, availability, earnings), `/admin` (CRM + trends + photo lightbox), `/landlord` (multi-property demo dashboard)
 - Mobile UX: responsive layouts, hamburger nav, mobile CTA bar
 - API proxy via Next.js rewrites for Vercel production
 
