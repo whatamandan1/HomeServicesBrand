@@ -171,6 +171,18 @@ public class PaymentRecord : AuditableEntity
     public string? StripeInvoiceId { get; set; }
 }
 
+public class ProviderEarning : AuditableEntity
+{
+    public Guid ProviderId { get; set; }
+    public Provider Provider { get; set; } = null!;
+    public Guid JobVisitId { get; set; }
+    public JobVisit JobVisit { get; set; } = null!;
+    public decimal AmountGbp { get; set; }
+    public ProviderEarningStatus Status { get; set; } = ProviderEarningStatus.Accrued;
+    public DateTime? PaidAtUtc { get; set; }
+    public string? PayoutNotes { get; set; }
+}
+
 public class WorkflowEvent : AuditableEntity
 {
     public string WorkflowName { get; set; } = string.Empty;

@@ -163,6 +163,23 @@ export type ProviderAvailability = {
   blockedDates: ProviderBlockedDate[];
 };
 
+export type ProviderEarning = {
+  id: string;
+  jobVisitId: string;
+  visitDate: string;
+  postcode: string;
+  amountGbp: number;
+  status: "Accrued" | "Paid" | "Cancelled";
+  paidAtUtc: string | null;
+  payoutNotes: string | null;
+};
+
+export type ProviderEarningsSummary = {
+  accruedTotalGbp: number;
+  paidTotalGbp: number;
+  earnings: ProviderEarning[];
+};
+
 export type Escalation = {
   id: string;
   reason: string;
@@ -496,6 +513,8 @@ export const api = {
     request<JobVisit>(`/api/provider/visits/${visitId}/start`, { method: "POST" }, token),
   completeVisit: (token: string, visitId: string) =>
     request<JobVisit>(`/api/provider/visits/${visitId}/complete`, { method: "POST" }, token),
+  providerEarnings: (token: string) =>
+    request<ProviderEarningsSummary>("/api/provider/earnings", {}, token),
   adminDashboard: (token: string, days = 30) =>
     request<AdminDashboard>(`/api/admin/dashboard?days=${days}`, {}, token),
   adminCustomers: (token: string) =>
@@ -542,6 +561,35 @@ export const api = {
       method: "PATCH",
       body: JSON.stringify({ coveragePostcode, coverageRadiusMiles }),
     }, token),
+  adminProviderAvailability: (token: string, providerId: string) =>
+    request<ProviderAvailability>(`/api/admin/providers/${providerId}/availability`, {}, token),
+  adminProviderEarnings: (token: string, providerId: string) =>
+    request<ProviderEarningsSummary>(`/api/admin/providers/${providerId}/earnings`, {}, token),
+  adminMarkProviderEarningPaid: (
+    token: string,
+    providerId: string,
+    earningId: string,
+    notes?: string | null
+  ) =>
+    request<ProviderEarning>(
+      `/api/admin/providers/${providerId}/earnings/${earningId}/mark-paid`,
+      { method: "POST", body: JSON.stringify({ notes: notes ?? null }) },
+      token
+    ),
+  adminCustomerPropertyPhotos: async (
+    token: string,
+    customerId: string,
+    propertyId: string
+  ) => {
+    const res = await request<{ propertyId: string; photos: PropertyMedia[] }>(
+      `/api/admin/customers/${customerId}/properties/${propertyId}/photos`,
+      {},
+      token
+    );
+    return res.photos;
+  },
+  adminFetchPropertyPhoto: (token: string, photoId: string) =>
+    fetchBlob(`/api/admin/properties/photos/${photoId}`, token),
   adminCustomerCommunicationThreads: (token: string, customerId: string, limit = 20) =>
     request<CommunicationThreadSummary[]>(
       `/api/admin/customers/${customerId}/communication-threads?limit=${limit}`,

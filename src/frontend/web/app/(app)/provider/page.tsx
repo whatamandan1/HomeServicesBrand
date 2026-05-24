@@ -8,6 +8,7 @@ import { StatusBadge } from "@/components/ui";
 import { ListMapToggle, type ViewMode } from "@/components/map/ListMapToggle";
 import { VisitMap } from "@/components/map/VisitMap";
 import { ProviderAvailabilitySection } from "@/components/provider/ProviderAvailabilitySection";
+import { ProviderEarningsSection } from "@/components/provider/ProviderEarningsSection";
 
 export default function ProviderPage() {
   const { auth, ready } = useAuth();
@@ -257,6 +258,7 @@ export default function ProviderPage() {
           onUpdated={() => void refresh()}
         />
       )}
+      {auth?.token && <ProviderEarningsSection token={auth.token} />}
       {notice && (
         <p className="rounded-lg border border-green-200 bg-green-50 px-4 py-3 text-sm text-green-900">
           {notice}

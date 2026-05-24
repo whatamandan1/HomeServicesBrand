@@ -6,20 +6,19 @@ Living checklist comparing the current GardensSorted / Sorted platform build aga
 Use this document to track what is done, what is partial, and what to build next. Update
 statuses as features ship.
 
-**Last reviewed:** 2026-05-23 (end of session)  
+**Last reviewed:** 2026-05-23  
 **Live site:** https://home-services-brand.vercel.app/  
 **Live API:** https://homeservicesbrand-production.up.railway.app/
 
-**Current focus:** Phase 3 product — provider payouts, SMS, admin polish. Pilot flows verified on live including day-off vs claimed-visit release.
+**Current focus:** Twilio SMS + pre-launch gate. Payout ledger v1 and admin CRM polish shipped.
 
 ### What's next (when you resume)
 
-Recent batch shipped: provider availability v1 (incl. day-off release), billing portal recovery, signup/Postgres fixes, admin trend charts, same-gardener auto-assign, property photos.
+Recent batch shipped: provider earnings ledger (manual payout), admin photo thumbnails, admin provider availability view, day-off release fix.
 
-1. **Provider earnings / payouts** — Stripe Connect or visit ledger + payout history
-2. **Twilio SMS** — UK sender registration + visit/reminder texts in prod
-3. **Admin polish** — photo thumbnails in CRM, provider availability read-only in admin
-4. **Pre-launch gate** (when ready) — real admin account, `Features__SeedDemoData=false`, custom domain
+1. **Twilio SMS** — UK sender registration + visit/reminder texts in prod
+2. **Stripe Connect (v2 payouts)** — automated transfers when manual payout volume grows
+3. **Pre-launch gate** (when ready) — real admin account, `Features__SeedDemoData=false`, custom domain
 
 ### Last job before go-live (customer launch gate)
 
@@ -29,7 +28,7 @@ Do this **once**, immediately before inviting real paying customers:
 2. **Turn off demo seed on Railway** — set `Features__SeedDemoData=false` and redeploy API (only after the real admin exists and you have verified admin login).
 3. **Smoke-test on live** — admin login, customer signup, billing portal, provider claim flow, no demo credentials visible in UI.
 
-Recent session (2026-05-23): provider availability (working days, hours, blocked dates + **release assigned visits on day off**), billing sync + Manage billing, PostgreSQL migration fix for signup, 90-day weekly trend charts, gardener auto-assign + provider refresh, property photos, terms on signup. Day-off release verified on live (25 Jun test case).
+Recent session (2026-05-23): provider earnings ledger (accrue on complete, admin mark paid), admin CRM photo thumbnails + provider availability read-only, day-off visit release verified on live.
 
 ---
 
@@ -91,7 +90,8 @@ Work through phases in order. Each phase builds on the last.
 - [x] **Provider availability (v1)** — working days + default hours + blocked dates on `/provider`; claim, open jobs, and preferred-provider auto-assign respect schedule; blocking a day or changing working days releases assigned visits back to open pool (incl. rescheduled)
 - [ ] **Provider availability (v2)** — match visit times to customer text windows; admin view/edit
 - [ ] **Multi-brand frontend** — theme/config per brand; remove hardcoded `gardens-sorted` in API client
-- [ ] **Provider earnings / payouts** — ledger or Stripe Connect integration
+- [x] **Provider earnings / payouts (v1)** — visit ledger accrues on complete (~60% share); provider + admin views; admin marks paid manually
+- [ ] **Provider earnings / payouts (v2)** — Stripe Connect automated transfers
 - [x] **Recurring provider preference** — preferred provider after first visit; auto-assign pending visits on complete + scheduling
 - [ ] **Weather-aware rescheduling** — weather API + reschedule workflow
 - [x] **Automated test suite** — xUnit core + API tests; CI fails on test failure
@@ -127,8 +127,8 @@ Work through phases in order. Each phase builds on the last.
 |-------------|--------|-----------|
 | Onboard | ✅ Done | Apply at `/providers#apply` (postcode + radius); admin approves on `/admin` |
 | Claim jobs | ✅ Done | Matched by derived outcodes / distance within radius |
-| Manage availability | 🟡 Partial | Working days, hours, blocked dates on `/provider`; day-off releases claimed/rescheduled visits; v2 = time-window matching + admin view |
-| View earnings | ⬜ Not started | Payout ledger + Stripe Connect or manual tracking |
+| Manage availability | 🟡 Partial | Working days, hours, blocked dates on `/provider`; admin read-only view; v2 = time-window matching + admin edit |
+| View earnings | 🟡 Partial | Accrued/paid ledger on `/provider`; admin mark paid; Stripe Connect deferred |
 | View recurring assignments | ✅ Done | Preferred gardener auto-assign; portal shows assigned gardener name |
 | Communicate with operations | ⬜ Not started | Provider messaging or ops notifications |
 
@@ -139,8 +139,8 @@ Work through phases in order. Each phase builds on the last.
 | Requirement | Status | Next step |
 |-------------|--------|-----------|
 | Operational dashboards | 🟡 Partial | KPIs, trends, date filters |
-| Provider management | 🟡 Partial | Approve providers; edit coverage in admin; provider self-service coverage update |
-| Customer management | 🟡 Partial | Customer detail with subs, visits, support chat history; admin cancel subscription |
+| Provider management | 🟡 Partial | Approve providers; edit coverage; read-only availability + earnings in provider detail |
+| Customer management | 🟡 Partial | Customer detail with subs, visits, property photo thumbnails, support chat history; admin cancel subscription |
 | Workflow monitoring | 🟡 Partial | UI for `WorkflowEvent` log |
 | Dispatch visibility | 🟡 Partial | Dispatch board + open-dispatch action in UI |
 | Escalation handling | ✅ Done | Take case and resolve in admin portal |
@@ -188,7 +188,7 @@ Work through phases in order. Each phase builds on the last.
 | Provider claim | ✅ Done | SMS notification when configured |
 | Reminders | ⬜ Not started | Pre-visit email/SMS |
 | Weather rescheduling | ⬜ Not started | — |
-| Payout generation | ⬜ Not started | — |
+| Payout generation | 🟡 Partial | Earning accrues on visit complete; admin marks paid manually |
 | Churn prevention | ⬜ Not started | — |
 
 All workflow transitions should be logged — logging exists; automation and admin visibility are the gaps.
@@ -204,7 +204,7 @@ Modular boundaries to maintain as the platform grows.
 | Identity | ✅ Done | JWT, BCrypt, roles (Customer, Provider, Admin) |
 | Brands | 🟡 Partial | Entity + API; frontend not multi-brand yet |
 | Customers | ✅ Done | Registration, portal, subscriptions |
-| Providers | 🟡 Partial | Self-signup, coverage, claiming, availability v1; earnings missing |
+| Providers | 🟡 Partial | Self-signup, coverage, claiming, availability v1, earnings ledger v1 |
 | Services | 🟡 Partial | Garden care only; subscription plans seeded |
 | Subscriptions | ✅ Done | Plans + Stripe subscription Checkout + renewal webhooks |
 | Scheduling | 🟡 Partial | Visit batch + top-up jobs; provider availability enforced |
@@ -276,7 +276,9 @@ Quick snapshot of implemented features as of last review.
 - Customer: signup creates account, property, subscription; property edit in portal
 - Stripe: subscription Checkout + renewal/past_due/cancel webhooks; billing portal (cancel disabled — support/admin only); customer payment history API
 - Visits: scheduling service, background jobs (top-up, dispatch expiry, reminders), claim/start/complete, cancel/reschedule
-- Provider availability: `WorkingDaysMask`, default hours, `ProviderBlockedDates`; API + provider UI; enforced on open jobs, claim, auto-assign; calendar-day release of assigned visits on blocked dates / non-working days (self-heal on `GET /provider/visits/mine`)
+- Provider earnings: `ProviderEarning` ledger; accrues on visit complete (~60% of plan revenue per visit); `GET /api/provider/earnings`; admin mark paid
+- Provider availability: `WorkingDaysMask`, default hours, `ProviderBlockedDates`; API + provider UI; enforced on open jobs, claim, auto-assign; calendar-day release of assigned visits on blocked dates / non-working days
+- Admin CRM: property photo thumbnails in customer detail; provider availability + earnings in provider detail
 - Signup: terms acceptance, deferred photo upload, checkout session sync, PostgreSQL migration repair
 - Billing: Manage billing for active subs; Stripe link recovery from checkout session
 - Admin: KPI trend charts (daily 7/30d, weekly 90d); customer photo count in CRM
@@ -289,7 +291,7 @@ Quick snapshot of implemented features as of last review.
 ### Frontend
 - Marketing: customer-focused `/`, `/about`, `/providers`; SEO (sitemap, robots); compressed hero; lazy chat; `/privacy` and `/terms`; OG image (~200KB JPEG)
 - Signup: 3-step customer wizard; provider apply form (postcode + radius slider)
-- Portals: `/portal` (Manage billing, photos, preferred gardener), `/provider` (coverage + availability schedule), `/admin` (CRM + trends)
+- Portals: `/portal` (Manage billing, photos, preferred gardener), `/provider` (coverage, availability, earnings), `/admin` (CRM + trends + photo thumbnails)
 - Mobile UX: responsive layouts, hamburger nav, mobile CTA bar
 - API proxy via Next.js rewrites for Vercel production
 
@@ -299,6 +301,8 @@ Quick snapshot of implemented features as of last review.
 - Docker, env examples, Stripe/Twilio setup guides
 
 ### Recent commits (2026-05-23)
+- *(pending)* — provider earnings ledger v1 + admin CRM polish (photos, availability, mark paid)
+- `89b611b` — roadmap update after day-off release verification
 - `efacb65` — reliable day-off release (calendar-day match, rescheduled visits, schedule-change + my-visits self-heal)
 - `772083a` — initial day-off clash fix (blocked-date release)
 - `bb9ef6d` — provider availability v1 (working days, hours, blocked dates)

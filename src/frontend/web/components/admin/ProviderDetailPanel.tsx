@@ -1,8 +1,10 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { ActAsUserButton } from "@/components/admin/ActAsUserButton";
-import { api, type AdminProvider, type AuthResponse } from "@/lib/api";
+import { api, type AdminProvider, type AuthResponse, type ProviderAvailability, type ProviderEarningsSummary } from "@/lib/api";
+import { formatMoneyGbp, formatWorkingDays } from "@/lib/provider-availability";
+import { StatusBadge } from "@/components/ui";
 
 export function ProviderDetailPanel({
   provider,
@@ -24,6 +26,44 @@ export function ProviderDetailPanel({
   const [saving, setSaving] = useState(false);
   const [message, setMessage] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [availability, setAvailability] = useState<ProviderAvailability | null>(null);
+  const [availabilityLoading, setAvailabilityLoading] = useState(true);
+  const [earnings, setEarnings] = useState<ProviderEarningsSummary | null>(null);
+  const [earningsLoading, setEarningsLoading] = useState(true);
+  const [markingPaidId, setMarkingPaidId] = useState<string | null>(null);
+
+  useEffect(() => {
+    setAvailabilityLoading(true);
+    api
+      .adminProviderAvailability(token, provider.id)
+      .then(setAvailability)
+      .catch(() => setAvailability(null))
+      .finally(() => setAvailabilityLoading(false));
+  }, [provider.id, token]);
+
+  useEffect(() => {
+    setEarningsLoading(true);
+    api
+      .adminProviderEarnings(token, provider.id)
+      .then(setEarnings)
+      .catch(() => setEarnings(null))
+      .finally(() => setEarningsLoading(false));
+  }, [provider.id, token]);
+
+  async function markPaid(earningId: string) {
+    setMarkingPaidId(earningId);
+    setError(null);
+    try {
+      await api.adminMarkProviderEarningPaid(token, provider.id, earningId);
+      const refreshed = await api.adminProviderEarnings(token, provider.id);
+      setEarnings(refreshed);
+      setMessage("Earning marked paid.");
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "Could not mark paid");
+    } finally {
+      setMarkingPaidId(null);
+    }
+  }
 
   async function saveCoverage() {
     const trimmed = postcode.trim();
@@ -166,6 +206,94 @@ export function ProviderDetailPanel({
             {outcodes.slice(0, 36).join(", ")}
             {outcodes.length > 36 ? ` +${outcodes.length - 36} more` : ""}
           </p>
+        )}
+      </div>
+
+      <div className="mt-6 space-y-3">
+        <h4 className="text-sm font-semibold text-gardens-dark">Availability</h4>
+        {availabilityLoading ? (
+          <p className="text-sm text-stone-500">Loading schedule…</p>
+        ) : availability ? (
+          <>
+            <p className="text-sm text-stone-700">
+              Working days: {formatWorkingDays(availability.workingDaysMask)}
+            </p>
+            <p className="text-sm text-stone-700">
+              Hours: {availability.workDayStart} – {availability.workDayEnd}
+            </p>
+            {availability.blockedDates.length === 0 ? (
+              <p className="text-sm text-stone-500">No blocked dates.</p>
+            ) : (
+              <ul className="space-y-1 text-sm text-stone-700">
+                {availability.blockedDates.map((entry) => (
+                  <li key={entry.id}>
+                    {entry.blockedDate}
+                    {entry.reason ? ` — ${entry.reason}` : ""}
+                  </li>
+                ))}
+              </ul>
+            )}
+          </>
+        ) : (
+          <p className="text-sm text-stone-500">Could not load availability.</p>
+        )}
+      </div>
+
+      <div className="mt-6 space-y-3">
+        <h4 className="text-sm font-semibold text-gardens-dark">Earnings</h4>
+        {earningsLoading ? (
+          <p className="text-sm text-stone-500">Loading earnings…</p>
+        ) : earnings ? (
+          <>
+            <div className="grid gap-3 sm:grid-cols-2">
+              <div className="rounded-lg border border-amber-100 bg-amber-50 px-3 py-2 text-sm">
+                <p className="text-xs text-amber-800">Pending</p>
+                <p className="font-semibold text-amber-950">
+                  {formatMoneyGbp(earnings.accruedTotalGbp)}
+                </p>
+              </div>
+              <div className="rounded-lg border border-green-100 bg-green-50 px-3 py-2 text-sm">
+                <p className="text-xs text-green-800">Paid</p>
+                <p className="font-semibold text-green-950">
+                  {formatMoneyGbp(earnings.paidTotalGbp)}
+                </p>
+              </div>
+            </div>
+            {earnings.earnings.length === 0 ? (
+              <p className="text-sm text-stone-500">No completed visits yet.</p>
+            ) : (
+              <ul className="space-y-2">
+                {earnings.earnings.slice(0, 10).map((earning) => (
+                  <li
+                    key={earning.id}
+                    className="flex flex-wrap items-center justify-between gap-2 rounded-lg border bg-white px-3 py-2 text-sm"
+                  >
+                    <div>
+                      <p className="font-medium">
+                        {new Date(earning.visitDate).toLocaleDateString("en-GB")} · {earning.postcode}
+                      </p>
+                      <p className="text-stone-600">{formatMoneyGbp(earning.amountGbp)}</p>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <StatusBadge status={earning.status} />
+                      {earning.status === "Accrued" && (
+                        <button
+                          type="button"
+                          disabled={markingPaidId === earning.id}
+                          onClick={() => markPaid(earning.id)}
+                          className="rounded-lg border border-stone-200 px-2 py-1 text-xs font-medium hover:bg-stone-50 disabled:opacity-50"
+                        >
+                          {markingPaidId === earning.id ? "Saving…" : "Mark paid"}
+                        </button>
+                      )}
+                    </div>
+                  </li>
+                ))}
+              </ul>
+            )}
+          </>
+        ) : (
+          <p className="text-sm text-stone-500">Could not load earnings.</p>
         )}
       </div>
     </div>

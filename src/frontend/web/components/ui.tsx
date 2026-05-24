@@ -103,6 +103,8 @@ export function StatusBadge({ status }: { status: string }) {
     Completed: "bg-green-100 text-green-800",
     Succeeded: "bg-green-100 text-green-800",
     Rescheduled: "bg-purple-100 text-purple-800",
+    Accrued: "bg-amber-100 text-amber-800",
+    Paid: "bg-green-100 text-green-800",
     Cancelled: "bg-stone-100 text-stone-600",
     Expired: "bg-stone-100 text-stone-600",
     OpenForClaim: "bg-blue-100 text-blue-800",

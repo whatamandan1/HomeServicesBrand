@@ -90,3 +90,10 @@ public class BackgroundJobsOptions
     public int DispatchOpenWithinDays { get; set; } = 14;
     public int ReminderLeadHours { get; set; } = 24;
 }
+
+public class ProviderPayoutOptions
+{
+    public const string Section = "ProviderPayout";
+    /// <summary>Share of customer subscription revenue paid to providers per completed visit.</summary>
+    public decimal SharePercent { get; set; } = 60m;
+}

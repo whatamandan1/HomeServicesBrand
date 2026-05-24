@@ -134,6 +134,23 @@ public record AddProviderBlockedDateRequest(
     string BlockedDate,
     string? Reason);
 
+public record ProviderEarningResponse(
+    Guid Id,
+    Guid JobVisitId,
+    DateTime VisitDate,
+    string Postcode,
+    decimal AmountGbp,
+    ProviderEarningStatus Status,
+    DateTime? PaidAtUtc,
+    string? PayoutNotes);
+
+public record ProviderEarningsSummaryResponse(
+    decimal AccruedTotalGbp,
+    decimal PaidTotalGbp,
+    IReadOnlyList<ProviderEarningResponse> Earnings);
+
+public record MarkProviderEarningPaidRequest(string? Notes);
+
 public record AdminProviderResponse(
     Guid Id,
     Guid UserId,

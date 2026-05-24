@@ -26,6 +26,7 @@ public static class DependencyInjection
             .Bind(configuration.GetSection(AppOptions.Section))
             .PostConfigure(options => ProductionUrlConfiguration.ApplyAppUrls(options, configuration));
         services.Configure<BackgroundJobsOptions>(configuration.GetSection(BackgroundJobsOptions.Section));
+        services.Configure<ProviderPayoutOptions>(configuration.GetSection(ProviderPayoutOptions.Section));
 
         var connectionString = DatabaseConfiguration.ResolveConnectionString(configuration);
         services.AddDbContext<SortedDbContext>(options =>
@@ -48,6 +49,7 @@ public static class DependencyInjection
         services.AddScoped<IVisitManagementService, VisitManagementService>();
         services.AddScoped<IProviderCoverageService, ProviderCoverageService>();
         services.AddScoped<IProviderAvailabilityService, ProviderAvailabilityService>();
+        services.AddScoped<IProviderEarningsService, ProviderEarningsService>();
         services.AddHttpClient<IPostcodeGeocodingService, PostcodesIoGeocodingService>(client =>
         {
             client.Timeout = TimeSpan.FromSeconds(15);

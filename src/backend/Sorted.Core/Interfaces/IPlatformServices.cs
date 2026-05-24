@@ -106,6 +106,13 @@ public interface IProviderAvailabilityService
     Task<int> ReleaseConflictingAssignedVisitsAsync(Guid providerId, CancellationToken ct = default);
 }
 
+public interface IProviderEarningsService
+{
+    Task AccrueForCompletedVisitAsync(Guid jobVisitId, Guid providerId, CancellationToken ct = default);
+    Task<ProviderEarningsSummaryResponse> GetProviderEarningsAsync(Guid providerId, CancellationToken ct = default);
+    Task<ProviderEarningResponse> MarkPaidAsync(Guid earningId, string? notes, CancellationToken ct = default);
+}
+
 public interface IWorkflowLogger
 {
     Task LogAsync(string workflowName, string eventName, string? entityType, Guid? entityId, object? payload = null, CancellationToken ct = default);

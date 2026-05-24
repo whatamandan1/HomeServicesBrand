@@ -117,6 +117,30 @@ internal static class PostgresSchemaRepair
             ON "ProviderBlockedDates" ("ProviderId", "BlockedDate");
         """;
 
+    private const string ProviderEarningsSql = """
+        CREATE TABLE IF NOT EXISTS "ProviderEarnings" (
+            "Id" uuid NOT NULL,
+            "ProviderId" uuid NOT NULL,
+            "JobVisitId" uuid NOT NULL,
+            "AmountGbp" numeric NOT NULL,
+            "Status" integer NOT NULL,
+            "PaidAtUtc" timestamp with time zone NULL,
+            "PayoutNotes" text NULL,
+            "CreatedAtUtc" timestamp with time zone NOT NULL,
+            "UpdatedAtUtc" timestamp with time zone NULL,
+            "IsDeleted" boolean NOT NULL DEFAULT FALSE,
+            CONSTRAINT "PK_ProviderEarnings" PRIMARY KEY ("Id"),
+            CONSTRAINT "FK_ProviderEarnings_Providers_ProviderId" FOREIGN KEY ("ProviderId") REFERENCES "Providers" ("Id") ON DELETE CASCADE,
+            CONSTRAINT "FK_ProviderEarnings_JobVisits_JobVisitId" FOREIGN KEY ("JobVisitId") REFERENCES "JobVisits" ("Id") ON DELETE CASCADE
+        );
+
+        CREATE UNIQUE INDEX IF NOT EXISTS "IX_ProviderEarnings_JobVisitId"
+            ON "ProviderEarnings" ("JobVisitId");
+
+        CREATE INDEX IF NOT EXISTS "IX_ProviderEarnings_ProviderId"
+            ON "ProviderEarnings" ("ProviderId");
+        """;
+
     public static async Task ApplyAsync(SortedDbContext db, ILogger logger, CancellationToken ct = default)
     {
         if (!(db.Database.ProviderName ?? "").Contains("Npgsql", StringComparison.OrdinalIgnoreCase))
@@ -128,6 +152,7 @@ internal static class PostgresSchemaRepair
             await db.Database.ExecuteSqlRawAsync(PasswordResetAndCancelSql, ct);
             await db.Database.ExecuteSqlRawAsync(TermsPropertyMediaSql, ct);
             await db.Database.ExecuteSqlRawAsync(ProviderAvailabilitySql, ct);
+            await db.Database.ExecuteSqlRawAsync(ProviderEarningsSql, ct);
             logger.LogInformation("PostgreSQL schema repair completed");
         }
         catch (Exception ex)

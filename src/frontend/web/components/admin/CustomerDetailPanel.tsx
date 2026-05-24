@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { AdminPropertyPhotos } from "@/components/admin/AdminPropertyPhotos";
 import { ActAsUserButton } from "@/components/admin/ActAsUserButton";
 import { CommunicationThreadList } from "@/components/ai/CommunicationThreadList";
 import { api, type AdminCustomerDetail, type AuthResponse, type CommunicationThreadSummary } from "@/lib/api";
@@ -191,6 +192,11 @@ export function CustomerDetailPanel({
                     {p.accessNotes && (
                       <p className="mt-1 text-xs text-stone-500">Access: {p.accessNotes}</p>
                     )}
+                    <AdminPropertyPhotos
+                      token={token}
+                      customerId={customerId}
+                      propertyId={p.id}
+                    />
                   </li>
                 ))}
               </ul>

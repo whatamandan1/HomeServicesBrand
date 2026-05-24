@@ -18,6 +18,7 @@ public class SortedDbContext(DbContextOptions<SortedDbContext> options) : DbCont
     public DbSet<JobVisit> JobVisits => Set<JobVisit>();
     public DbSet<DispatchOffer> DispatchOffers => Set<DispatchOffer>();
     public DbSet<PaymentRecord> Payments => Set<PaymentRecord>();
+    public DbSet<ProviderEarning> ProviderEarnings => Set<ProviderEarning>();
     public DbSet<WorkflowEvent> WorkflowEvents => Set<WorkflowEvent>();
     public DbSet<CommunicationThread> CommunicationThreads => Set<CommunicationThread>();
     public DbSet<Message> Messages => Set<Message>();
@@ -67,6 +68,13 @@ public class SortedDbContext(DbContextOptions<SortedDbContext> options) : DbCont
             .HasOne(s => s.PreferredProvider).WithMany().HasForeignKey(s => s.PreferredProviderId);
         modelBuilder.Entity<PropertyMedia>()
             .HasOne(m => m.Property).WithMany(p => p.Media).HasForeignKey(m => m.CustomerPropertyId);
+        modelBuilder.Entity<ProviderEarning>()
+            .HasOne(e => e.Provider).WithMany().HasForeignKey(e => e.ProviderId);
+        modelBuilder.Entity<ProviderEarning>()
+            .HasOne(e => e.JobVisit).WithMany().HasForeignKey(e => e.JobVisitId);
+        modelBuilder.Entity<ProviderEarning>()
+            .HasIndex(e => e.JobVisitId)
+            .IsUnique();
 
         foreach (var entity in modelBuilder.Model.GetEntityTypes())
         {

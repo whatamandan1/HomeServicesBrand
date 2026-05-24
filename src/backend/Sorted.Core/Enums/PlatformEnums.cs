@@ -62,3 +62,10 @@ public enum GardenSize
     Medium = 2,
     Large = 3
 }
+
+public enum ProviderEarningStatus
+{
+    Accrued = 1,
+    Paid = 2,
+    Cancelled = 3
+}

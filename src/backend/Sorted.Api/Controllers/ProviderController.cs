@@ -22,6 +22,7 @@ public class ProviderController(
     IWorkflowLogger workflow,
     IProviderCoverageService coverage,
     IProviderAvailabilityService availability,
+    IProviderEarningsService earnings,
     IPostcodeGeocodingService geocoding,
     IVisitSchedulingService scheduling) : ControllerBase
 {
@@ -193,6 +194,15 @@ public class ProviderController(
         }
     }
 
+    [HttpGet("earnings")]
+    public async Task<ActionResult<ProviderEarningsSummaryResponse>> Earnings(CancellationToken ct)
+    {
+        var provider = await GetProviderAsync(ct);
+        if (provider is null) return NotFound();
+
+        return Ok(await earnings.GetProviderEarningsAsync(provider.Id, ct));
+    }
+
     [HttpGet("visits/open")]
     public async Task<ActionResult<IEnumerable<JobVisitResponse>>> OpenVisits(CancellationToken ct)
     {
@@ -332,7 +342,10 @@ public class ProviderController(
         await workflow.LogAsync("dispatch", workflowEvent, nameof(JobVisit), visit.Id, new { visit.Status }, ct);
 
         if (newStatus == VisitStatus.Completed)
+        {
+            await earnings.AccrueForCompletedVisitAsync(visit.Id, provider.Id, ct);
             await scheduling.AssignPreferredProviderToPendingVisitsAsync(visit.CustomerSubscriptionId, ct);
+        }
 
         return Ok(JobVisitResponseMapper.FromEntity(visit, provider.User.FirstName + " " + provider.User.LastName));
     }

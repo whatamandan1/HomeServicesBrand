@@ -22,7 +22,9 @@ public class AdminController(
     IVisitManagementService visits,
     IWorkflowLogger workflow,
     IPostcodeGeocodingService geocoding,
-    IProviderCoverageService coverage) : ControllerBase
+    IProviderCoverageService coverage,
+    IProviderAvailabilityService availability,
+    IProviderEarningsService earnings) : ControllerBase
 {
     [HttpGet("dashboard")]
     public async Task<ActionResult<AdminDashboardResponse>> Dashboard([FromQuery] int days = 30, CancellationToken ct = default)
@@ -331,6 +333,87 @@ public class AdminController(
         provider.IsApproved = true;
         await db.SaveChangesAsync(ct);
         return NoContent();
+    }
+
+    [HttpGet("providers/{id:guid}/availability")]
+    public async Task<ActionResult<ProviderAvailabilityResponse>> ProviderAvailability(Guid id, CancellationToken ct)
+    {
+        var exists = await db.Providers.AnyAsync(p => p.Id == id && !p.IsDeleted, ct);
+        if (!exists) return NotFound();
+
+        try
+        {
+            return Ok(await availability.GetAvailabilityAsync(id, ct));
+        }
+        catch (InvalidOperationException ex)
+        {
+            return BadRequest(new { error = ex.Message });
+        }
+    }
+
+    [HttpGet("providers/{id:guid}/earnings")]
+    public async Task<ActionResult<ProviderEarningsSummaryResponse>> ProviderEarnings(Guid id, CancellationToken ct)
+    {
+        var exists = await db.Providers.AnyAsync(p => p.Id == id && !p.IsDeleted, ct);
+        if (!exists) return NotFound();
+
+        return Ok(await earnings.GetProviderEarningsAsync(id, ct));
+    }
+
+    [HttpPost("providers/{providerId:guid}/earnings/{earningId:guid}/mark-paid")]
+    public async Task<ActionResult<ProviderEarningResponse>> MarkProviderEarningPaid(
+        Guid providerId,
+        Guid earningId,
+        [FromBody] MarkProviderEarningPaidRequest request,
+        CancellationToken ct)
+    {
+        var earning = await db.ProviderEarnings.AsNoTracking()
+            .FirstOrDefaultAsync(e => e.Id == earningId && e.ProviderId == providerId && !e.IsDeleted, ct);
+        if (earning is null) return NotFound();
+
+        try
+        {
+            return Ok(await earnings.MarkPaidAsync(earningId, request.Notes, ct));
+        }
+        catch (InvalidOperationException ex)
+        {
+            return BadRequest(new { error = ex.Message });
+        }
+    }
+
+    [HttpGet("customers/{customerId:guid}/properties/{propertyId:guid}/photos")]
+    public async Task<ActionResult<PropertyMediaListResponse>> CustomerPropertyPhotos(
+        Guid customerId,
+        Guid propertyId,
+        CancellationToken ct)
+    {
+        var property = await db.CustomerProperties.AsNoTracking()
+            .FirstOrDefaultAsync(p => p.Id == propertyId && p.CustomerId == customerId && !p.IsDeleted, ct);
+        if (property is null) return NotFound();
+
+        var photos = await db.PropertyMedia.AsNoTracking()
+            .Where(m => m.CustomerPropertyId == propertyId && !m.IsDeleted)
+            .OrderBy(m => m.CreatedAtUtc)
+            .Select(m => new PropertyMediaResponse(
+                m.Id,
+                m.FileName,
+                m.ContentType,
+                m.SizeBytes,
+                m.CreatedAtUtc))
+            .ToListAsync(ct);
+
+        return Ok(new PropertyMediaListResponse(propertyId, photos));
+    }
+
+    [HttpGet("properties/photos/{photoId:guid}")]
+    public async Task<IActionResult> PropertyPhoto(Guid photoId, CancellationToken ct)
+    {
+        var photo = await db.PropertyMedia.AsNoTracking()
+            .Include(m => m.Property)
+            .FirstOrDefaultAsync(m => m.Id == photoId && !m.IsDeleted, ct);
+        if (photo is null) return NotFound();
+
+        return File(photo.Data, photo.ContentType);
     }
 
     [HttpGet("visits")]
