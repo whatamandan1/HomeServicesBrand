@@ -6,19 +6,29 @@ Living checklist comparing the current GardensSorted / Sorted platform build aga
 Use this document to track what is done, what is partial, and what to build next. Update
 statuses as features ship.
 
-**Last reviewed:** 2026-05-23  
+**Last reviewed:** 2026-05-23 (post cadence fix)  
 **Live site:** https://home-services-brand.vercel.app/  
 **Live API:** https://homeservicesbrand-production.up.railway.app/
 
-**Current focus:** Twilio SMS + pre-launch gate. Payout ledger v1, admin CRM polish, and UX polish batch shipped.
+**Current focus:** Twilio SMS (blocked on UK sender reg) + pre-launch gate. Core pilot flows verified on live.
 
 ### What's next (when you resume)
 
-Recent batch shipped: admin edit provider availability, photo lightbox, richer customer CRM (gardener, preferred times), earnings refresh on complete.
+Recent batch shipped: plan-based visit cadence (Essential 1/mo, Premium 2/mo), corrected provider pay, earnings ledger, admin CRM polish, day-off release.
 
-1. **Twilio SMS** — UK sender registration + visit/reminder texts in prod
+1. **Twilio SMS** — UK sender registration + visit/reminder texts in prod *(deferred until reg complete)*
 2. **Provider availability v2** — match visit times to customer text windows
-3. **Pre-launch gate** (when ready) — real admin account, `Features__SeedDemoData=false`, custom domain
+3. **Stripe Connect (v2 payouts)** — when manual mark-paid becomes tedious
+4. **Pre-launch gate** (when ready) — real admin account, `Features__SeedDemoData=false`, custom domain
+
+### Plan visit cadence (product truth)
+
+| Plan | Visits included | Schedule spacing | Provider pay per visit (~60% share) |
+|------|-----------------|------------------|-------------------------------------|
+| Essential | 1 / month | every 30 days | ~£17.97 (at £29.95/mo) |
+| Premium | 2 / month | every 15 days | ~£14.99 (at £49.95/mo) |
+
+Legacy demo data may still have weekly-spaced visits from before `ecdf9ea`; new signups and top-ups use plan cadence.
 
 ### Last job before go-live (customer launch gate)
 
@@ -28,7 +38,7 @@ Do this **once**, immediately before inviting real paying customers:
 2. **Turn off demo seed on Railway** — set `Features__SeedDemoData=false` and redeploy API (only after the real admin exists and you have verified admin login).
 3. **Smoke-test on live** — admin login, customer signup, billing portal, provider claim flow, no demo credentials visible in UI.
 
-Recent session (2026-05-23): provider earnings ledger (accrue on complete, admin mark paid), admin CRM photo thumbnails + provider availability read-only, day-off visit release verified on live.
+Recent session (2026-05-23): plan cadence + earnings fix (`PlanCatalog`: Essential 1 visit/mo, Premium 2/mo); provider earnings ledger; admin availability edit + photo lightbox + richer customer CRM; day-off visit release; billing/signup/trends/auto-assign from earlier in session — all verified on live.
 
 ---
 
@@ -55,7 +65,7 @@ These are the spec's top priorities for initial launch.
 | Provider onboarding | ✅ Done | Self-signup at `/providers#apply` + admin approval; base postcode + radius |
 | Provider job claiming | ✅ Done | Radius/outcode coverage + distance fallback; claim with conflict check |
 | Operational CRM | 🟡 Partial | Dashboard, visits, escalations, workflow/AI viewers, customer detail, provider coverage edit |
-| Recurring scheduling | 🟡 Partial | Background jobs top up visits; tune cadence if needed |
+| Recurring scheduling | 🟡 Partial | Plan cadence via `PlanCatalog` (Essential 30d, Premium 15d); background top-up; legacy weekly visits may remain in demo DB |
 | Communication systems | 🟡 Partial | SendGrid live; Twilio deferred (UK regulatory) |
 | AI support assistant | ✅ Done | Customer portal chat + guest homepage chat |
 
@@ -90,7 +100,7 @@ Work through phases in order. Each phase builds on the last.
 - [x] **Provider availability (v1)** — working days + default hours + blocked dates on `/provider`; claim, open jobs, and preferred-provider auto-assign respect schedule; blocking a day or changing working days releases assigned visits back to open pool (incl. rescheduled)
 - [ ] **Provider availability (v2)** — match visit times to customer text windows *(admin edit shipped)*
 - [ ] **Multi-brand frontend** — theme/config per brand; remove hardcoded `gardens-sorted` in API client
-- [x] **Provider earnings / payouts (v1)** — visit ledger accrues on complete (~60% share); provider + admin views; admin marks paid manually
+- [x] **Provider earnings / payouts (v1)** — visit ledger accrues on complete (60% share ÷ plan visits/mo); Essential ~£17.97, Premium ~£14.99; provider + admin views; admin marks paid manually
 - [ ] **Provider earnings / payouts (v2)** — Stripe Connect automated transfers
 - [x] **Recurring provider preference** — preferred provider after first visit; auto-assign pending visits on complete + scheduling
 - [ ] **Weather-aware rescheduling** — weather API + reschedule workflow
@@ -128,7 +138,7 @@ Work through phases in order. Each phase builds on the last.
 | Onboard | ✅ Done | Apply at `/providers#apply` (postcode + radius); admin approves on `/admin` |
 | Claim jobs | ✅ Done | Matched by derived outcodes / distance within radius |
 | Manage availability | 🟡 Partial | Provider self-service + **admin edit** on `/admin`; v2 = time-window matching |
-| View earnings | 🟡 Partial | Accrued/paid ledger on `/provider`; admin mark paid; Stripe Connect deferred |
+| View earnings | 🟡 Partial | Accrued/paid ledger on `/provider`; plan-based per-visit amounts; admin mark paid; Stripe Connect deferred |
 | View recurring assignments | ✅ Done | Preferred gardener auto-assign; portal shows assigned gardener name |
 | Communicate with operations | ⬜ Not started | Provider messaging or ops notifications |
 
@@ -141,7 +151,7 @@ Work through phases in order. Each phase builds on the last.
 | Operational dashboards | 🟡 Partial | KPIs, trends, date filters |
 | Provider management | 🟡 Partial | Approve providers; edit coverage + availability; earnings mark-paid |
 | Customer management | 🟡 Partial | Customer detail with subs (preferred times, gardener), visit gardener names, photo lightbox |
-| Workflow monitoring | 🟡 Partial | UI for `WorkflowEvent` log |
+| Workflow monitoring | 🟡 Partial | UI for `WorkflowEvent` log on `/admin` |
 | Dispatch visibility | 🟡 Partial | Dispatch board + open-dispatch action in UI |
 | Escalation handling | ✅ Done | Take case and resolve in admin portal |
 | KPI monitoring | ✅ Done | Dashboard counts + 7/30/90-day trend charts (weekly buckets at 90d) |
@@ -153,7 +163,7 @@ Work through phases in order. Each phase builds on the last.
 
 | Requirement | Status | Next step |
 |-------------|--------|-----------|
-| Recurring visits | 🟡 Partial | Background job to generate future visits indefinitely |
+| Recurring visits | 🟡 Partial | `PlanCatalog`: Essential 1/mo, Premium 2/mo; top-up job maintains buffer; initial batch on signup |
 | Availability windows | 🟡 Partial | Customer free-text preference on signup; provider schedule enforced on dispatch; day-off unassigns conflicting visits |
 | Provider allocation | ✅ Done | Radius from base postcode; outcodes derived via postcodes.io; distance fallback |
 | Weather-aware adjustments | ⬜ Not started | Weather API + reschedule workflow |
@@ -161,7 +171,7 @@ Work through phases in order. Each phase builds on the last.
 | FCFS claiming | ✅ Done | — |
 | Double-booking prevention | ✅ Done | Conflict check on claim |
 | Travel-time validation | ⬜ Not started | Distance/travel checks before claim |
-| Dispatch offer expiry | 🟡 Partial | `ExpiresAtUtc` set; no expiry background job |
+| Dispatch offer expiry | ✅ Done | `ExpireStaleDispatchOffersAsync` in background job; renews open offers |
 
 ---
 
@@ -170,8 +180,8 @@ Work through phases in order. Each phase builds on the last.
 | Requirement | Status | Next step |
 |-------------|--------|-----------|
 | Live chat | ✅ Done | Guest homepage + customer portal |
-| Email notifications | 🟡 Partial | SendGrid wired; configure in prod; add reminders |
-| SMS notifications | 🟡 Partial | Twilio wired; configure in prod (deferred by user) |
+| Email notifications | 🟡 Partial | SendGrid live; visit-claimed + pre-visit reminder emails in job loop |
+| SMS notifications | 🟡 Partial | Twilio wired; blocked on UK sender registration |
 | WhatsApp provider workflows | ⬜ Not started | — |
 | Centralized communication logs | ✅ Done | DB persistence; admin UI to browse still needed |
 
@@ -183,12 +193,12 @@ Work through phases in order. Each phase builds on the last.
 |----------|--------|-----------|
 | Customer signup | ✅ Done | Logged via `WorkflowEvent` |
 | Payment success | ✅ Done | Initial payment + recurring renewals via webhooks |
-| Recurring visit generation | 🟡 Partial | Automate beyond initial 4-visit batch |
-| Provider dispatch | 🟡 Partial | Offer expiry + prioritization |
-| Provider claim | ✅ Done | SMS notification when configured |
-| Reminders | ⬜ Not started | Pre-visit email/SMS |
+| Recurring visit generation | 🟡 Partial | Plan-based spacing (30d / 15d); top-up maintains ~4 future visits |
+| Provider dispatch | 🟡 Partial | Offer expiry job + preferred-provider auto-assign |
+| Provider claim | ✅ Done | Email always; SMS when Twilio configured |
+| Reminders | 🟡 Partial | Pre-visit email in background job; SMS when Twilio configured |
 | Weather rescheduling | ⬜ Not started | — |
-| Payout generation | 🟡 Partial | Earning accrues on visit complete; admin marks paid manually |
+| Payout generation | 🟡 Partial | Plan-based accrual on visit complete; admin marks paid manually |
 | Churn prevention | ⬜ Not started | — |
 
 All workflow transitions should be logged — logging exists; automation and admin visibility are the gaps.
@@ -205,11 +215,11 @@ Modular boundaries to maintain as the platform grows.
 | Brands | 🟡 Partial | Entity + API; frontend not multi-brand yet |
 | Customers | ✅ Done | Registration, portal, subscriptions |
 | Providers | 🟡 Partial | Self-signup, coverage, claiming, availability v1, earnings ledger v1 |
-| Services | 🟡 Partial | Garden care only; subscription plans seeded |
+| Services | 🟡 Partial | Essential (1 visit/mo) + Premium (2 visits/mo); plan copy aligned |
 | Subscriptions | ✅ Done | Plans + Stripe subscription Checkout + renewal webhooks |
-| Scheduling | 🟡 Partial | Visit batch + top-up jobs; provider availability enforced |
+| Scheduling | 🟡 Partial | `PlanCatalog` cadence; top-up jobs; provider availability enforced |
 | Dispatch | 🟡 Partial | FCFS claim + preferred auto-assign; travel validation missing |
-| CRM | 🟡 Partial | Admin read views + trends + escalation resolve |
+| CRM | 🟡 Partial | Customer/provider detail, photo lightbox, earnings, availability edit, trends |
 | Communications | 🟡 Partial | Chat done; email/SMS/WhatsApp incomplete |
 | Billing | ✅ Done | Stripe subscription Checkout + renewals/past_due/cancel webhooks |
 | AI Orchestration | ✅ Done | OpenAI chat, escalation, audit logging |
@@ -226,7 +236,7 @@ Modular boundaries to maintain as the platform grows.
 | Clean architecture / modular monolith | ✅ Done | Core, Infrastructure, Api layers |
 | Next.js + Tailwind frontend | ✅ Done | Marketing site + app portals |
 | SQLite local dev | ✅ Done | — |
-| PostgreSQL production | 🟡 Partial | Supported + documented; add Postgres service on Railway |
+| PostgreSQL production | ✅ Done | Live on Railway; migrations + schema repair on startup |
 | EF Core migrations | ✅ Done | `Data/Migrations/`; auto-applied on startup |
 | Multi-brand frontend | ⬜ Not started | Themes/domains per brand |
 | Shared auth across brands | 🟡 Partial | Backend ready; frontend single-brand |
@@ -245,7 +255,7 @@ Modular boundaries to maintain as the platform grows.
 | GDPR readiness | 🟡 Partial | Privacy policy at `/privacy`; data export/delete flows still open |
 | Audit logging | 🟡 Partial | AI + workflow logs in DB; admin UI missing |
 | Structured logging | 🟡 Partial | Serilog + `/health`; add error tracking (e.g. Sentry) |
-| Workflow tracing | 🟡 Partial | `WorkflowEvent` table; no admin viewer |
+| Workflow tracing | 🟡 Partial | `WorkflowEvent` table + admin workflow viewer |
 | AI action logging | ✅ Done | `AIActionLog` persisted |
 | Automated tests | 🟡 Partial | xUnit core + API integration tests; CI fails on test failure |
 | Maintainability | ✅ Done | Clear module separation, domain naming |
@@ -276,9 +286,11 @@ Quick snapshot of implemented features as of last review.
 - Customer: signup creates account, property, subscription; property edit in portal
 - Stripe: subscription Checkout + renewal/past_due/cancel webhooks; billing portal (cancel disabled — support/admin only); customer payment history API
 - Visits: scheduling service, background jobs (top-up, dispatch expiry, reminders), claim/start/complete, cancel/reschedule
-- Provider earnings: `ProviderEarning` ledger; accrues on visit complete (~60% of plan revenue per visit); `GET /api/provider/earnings`; admin mark paid
-- Provider availability: `WorkingDaysMask`, default hours, `ProviderBlockedDates`; API + provider UI; enforced on open jobs, claim, auto-assign; calendar-day release of assigned visits on blocked dates / non-working days
-- Admin CRM: property photo thumbnails in customer detail; provider availability + earnings in provider detail
+- Provider earnings: `ProviderEarning` ledger; plan-based accrual on complete (60% ÷ visits/mo — Essential ~£17.97, Premium ~£14.99); admin mark paid
+- Plan cadence: `PlanCatalog.VisitsPerMonth` — Essential 1/mo (30d interval), Premium 2/mo (15d interval); scheduling + payouts aligned
+- Provider availability: working days, hours, blocked dates; day-off releases assigned visits; admin can edit provider schedule
+- Admin CRM: photo lightbox, customer preferred times/gardener, provider earnings + availability edit
+- Signup/plan copy: Essential “1 visit per month”, Premium “2 visits per month”
 - Signup: terms acceptance, deferred photo upload, checkout session sync, PostgreSQL migration repair
 - Billing: Manage billing for active subs; Stripe link recovery from checkout session
 - Admin: KPI trend charts (daily 7/30d, weekly 90d); customer photo count in CRM
@@ -291,7 +303,7 @@ Quick snapshot of implemented features as of last review.
 ### Frontend
 - Marketing: customer-focused `/`, `/about`, `/providers`; SEO (sitemap, robots); compressed hero; lazy chat; `/privacy` and `/terms`; OG image (~200KB JPEG)
 - Signup: 3-step customer wizard; provider apply form (postcode + radius slider)
-- Portals: `/portal` (Manage billing, photos, preferred gardener), `/provider` (coverage, availability, earnings), `/admin` (CRM + trends + photo thumbnails)
+- Portals: `/portal` (Manage billing, photos, preferred gardener), `/provider` (coverage, availability, earnings), `/admin` (CRM + trends + photo lightbox)
 - Mobile UX: responsive layouts, hamburger nav, mobile CTA bar
 - API proxy via Next.js rewrites for Vercel production
 
@@ -301,16 +313,16 @@ Quick snapshot of implemented features as of last review.
 - Docker, env examples, Stripe/Twilio setup guides
 
 ### Recent commits (2026-05-23)
-- *(pending)* — provider earnings ledger v1 + admin CRM polish (photos, availability, mark paid)
+- `ecdf9ea` — plan visit cadence + provider pay (Essential 1/mo, Premium 2/mo)
+- `7e5b4d7` — admin CRM polish (availability edit, photo lightbox, earnings refresh)
+- `62069a3` — provider earnings ledger v1 + admin photo thumbnails
 - `89b611b` — roadmap update after day-off release verification
-- `efacb65` — reliable day-off release (calendar-day match, rescheduled visits, schedule-change + my-visits self-heal)
-- `772083a` — initial day-off clash fix (blocked-date release)
-- `bb9ef6d` — provider availability v1 (working days, hours, blocked dates)
+- `efacb65` — reliable day-off release (calendar-day match, self-heal)
+- `772083a` — initial day-off clash fix
+- `bb9ef6d` — provider availability v1
 - `5e14953` — 90-day weekly trend charts; provider refresh after complete
-- `0555109` — billing portal, admin trends/photos, gardener auto-assign on complete
-- `ae236be` — PostgreSQL migration fix (signup blocked on Railway)
-- `ceb7b02` / `95b9416` — signup photo deferral + checkout recovery
-- `f5f310a` — terms, property photos, admin trends, gardener preference, tests
+- `0555109` — billing portal, admin trends/photos, gardener auto-assign
+- `ae236be` — PostgreSQL migration fix (signup on Railway)
 
 ---
 
