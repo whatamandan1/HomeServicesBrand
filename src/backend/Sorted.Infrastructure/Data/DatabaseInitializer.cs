@@ -19,6 +19,7 @@ public static class DatabaseInitializer
     {
         await StampLegacyEnsureCreatedDatabaseAsync(db, logger, ct);
         await PostgresSchemaRepair.ApplyAsync(db, logger, ct);
+        await StampSchemaRepairMigrationsAsync(db, logger, ct);
 
         try
         {
@@ -112,5 +113,74 @@ public static class DatabaseInitializer
         {
             return false;
         }
+    }
+
+    /// <summary>
+    /// PostgresSchemaRepair creates tables before EF migrations run. Stamp matching migrations so
+    /// MigrateAsync does not fail and demo seeding can proceed on existing Railway databases.
+    /// </summary>
+    private static async Task StampSchemaRepairMigrationsAsync(
+        SortedDbContext db,
+        ILogger logger,
+        CancellationToken ct)
+    {
+        if (!(db.Database.ProviderName ?? "").Contains("Npgsql", StringComparison.OrdinalIgnoreCase))
+            return;
+
+        var applied = (await db.Database.GetAppliedMigrationsAsync(ct)).ToHashSet(StringComparer.Ordinal);
+        var repairMigrations = new (string MigrationId, string TableName)[]
+        {
+            ("20260524155254_AddPortfolioEnquiries", "PortfolioEnquiries"),
+            ("20260524160712_AddDemoLandlordAccount", "MultiPropertyAccounts"),
+        };
+
+        foreach (var (migrationId, tableName) in repairMigrations)
+        {
+            if (applied.Contains(migrationId))
+                continue;
+
+            if (!await PostgresTableExistsAsync(db, tableName, ct))
+                continue;
+
+            logger.LogWarning(
+                "Stamping migration {MigrationId} because {Table} already exists from schema repair",
+                migrationId,
+                tableName);
+
+            await db.Database.ExecuteSqlRawAsync(
+                """
+                INSERT INTO "__EFMigrationsHistory" ("MigrationId", "ProductVersion")
+                VALUES ({0}, '9.0.0')
+                ON CONFLICT ("MigrationId") DO NOTHING;
+                """,
+                migrationId);
+        }
+    }
+
+    private static async Task<bool> PostgresTableExistsAsync(
+        SortedDbContext db,
+        string tableName,
+        CancellationToken ct)
+    {
+        var connection = db.Database.GetDbConnection();
+        if (connection.State != System.Data.ConnectionState.Open)
+            await db.Database.OpenConnectionAsync(ct);
+
+        await using var command = connection.CreateCommand();
+        command.CommandText = """
+            SELECT EXISTS (
+                SELECT 1
+                FROM information_schema.tables
+                WHERE table_schema = 'public'
+                  AND lower(table_name) = lower(@tableName)
+            );
+            """;
+        var parameter = command.CreateParameter();
+        parameter.ParameterName = "@tableName";
+        parameter.Value = tableName;
+        command.Parameters.Add(parameter);
+
+        var result = await command.ExecuteScalarAsync(ct);
+        return result is bool exists && exists;
     }
 }

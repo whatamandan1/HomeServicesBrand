@@ -168,6 +168,10 @@ public static class DataSeeder
         await EnsureDemoLandlordAccountAsync(db, logger, ct);
     }
 
+    /// <summary>Recovery hook when full migration/seed fails but demo landlord login should still work.</summary>
+    public static Task EnsureDemoLandlordAsync(SortedDbContext db, ILogger logger, CancellationToken ct = default)
+        => EnsureDemoLandlordAccountAsync(db, logger, ct);
+
     private static async Task EnsureDemoLandlordAccountAsync(SortedDbContext db, ILogger logger, CancellationToken ct)
     {
         var brandId = await db.Brands.Where(b => b.Code == "gardens-sorted").Select(b => b.Id).FirstOrDefaultAsync(ct);
@@ -191,10 +195,29 @@ public static class DataSeeder
             await db.SaveChangesAsync(ct);
             logger.LogInformation("Created demo landlord user {Email}", DemoLandlordEmail);
         }
-        else if (user.Role != UserRole.Landlord)
+        else
         {
-            user.Role = UserRole.Landlord;
-            await db.SaveChangesAsync(ct);
+            var updated = false;
+            if (user.Role != UserRole.Landlord)
+            {
+                user.Role = UserRole.Landlord;
+                updated = true;
+            }
+            if (!user.IsActive)
+            {
+                user.IsActive = true;
+                updated = true;
+            }
+            if (!BCrypt.Net.BCrypt.Verify(DemoLandlordPassword, user.PasswordHash))
+            {
+                user.PasswordHash = BCrypt.Net.BCrypt.HashPassword(DemoLandlordPassword);
+                updated = true;
+            }
+            if (updated)
+            {
+                await db.SaveChangesAsync(ct);
+                logger.LogInformation("Updated demo landlord user {Email}", DemoLandlordEmail);
+            }
         }
 
         var existingAccount = await db.MultiPropertyAccounts

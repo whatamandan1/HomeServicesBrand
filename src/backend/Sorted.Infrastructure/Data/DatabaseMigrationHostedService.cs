@@ -42,6 +42,18 @@ public class DatabaseMigrationHostedService(
         catch (Exception ex)
         {
             logger.LogCritical(ex, "Database initialization failed");
+            try
+            {
+                using var recoveryScope = services.CreateScope();
+                var recoveryDb = recoveryScope.ServiceProvider.GetRequiredService<SortedDbContext>();
+                var recoveryFeatures = recoveryScope.ServiceProvider.GetService<IOptions<FeaturesOptions>>()?.Value;
+                if (recoveryFeatures?.SeedDemoData ?? true)
+                    await DataSeeder.EnsureDemoLandlordAsync(recoveryDb, logger, cancellationToken);
+            }
+            catch (Exception seedEx)
+            {
+                logger.LogWarning(seedEx, "Demo landlord recovery seed failed");
+            }
         }
     }
 
