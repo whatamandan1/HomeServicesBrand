@@ -6,19 +6,26 @@ Living checklist comparing the current GardensSorted / Sorted platform build aga
 Use this document to track what is done, what is partial, and what to build next. Update
 statuses as features ship.
 
-**Last reviewed:** 2026-05-23 (availability v2)  
+**Last reviewed:** 2026-05-23 (For portfolios requirements)  
 **Live site:** https://home-services-brand.vercel.app/  
 **Live API:** https://homeservicesbrand-production.up.railway.app/
 
-**Current focus:** Demo phase — provider availability v2 shipped; keep `Features__SeedDemoData` on and iterate on pilot UX.
+**Current focus:** Demo phase — polish consumer pilot; spec **For portfolios** ready for phase 1 at go-live.
 
 ### What's next (demo phase)
 
-Recent batch: customer time-window matching on open jobs, claim, auto-assign, and day-off release.
-
-1. **Provider availability v2** — match visit times to customer text windows ✅ *(shipped)*
-2. **Operational polish** — whatever surfaces during demo testing (CRM, scheduling edge cases)
+1. **Operational polish** — whatever surfaces during demo testing (CRM, scheduling edge cases)
+2. **For portfolios phase 1** — marketing page + enquiry form (ships at consumer go-live)
 3. **Multi-brand frontend** — when a second brand is ready
+
+**For portfolios** (full requirements: [`for-portfolios-requirements.md`](for-portfolios-requirements.md)):
+
+| Phase | Scope | Target |
+|-------|--------|--------|
+| 1 | `/for-portfolios` page + enquiry (2+ properties, address + garden size) | Consumer go-live |
+| 2 | Pricing rules + AI indicative quote + admin review | Post go-live |
+| 3 | Portfolio account, portal, bulk import | Post go-live |
+| 4 | Monthly invoicing in arrears (card &lt; £200 / BACS ≥ £200) | Post go-live |
 
 ### Deferred until post-demo / go-live
 
@@ -37,13 +44,14 @@ Recent batch: customer time-window matching on open jobs, claim, auto-assign, an
 
 Legacy demo data may still have weekly-spaced visits from before `ecdf9ea`; new signups and top-ups use plan cadence.
 
-### Last job before go-live (customer launch gate) 🔵 Deferred
+### Last job before go-live (customer + portfolio launch gate) 🔵 Deferred
 
 Do this **once**, immediately before inviting real paying customers (not needed during demo):
 
 1. **Create a real admin account** (your email, strong password) — do not rely on `admin@gardenssorted.local` / seeded demo users.
 2. **Turn off demo seed on Railway** — set `Features__SeedDemoData=false` and redeploy API (only after the real admin exists and you have verified admin login).
-3. **Smoke-test on live** — admin login, customer signup, billing portal, provider claim flow, no demo credentials visible in UI.
+3. **Ship For portfolios phase 1** — `/for-portfolios` marketing page + enquiry form (2+ properties, address + garden size); admin lead notification.
+4. **Smoke-test on live** — admin login, customer signup, portfolio enquiry, billing portal, provider claim flow, no demo credentials visible in UI.
 
 Recent session (2026-05-23): plan cadence + earnings fix (`PlanCatalog`: Essential 1 visit/mo, Premium 2/mo); provider earnings ledger; admin availability edit + photo lightbox + richer customer CRM; day-off visit release; billing/signup/trends/auto-assign from earlier in session — all verified on live.
 
@@ -75,6 +83,7 @@ These are the spec's top priorities for initial launch.
 | Recurring scheduling | 🟡 Partial | Plan cadence via `PlanCatalog` (Essential 30d, Premium 15d); background top-up; legacy weekly visits may remain in demo DB |
 | Communication systems | 🟡 Partial | SendGrid live; Twilio deferred (UK regulatory) |
 | AI support assistant | ✅ Done | Customer portal chat + guest homepage chat |
+| For portfolios (phase 1) | ⬜ Not started | Enquiry form at go-live — see [`for-portfolios-requirements.md`](for-portfolios-requirements.md) |
 
 ---
 
@@ -116,6 +125,15 @@ Work through phases in order. Each phase builds on the last.
 - [x] **Production security (core)** — startup checks for JWT/webhook/Stripe bypass; Stripe signature verification; dev endpoints gated *(demo seed still on until go-live gate)*
 - [ ] **Google Maps garden size estimation** — satellite/aerial imagery to suggest or calculate garden area at signup or property edit *(deferred; requires Google Maps Platform API)*
 
+### Phase 4 — For portfolios (multi-property)
+
+Requirements: [`for-portfolios-requirements.md`](for-portfolios-requirements.md)
+
+- [ ] **For portfolios phase 1** — `/for-portfolios` marketing page; enquiry form (min 2 properties, address + garden size per property); admin lead inbox; ships at consumer go-live
+- [ ] **For portfolios phase 2** — portfolio pricing calculator rules; separate signup journey; AI indicative quote (immediate, pending admin review); per-property visit requirements
+- [ ] **For portfolios phase 3** — portfolio account + portal (dashboard, per-property visits, bulk import); out-of-area waitlist / find-a-gardener ops flow
+- [ ] **For portfolios phase 4** — monthly invoicing in arrears; card if &lt; £200/mo, BACS if ≥ £200/mo; per-property 3-month commitment billing; portfolio terms
+
 ### Pre-launch gate (do last) 🔵 Deferred until demo ends
 
 - [ ] **Real admin account** — production admin user with your credentials (not demo seed)
@@ -135,6 +153,24 @@ Work through phases in order. Each phase builds on the last.
 | View upcoming visits | ✅ Done | Cancel/reschedule in customer portal |
 | Communicate with support | ✅ Done | Guest + authenticated AI chat |
 | Upload property media | 🟡 Partial | Up to 3 photos per property in signup + portal (stored in DB) |
+
+---
+
+## For portfolios requirements (spec + [`for-portfolios-requirements.md`](for-portfolios-requirements.md))
+
+| Requirement | Status | Next step |
+|-------------|--------|-----------|
+| Marketing page | ⬜ Not started | `/for-portfolios` — copy in requirements doc |
+| Enquiry form (phase 1) | ⬜ Not started | 2+ properties, address + garden size; admin notification |
+| Personalised pricing rules | ⬜ Not started | Calculator module; all inputs: count, clustering, frequency, service level, garden size, seasonality |
+| AI indicative quote | ⬜ Not started | Immediate quote + admin review queue (phase 2) |
+| Portfolio signup journey | ⬜ Not started | Separate flow, same UX feel; per-property visit requirements |
+| Portfolio portal | ⬜ Not started | Dashboard, bulk import, add/remove with recalc (phase 3) |
+| Invoicing (not subscription) | ⬜ Not started | Monthly arrears; card &lt; £200 / BACS ≥ £200 (phase 4) |
+| Per-property 3-month commitment | ⬜ Not started | Remove mid-term still bills quoted amount |
+| Admin portfolios section | ⬜ Not started | Leads, quotes, price override, reporting |
+| Portfolio terms | ⬜ Not started | Separate from consumer T&Cs |
+| Out-of-area handling | ⬜ Not started | Waitlist or ops find-a-gardener |
 
 ---
 
@@ -158,6 +194,7 @@ Work through phases in order. Each phase builds on the last.
 | Operational dashboards | 🟡 Partial | KPIs, trends, date filters |
 | Provider management | 🟡 Partial | Approve providers; edit coverage + availability; earnings mark-paid |
 | Customer management | 🟡 Partial | Customer detail with subs (preferred times, gardener), visit gardener names, photo lightbox |
+| Portfolio management | ⬜ Not started | Dedicated admin section — leads, quotes, overrides, invoicing (see For portfolios) |
 | Workflow monitoring | 🟡 Partial | UI for `WorkflowEvent` log on `/admin` |
 | Dispatch visibility | 🟡 Partial | Dispatch board + open-dispatch action in UI |
 | Escalation handling | ✅ Done | Take case and resolve in admin portal |
@@ -206,6 +243,8 @@ Work through phases in order. Each phase builds on the last.
 | Reminders | 🟡 Partial | Pre-visit email in background job; SMS when Twilio configured |
 | Weather rescheduling | ⬜ Not started | — |
 | Payout generation | 🟡 Partial | Plan-based accrual on visit complete; admin marks paid manually; Stripe Connect 🔵 deferred |
+| Portfolio quote | ⬜ Not started | AI indicative + admin review (phase 2) |
+| Portfolio invoicing | ⬜ Not started | Monthly arrears; card/BACS threshold (phase 4) |
 | Churn prevention | ⬜ Not started | — |
 
 All workflow transitions should be logged — logging exists; automation and admin visibility are the gaps.
@@ -221,6 +260,7 @@ Modular boundaries to maintain as the platform grows.
 | Identity | ✅ Done | JWT, BCrypt, roles (Customer, Provider, Admin) |
 | Brands | 🟡 Partial | Entity + API; frontend not multi-brand yet |
 | Customers | ✅ Done | Registration, portal, subscriptions |
+| Portfolios | ⬜ Not started | Spec complete; phase 1 enquiry at go-live — invoicing track separate from subscriptions |
 | Providers | 🟡 Partial | Self-signup, coverage, claiming, availability v1+v2, earnings ledger v1 |
 | Services | 🟡 Partial | Essential (1 visit/mo) + Premium (2 visits/mo); plan copy aligned |
 | Subscriptions | ✅ Done | Plans + Stripe subscription Checkout + renewal webhooks |
@@ -228,7 +268,7 @@ Modular boundaries to maintain as the platform grows.
 | Dispatch | 🟡 Partial | FCFS claim + preferred auto-assign; travel validation missing |
 | CRM | 🟡 Partial | Customer/provider detail, photo lightbox, earnings, availability edit, trends |
 | Communications | 🟡 Partial | Chat done; email/SMS/WhatsApp incomplete |
-| Billing | ✅ Done | Stripe subscription Checkout + renewals/past_due/cancel webhooks |
+| Billing | ✅ Done | Stripe subscription Checkout (consumer); portfolio invoicing ⬜ phase 4 |
 | AI Orchestration | ✅ Done | OpenAI chat, escalation, audit logging |
 | Workflow Engine | 🟡 Partial | Event logging; limited automation |
 | Analytics | 🔵 Deferred | Basic admin counts only |
@@ -278,7 +318,7 @@ Do not build these until core MVP is production-stable.
 | Advanced AI autonomy | 🔵 Deferred |
 | Native mobile apps | 🔵 Deferred (responsive web in place) |
 | Advanced analytics | 🔵 Deferred |
-| Dynamic pricing | 🔵 Deferred |
+| Dynamic pricing | 🔵 Deferred (consumer) | Portfolio personalised pricing in scope via For portfolios phases 2–4 |
 | Route optimization | 🔵 Deferred |
 | Referral systems | 🔵 Deferred |
 
@@ -308,7 +348,7 @@ Quick snapshot of implemented features as of last review.
 - Brands API, workflow event logging, health checks
 
 ### Frontend
-- Marketing: customer-focused `/`, `/about`, `/providers`; SEO (sitemap, robots); compressed hero; lazy chat; `/privacy` and `/terms`; OG image (~200KB JPEG)
+- Marketing: customer-focused `/`, `/about`, `/providers`; **For portfolios** `/for-portfolios` ⬜ phase 1 at go-live; SEO (sitemap, robots); compressed hero; lazy chat; `/privacy` and `/terms`; OG image (~200KB JPEG)
 - Signup: 3-step customer wizard; provider apply form (postcode + radius slider)
 - Portals: `/portal` (Manage billing, photos, preferred gardener), `/provider` (coverage, availability, earnings), `/admin` (CRM + trends + photo lightbox)
 - Mobile UX: responsive layouts, hamburger nav, mobile CTA bar
@@ -320,7 +360,7 @@ Quick snapshot of implemented features as of last review.
 - Docker, env examples, Stripe/Twilio setup guides
 
 ### Recent commits (2026-05-23)
-- *(pending)* — provider availability v2 (customer time-window matching)
+- `15c1d84` — provider availability v2 (customer time-window matching)
 - `ecdf9ea` — plan visit cadence + provider pay (Essential 1/mo, Premium 2/mo)
 - `7e5b4d7` — admin CRM polish (availability edit, photo lightbox, earnings refresh)
 - `62069a3` — provider earnings ledger v1 + admin photo thumbnails

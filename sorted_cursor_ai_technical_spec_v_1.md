@@ -6,7 +6,8 @@ Build a production-ready modular monolith platform for Sorted.
 
 The platform must support:
 - multi-brand home services
-- recurring subscriptions
+- recurring subscriptions (consumer)
+- portfolio accounts with personalised pricing and invoicing
 - customer accounts
 - provider marketplace workflows
 - operational CRM
@@ -43,6 +44,7 @@ Frontend must support:
 - multiple brands/themes/domains
 - responsive design
 - customer login portal
+- portfolio login portal
 - provider portal
 - internal admin CRM
 
@@ -90,6 +92,21 @@ Customers must be able to:
 - communicate with support
 - upload property media
 
+## Portfolio accounts (For portfolios)
+Portfolio account holders (landlords, letting agents, multi-property owners with **2+ properties**) must be able to:
+- submit enquiries and (later) complete a separate signup journey with the same UX feel as consumer signup
+- manage multiple properties under **one login / one portfolio** (v1)
+- specify **per-property** visit requirements, garden size, and address data for quoting
+- receive **personalised indicative quotes** (AI + calculation rules; subject to admin review)
+- view a **portfolio dashboard** — all properties, visits, spend, and per-property detail
+- **bulk import** properties via the portal (not at initial signup)
+- add/remove properties with **recalculated pricing** and **per-property 3-month minimum commitment**
+- pay via **monthly invoicing in arrears** (card if portfolio total **< £200/mo**, **BACS** if **≥ £200/mo**)
+
+Portfolio accounts use **invoicing**, not consumer Stripe subscriptions. Tenants never receive platform access.
+
+See [`docs/for-portfolios-requirements.md`](docs/for-portfolios-requirements.md) for full product rules, phases, and marketing copy.
+
 ## Providers
 Providers must be able to:
 - onboard
@@ -103,9 +120,11 @@ Providers must be able to:
 Admins must be able to:
 - manage workflows
 - manage customers
+- manage portfolio accounts (dedicated CRM section)
 - manage providers
 - monitor jobs
 - manage subscriptions
+- manage portfolio quotes, pricing overrides, and invoicing
 - handle escalations
 - monitor AI actions
 
@@ -118,6 +137,7 @@ Implement modular boundaries for:
 - Identity
 - Brands
 - Customers
+- Portfolios
 - Providers
 - Services
 - Subscriptions
@@ -152,6 +172,24 @@ Support:
 - recurring billing
 - renewals
 - payment retries
+
+Consumer subscriptions use Stripe Checkout / subscription webhooks. Portfolio accounts use **invoicing** (see For portfolios below).
+
+## For portfolios (multi-property)
+Support a separate **For portfolios** commercial track alongside consumer signup:
+
+- **Audience:** private landlords, letting agents, holiday-let owners — **minimum 2 properties**
+- **Pricing:** personalised rates from calculation rules (property count, postcodes/clustering, per-property visit frequency, service level, garden size, seasonality) — **not** fixed Essential/Premium tiers
+- **Quoting:** indicative quote returned immediately (phase 2+ via AI + rules); **admin review required** before agreement; admin price override supported
+- **Commitment:** **3 months per property**; removing a property mid-term still bills the quoted amount for that property through the commitment
+- **Changes:** adding a property recalculates totals; each new property gets its **own 3-month lock-in**
+- **Billing:** **monthly invoices in arrears**; card if **< £200/mo**, BACS if **≥ £200/mo**; invoice the account holder (agent or owner)
+- **Coverage:** same geography as consumer at launch; out-of-area properties → waitlist or ops “find a gardener”
+- **Tenants:** never platform users
+- **Terms:** portfolio-specific terms where appropriate (separate from consumer T&Cs)
+- **Phasing:** (1) enquiry form + marketing page at consumer go-live → (2) AI quote + signup → (3) portal + bulk import → (4) invoicing
+
+Full requirements: [`docs/for-portfolios-requirements.md`](docs/for-portfolios-requirements.md)
 
 ## Scheduling
 Support:
@@ -190,11 +228,13 @@ Implement:
 Internal CRM should support:
 - operational dashboards
 - customer management
+- portfolio account management (dedicated section — leads, quotes, overrides, invoicing)
 - provider management
 - workflow monitoring
 - dispatch visibility
 - escalation handling
 - KPI monitoring
+- portfolio reporting (properties per account, portfolio MRR, churn)
 
 ---
 
@@ -204,6 +244,10 @@ Implement workflow/event-driven orchestration.
 
 Example workflows:
 - customer signup
+- portfolio enquiry
+- portfolio quote (AI indicative + admin review)
+- portfolio agreement activation
+- monthly portfolio invoicing
 - payment success
 - recurring visit generation
 - provider dispatch
@@ -212,6 +256,7 @@ Example workflows:
 - weather rescheduling
 - payout generation
 - churn prevention
+- portfolio property add/remove (recalc + lock-in)
 
 All workflow transitions should be logged.
 
@@ -223,6 +268,7 @@ Support:
 - JWT authentication
 - RBAC authorization
 - customer roles
+- portfolio account holder roles
 - provider roles
 - admin roles
 - shared identity across brands
@@ -284,12 +330,13 @@ Prioritize:
 - scheduling engine
 - communication systems
 - AI support assistant
+- for portfolios phase 1 (enquiry) at consumer go-live
 
 Deprioritize:
 - advanced AI autonomy
 - native mobile apps
 - advanced analytics
-- dynamic pricing
+- dynamic pricing (consumer plans — portfolio personalised pricing is in scope via For portfolios)
 - route optimization
 - referral systems
 
