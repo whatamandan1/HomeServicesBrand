@@ -196,7 +196,9 @@ public record AdminCustomerSubscriptionResponse(
     DateTime? MinimumTermEndsAtUtc,
     DateTime? CancelsAtUtc,
     bool HasStripeBilling,
-    bool CanCancel);
+    bool CanCancel,
+    string AvailabilityPreference,
+    string? PreferredGardenerName);
 
 public record AdminCustomerDetailResponse(
     Guid Id,

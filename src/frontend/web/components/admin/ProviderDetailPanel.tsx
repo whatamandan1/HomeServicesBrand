@@ -1,9 +1,10 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { AdminProviderAvailabilitySection } from "@/components/admin/AdminProviderAvailabilitySection";
 import { ActAsUserButton } from "@/components/admin/ActAsUserButton";
-import { api, type AdminProvider, type AuthResponse, type ProviderAvailability, type ProviderEarningsSummary } from "@/lib/api";
-import { formatMoneyGbp, formatWorkingDays } from "@/lib/provider-availability";
+import { api, type AdminProvider, type AuthResponse, type ProviderEarningsSummary } from "@/lib/api";
+import { formatMoneyGbp } from "@/lib/provider-availability";
 import { StatusBadge } from "@/components/ui";
 
 export function ProviderDetailPanel({
@@ -26,20 +27,9 @@ export function ProviderDetailPanel({
   const [saving, setSaving] = useState(false);
   const [message, setMessage] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
-  const [availability, setAvailability] = useState<ProviderAvailability | null>(null);
-  const [availabilityLoading, setAvailabilityLoading] = useState(true);
   const [earnings, setEarnings] = useState<ProviderEarningsSummary | null>(null);
   const [earningsLoading, setEarningsLoading] = useState(true);
   const [markingPaidId, setMarkingPaidId] = useState<string | null>(null);
-
-  useEffect(() => {
-    setAvailabilityLoading(true);
-    api
-      .adminProviderAvailability(token, provider.id)
-      .then(setAvailability)
-      .catch(() => setAvailability(null))
-      .finally(() => setAvailabilityLoading(false));
-  }, [provider.id, token]);
 
   useEffect(() => {
     setEarningsLoading(true);
@@ -209,34 +199,13 @@ export function ProviderDetailPanel({
         )}
       </div>
 
-      <div className="mt-6 space-y-3">
-        <h4 className="text-sm font-semibold text-gardens-dark">Availability</h4>
-        {availabilityLoading ? (
-          <p className="text-sm text-stone-500">Loading schedule…</p>
-        ) : availability ? (
-          <>
-            <p className="text-sm text-stone-700">
-              Working days: {formatWorkingDays(availability.workingDaysMask)}
-            </p>
-            <p className="text-sm text-stone-700">
-              Hours: {availability.workDayStart} – {availability.workDayEnd}
-            </p>
-            {availability.blockedDates.length === 0 ? (
-              <p className="text-sm text-stone-500">No blocked dates.</p>
-            ) : (
-              <ul className="space-y-1 text-sm text-stone-700">
-                {availability.blockedDates.map((entry) => (
-                  <li key={entry.id}>
-                    {entry.blockedDate}
-                    {entry.reason ? ` — ${entry.reason}` : ""}
-                  </li>
-                ))}
-              </ul>
-            )}
-          </>
-        ) : (
-          <p className="text-sm text-stone-500">Could not load availability.</p>
-        )}
+      <div className="mt-6">
+        <AdminProviderAvailabilitySection
+          token={token}
+          providerId={provider.id}
+          onNotice={setMessage}
+          onError={setError}
+        />
       </div>
 
       <div className="mt-6 space-y-3">

@@ -10,14 +10,14 @@ statuses as features ship.
 **Live site:** https://home-services-brand.vercel.app/  
 **Live API:** https://homeservicesbrand-production.up.railway.app/
 
-**Current focus:** Twilio SMS + pre-launch gate. Payout ledger v1 and admin CRM polish shipped.
+**Current focus:** Twilio SMS + pre-launch gate. Payout ledger v1, admin CRM polish, and UX polish batch shipped.
 
 ### What's next (when you resume)
 
-Recent batch shipped: provider earnings ledger (manual payout), admin photo thumbnails, admin provider availability view, day-off release fix.
+Recent batch shipped: admin edit provider availability, photo lightbox, richer customer CRM (gardener, preferred times), earnings refresh on complete.
 
 1. **Twilio SMS** — UK sender registration + visit/reminder texts in prod
-2. **Stripe Connect (v2 payouts)** — automated transfers when manual payout volume grows
+2. **Provider availability v2** — match visit times to customer text windows
 3. **Pre-launch gate** (when ready) — real admin account, `Features__SeedDemoData=false`, custom domain
 
 ### Last job before go-live (customer launch gate)
@@ -88,7 +88,7 @@ Work through phases in order. Each phase builds on the last.
 ### Phase 3 — Platform maturity (post-pilot / optional pre-launch)
 
 - [x] **Provider availability (v1)** — working days + default hours + blocked dates on `/provider`; claim, open jobs, and preferred-provider auto-assign respect schedule; blocking a day or changing working days releases assigned visits back to open pool (incl. rescheduled)
-- [ ] **Provider availability (v2)** — match visit times to customer text windows; admin view/edit
+- [ ] **Provider availability (v2)** — match visit times to customer text windows *(admin edit shipped)*
 - [ ] **Multi-brand frontend** — theme/config per brand; remove hardcoded `gardens-sorted` in API client
 - [x] **Provider earnings / payouts (v1)** — visit ledger accrues on complete (~60% share); provider + admin views; admin marks paid manually
 - [ ] **Provider earnings / payouts (v2)** — Stripe Connect automated transfers
@@ -127,7 +127,7 @@ Work through phases in order. Each phase builds on the last.
 |-------------|--------|-----------|
 | Onboard | ✅ Done | Apply at `/providers#apply` (postcode + radius); admin approves on `/admin` |
 | Claim jobs | ✅ Done | Matched by derived outcodes / distance within radius |
-| Manage availability | 🟡 Partial | Working days, hours, blocked dates on `/provider`; admin read-only view; v2 = time-window matching + admin edit |
+| Manage availability | 🟡 Partial | Provider self-service + **admin edit** on `/admin`; v2 = time-window matching |
 | View earnings | 🟡 Partial | Accrued/paid ledger on `/provider`; admin mark paid; Stripe Connect deferred |
 | View recurring assignments | ✅ Done | Preferred gardener auto-assign; portal shows assigned gardener name |
 | Communicate with operations | ⬜ Not started | Provider messaging or ops notifications |
@@ -139,8 +139,8 @@ Work through phases in order. Each phase builds on the last.
 | Requirement | Status | Next step |
 |-------------|--------|-----------|
 | Operational dashboards | 🟡 Partial | KPIs, trends, date filters |
-| Provider management | 🟡 Partial | Approve providers; edit coverage; read-only availability + earnings in provider detail |
-| Customer management | 🟡 Partial | Customer detail with subs, visits, property photo thumbnails, support chat history; admin cancel subscription |
+| Provider management | 🟡 Partial | Approve providers; edit coverage + availability; earnings mark-paid |
+| Customer management | 🟡 Partial | Customer detail with subs (preferred times, gardener), visit gardener names, photo lightbox |
 | Workflow monitoring | 🟡 Partial | UI for `WorkflowEvent` log |
 | Dispatch visibility | 🟡 Partial | Dispatch board + open-dispatch action in UI |
 | Escalation handling | ✅ Done | Take case and resolve in admin portal |

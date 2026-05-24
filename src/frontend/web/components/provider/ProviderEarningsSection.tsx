@@ -9,7 +9,13 @@ function formatDate(iso: string) {
   return new Date(iso).toLocaleDateString("en-GB");
 }
 
-export function ProviderEarningsSection({ token }: { token: string }) {
+export function ProviderEarningsSection({
+  token,
+  refreshKey = 0,
+}: {
+  token: string;
+  refreshKey?: number;
+}) {
   const [summary, setSummary] = useState<ProviderEarningsSummary | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -21,7 +27,7 @@ export function ProviderEarningsSection({ token }: { token: string }) {
       .then(setSummary)
       .catch((e) => setError(e instanceof Error ? e.message : "Could not load earnings"))
       .finally(() => setLoading(false));
-  }, [token]);
+  }, [token, refreshKey]);
 
   if (loading) {
     return <p className="text-sm text-stone-500">Loading earnings…</p>;

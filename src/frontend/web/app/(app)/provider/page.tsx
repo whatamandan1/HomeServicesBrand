@@ -26,6 +26,7 @@ export default function ProviderPage() {
   const [coverageRadiusInput, setCoverageRadiusInput] = useState(10);
   const [coverageSaving, setCoverageSaving] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
+  const [earningsRefreshKey, setEarningsRefreshKey] = useState(0);
 
   function scrollToMyVisits() {
     myVisitsRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
@@ -121,7 +122,8 @@ export default function ProviderPage() {
 
       if (action === "complete") {
         await refresh();
-        setNotice("Visit marked complete. Your upcoming visits have been refreshed.");
+        setEarningsRefreshKey((key) => key + 1);
+        setNotice("Visit marked complete — earnings updated below.");
       } else {
         setMine((visits) =>
           visits.map((v) => (v.id === visitId ? updated : v))
@@ -258,7 +260,9 @@ export default function ProviderPage() {
           onUpdated={() => void refresh()}
         />
       )}
-      {auth?.token && <ProviderEarningsSection token={auth.token} />}
+      {auth?.token && (
+        <ProviderEarningsSection token={auth.token} refreshKey={earningsRefreshKey} />
+      )}
       {notice && (
         <p className="rounded-lg border border-green-200 bg-green-50 px-4 py-3 text-sm text-green-900">
           {notice}

@@ -143,6 +143,16 @@ export function CustomerDetailPanel({
                       )}
                     </div>
                     <p className="mt-1 text-stone-600">Started {formatDate(s.startedAtUtc)}</p>
+                    {s.availabilityPreference && (
+                      <p className="mt-1 text-stone-600">
+                        Preferred times: {s.availabilityPreference}
+                      </p>
+                    )}
+                    {s.preferredGardenerName && (
+                      <p className="mt-1 text-stone-600">
+                        Preferred gardener: {s.preferredGardenerName}
+                      </p>
+                    )}
                     {s.minimumTermEndsAtUtc && (
                       <p className="text-xs text-stone-500">
                         Minimum term until {formatDate(s.minimumTermEndsAtUtc)}
@@ -218,6 +228,11 @@ export function CustomerDetailPanel({
                       <p className="font-medium">{formatDate(v.scheduledDate)}</p>
                       <p className="text-stone-600">{v.postcode}</p>
                       <p className="text-xs text-stone-500">{v.availabilityWindow}</p>
+                      {v.assignedProviderName && (
+                        <p className="text-xs text-stone-500">
+                          Gardener: {v.assignedProviderName}
+                        </p>
+                      )}
                     </div>
                     <StatusBadge status={v.status} />
                   </li>

@@ -117,6 +117,7 @@ public class AdminController(
 
         var subscriptions = await db.CustomerSubscriptions.AsNoTracking()
             .Include(s => s.Plan)
+            .Include(s => s.PreferredProvider).ThenInclude(p => p!.User)
             .Where(s => s.CustomerId == customerId && !s.IsDeleted)
             .OrderByDescending(s => s.CreatedAtUtc)
             .ToListAsync(ct);
@@ -222,7 +223,11 @@ public class AdminController(
             s.EndsAtUtc,
             s.CancelsAtUtc,
             hasStripe,
-            canCancel);
+            canCancel,
+            s.AvailabilityPreference,
+            s.PreferredProvider is null
+                ? null
+                : s.PreferredProvider.User.FirstName + " " + s.PreferredProvider.User.LastName);
     }
 
     [HttpGet("providers")]
@@ -344,6 +349,80 @@ public class AdminController(
         try
         {
             return Ok(await availability.GetAvailabilityAsync(id, ct));
+        }
+        catch (InvalidOperationException ex)
+        {
+            return BadRequest(new { error = ex.Message });
+        }
+    }
+
+    [HttpPut("providers/{id:guid}/availability")]
+    public async Task<ActionResult<ProviderAvailabilityResponse>> UpdateProviderAvailability(
+        Guid id,
+        [FromBody] UpdateProviderAvailabilityRequest request,
+        CancellationToken ct)
+    {
+        var exists = await db.Providers.AnyAsync(p => p.Id == id && !p.IsDeleted, ct);
+        if (!exists) return NotFound();
+
+        try
+        {
+            var updated = await availability.UpdateAvailabilityAsync(id, request, ct);
+            await workflow.LogAsync(
+                "provider_onboarding",
+                "availability_updated",
+                nameof(Provider),
+                id,
+                new { request.WorkingDaysMask, request.WorkDayStart, request.WorkDayEnd, updatedBy = "admin" },
+                ct);
+            return Ok(updated);
+        }
+        catch (InvalidOperationException ex)
+        {
+            return BadRequest(new { error = ex.Message });
+        }
+    }
+
+    [HttpPost("providers/{id:guid}/blocked-dates")]
+    public async Task<ActionResult<ProviderBlockedDateResponse>> AddProviderBlockedDate(
+        Guid id,
+        [FromBody] AddProviderBlockedDateRequest request,
+        CancellationToken ct)
+    {
+        var exists = await db.Providers.AnyAsync(p => p.Id == id && !p.IsDeleted, ct);
+        if (!exists) return NotFound();
+
+        try
+        {
+            var result = await availability.AddBlockedDateAsync(id, request, ct);
+            await workflow.LogAsync(
+                "provider_onboarding",
+                "blocked_date_added",
+                nameof(Provider),
+                id,
+                new { request.BlockedDate, result.ReleasedVisitCount, updatedBy = "admin" },
+                ct);
+            return Ok(result);
+        }
+        catch (InvalidOperationException ex)
+        {
+            return BadRequest(new { error = ex.Message });
+        }
+    }
+
+    [HttpDelete("providers/{providerId:guid}/blocked-dates/{blockedDateId:guid}")]
+    public async Task<IActionResult> RemoveProviderBlockedDate(
+        Guid providerId,
+        Guid blockedDateId,
+        CancellationToken ct)
+    {
+        var exists = await db.Providers.AnyAsync(p => p.Id == providerId && !p.IsDeleted, ct);
+        if (!exists) return NotFound();
+
+        try
+        {
+            await availability.RemoveBlockedDateAsync(providerId, blockedDateId, ct);
+            return NoContent();
         }
         catch (InvalidOperationException ex)
         {

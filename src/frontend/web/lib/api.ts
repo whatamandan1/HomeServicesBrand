@@ -112,6 +112,8 @@ export type AdminCustomerSubscription = {
   cancelsAtUtc: string | null;
   hasStripeBilling: boolean;
   canCancel: boolean;
+  availabilityPreference: string;
+  preferredGardenerName: string | null;
 };
 
 export type AdminCustomerDetail = {
@@ -563,6 +565,30 @@ export const api = {
     }, token),
   adminProviderAvailability: (token: string, providerId: string) =>
     request<ProviderAvailability>(`/api/admin/providers/${providerId}/availability`, {}, token),
+  adminUpdateProviderAvailability: (
+    token: string,
+    providerId: string,
+    body: { workingDaysMask: number; workDayStart: string; workDayEnd: string }
+  ) =>
+    request<ProviderAvailability>(`/api/admin/providers/${providerId}/availability`, {
+      method: "PUT",
+      body: JSON.stringify(body),
+    }, token),
+  adminAddProviderBlockedDate: (
+    token: string,
+    providerId: string,
+    body: { blockedDate: string; reason: string | null }
+  ) =>
+    request<ProviderBlockedDate>(`/api/admin/providers/${providerId}/blocked-dates`, {
+      method: "POST",
+      body: JSON.stringify(body),
+    }, token),
+  adminRemoveProviderBlockedDate: (token: string, providerId: string, blockedDateId: string) =>
+    request<void>(
+      `/api/admin/providers/${providerId}/blocked-dates/${blockedDateId}`,
+      { method: "DELETE" },
+      token
+    ),
   adminProviderEarnings: (token: string, providerId: string) =>
     request<ProviderEarningsSummary>(`/api/admin/providers/${providerId}/earnings`, {}, token),
   adminMarkProviderEarningPaid: (
