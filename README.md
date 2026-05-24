@@ -46,6 +46,7 @@ SQLite database is created at `src/backend/Sorted.Api/sorted.db` on first run.
 | Admin | admin@gardenssorted.local | Admin123! |
 | Provider | provider@gardenssorted.local | Provider123! |
 | Customer (demo jobs) | demo@gardenssorted.local | Demo123! |
+| Landlord (multi-property demo) | landlord@gardenssorted.local | Landlord123! |
 
 The demo provider covers postcode sectors **LS1**, **LS2**, and **WF1**. On API startup, claimable demo visits are seeded in **LS1 4AP** if none exist. Customer signups need a matching postcode (e.g. `LS1 4AP`) for jobs to appear on the provider portal.
 

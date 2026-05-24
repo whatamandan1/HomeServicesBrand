@@ -4,7 +4,8 @@ public enum UserRole
 {
     Customer = 1,
     Provider = 2,
-    Admin = 3
+    Admin = 3,
+    Landlord = 4
 }
 
 public enum SubscriptionBillingInterval

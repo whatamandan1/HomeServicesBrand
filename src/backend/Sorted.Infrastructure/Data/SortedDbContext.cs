@@ -27,6 +27,8 @@ public class SortedDbContext(DbContextOptions<SortedDbContext> options) : DbCont
     public DbSet<PasswordResetToken> PasswordResetTokens => Set<PasswordResetToken>();
     public DbSet<PortfolioEnquiry> PortfolioEnquiries => Set<PortfolioEnquiry>();
     public DbSet<PortfolioEnquiryProperty> PortfolioEnquiryProperties => Set<PortfolioEnquiryProperty>();
+    public DbSet<MultiPropertyAccount> MultiPropertyAccounts => Set<MultiPropertyAccount>();
+    public DbSet<MultiPropertyAccountProperty> MultiPropertyAccountProperties => Set<MultiPropertyAccountProperty>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -83,6 +85,15 @@ public class SortedDbContext(DbContextOptions<SortedDbContext> options) : DbCont
             .HasOne(e => e.Brand).WithMany().HasForeignKey(e => e.BrandId);
         modelBuilder.Entity<PortfolioEnquiry>()
             .HasIndex(e => e.Email);
+        modelBuilder.Entity<MultiPropertyAccount>()
+            .HasOne(a => a.User).WithMany().HasForeignKey(a => a.UserId);
+        modelBuilder.Entity<MultiPropertyAccount>()
+            .HasOne(a => a.Brand).WithMany().HasForeignKey(a => a.BrandId);
+        modelBuilder.Entity<MultiPropertyAccount>()
+            .HasIndex(a => a.UserId)
+            .IsUnique();
+        modelBuilder.Entity<MultiPropertyAccountProperty>()
+            .HasOne(p => p.Account).WithMany(a => a.Properties).HasForeignKey(p => p.MultiPropertyAccountId);
 
         foreach (var entity in modelBuilder.Model.GetEntityTypes())
         {

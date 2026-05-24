@@ -181,6 +181,48 @@ internal static class PostgresSchemaRepair
             ON "PortfolioEnquiryProperties" ("PortfolioEnquiryId");
         """;
 
+    private const string MultiPropertyAccountsSql = """
+        CREATE TABLE IF NOT EXISTS "MultiPropertyAccounts" (
+            "Id" uuid NOT NULL,
+            "UserId" uuid NOT NULL,
+            "BrandId" uuid NOT NULL,
+            "CompanyName" text NULL,
+            "IndicativeMonthlyGbp" numeric NULL,
+            "AgreementNotes" text NULL,
+            "CreatedAtUtc" timestamp with time zone NOT NULL,
+            "UpdatedAtUtc" timestamp with time zone NULL,
+            "IsDeleted" boolean NOT NULL DEFAULT FALSE,
+            CONSTRAINT "PK_MultiPropertyAccounts" PRIMARY KEY ("Id"),
+            CONSTRAINT "FK_MultiPropertyAccounts_Users_UserId" FOREIGN KEY ("UserId") REFERENCES "Users" ("Id") ON DELETE CASCADE,
+            CONSTRAINT "FK_MultiPropertyAccounts_Brands_BrandId" FOREIGN KEY ("BrandId") REFERENCES "Brands" ("Id") ON DELETE CASCADE
+        );
+
+        CREATE UNIQUE INDEX IF NOT EXISTS "IX_MultiPropertyAccounts_UserId"
+            ON "MultiPropertyAccounts" ("UserId");
+
+        CREATE TABLE IF NOT EXISTS "MultiPropertyAccountProperties" (
+            "Id" uuid NOT NULL,
+            "MultiPropertyAccountId" uuid NOT NULL,
+            "SortOrder" integer NOT NULL,
+            "Line1" text NOT NULL,
+            "Line2" text NULL,
+            "City" text NOT NULL,
+            "Postcode" text NOT NULL,
+            "GardenSize" integer NOT NULL,
+            "VisitFrequency" text NOT NULL,
+            "ServiceLevel" text NOT NULL,
+            "NextVisitDate" timestamp with time zone NULL,
+            "CreatedAtUtc" timestamp with time zone NOT NULL,
+            "UpdatedAtUtc" timestamp with time zone NULL,
+            "IsDeleted" boolean NOT NULL DEFAULT FALSE,
+            CONSTRAINT "PK_MultiPropertyAccountProperties" PRIMARY KEY ("Id"),
+            CONSTRAINT "FK_MultiPropertyAccountProperties_MultiPropertyAccounts_MultiPropertyAccountId" FOREIGN KEY ("MultiPropertyAccountId") REFERENCES "MultiPropertyAccounts" ("Id") ON DELETE CASCADE
+        );
+
+        CREATE INDEX IF NOT EXISTS "IX_MultiPropertyAccountProperties_MultiPropertyAccountId"
+            ON "MultiPropertyAccountProperties" ("MultiPropertyAccountId");
+        """;
+
     public static async Task ApplyAsync(SortedDbContext db, ILogger logger, CancellationToken ct = default)
     {
         if (!(db.Database.ProviderName ?? "").Contains("Npgsql", StringComparison.OrdinalIgnoreCase))
@@ -194,6 +236,7 @@ internal static class PostgresSchemaRepair
             await db.Database.ExecuteSqlRawAsync(ProviderAvailabilitySql, ct);
             await db.Database.ExecuteSqlRawAsync(ProviderEarningsSql, ct);
             await db.Database.ExecuteSqlRawAsync(PortfolioEnquiriesSql, ct);
+            await db.Database.ExecuteSqlRawAsync(MultiPropertyAccountsSql, ct);
             logger.LogInformation("PostgreSQL schema repair completed");
         }
         catch (Exception ex)

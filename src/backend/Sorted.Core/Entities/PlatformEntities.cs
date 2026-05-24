@@ -252,3 +252,30 @@ public class PortfolioEnquiryProperty : AuditableEntity
     public string Postcode { get; set; } = string.Empty;
     public GardenSize GardenSize { get; set; }
 }
+
+public class MultiPropertyAccount : AuditableEntity
+{
+    public Guid UserId { get; set; }
+    public UserAccount User { get; set; } = null!;
+    public Guid BrandId { get; set; }
+    public Brand Brand { get; set; } = null!;
+    public string? CompanyName { get; set; }
+    public decimal? IndicativeMonthlyGbp { get; set; }
+    public string? AgreementNotes { get; set; }
+    public ICollection<MultiPropertyAccountProperty> Properties { get; set; } = [];
+}
+
+public class MultiPropertyAccountProperty : AuditableEntity
+{
+    public Guid MultiPropertyAccountId { get; set; }
+    public MultiPropertyAccount Account { get; set; } = null!;
+    public int SortOrder { get; set; }
+    public string Line1 { get; set; } = string.Empty;
+    public string? Line2 { get; set; }
+    public string City { get; set; } = string.Empty;
+    public string Postcode { get; set; } = string.Empty;
+    public GardenSize GardenSize { get; set; }
+    public string VisitFrequency { get; set; } = string.Empty;
+    public string ServiceLevel { get; set; } = string.Empty;
+    public DateTime? NextVisitDate { get; set; }
+}

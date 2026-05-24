@@ -11,6 +11,7 @@ import { loadAuth, syncSessionCookies } from "@/lib/auth-storage";
 const customerLink = { href: "/portal", label: "Customer portal" } as const;
 const providerLink = { href: "/provider", label: "Provider jobs" } as const;
 const adminLink = { href: "/admin", label: "Admin CRM" } as const;
+const landlordLink = { href: "/landlord", label: "Landlord portal" } as const;
 const switchAccountLink = { href: "/login", label: "Switch account" } as const;
 
 function navLinksForRole(role: AuthResponse["role"] | null) {
@@ -20,10 +21,13 @@ function navLinksForRole(role: AuthResponse["role"] | null) {
   if (role === "Provider") {
     return [providerLink, switchAccountLink];
   }
+  if (role === "Landlord") {
+    return [landlordLink, switchAccountLink];
+  }
   if (role === "Customer") {
     return [customerLink, switchAccountLink];
   }
-  return [customerLink, providerLink, switchAccountLink];
+  return [customerLink, providerLink, landlordLink, switchAccountLink];
 }
 
 export function AppHeader() {

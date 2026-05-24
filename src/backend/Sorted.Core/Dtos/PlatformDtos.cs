@@ -316,3 +316,25 @@ public record PortfolioEnquiryDetailResponse(
     IReadOnlyList<PortfolioEnquiryPropertyResponse> Properties);
 
 public record UpdatePortfolioEnquiryStatusRequest(PortfolioEnquiryStatus Status);
+
+public record LandlordPropertyResponse(
+    Guid Id,
+    int SortOrder,
+    string Line1,
+    string? Line2,
+    string City,
+    string Postcode,
+    GardenSize GardenSize,
+    string VisitFrequency,
+    string ServiceLevel,
+    DateTime? NextVisitDate);
+
+public record LandlordAccountResponse(
+    Guid Id,
+    string ContactName,
+    string Email,
+    string? Phone,
+    string? CompanyName,
+    decimal? IndicativeMonthlyGbp,
+    string? AgreementNotes,
+    IReadOnlyList<LandlordPropertyResponse> Properties);

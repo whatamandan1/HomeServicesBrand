@@ -76,7 +76,7 @@ export default function LoginForm() {
           </form>
           {showDemo && (
             <p className="mt-4 text-xs text-stone-400">
-              Demo: admin@gardenssorted.local / Admin123! · provider@gardenssorted.local / Provider123!
+              Demo: admin@gardenssorted.local / Admin123! · provider@gardenssorted.local / Provider123! · demo@gardenssorted.local / Demo123! · landlord@gardenssorted.local / Landlord123!
             </p>
           )}
           <p className="mt-6 text-center text-sm text-stone-500">

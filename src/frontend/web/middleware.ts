@@ -1,17 +1,19 @@
 import type { NextRequest } from "next/server";
 import { NextResponse } from "next/server";
 
-const protectedPrefixes = ["/admin", "/provider", "/portal"] as const;
+const protectedPrefixes = ["/admin", "/provider", "/portal", "/landlord"] as const;
 
 const roleByPrefix: Record<(typeof protectedPrefixes)[number], string> = {
   "/admin": "Admin",
   "/provider": "Provider",
   "/portal": "Customer",
+  "/landlord": "Landlord",
 };
 
 function portalPathForRole(role: string) {
   if (role === "Admin") return "/admin";
   if (role === "Provider") return "/provider";
+  if (role === "Landlord") return "/landlord";
   return "/portal";
 }
 
@@ -38,5 +40,5 @@ export function middleware(request: NextRequest) {
 }
 
 export const config = {
-  matcher: ["/admin/:path*", "/provider/:path*", "/portal/:path*"],
+  matcher: ["/admin/:path*", "/provider/:path*", "/portal/:path*", "/landlord/:path*"],
 };

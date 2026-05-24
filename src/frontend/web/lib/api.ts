@@ -12,7 +12,7 @@ export type AuthResponse = {
   expiresAtUtc: string;
   userId: string;
   email: string;
-  role: "Customer" | "Provider" | "Admin";
+  role: "Customer" | "Provider" | "Admin" | "Landlord";
   brandCode: string | null;
   pendingSubscriptionId?: string | null;
   impersonatorUserId?: string | null;
@@ -89,6 +89,30 @@ export type PortfolioEnquiryDetail = {
     postcode: string;
     gardenSize: GardenSize;
   }>;
+};
+
+export type LandlordProperty = {
+  id: string;
+  sortOrder: number;
+  line1: string;
+  line2: string | null;
+  city: string;
+  postcode: string;
+  gardenSize: GardenSize;
+  visitFrequency: string;
+  serviceLevel: string;
+  nextVisitDate: string | null;
+};
+
+export type LandlordAccount = {
+  id: string;
+  contactName: string;
+  email: string;
+  phone: string | null;
+  companyName: string | null;
+  indicativeMonthlyGbp: number | null;
+  agreementNotes: string | null;
+  properties: LandlordProperty[];
 };
 
 export type CustomerProperty = {
@@ -721,4 +745,6 @@ export const api = {
       method: "PATCH",
       body: JSON.stringify({ status }),
     }, token),
+  landlordAccount: (token: string) =>
+    request<LandlordAccount>("/api/landlord/account", {}, token),
 };

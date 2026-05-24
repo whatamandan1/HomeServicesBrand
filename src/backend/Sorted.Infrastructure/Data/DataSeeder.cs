@@ -17,6 +17,8 @@ public static class DataSeeder
     public const string ProviderPassword = "Provider123!";
     public const string DemoCustomerEmail = "demo@gardenssorted.local";
     public const string DemoCustomerPassword = "Demo123!";
+    public const string DemoLandlordEmail = "landlord@gardenssorted.local";
+    public const string DemoLandlordPassword = "Landlord123!";
     private const string DemoCoveragePostcode = "LS1 4AP";
     private const double DemoCoverageLatitude = 53.7991;
     private const double DemoCoverageLongitude = -1.5478;
@@ -163,6 +165,81 @@ public static class DataSeeder
 
         await db.SaveChangesAsync(ct);
         await EnsureDemoProviderCoverageAsync(db, logger, ct);
+        await EnsureDemoLandlordAccountAsync(db, logger, ct);
+    }
+
+    private static async Task EnsureDemoLandlordAccountAsync(SortedDbContext db, ILogger logger, CancellationToken ct)
+    {
+        var brandId = await db.Brands.Where(b => b.Code == "gardens-sorted").Select(b => b.Id).FirstOrDefaultAsync(ct);
+        if (brandId == Guid.Empty)
+            return;
+
+        var user = await db.Users.FirstOrDefaultAsync(u => u.Email == DemoLandlordEmail && !u.IsDeleted, ct);
+        if (user is null)
+        {
+            user = new UserAccount
+            {
+                Email = DemoLandlordEmail,
+                PasswordHash = BCrypt.Net.BCrypt.HashPassword(DemoLandlordPassword),
+                FirstName = "Pat",
+                LastName = "Mitchell",
+                Phone = "07700900002",
+                Role = UserRole.Landlord,
+                BrandId = brandId
+            };
+            db.Users.Add(user);
+            await db.SaveChangesAsync(ct);
+            logger.LogInformation("Created demo landlord user {Email}", DemoLandlordEmail);
+        }
+        else if (user.Role != UserRole.Landlord)
+        {
+            user.Role = UserRole.Landlord;
+            await db.SaveChangesAsync(ct);
+        }
+
+        var existingAccount = await db.MultiPropertyAccounts
+            .AnyAsync(a => a.UserId == user.Id && !a.IsDeleted, ct);
+        if (existingAccount)
+            return;
+
+        var account = new MultiPropertyAccount
+        {
+            UserId = user.Id,
+            BrandId = brandId,
+            CompanyName = "Mitchell Lettings",
+            IndicativeMonthlyGbp = 185.00m,
+            AgreementNotes = "Indicative demo quote — subject to review before agreement."
+        };
+        db.MultiPropertyAccounts.Add(account);
+
+        var nextMonth = DateTime.UtcNow.Date.AddDays(14);
+        var demoProperties = new[]
+        {
+            ("12 Oak Avenue", (string?)null, "Leeds", "LS6 2AB", GardenSize.Medium, "1 visit per month", "Essential tidy", nextMonth),
+            ("4 Chapel Row", "Flat 2", "Leeds", "LS1 3AA", GardenSize.Small, "1 visit per month", "Essential tidy", nextMonth.AddDays(7)),
+            ("88 Valley View", (string?)null, "Wakefield", "WF1 2EQ", GardenSize.Large, "2 visits per month", "Premium maintenance", nextMonth.AddDays(3))
+        };
+
+        for (var i = 0; i < demoProperties.Length; i++)
+        {
+            var (line1, line2, city, postcode, size, frequency, level, nextVisit) = demoProperties[i];
+            db.MultiPropertyAccountProperties.Add(new MultiPropertyAccountProperty
+            {
+                Account = account,
+                SortOrder = i,
+                Line1 = line1,
+                Line2 = line2,
+                City = city,
+                Postcode = postcode,
+                GardenSize = size,
+                VisitFrequency = frequency,
+                ServiceLevel = level,
+                NextVisitDate = nextVisit
+            });
+        }
+
+        await db.SaveChangesAsync(ct);
+        logger.LogInformation("Seeded demo multi-property account for {Email} with {Count} properties", DemoLandlordEmail, demoProperties.Length);
     }
 
     private static async Task EnsureDemoProviderCoverageAsync(SortedDbContext db, ILogger logger, CancellationToken ct)

@@ -86,6 +86,7 @@ export function exitImpersonation(): AuthResponse | null {
 export function portalPathForRole(role: AuthResponse["role"]) {
   if (role === "Admin") return "/admin";
   if (role === "Provider") return "/provider";
+  if (role === "Landlord") return "/landlord";
   return "/portal";
 }
 
@@ -97,6 +98,7 @@ export function resolvePostLoginPath(next: string | null, role: AuthResponse["ro
   if (next.startsWith("/admin") && role !== "Admin") return portalPathForRole(role);
   if (next.startsWith("/provider") && role !== "Provider") return portalPathForRole(role);
   if (next.startsWith("/portal") && role !== "Customer") return portalPathForRole(role);
+  if (next.startsWith("/landlord") && role !== "Landlord") return portalPathForRole(role);
 
   return next;
 }
