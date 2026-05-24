@@ -33,6 +33,13 @@ public static class PlanPricing
         decimal storedPrice,
         PlanPricingOptions options)
     {
+        if (PlanCatalog.IsElite(planName))
+        {
+            return billingInterval == SubscriptionBillingInterval.Monthly
+                ? options.EliteMonthly
+                : options.EliteAnnual;
+        }
+
         if (PlanCatalog.IsPremium(planName))
         {
             return billingInterval == SubscriptionBillingInterval.Monthly

@@ -45,6 +45,7 @@ const steps = [
 const included = [
   "Essential: monthly lawn, borders, and tidy",
   "Premium: twice-monthly visits plus hedges & beds",
+  "Elite: 3 visits per month (~every 10 days) with Premium inclusions",
   "Pricing scales for small, medium, and large gardens",
   "Online account to view and manage every visit",
 ];
@@ -59,8 +60,12 @@ const faqs = [
     a: "Two visits each month (about every two weeks), plus everything in Essential — light hedge trim, bed weeding, and seasonal tidy work like leaves and light pruning.",
   },
   {
+    q: "What's included in Elite?",
+    a: "Three visits each month (about every 10 days), with everything in Premium. Best for fast-growing gardens or owners who want consistent upkeep through the season.",
+  },
+  {
     q: "How does garden size affect price?",
-    a: "Small gardens are our base price (from £29.95/month Essential). Medium gardens add £10/month; large gardens add £20/month. Premium follows the same pattern from £49.95/month. Annual plans use the same uplifts (£100 medium / £200 large per year).",
+    a: "Small gardens are our base price (from £29.95/month Essential). Medium gardens add £10/month; large gardens add £20/month. Premium starts from £54.95/month and Elite from £89.95/month with the same uplifts. Annual plans use £100 medium / £200 large per year.",
   },
   {
     q: "What's not included?",
@@ -72,7 +77,7 @@ const faqs = [
   },
   {
     q: "Can you clean the patio, blow leaves, or clear gutters?",
-    a: "Premium includes light leaf blow and clear in the garden on visit days in season, and we'll lightly sweep garden-adjacent paving while we're there. Thorough patio cleaning, large leaf clearances, and gutter clearing are optional add-ons — message us for a quote.",
+    a: "Premium and Elite include light leaf blow and clear in the garden on visit days in season, and we'll lightly sweep garden-adjacent paving while we're there. Thorough patio cleaning, large leaf clearances, and gutter clearing are optional add-ons — message us for a quote.",
   },
   {
     q: "Which areas do you cover?",

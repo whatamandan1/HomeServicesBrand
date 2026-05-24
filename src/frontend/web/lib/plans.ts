@@ -16,7 +16,15 @@ export const FALLBACK_PLANS: SubscriptionPlan[] = [
     description: "Two visits per month (small garden) — hedges, beds, seasonal tidy. 3-month minimum.",
     billingInterval: "Monthly",
     minimumTermMonths: 3,
-    priceGbp: 49.95,
+    priceGbp: 54.95,
+  },
+  {
+    id: "fallback-elite-monthly",
+    name: "Elite Monthly",
+    description: "Three visits per month (~every 10 days, small garden) — everything in Premium. 3-month minimum.",
+    billingInterval: "Monthly",
+    minimumTermMonths: 3,
+    priceGbp: 89.95,
   },
   {
     id: "fallback-essential-annual",
@@ -32,7 +40,15 @@ export const FALLBACK_PLANS: SubscriptionPlan[] = [
     description: "Two visits per month (small garden), 12-month commitment — discounted.",
     billingInterval: "Annual",
     minimumTermMonths: 12,
-    priceGbp: 499.95,
+    priceGbp: 549.95,
+  },
+  {
+    id: "fallback-elite-annual",
+    name: "Elite Annual",
+    description: "Three visits per month (~every 10 days, small garden), 12-month commitment — discounted.",
+    billingInterval: "Annual",
+    minimumTermMonths: 12,
+    priceGbp: 899.95,
   },
 ];
 
@@ -50,6 +66,7 @@ export function planSignupIndex(plans: SubscriptionPlan[], planId: string): numb
   return idx >= 0 ? idx : 0;
 }
 
+/** @deprecated Use nextUpgradePlanLabel from consumer-plans */
 export function premiumPlanLabel(billingInterval: string) {
-  return billingInterval === "Annual" ? "Premium Annual (£499.95/year)" : "Premium Monthly (£49.95/month)";
+  return billingInterval === "Annual" ? "Premium Annual (£549.95/year)" : "Premium Monthly (£54.95/month)";
 }

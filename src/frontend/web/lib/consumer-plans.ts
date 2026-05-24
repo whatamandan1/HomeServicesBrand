@@ -46,10 +46,18 @@ export const PREMIUM_FEATURES = [
   "Priority scheduling where possible",
 ];
 
+export const ELITE_FEATURES = [
+  "Everything in Premium",
+  "3 visits every month (about every 10 days)",
+  "Ideal for fast-growing lawns and high-use gardens",
+  "Consistent upkeep through peak growing season",
+  "First choice for scheduling windows where possible",
+];
+
 export const ON_VISIT_WHEN_POSSIBLE = [
   "Watering pots, containers, and obvious dry spots (outdoor tap and hose needed)",
   "Light sweep of garden-adjacent patio or paths (not a deep clean)",
-  "Autumn leaf blow and clear within the maintained garden area (Premium visits)",
+  "Autumn leaf blow and clear within the maintained garden area (Premium & Elite visits)",
 ];
 
 export const SEASONAL_ADDONS = [
@@ -70,6 +78,10 @@ export const SHARED_FEATURES = [
   "Visits in your preferred time window",
   "Online account for visits and billing",
 ];
+
+function isElitePlan(name: string) {
+  return name.toLowerCase().includes("elite");
+}
 
 function isPremiumPlan(name: string) {
   return name.toLowerCase().includes("premium");
@@ -96,31 +108,55 @@ export function formatPlanPrice(plan: SubscriptionPlan, gardenSize: GardenSize =
 }
 
 export function planFeatures(plan: SubscriptionPlan): string[] {
-  return isPremiumPlan(plan.name) ? PREMIUM_FEATURES : ESSENTIAL_FEATURES;
+  if (isElitePlan(plan.name)) return ELITE_FEATURES;
+  if (isPremiumPlan(plan.name)) return PREMIUM_FEATURES;
+  return ESSENTIAL_FEATURES;
 }
 
 export function planTierLabel(plan: SubscriptionPlan) {
-  return isPremiumPlan(plan.name) ? "Premium" : "Essential";
+  if (isElitePlan(plan.name)) return "Elite";
+  if (isPremiumPlan(plan.name)) return "Premium";
+  return "Essential";
 }
 
 export function planVisitSummary(plan: SubscriptionPlan) {
-  return isPremiumPlan(plan.name) ? "2 visits per month" : "1 visit per month";
+  if (isElitePlan(plan.name)) return "3 visits per month (~every 10 days)";
+  if (isPremiumPlan(plan.name)) return "2 visits per month";
+  return "1 visit per month";
+}
+
+function findMonthlyPlan(basePlans: SubscriptionPlan[], tier: "essential" | "premium" | "elite") {
+  return basePlans.find((p) => {
+    if (p.billingInterval !== "Monthly") return false;
+    const name = p.name.toLowerCase();
+    if (tier === "elite") return name.includes("elite");
+    if (tier === "premium") return name.includes("premium");
+    return !name.includes("premium") && !name.includes("elite");
+  });
 }
 
 /** Monthly prices for the pricing matrix (small-garden base from API). */
 export function monthlyPriceMatrix(basePlans: SubscriptionPlan[]) {
-  const essential = basePlans.find(
-    (p) => p.billingInterval === "Monthly" && !isPremiumPlan(p.name)
-  );
-  const premium = basePlans.find(
-    (p) => p.billingInterval === "Monthly" && isPremiumPlan(p.name)
-  );
-  if (!essential || !premium) return null;
+  const essential = findMonthlyPlan(basePlans, "essential");
+  const premium = findMonthlyPlan(basePlans, "premium");
+  const elite = findMonthlyPlan(basePlans, "elite");
+  if (!essential || !premium || !elite) return null;
 
   const sizes: GardenSize[] = ["Small", "Medium", "Large"];
   return sizes.map((size) => ({
     size,
     essential: planPriceForGarden(essential, size),
     premium: planPriceForGarden(premium, size),
+    elite: planPriceForGarden(elite, size),
   }));
+}
+
+export function nextUpgradePlanLabel(planName: string, billingInterval: string): string | null {
+  const annual = billingInterval === "Annual";
+  const name = planName.toLowerCase();
+  if (name.includes("elite")) return null;
+  if (name.includes("premium")) {
+    return annual ? "Elite Annual (£899.95/year)" : "Elite Monthly (£89.95/month)";
+  }
+  return annual ? "Premium Annual (£549.95/year)" : "Premium Monthly (£54.95/month)";
 }

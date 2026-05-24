@@ -308,28 +308,29 @@ public class StripePaymentService(
             throw new InvalidOperationException("Only active subscriptions can be upgraded.");
         if (subscription.CancelsAtUtc is not null)
             throw new InvalidOperationException("Cannot upgrade while cancellation is scheduled.");
-        if (PlanCatalog.IsPremium(subscription.Plan.Name))
-            throw new InvalidOperationException("You're already on our Premium plan.");
+        if (PlanCatalog.GetUpgradeTier(subscription.Plan.Name) is null)
+            throw new InvalidOperationException("You're already on our highest plan.");
 
-        var premiumPlan = await db.SubscriptionPlans
+        var targetTier = PlanCatalog.GetUpgradeTier(subscription.Plan.Name)!;
+        var targetPlan = await db.SubscriptionPlans
             .FirstOrDefaultAsync(p =>
                 p.BrandId == subscription.Plan.BrandId
                 && p.BillingInterval == subscription.Plan.BillingInterval
-                && p.Name.Contains(PlanCatalog.PremiumToken)
+                && p.Name.Contains(targetTier)
                 && p.IsActive
                 && !p.IsDeleted,
                 ct)
-            ?? throw new InvalidOperationException("Premium billing is not available right now.");
+            ?? throw new InvalidOperationException($"{targetTier} billing is not available right now.");
 
         if (string.IsNullOrWhiteSpace(subscription.StripeSubscriptionId))
         {
-            await ApplyPlanChangeAsync(subscription, premiumPlan, "upgraded_to_premium", ct);
-            return BuildUpgradeResponse(premiumPlan, subscription.EndsAtUtc!.Value, proratedCharge: false);
+            await ApplyPlanChangeAsync(subscription, targetPlan, "upgraded_to_premium", ct);
+            return BuildUpgradeResponse(targetPlan, subscription.EndsAtUtc!.Value, proratedCharge: false);
         }
 
-        await UpdateStripeSubscriptionPlanAsync(subscription, premiumPlan, ct);
-        await ApplyPlanChangeAsync(subscription, premiumPlan, "upgraded_to_premium", ct);
-        return BuildUpgradeResponse(premiumPlan, subscription.EndsAtUtc!.Value, proratedCharge: true);
+        await UpdateStripeSubscriptionPlanAsync(subscription, targetPlan, ct);
+        await ApplyPlanChangeAsync(subscription, targetPlan, "upgraded_to_premium", ct);
+        return BuildUpgradeResponse(targetPlan, subscription.EndsAtUtc!.Value, proratedCharge: true);
     }
 
     public async Task SyncCheckoutSessionAsync(Guid customerUserId, string checkoutSessionId, CancellationToken ct = default)

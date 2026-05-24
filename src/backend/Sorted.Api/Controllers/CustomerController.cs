@@ -64,7 +64,7 @@ public class CustomerController(
     private static bool CanUpgradeToPremium(CustomerSubscription s) =>
         s.Status is SubscriptionStatus.Active or SubscriptionStatus.PastDue
         && s.CancelsAtUtc is null
-        && !PlanCatalog.IsPremium(s.Plan.Name);
+        && PlanCatalog.GetUpgradeTier(s.Plan.Name) is not null;
 
     [HttpGet("payments")]
     public async Task<ActionResult<IEnumerable<CustomerPaymentResponse>>> Payments(CancellationToken ct)

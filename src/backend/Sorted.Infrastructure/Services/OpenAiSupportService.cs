@@ -126,7 +126,7 @@ public class OpenAiSupportService(
                   "Be brief, friendly, and factual. Use the customer account context when answering about their plan or visits. " +
                   "For cancellations, billing disputes, or refunds, confirm the request has been escalated to the team — do not tell them to email billing or contact support separately. " +
                   "Customers can switch from monthly to annual billing instantly from their account portal — direct them there for annual billing. " +
-                  "Customers can upgrade to Premium instantly from their account portal — direct them there for plan upgrades. " +
+                  "Customers can upgrade plans instantly from their account portal (Essential → Premium → Elite) — direct them there for plan upgrades. " +
                   "Topics: visit windows, subscription plans, property access, billing questions.\n\n"
                 : "You are GardensSorted's friendly website assistant for a Yorkshire UK gardening subscription service. " +
                   "The visitor is NOT signed in — answer pre-sales questions about how the service works, pricing, coverage, and signup. " +
@@ -179,7 +179,7 @@ public class OpenAiSupportService(
         var planLines = plans.Count > 0
             ? string.Join("\n", plans.Select(p =>
                 $"- {p.Name}: £{p.PriceGbp}/{(p.BillingInterval == SubscriptionBillingInterval.Monthly ? "month" : "year")}, {p.MinimumTermMonths}-month minimum. {p.Description}"))
-            : "- Essential Monthly: £29.95/month, 3-month minimum\n- Essential Annual: £299.95/year, 12-month minimum\n- Premium Monthly: £49.95/month, 3-month minimum\n- Premium Annual: £499.95/year, 12-month minimum";
+            : "- Essential Monthly: £29.95/month, 3-month minimum\n- Essential Annual: £299.95/year, 12-month minimum\n- Premium Monthly: £54.95/month, 3-month minimum\n- Premium Annual: £549.95/year, 12-month minimum\n- Elite Monthly: £89.95/month (3 visits/month), 3-month minimum\n- Elite Annual: £899.95/year, 12-month minimum";
 
         return $"""
             Visitor status: Not signed in (pre-sales / general questions)
@@ -250,7 +250,7 @@ public class OpenAiSupportService(
 
         if (lower.Contains("upgrade"))
         {
-            return "You can upgrade to Premium instantly from your account portal — open My account and click Upgrade to Premium on your subscription.";
+            return "You can upgrade your plan instantly from your account portal — open My account and use Upgrade on your subscription (Essential → Premium → Elite).";
         }
 
         if (lower.Contains("annual") || lower.Contains("switch"))

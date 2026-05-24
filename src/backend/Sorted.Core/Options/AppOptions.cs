@@ -1,5 +1,7 @@
 namespace Sorted.Core.Options;
 
+using Sorted.Core.Plans;
+
 public class JwtOptions
 {
     public const string Section = "Jwt";
@@ -29,6 +31,8 @@ public class StripePriceOptions
     public string EssentialAnnual { get; set; } = string.Empty;
     public string PremiumMonthly { get; set; } = string.Empty;
     public string PremiumAnnual { get; set; } = string.Empty;
+    public string EliteMonthly { get; set; } = string.Empty;
+    public string EliteAnnual { get; set; } = string.Empty;
 }
 
 public class PlanPricingOptions
@@ -36,8 +40,10 @@ public class PlanPricingOptions
     public const string Section = "Plans";
     public decimal EssentialMonthly { get; set; } = 29.95m;
     public decimal EssentialAnnual { get; set; } = 299.95m;
-    public decimal PremiumMonthly { get; set; } = 49.95m;
-    public decimal PremiumAnnual { get; set; } = 499.95m;
+    public decimal PremiumMonthly { get; set; } = 54.95m;
+    public decimal PremiumAnnual { get; set; } = 549.95m;
+    public decimal EliteMonthly { get; set; } = 89.95m;
+    public decimal EliteAnnual { get; set; } = 899.95m;
 }
 
 public class SendGridOptions
@@ -97,6 +103,8 @@ public class BackgroundJobsOptions
 public class ProviderPayoutOptions
 {
     public const string Section = "ProviderPayout";
-    /// <summary>Share of customer subscription revenue paid to providers per completed visit.</summary>
-    public decimal SharePercent { get; set; } = 60m;
+    /// <summary>Fixed pay per completed visit (small garden) — same for Essential, Premium, and Elite.</summary>
+    public decimal SmallVisitGbp { get; set; } = ProviderVisitPay.SmallVisitGbp;
+    public decimal MediumVisitGbp { get; set; } = ProviderVisitPay.SmallVisitGbp + ProviderVisitPay.MediumVisitUpliftGbp;
+    public decimal LargeVisitGbp { get; set; } = ProviderVisitPay.SmallVisitGbp + ProviderVisitPay.LargeVisitUpliftGbp;
 }

@@ -38,8 +38,8 @@ export function PricingSection() {
 
   if (!loaded) {
     return (
-      <div className="grid gap-6 md:grid-cols-2">
-        {[0, 1].map((i) => (
+      <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+        {[0, 1, 2].map((i) => (
           <div key={i} className="animate-pulse rounded-2xl border bg-white p-8 shadow-soft">
             <div className="h-6 w-32 rounded bg-stone-200" />
             <div className="mt-4 h-10 w-24 rounded bg-stone-200" />
@@ -60,20 +60,30 @@ export function PricingSection() {
         </p>
       )}
 
-      <div className="grid gap-6 md:grid-cols-2">
+      <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
         {displayPlans.map((plan, index) => {
           const isAnnual = plan.billingInterval !== "Monthly";
+          const isElite = plan.name.toLowerCase().includes("elite");
           const features = planFeatures(plan);
           return (
             <div
               key={plan.id}
               className={`relative rounded-2xl border bg-white p-6 shadow-soft sm:p-8 ${
-                isAnnual ? "border-gardens-primary ring-2 ring-gardens-primary/20" : "border-stone-200"
+                isAnnual
+                  ? "border-gardens-primary ring-2 ring-gardens-primary/20"
+                  : isElite
+                    ? "border-gardens-dark ring-2 ring-gardens-dark/10"
+                    : "border-stone-200"
               }`}
             >
               {isAnnual && (
                 <span className="absolute -top-3 left-1/2 -translate-x-1/2 rounded-full bg-gardens-accent px-4 py-1 text-xs font-semibold text-gardens-dark">
                   Best value
+                </span>
+              )}
+                {!isAnnual && isElite && (
+                <span className="absolute -top-3 left-1/2 -translate-x-1/2 rounded-full bg-gardens-dark px-4 py-1 text-xs font-semibold text-white">
+                  Most frequent
                 </span>
               )}
               <p className="text-xs font-semibold uppercase tracking-wide text-gardens-primary">
@@ -136,7 +146,8 @@ export function PricingSection() {
                 <tr className="border-b text-xs uppercase tracking-wide text-stone-500">
                   <th className="py-2 pr-4 font-medium">Garden size</th>
                   <th className="py-2 px-4 font-medium">Essential</th>
-                  <th className="py-2 pl-4 font-medium">Premium</th>
+                  <th className="py-2 px-4 font-medium">Premium</th>
+                  <th className="py-2 pl-4 font-medium">Elite</th>
                 </tr>
               </thead>
               <tbody>
@@ -144,7 +155,8 @@ export function PricingSection() {
                   <tr key={row.size} className="border-b border-stone-100 last:border-0">
                     <td className="py-3 pr-4 font-medium text-gardens-dark">{row.size}</td>
                     <td className="py-3 px-4 text-stone-700">£{formatGbp(row.essential)}/mo</td>
-                    <td className="py-3 pl-4 text-stone-700">£{formatGbp(row.premium)}/mo</td>
+                    <td className="py-3 px-4 text-stone-700">£{formatGbp(row.premium)}/mo</td>
+                    <td className="py-3 pl-4 text-stone-700">£{formatGbp(row.elite)}/mo</td>
                   </tr>
                 ))}
               </tbody>

@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { api, type CustomerPayment, type CustomerSubscription } from "@/lib/api";
 import { premiumPlanLabel } from "@/lib/plans";
+import { nextUpgradePlanLabel } from "@/lib/consumer-plans";
 import { StatusBadge } from "@/components/ui";
 
 type BillingSectionProps = {
@@ -84,8 +85,8 @@ export function BillingSection({
     }
   }
 
-  async function upgradeToPremium(sub: CustomerSubscription) {
-    const target = premiumPlanLabel(sub.billingInterval);
+  async function upgradePlan(sub: CustomerSubscription) {
+    const target = nextUpgradePlanLabel(sub.planName, sub.billingInterval) ?? premiumPlanLabel(sub.billingInterval);
     const confirmed = window.confirm(
       `Upgrade to ${target} now? Your subscription updates immediately and Stripe may charge a prorated amount on your next invoice.`
     );
@@ -122,7 +123,7 @@ export function BillingSection({
         <h2 className="font-semibold text-gardens-dark">Subscriptions</h2>
         <p className="mt-1 text-sm text-stone-500">
           Update your payment method or download invoices in a new tab. Switch to annual billing or
-          upgrade to Premium instantly below. Cancellations go through customer service.
+          upgrade your plan instantly below. Cancellations go through customer service.
         </p>
         {subscriptions.length === 0 ? (
           <p className="mt-3 text-sm text-stone-500">No subscriptions yet.</p>
@@ -177,11 +178,11 @@ export function BillingSection({
                       type="button"
                       disabled={upgradingId === s.id}
                       className="rounded-lg border border-gardens-primary/30 bg-gardens-light/40 px-3 py-2 text-sm font-medium text-gardens-dark hover:bg-gardens-light/70 disabled:opacity-50"
-                      onClick={() => upgradeToPremium(s)}
+                      onClick={() => upgradePlan(s)}
                     >
                       {upgradingId === s.id
                         ? "Upgrading…"
-                        : `Upgrade to ${premiumPlanLabel(s.billingInterval)}`}
+                        : `Upgrade to ${nextUpgradePlanLabel(s.planName, s.billingInterval) ?? "next tier"}`}
                     </button>
                   )}
                   {isActiveSubscription(s) && (
@@ -206,7 +207,7 @@ export function BillingSection({
 
       {cancellableSubs.length > 0 && (
         <p className="rounded-xl border border-stone-200 bg-stone-50 px-4 py-3 text-sm text-stone-600">
-          Annual billing and Premium upgrades apply immediately. Cancellations are handled by our
+          Plan upgrades and annual billing apply immediately. Cancellations are handled by our
           team — if you&apos;re within your minimum term, billing continues until that date.
         </p>
       )}
