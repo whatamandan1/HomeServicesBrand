@@ -13,6 +13,9 @@ public class ConsumerPlanPricingTests
     [InlineData(GardenSize.Small, SubscriptionBillingInterval.Annual, 299.95, 299.95)]
     [InlineData(GardenSize.Medium, SubscriptionBillingInterval.Annual, 299.95, 399.95)]
     [InlineData(GardenSize.Large, SubscriptionBillingInterval.Annual, 299.95, 499.95)]
+    [InlineData(GardenSize.Small, SubscriptionBillingInterval.Monthly, 49.95, 49.95)]
+    [InlineData(GardenSize.Medium, SubscriptionBillingInterval.Monthly, 49.95, 59.95)]
+    [InlineData(GardenSize.Large, SubscriptionBillingInterval.Monthly, 49.95, 69.95)]
     public void ApplyGardenSizeUplift(
         GardenSize size,
         SubscriptionBillingInterval interval,
