@@ -348,7 +348,7 @@ Quick snapshot of implemented features as of last review.
 - Brands API, workflow event logging, health checks
 
 ### Frontend
-- Marketing: customer-focused `/`, `/about`, `/providers`; **Multi-Property Solutions** `/multi-property-solutions`; SEO (sitemap, robots); compressed hero; lazy chat; `/privacy` and `/terms`; OG image (~200KB JPEG)
+- Marketing: customer-focused `/`, `/about`, `/providers`; **For landlords** `/multi-property-solutions`; SEO (sitemap, robots); compressed hero; lazy chat; `/privacy` and `/terms`; OG image (~200KB JPEG)
 - Signup: 3-step customer wizard; provider apply form (postcode + radius slider)
 - Portals: `/portal` (Manage billing, photos, preferred gardener), `/provider` (coverage, availability, earnings), `/admin` (CRM + trends + photo lightbox)
 - Mobile UX: responsive layouts, hamburger nav, mobile CTA bar

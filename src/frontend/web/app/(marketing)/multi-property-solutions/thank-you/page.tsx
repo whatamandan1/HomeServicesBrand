@@ -4,7 +4,7 @@ import { Button } from "@/components/marketing/ui";
 
 export const metadata: Metadata = {
   title: "Quote request received",
-  description: "Thanks for your Multi-Property Solutions enquiry with GardensSorted.",
+  description: "Thanks for your multi-property enquiry with GardensSorted.",
 };
 
 export default function MultiPropertyThankYouPage() {
@@ -20,7 +20,7 @@ export default function MultiPropertyThankYouPage() {
       <div className="mt-8 flex flex-col items-center gap-3 sm:flex-row sm:justify-center">
         <Button href="/">Back to home</Button>
         <Link href="/multi-property-solutions" className="text-sm font-medium text-gardens-primary hover:underline">
-          Multi-Property Solutions
+          For landlords
         </Link>
       </div>
     </section>

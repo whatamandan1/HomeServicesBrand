@@ -9,9 +9,9 @@ import { Logo } from "@/components/marketing/Logo";
 const links = [
   { href: "/#how-it-works", label: "How it works" },
   { href: "/#pricing", label: "Pricing" },
-  { href: "/multi-property-solutions", label: "Multi-Property Solutions" },
   { href: "/about", label: "About us" },
   { href: "/providers", label: "For gardeners" },
+  { href: "/multi-property-solutions", label: "For landlords" },
 ];
 
 export function MarketingHeader() {

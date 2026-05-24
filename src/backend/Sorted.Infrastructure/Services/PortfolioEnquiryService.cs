@@ -77,7 +77,7 @@ public class PortfolioEnquiryService(
 
         return new PortfolioEnquirySubmittedResponse(
             enquiry.Id,
-            "Thanks — we've received your Multi-Property Solutions enquiry. We'll review your properties and be in touch with a personalised quote.");
+            "Thanks — we've received your multi-property enquiry. We'll review your properties and be in touch with a personalised quote.");
     }
 
     public async Task<IReadOnlyList<PortfolioEnquirySummaryResponse>> ListForAdminAsync(CancellationToken ct = default)

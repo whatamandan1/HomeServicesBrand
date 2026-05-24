@@ -4,7 +4,7 @@ import { Button, Section } from "@/components/marketing/ui";
 import { PortfolioEnquiryForm } from "@/components/portfolios/PortfolioEnquiryForm";
 
 export const metadata: Metadata = {
-  title: "Multi-Property Solutions — garden care for landlords & agents",
+  title: "For landlords — multi-property garden care",
   description:
     "Garden maintenance for landlords, letting agents, and multi-property owners across Yorkshire. One account, personalised pricing, monthly invoicing.",
 };
@@ -37,7 +37,7 @@ export default function MultiPropertySolutionsPage() {
     <>
       <section className="bg-gradient-to-b from-gardens-light/50 to-stone-50 py-20">
         <div className="mx-auto max-w-3xl px-4 text-center">
-          <p className="text-sm font-semibold uppercase tracking-wide text-gardens-primary">Multi-Property Solutions</p>
+          <p className="text-sm font-semibold uppercase tracking-wide text-gardens-primary">For landlords</p>
           <h1 className="mt-4 font-display text-4xl font-bold text-gardens-dark md:text-5xl text-balance">
             Garden care for every property you manage
           </h1>

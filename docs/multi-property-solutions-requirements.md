@@ -32,7 +32,7 @@ Tenants never interact with the platform. One login maps to one multi-property a
 
 | Context | Label |
 |---------|--------|
-| Marketing | **Multi-Property Solutions** |
+| Marketing (nav label) | **For landlords** |
 | URL | `/multi-property-solutions` |
 | Account type | Multi-property account |
 | Admin CRM | Multi-Property Solutions section (distinct from consumer customers) |
