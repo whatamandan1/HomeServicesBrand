@@ -356,7 +356,7 @@ public class ProviderController(
         var provider = await GetProviderAsync(ct);
         if (provider is null) return NotFound();
 
-        await availability.ReleaseConflictingAssignedVisitsAsync(provider.Id, ct);
+        await availability.ReleaseConflictingAssignedVisitsAsync(provider, ct);
 
         var visits = await db.JobVisits.AsNoTracking()
             .Include(v => v.Property)

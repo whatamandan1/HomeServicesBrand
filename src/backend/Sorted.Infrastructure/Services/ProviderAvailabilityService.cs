@@ -74,7 +74,7 @@ public class ProviderAvailabilityService(
         provider.WorkDayEndMinutes = endMinutes;
         provider.UpdatedAtUtc = DateTime.UtcNow;
 
-        await ReleaseConflictingAssignedVisitsAsync(providerId, ct);
+        await ReleaseConflictingAssignedVisitsAsync(provider, ct);
         await db.SaveChangesAsync(ct);
 
         return MapResponse(provider);
@@ -130,18 +130,14 @@ public class ProviderAvailabilityService(
         await db.SaveChangesAsync(ct);
     }
 
-    public async Task<int> ReleaseConflictingAssignedVisitsAsync(Guid providerId, CancellationToken ct = default)
+    public async Task<int> ReleaseConflictingAssignedVisitsAsync(Provider provider, CancellationToken ct = default)
     {
-        var provider = await db.Providers.AsNoTracking()
-            .FirstOrDefaultAsync(p => p.Id == providerId && !p.IsDeleted, ct)
-            ?? throw new InvalidOperationException("Provider not found.");
-
         var blockedDates = await db.ProviderBlockedDates.AsNoTracking()
-            .Where(b => b.ProviderId == providerId && !b.IsDeleted)
+            .Where(b => b.ProviderId == provider.Id && !b.IsDeleted)
             .Select(b => b.BlockedDate)
             .ToListAsync(ct);
 
-        var visits = await LoadAssignedMutableVisitsAsync(providerId, ct);
+        var visits = await LoadAssignedMutableVisitsAsync(provider.Id, ct);
         var toRelease = visits
             .Where(v => VisitCalendar.ConflictsWithAvailability(
                 v.ScheduledDate,

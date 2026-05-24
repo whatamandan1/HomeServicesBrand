@@ -53,6 +53,34 @@ public class VisitCalendarTests
     }
 
     [Fact]
+    public void ConflictsWithAvailability_morning_customer_still_fits_provider_ending_at_10()
+    {
+        var scheduled = new DateTime(2026, 6, 25, 12, 0, 0, DateTimeKind.Utc);
+
+        Assert.False(VisitCalendar.ConflictsWithAvailability(
+            scheduled,
+            ProviderWorkingDays.DefaultWeekdays,
+            Array.Empty<DateOnly>(),
+            providerStartMinutes: 8 * 60,
+            providerEndMinutes: 10 * 60,
+            customerAvailabilityWindow: "Weekday mornings"));
+    }
+
+    [Fact]
+    public void ConflictsWithAvailability_morning_customer_excludes_afternoon_only_hours()
+    {
+        var scheduled = new DateTime(2026, 6, 25, 12, 0, 0, DateTimeKind.Utc);
+
+        Assert.True(VisitCalendar.ConflictsWithAvailability(
+            scheduled,
+            ProviderWorkingDays.DefaultWeekdays,
+            Array.Empty<DateOnly>(),
+            providerStartMinutes: 12 * 60,
+            providerEndMinutes: 16 * 60,
+            customerAvailabilityWindow: "Weekday mornings"));
+    }
+
+    [Fact]
     public void ConflictsWithAvailability_matches_customer_evening_outside_provider_hours()
     {
         var scheduled = new DateTime(2026, 6, 25, 12, 0, 0, DateTimeKind.Utc);

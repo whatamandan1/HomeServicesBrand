@@ -1,5 +1,6 @@
 using Sorted.Core.Dtos;
 using Sorted.Core.Entities;
+using Sorted.Core.Enums;
 using Sorted.Core.Geo;
 
 namespace Sorted.Core.Interfaces;
@@ -33,6 +34,14 @@ public interface IEmailService
     Task SendVisitClaimedEmailAsync(string toEmail, DateTime visitDate, string postcode, string availabilityWindow, CancellationToken ct = default);
     Task SendVisitReminderEmailAsync(string toEmail, DateTime visitDate, string postcode, string availabilityWindow, CancellationToken ct = default);
     Task SendPasswordResetEmailAsync(string toEmail, string resetUrl, CancellationToken ct = default);
+    Task SendPortfolioEnquiryAckAsync(string toEmail, string contactName, CancellationToken ct = default);
+    Task SendPortfolioEnquiryAdminNotifyAsync(
+        string opsEmail,
+        string contactName,
+        string email,
+        string phone,
+        int propertyCount,
+        CancellationToken ct = default);
 }
 
 public interface ISmsService
@@ -107,7 +116,7 @@ public interface IProviderAvailabilityService
         AddProviderBlockedDateRequest request,
         CancellationToken ct = default);
     Task RemoveBlockedDateAsync(Guid providerId, Guid blockedDateId, CancellationToken ct = default);
-    Task<int> ReleaseConflictingAssignedVisitsAsync(Guid providerId, CancellationToken ct = default);
+    Task<int> ReleaseConflictingAssignedVisitsAsync(Provider provider, CancellationToken ct = default);
 }
 
 public interface IProviderEarningsService
@@ -115,6 +124,14 @@ public interface IProviderEarningsService
     Task AccrueForCompletedVisitAsync(Guid jobVisitId, Guid providerId, CancellationToken ct = default);
     Task<ProviderEarningsSummaryResponse> GetProviderEarningsAsync(Guid providerId, CancellationToken ct = default);
     Task<ProviderEarningResponse> MarkPaidAsync(Guid earningId, string? notes, CancellationToken ct = default);
+}
+
+public interface IPortfolioEnquiryService
+{
+    Task<PortfolioEnquirySubmittedResponse> SubmitAsync(SubmitPortfolioEnquiryRequest request, CancellationToken ct = default);
+    Task<IReadOnlyList<PortfolioEnquirySummaryResponse>> ListForAdminAsync(CancellationToken ct = default);
+    Task<PortfolioEnquiryDetailResponse?> GetForAdminAsync(Guid enquiryId, CancellationToken ct = default);
+    Task<PortfolioEnquiryDetailResponse> UpdateStatusAsync(Guid enquiryId, PortfolioEnquiryStatus status, CancellationToken ct = default);
 }
 
 public interface IWorkflowLogger
