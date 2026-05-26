@@ -31,6 +31,9 @@ public class AuthService(
         if (!request.AcceptedTerms)
             throw new InvalidOperationException("You must accept the terms of service to sign up.");
 
+        if (string.IsNullOrWhiteSpace(request.LastName))
+            throw new InvalidOperationException("Enter your last name.");
+
         if (await db.Users.AnyAsync(u => u.Email == request.Email, ct))
             throw new InvalidOperationException("Email already registered.");
 

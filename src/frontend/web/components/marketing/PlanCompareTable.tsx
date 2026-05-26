@@ -51,9 +51,6 @@ export function PlanCompareTable({ plans, billing, onBillingChange }: PlanCompar
       <div className="flex flex-col gap-4 border-b border-stone-100 bg-gardens-light/30 px-4 py-5 sm:flex-row sm:items-center sm:justify-between sm:px-6">
         <div>
           <h3 className="font-display text-lg font-semibold text-gardens-dark">Compare plans</h3>
-          <p className="mt-1 text-sm text-stone-600">
-            Small-garden prices shown — medium and large gardens add £10/£20 per month.
-          </p>
         </div>
         <div
           className="inline-flex self-start rounded-full border border-stone-200 bg-white p-1"
@@ -129,12 +126,6 @@ export function PlanCompareTable({ plans, billing, onBillingChange }: PlanCompar
           </tbody>
         </table>
       </div>
-
-      {isAnnual && (
-        <p className="border-t border-stone-100 px-4 py-3 text-xs text-stone-500 sm:px-6">
-          Annual plans save roughly two months compared with paying monthly for a year.
-        </p>
-      )}
     </div>
   );
 }

@@ -11,12 +11,12 @@ export const GARDEN_SIZE_GUIDE: Record<
   { label: string; description: string; examples: string }
 > = {
   Small: {
-    label: "75 m²",
+    label: "Up to 75 m²",
     description: "Courtyard, terrace, or compact town garden.",
     examples: "Typical courtyard, terrace, or compact town garden.",
   },
   Medium: {
-    label: "150 m²",
+    label: "75–150 m²",
     description: "Typical suburban rear garden with lawn and beds.",
     examples: "Typical suburban rear garden with lawn and planting beds.",
   },

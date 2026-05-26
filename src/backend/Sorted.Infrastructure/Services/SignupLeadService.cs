@@ -20,6 +20,9 @@ public class SignupLeadService(SortedDbContext db, IWorkflowLogger workflow) : I
         if (string.IsNullOrWhiteSpace(request.FirstName))
             throw new InvalidOperationException("Enter your first name.");
 
+        if (string.IsNullOrWhiteSpace(request.LastName))
+            throw new InvalidOperationException("Enter your last name.");
+
         var brandCode = string.IsNullOrWhiteSpace(request.BrandCode) ? "gardens-sorted" : request.BrandCode.Trim();
         var brand = await db.Brands.FirstOrDefaultAsync(b => b.Code == brandCode && b.IsActive, ct)
             ?? throw new InvalidOperationException("Brand not found.");

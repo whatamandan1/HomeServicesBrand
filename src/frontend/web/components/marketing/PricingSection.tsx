@@ -107,8 +107,6 @@ export function PricingSection() {
                   {formatPriceFrom(planPriceForGarden(plan, "Small"), isAnnual ? "year" : "month")}
                 </span>
               </div>
-              <p className="mt-1 text-xs text-stone-500">Small garden — see table below for medium &amp; large</p>
-              <p className="mt-2 text-xs text-stone-500">{plan.minimumTermMonths}-month minimum term</p>
               <ul className="mt-6 space-y-3">
                 {features.slice(0, 5).map((f) => (
                   <li key={f} className="flex items-start gap-2 text-sm text-stone-700">
@@ -172,10 +170,6 @@ export function PricingSection() {
               </tbody>
             </table>
           </div>
-          <p className="mt-3 text-xs text-stone-500">
-            Annual plans save roughly two months — add £100/£200 per year for medium/large gardens (same uplift as
-            monthly).
-          </p>
         </div>
       )}
 

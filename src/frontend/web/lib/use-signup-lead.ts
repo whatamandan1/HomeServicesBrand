@@ -14,7 +14,11 @@ export type SignupLeadSnapshot = {
 };
 
 function canCapture(snapshot: SignupLeadSnapshot): boolean {
-  return snapshot.firstName.trim().length > 0 && isValidEmail(snapshot.email);
+  return (
+    snapshot.firstName.trim().length > 0 &&
+    snapshot.lastName.trim().length > 0 &&
+    isValidEmail(snapshot.email)
+  );
 }
 
 function buildPayload(snapshot: SignupLeadSnapshot) {

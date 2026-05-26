@@ -74,6 +74,7 @@ export default function AdminPage() {
   const [providerError, setProviderError] = useState<string | null>(null);
   const [portfolioEnquiries, setPortfolioEnquiries] = useState<PortfolioEnquirySummary[]>([]);
   const [signupLeads, setSignupLeads] = useState<SignupLeadSummary[]>([]);
+  const [signupLeadsError, setSignupLeadsError] = useState<string | null>(null);
   const [portfolioError, setPortfolioError] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [pageError, setPageError] = useState<string | null>(null);
@@ -182,7 +183,16 @@ export default function AdminPage() {
       if (aiResult.status === "fulfilled") setAiActionLogs(aiResult.value);
       if (threadsResult.status === "fulfilled") setCommunicationThreads(threadsResult.value);
       if (portfolioResult.status === "fulfilled") setPortfolioEnquiries(portfolioResult.value);
-      if (signupLeadsResult.status === "fulfilled") setSignupLeads(signupLeadsResult.value);
+      if (signupLeadsResult.status === "fulfilled") {
+        setSignupLeads(signupLeadsResult.value);
+        setSignupLeadsError(null);
+      } else if (signupLeadsResult.status === "rejected") {
+        setSignupLeads([]);
+        const reason = signupLeadsResult.reason;
+        setSignupLeadsError(
+          reason instanceof Error ? reason.message : "Could not load incomplete signups."
+        );
+      }
 
       const failures = results.filter((r) => r.status === "rejected");
       if (failures.length > 0) {
@@ -309,6 +319,35 @@ export default function AdminPage() {
         <p className="mt-1 text-sm text-stone-500">
           Contact details captured on /signup — follow up if someone dropped off before payment.
         </p>
+        {signupLeadsError && (
+          <AlertBanner
+            variant="error"
+            message={signupLeadsError}
+            onDismiss={() => setSignupLeadsError(null)}
+            className="mt-3"
+          />
+        )}
+        {auth?.token && (
+          <button
+            type="button"
+            className="mt-2 text-sm font-medium text-gardens-primary hover:underline"
+            onClick={() => {
+              if (!auth.token) return;
+              setSignupLeadsError(null);
+              void api.adminSignupLeads(auth.token)
+                .then((leads) => {
+                  setSignupLeads(leads);
+                  setSignupLeadsError(null);
+                })
+                .catch((e) => {
+                  setSignupLeads([]);
+                  setSignupLeadsError(e instanceof Error ? e.message : "Could not load incomplete signups.");
+                });
+            }}
+          >
+            Refresh incomplete signups
+          </button>
+        )}
         <div className="mt-3">
           <SignupLeadList leads={signupLeads} />
         </div>

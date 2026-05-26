@@ -193,7 +193,7 @@ export default function HomePage() {
         </div>
       </section>
 
-      <Section id="pricing" title="Simple, transparent pricing" subtitle="Two plans. No hidden fees. Clear minimum terms shown before you pay.">
+      <Section id="pricing" title="Simple, transparent pricing" subtitle="Three plans. No hidden fees. Clear minimum terms shown before you pay.">
         <PricingSection />
       </Section>
 

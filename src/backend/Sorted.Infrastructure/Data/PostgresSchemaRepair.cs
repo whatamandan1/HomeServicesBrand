@@ -223,6 +223,33 @@ internal static class PostgresSchemaRepair
             ON "MultiPropertyAccountProperties" ("MultiPropertyAccountId");
         """;
 
+    private const string SignupLeadsSql = """
+        CREATE TABLE IF NOT EXISTS "SignupLeads" (
+            "Id" uuid NOT NULL,
+            "BrandId" uuid NOT NULL,
+            "Email" text NOT NULL,
+            "Phone" text NOT NULL,
+            "FirstName" text NOT NULL,
+            "LastName" text NULL,
+            "MarketingOptIn" boolean NOT NULL,
+            "LastStep" integer NOT NULL,
+            "SelectedPlanName" text NULL,
+            "GardenSize" integer NULL,
+            "Postcode" text NULL,
+            "SessionId" text NULL,
+            "Status" integer NOT NULL,
+            "ConvertedAtUtc" timestamp with time zone NULL,
+            "CreatedAtUtc" timestamp with time zone NOT NULL,
+            "UpdatedAtUtc" timestamp with time zone NULL,
+            "IsDeleted" boolean NOT NULL DEFAULT FALSE,
+            CONSTRAINT "PK_SignupLeads" PRIMARY KEY ("Id"),
+            CONSTRAINT "FK_SignupLeads_Brands_BrandId" FOREIGN KEY ("BrandId") REFERENCES "Brands" ("Id") ON DELETE CASCADE
+        );
+
+        CREATE INDEX IF NOT EXISTS "IX_SignupLeads_BrandId_Email"
+            ON "SignupLeads" ("BrandId", "Email");
+        """;
+
     public static async Task ApplyAsync(SortedDbContext db, ILogger logger, CancellationToken ct = default)
     {
         if (!(db.Database.ProviderName ?? "").Contains("Npgsql", StringComparison.OrdinalIgnoreCase))
@@ -237,6 +264,7 @@ internal static class PostgresSchemaRepair
             await db.Database.ExecuteSqlRawAsync(ProviderEarningsSql, ct);
             await db.Database.ExecuteSqlRawAsync(PortfolioEnquiriesSql, ct);
             await db.Database.ExecuteSqlRawAsync(MultiPropertyAccountsSql, ct);
+            await db.Database.ExecuteSqlRawAsync(SignupLeadsSql, ct);
             logger.LogInformation("PostgreSQL schema repair completed");
         }
         catch (Exception ex)

@@ -138,6 +138,7 @@ export default function SignupPage() {
   function stepValidationMessage(): string | null {
     if (step === 0) {
       if (!form.firstName.trim()) return "Enter your first name.";
+      if (!form.lastName.trim()) return "Enter your last name.";
       if (!isValidEmail(form.email)) return "Enter a valid email address.";
       return null;
     }
@@ -332,7 +333,7 @@ export default function SignupPage() {
                   Start here — we&apos;ll save your progress so we can help if you need to finish later.
                 </p>
                 <Field label="First name" value={form.firstName} onChange={(v) => updateField("firstName", v)} required autoComplete="given-name" />
-                <Field label="Last name (optional)" value={form.lastName} onChange={(v) => updateField("lastName", v)} autoComplete="family-name" />
+                <Field label="Last name" value={form.lastName} onChange={(v) => updateField("lastName", v)} required autoComplete="family-name" />
                 <Field label="Email" type="email" value={form.email} onChange={(v) => updateField("email", v)} required autoComplete="email" />
                 <p className="text-xs text-stone-500">
                   By continuing, you agree we may contact you by email about your signup and account. Marketing

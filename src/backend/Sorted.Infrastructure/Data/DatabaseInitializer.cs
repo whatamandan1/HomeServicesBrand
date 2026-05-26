@@ -132,6 +132,7 @@ public static class DatabaseInitializer
         {
             ("20260524155254_AddPortfolioEnquiries", "PortfolioEnquiries"),
             ("20260524160712_AddDemoLandlordAccount", "MultiPropertyAccounts"),
+            ("20260526082750_AddSignupLeads", "SignupLeads"),
         };
 
         foreach (var (migrationId, tableName) in repairMigrations)
