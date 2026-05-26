@@ -19,15 +19,17 @@ import {
   SEASONAL_ADDONS,
   SHARED_FEATURES,
   type BillingChoice,
+  type PlanTier,
 } from "@/lib/consumer-plans";
 import { formatGbp } from "@/lib/format";
+import { planSignupHref } from "@/lib/plans";
 import { PlanCompareTable } from "@/components/marketing/PlanCompareTable";
 
 export function PricingSection() {
   const [plans, setPlans] = useState<SubscriptionPlan[]>([]);
   const [loaded, setLoaded] = useState(false);
   const [offline, setOffline] = useState(false);
-  const [billing, setBilling] = useState<BillingChoice>("Annual");
+  const [billing, setBilling] = useState<BillingChoice>("Monthly");
 
   useEffect(() => {
     api.getPlans()
@@ -78,7 +80,6 @@ export function PricingSection() {
       <div className="grid gap-6 md:grid-cols-3">
         {visibleTiers.map(({ id, label, plan }) => {
           if (!plan) return null;
-          const index = displayPlans.findIndex((p) => p.id === plan.id);
           const isElite = id === "elite";
           const isAnnual = billing === "Annual";
           const features = planFeatures(plan);
@@ -116,7 +117,7 @@ export function PricingSection() {
                 ))}
               </ul>
               <Link
-                href={`/signup?plan=${index >= 0 ? index : 0}`}
+                href={planSignupHref(displayPlans, id as PlanTier)}
                 className={`mt-8 block w-full min-h-[48px] rounded-full py-3 text-center text-base font-semibold leading-[48px] sm:text-sm sm:leading-normal sm:py-3 ${
                   id === "premium"
                     ? "bg-gardens-primary text-white hover:bg-gardens-dark"

@@ -49,9 +49,10 @@ export const PREMIUM_FEATURES = [
 export const ELITE_FEATURES = [
   "Everything in Premium",
   "30 visits per year (about every 10 days)",
+  "1× thorough patio & path refresh per year (included)",
+  "First-choice visit windows when booking",
   "Ideal for fast-growing lawns and high-use gardens",
   "Consistent upkeep through peak growing season",
-  "First choice for scheduling windows where possible",
 ];
 
 export const ON_VISIT_WHEN_POSSIBLE = [
@@ -61,7 +62,7 @@ export const ON_VISIT_WHEN_POSSIBLE = [
 ];
 
 export const SEASONAL_ADDONS = [
-  "Thorough patio and deck cleaning",
+  "Thorough patio and deck cleaning (1× per year included on Elite)",
   "Dedicated leaf clearance (large volumes or whole-property)",
   "Gutter clearing (quoted separately — access and height assessed)",
 ];
@@ -92,6 +93,7 @@ export type PlanCompareRow = {
 /** Side-by-side feature matrix for Essential / Premium / Elite. */
 export const PLAN_COMPARE_ROWS: PlanCompareRow[] = [
   { label: "Visits included", essential: "10 / year", premium: "20 / year", elite: "30 / year" },
+  { label: "Typical visit spacing", essential: "~ monthly", premium: "~ every 2 weeks", elite: "~ every 10 days" },
   { label: "Lawn mowing & edging", essential: true, premium: true, elite: true },
   { label: "Border & bed tidy", essential: true, premium: true, elite: true },
   { label: "Clippings removed", essential: true, premium: true, elite: true },
@@ -99,14 +101,16 @@ export const PLAN_COMPARE_ROWS: PlanCompareRow[] = [
   { label: "Hedge trim & shaping", essential: false, premium: true, elite: true },
   { label: "Bed weeding", essential: false, premium: true, elite: true },
   { label: "Seasonal tidy & leaf blow", essential: false, premium: true, elite: true },
-  { label: "Priority scheduling", essential: false, premium: true, elite: true },
+  { label: "Priority scheduling", essential: false, premium: true, elite: false },
+  { label: "First-choice visit windows", essential: false, premium: false, elite: true },
+  { label: "Patio & path refresh", essential: false, premium: false, elite: "1× per year" },
   { label: "Reschedule in your account", essential: true, premium: true, elite: true },
 ];
 
 export const PLAN_TIERS: { id: PlanTier; label: string; tagline: string }[] = [
   { id: "essential", label: "Essential", tagline: "Monthly upkeep" },
   { id: "premium", label: "Premium", tagline: "Twice-monthly + hedges" },
-  { id: "elite", label: "Elite", tagline: "Most frequent visits" },
+  { id: "elite", label: "Elite", tagline: "Every ~10 days + patio refresh" },
 ];
 
 function isElitePlan(name: string) {

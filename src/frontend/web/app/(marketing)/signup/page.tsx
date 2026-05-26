@@ -75,9 +75,11 @@ export default function SignupPage() {
     const planIndex = params.get("plan");
     if (planIndex !== null && sorted[Number(planIndex)]) {
       const fromUrl = sorted[Number(planIndex)];
-      setSelectedPlanId(fromUrl.id);
-      setBilling(fromUrl.billingInterval === "Annual" ? "Annual" : "Monthly");
-      setSelectedTier(tierFromPlan(fromUrl));
+      const tier = tierFromPlan(fromUrl);
+      setSelectedTier(tier);
+      setBilling("Annual");
+      const annualPlan = findTierPlanForBilling(sorted, tier, "Annual");
+      setSelectedPlanId(annualPlan?.id ?? fromUrl.id);
     } else {
       const defaultPlan = findTierPlanForBilling(sorted, selectedTier, billing) ?? sorted[0];
       if (defaultPlan) setSelectedPlanId(defaultPlan.id);

@@ -45,6 +45,10 @@ Everything in Premium, with **3 visits per month** (~every 10 days):
 - Consistent upkeep through peak growing season
 - First choice for scheduling windows where possible
 
+**Elite-only included extra (once per subscription year):**
+
+- **Patio & path refresh** — a thorough clean of garden-adjacent paving, decking, or paths on a scheduled visit (brush, wash down, and clear weeds from joints where safely done from ground level). Not a specialist pressure-wash or whole-property clean — extra refreshes can be quoted as add-ons.
+
 ### All plans — while we're on site
 
 When time and access allow during a **scheduled visit** (not as separate call-outs):
@@ -65,7 +69,7 @@ These are **not** in the standard subscription price — customers can ask us to
 
 | Add-on | Notes |
 |--------|--------|
-| **Patio & deck cleaning** | Thorough clean / pressure wash beyond a light on-visit sweep |
+| **Patio & deck cleaning** | Thorough clean beyond a light on-visit sweep — **1× per year included on Elite**; quoted add-on for Essential & Premium |
 | **Leaf clearance** | Large volumes, whole-property, or extra visits in peak autumn |
 | **Gutter clearing** | Separate job — height, access, and insurance assessed; often a different specialist |
 

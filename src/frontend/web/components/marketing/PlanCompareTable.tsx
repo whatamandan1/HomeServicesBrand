@@ -57,7 +57,7 @@ export function PlanCompareTable({ plans, billing, onBillingChange }: PlanCompar
           role="group"
           aria-label="Billing interval"
         >
-          {(["Annual", "Monthly"] as const).map((option) => (
+          {(["Monthly", "Annual"] as const).map((option) => (
             <button
               key={option}
               type="button"

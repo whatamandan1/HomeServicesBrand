@@ -70,9 +70,9 @@ export function planSignupIndex(plans: SubscriptionPlan[], planId: string): numb
 export function planSignupHref(
   plans: SubscriptionPlan[],
   tier: PlanTier,
-  billing: BillingChoice
+  _billing?: BillingChoice
 ): string {
-  const plan = findTierPlanForBilling(plans, tier, billing);
+  const plan = findTierPlanForBilling(plans, tier, "Annual");
   if (!plan) return "/signup";
   return `/signup?plan=${planSignupIndex(plans, plan.id)}`;
 }
