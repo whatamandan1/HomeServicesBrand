@@ -1,14 +1,22 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { api, type AdminCustomer, type AdminDashboard, type AdminProvider, type AiActionLog, type CommunicationThreadSummary, type Escalation, type JobVisit, type PortfolioEnquirySummary, type WorkflowEvent } from "@/lib/api";
+import { api, type AdminCustomer, type AdminDashboard, type AdminProvider, type AiActionLog, type CommunicationThreadSummary, type Escalation, type JobVisit, type PortfolioEnquirySummary, type SignupLeadSummary, type WorkflowEvent } from "@/lib/api";
 import { useAuth } from "@/lib/use-auth";
 import { DashboardTrends } from "@/components/admin/DashboardTrends";
 import { CustomerDetailPanel } from "@/components/admin/CustomerDetailPanel";
 import { PortfolioEnquiryList } from "@/components/admin/PortfolioEnquiryList";
+import { SignupLeadList } from "@/components/admin/SignupLeadList";
 import { ProviderDetailPanel } from "@/components/admin/ProviderDetailPanel";
 import { ActAsUserButton } from "@/components/admin/ActAsUserButton";
 import { StatCard } from "@/components/ui";
+import { AdminSectionNav } from "@/components/admin/AdminSectionNav";
+import {
+  AlertBanner,
+  DashboardSkeleton,
+  LoadingSpinner,
+  PageLoading,
+} from "@/components/ui/feedback";
 import { isImpersonating } from "@/lib/auth-storage";
 import { VisitList } from "@/components/visits/VisitList";
 import { EscalationList } from "@/components/escalations/EscalationList";
@@ -26,6 +34,7 @@ const DASH_LABELS: Record<string, string> = {
   openVisits: "Open visits",
   openEscalations: "Escalations",
   newPortfolioEnquiries: "Multi-property leads",
+  activeSignupLeads: "Incomplete signups",
 };
 
 const DASH_SECTIONS: Record<string, string> = {
@@ -35,6 +44,7 @@ const DASH_SECTIONS: Record<string, string> = {
   openVisits: "visits",
   openEscalations: "escalations",
   newPortfolioEnquiries: "multi-property-solutions",
+  activeSignupLeads: "signup-leads",
 };
 
 function scrollToSection(id: string) {
@@ -63,6 +73,7 @@ export default function AdminPage() {
   const [customerError, setCustomerError] = useState<string | null>(null);
   const [providerError, setProviderError] = useState<string | null>(null);
   const [portfolioEnquiries, setPortfolioEnquiries] = useState<PortfolioEnquirySummary[]>([]);
+  const [signupLeads, setSignupLeads] = useState<SignupLeadSummary[]>([]);
   const [portfolioError, setPortfolioError] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [pageError, setPageError] = useState<string | null>(null);
@@ -144,6 +155,7 @@ export default function AdminPage() {
         api.adminAiActions(auth.token),
         api.adminCommunicationThreads(auth.token),
         api.adminPortfolioEnquiries(auth.token),
+        api.adminSignupLeads(auth.token),
       ]);
 
       if (cancelled) return;
@@ -158,6 +170,7 @@ export default function AdminPage() {
         aiResult,
         threadsResult,
         portfolioResult,
+        signupLeadsResult,
       ] = results;
 
       if (dashResult.status === "fulfilled") setDash(dashResult.value);
@@ -169,6 +182,7 @@ export default function AdminPage() {
       if (aiResult.status === "fulfilled") setAiActionLogs(aiResult.value);
       if (threadsResult.status === "fulfilled") setCommunicationThreads(threadsResult.value);
       if (portfolioResult.status === "fulfilled") setPortfolioEnquiries(portfolioResult.value);
+      if (signupLeadsResult.status === "fulfilled") setSignupLeads(signupLeadsResult.value);
 
       const failures = results.filter((r) => r.status === "rejected");
       if (failures.length > 0) {
@@ -206,7 +220,7 @@ export default function AdminPage() {
     }
   }
 
-  if (!ready) return <p className="text-stone-500">Loading…</p>;
+  if (!ready) return <PageLoading label="Checking session…" />;
   if (!auth) {
     return (
       <p>
@@ -228,12 +242,22 @@ export default function AdminPage() {
 
   return (
     <div className="space-y-8">
-      <h1 className="text-2xl font-bold">Operations CRM</h1>
+      <div>
+        <h1 className="text-2xl font-bold">Operations CRM</h1>
+        <p className="mt-1 text-sm text-stone-500">Manage customers, providers, visits, and support.</p>
+      </div>
 
-      {loading && <p className="text-sm text-stone-500">Loading CRM data…</p>}
-      {pageError && <p className="text-sm text-red-600">{pageError}</p>}
+      <AdminSectionNav />
 
-      {dash && (
+      {loading && (
+        <div className="space-y-3">
+          <LoadingSpinner label="Loading CRM data…" />
+          <DashboardSkeleton />
+        </div>
+      )}
+      {pageError && <AlertBanner variant="error" message={pageError} onDismiss={() => setPageError(null)} />}
+
+      {!loading && dash && (
         <>
           <div className="flex flex-wrap items-center justify-between gap-3">
             <p className="text-sm text-stone-500">Snapshot counts — click a card to jump to that section.</p>
@@ -259,6 +283,7 @@ export default function AdminPage() {
                 ["openVisits", dash.openVisits],
                 ["openEscalations", dash.openEscalations],
                 ["newPortfolioEnquiries", dash.newPortfolioEnquiries],
+                ["activeSignupLeads", dash.activeSignupLeads],
               ] as const
             ).map(([k, v]) => (
               <StatCard
@@ -277,10 +302,24 @@ export default function AdminPage() {
         </>
       )}
 
+      {!loading && (
+      <>
+      <section id="signup-leads" className="scroll-mt-6">
+        <h2 className="font-semibold">Incomplete signups</h2>
+        <p className="mt-1 text-sm text-stone-500">
+          Contact details captured on /signup — follow up if someone dropped off before payment.
+        </p>
+        <div className="mt-3">
+          <SignupLeadList leads={signupLeads} />
+        </div>
+      </section>
+
       <section id="multi-property-solutions" className="scroll-mt-6">
         <h2 className="font-semibold">Multi-Property Solutions</h2>
         <p className="mt-1 text-sm text-stone-500">Enquiry leads for multi-property accounts — separate from consumer customers.</p>
-        {portfolioError && <p className="mt-2 text-sm text-red-600">{portfolioError}</p>}
+        {portfolioError && (
+          <AlertBanner variant="error" message={portfolioError} onDismiss={() => setPortfolioError(null)} />
+        )}
         <div className="mt-3">
           {auth?.token && (
             <PortfolioEnquiryList
@@ -392,7 +431,9 @@ export default function AdminPage() {
               )}
             </div>
           ))}
-          {providerError && <p className="text-sm text-red-600">{providerError}</p>}
+          {providerError && (
+            <AlertBanner variant="error" message={providerError} onDismiss={() => setProviderError(null)} />
+          )}
           {providers.length === 0 && (
             <p className="text-sm text-stone-500">No providers yet.</p>
           )}
@@ -402,7 +443,9 @@ export default function AdminPage() {
 
       <section id="customers" className="scroll-mt-6">
         <h2 className="font-semibold">Customers</h2>
-        {customerError && <p className="mt-2 text-sm text-red-600">{customerError}</p>}
+        {customerError && (
+          <AlertBanner variant="error" message={customerError} onDismiss={() => setCustomerError(null)} />
+        )}
         <div className="mt-2 space-y-2">
           {customers.map((c) => (
             <div key={c.id} id={`customer-${c.id}`} className="space-y-2">
@@ -493,10 +536,14 @@ export default function AdminPage() {
           <ListMapToggle value={visitView} onChange={setVisitView} />
         </div>
         {dispatchNotice && (
-          <p className="mt-2 text-sm text-green-800">{dispatchNotice}</p>
+          <AlertBanner variant="success" message={dispatchNotice} onDismiss={() => setDispatchNotice(null)} />
         )}
-        {dispatchError && <p className="mt-2 text-sm text-red-600">{dispatchError}</p>}
-        {visitError && <p className="mt-2 text-sm text-red-600">{visitError}</p>}
+        {dispatchError && (
+          <AlertBanner variant="error" message={dispatchError} onDismiss={() => setDispatchError(null)} />
+        )}
+        {visitError && (
+          <AlertBanner variant="error" message={visitError} onDismiss={() => setVisitError(null)} />
+        )}
         {visitView === "map" ? (
           <VisitMap
             visits={visits}
@@ -520,7 +567,9 @@ export default function AdminPage() {
         <p className="mt-1 text-sm text-stone-500">
           Take open cases, then mark resolved when handled.
         </p>
-        {escalationError && <p className="mt-2 text-sm text-red-600">{escalationError}</p>}
+        {escalationError && (
+          <AlertBanner variant="error" message={escalationError} onDismiss={() => setEscalationError(null)} />
+        )}
         <EscalationList
           escalations={activeEscalations}
           busyId={busyEscalationId}
@@ -570,6 +619,8 @@ export default function AdminPage() {
           loadThread={(id) => api.adminCommunicationThread(auth!.token, id)}
         />
       </section>
+      </>
+      )}
     </div>
   );
 }

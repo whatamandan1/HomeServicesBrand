@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { Check, ChevronLeft, ChevronRight } from "lucide-react";
@@ -8,24 +8,43 @@ import { api, type AuthResponse, type GardenSize, type SubscriptionPlan } from "
 import { formatGbp } from "@/lib/format";
 import { FALLBACK_PLANS, sortPlans } from "@/lib/plans";
 import {
+  findTierPlanForBilling,
   GARDEN_SIZE_GUIDE,
   planFeatures,
   planPriceForGarden,
   planVisitSummary,
+  PLAN_TIERS,
+  type BillingChoice,
+  type PlanTier,
 } from "@/lib/consumer-plans";
 import { saveAuth } from "@/lib/auth-storage";
 import { stashSignupPhotos } from "@/lib/pending-signup-photos";
 import { compressImageFile } from "@/lib/compress-image";
+import {
+  isValidEmail,
+  isValidUkPostcode,
+  MIN_PASSWORD_LENGTH,
+  normalizeUkPostcode,
+  tierFromPlan,
+} from "@/lib/signup-utils";
+import { useSignupLeadCapture } from "@/lib/use-signup-lead";
+import { AlertBanner, LoadingSpinner } from "@/components/ui/feedback";
+import { AvailabilityPicker } from "@/components/signup/AvailabilityPicker";
+import { SignupSummary } from "@/components/signup/SignupSummary";
 
-const STEPS = ["Choose plan", "Your details", "Your garden"] as const;
+const STEPS = ["Get started", "Choose plan", "Finish signup"] as const;
 
 export default function SignupPage() {
   const router = useRouter();
   const [step, setStep] = useState(0);
   const [plans, setPlans] = useState<SubscriptionPlan[]>([]);
+  const [plansLoading, setPlansLoading] = useState(true);
+  const [billing, setBilling] = useState<BillingChoice>("Monthly");
+  const [selectedTier, setSelectedTier] = useState<PlanTier>("essential");
   const [selectedPlanId, setSelectedPlanId] = useState("");
   const [skipPayment, setSkipPayment] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [stepHint, setStepHint] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [form, setForm] = useState({
     firstName: "",
@@ -41,49 +60,114 @@ export default function SignupPage() {
     availability: "",
   });
   const [acceptedTerms, setAcceptedTerms] = useState(false);
+  const [marketingOptIn, setMarketingOptIn] = useState(false);
   const [pendingPhotos, setPendingPhotos] = useState<File[]>([]);
   const [photoBusy, setPhotoBusy] = useState(false);
+  const [photoPreviewUrls, setPhotoPreviewUrls] = useState<string[]>([]);
 
   useEffect(() => {
-    api.getPlans().then((p) => {
-      const sorted = sortPlans(p);
-      setPlans(sorted);
-      const params = new URLSearchParams(window.location.search);
-      const planIndex = params.get("plan");
-      if (planIndex !== null && sorted[Number(planIndex)]) {
-        setSelectedPlanId(sorted[Number(planIndex)].id);
-      } else if (sorted[0]) {
-        setSelectedPlanId(sorted[0].id);
-      }
-    }).catch(() => {
-      setPlans(FALLBACK_PLANS);
-      const params = new URLSearchParams(window.location.search);
-      const planIndex = params.get("plan");
-      const sorted = sortPlans(FALLBACK_PLANS);
-      if (planIndex !== null && sorted[Number(planIndex)]) {
-        setSelectedPlanId(sorted[Number(planIndex)].id);
-      } else if (sorted[0]) {
-        setSelectedPlanId(sorted[0].id);
-      }
-      setError(
-        process.env.NODE_ENV === "development"
-          ? "Could not load live plans — showing standard pricing. Signup may fail until the API is reachable."
-          : "We're having trouble loading plans. Please refresh the page or try again in a moment."
-      );
-    });
+    const urls = pendingPhotos.map((file) => URL.createObjectURL(file));
+    setPhotoPreviewUrls(urls);
+    return () => urls.forEach((url) => URL.revokeObjectURL(url));
+  }, [pendingPhotos]);
+
+  function applyPlans(sorted: SubscriptionPlan[]) {
+    setPlans(sorted);
+    const params = new URLSearchParams(window.location.search);
+    const planIndex = params.get("plan");
+    if (planIndex !== null && sorted[Number(planIndex)]) {
+      const fromUrl = sorted[Number(planIndex)];
+      setSelectedPlanId(fromUrl.id);
+      setBilling(fromUrl.billingInterval === "Annual" ? "Annual" : "Monthly");
+      setSelectedTier(tierFromPlan(fromUrl));
+    } else {
+      const defaultPlan = findTierPlanForBilling(sorted, selectedTier, billing) ?? sorted[0];
+      if (defaultPlan) setSelectedPlanId(defaultPlan.id);
+    }
+  }
+
+  useEffect(() => {
+    setPlansLoading(true);
+    api
+      .getPlans()
+      .then((p) => applyPlans(sortPlans(p)))
+      .catch(() => {
+        applyPlans(sortPlans(FALLBACK_PLANS));
+        setError(
+          process.env.NODE_ENV === "development"
+            ? "Could not load live plans — showing standard pricing. Signup may fail until the API is reachable."
+            : "We're having trouble loading plans. Please refresh the page or try again in a moment."
+        );
+      })
+      .finally(() => setPlansLoading(false));
     api.getPublicConfig().then((c) => setSkipPayment(c.bypassStripeCheckout)).catch(() => {});
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  useEffect(() => {
+    if (plans.length === 0) return;
+    const plan = findTierPlanForBilling(plans, selectedTier, billing);
+    if (plan) setSelectedPlanId(plan.id);
+  }, [billing, selectedTier, plans]);
 
   function updateField(name: string, value: string) {
     setForm((f) => ({ ...f, [name]: value }));
+    setStepHint(null);
+  }
+
+  const selectedPlan = plans.find((p) => p.id === selectedPlanId);
+
+  const leadSnapshot = useMemo(
+    () => ({
+      firstName: form.firstName,
+      lastName: form.lastName,
+      email: form.email,
+      phone: form.phone,
+      marketingOptIn,
+      lastStep: step,
+      selectedPlanName: selectedPlan?.name,
+      gardenSize: form.gardenSize,
+      postcode: form.postcode ? normalizeUkPostcode(form.postcode) : undefined,
+    }),
+    [form, marketingOptIn, step, selectedPlan?.name]
+  );
+
+  const { captureLead } = useSignupLeadCapture(leadSnapshot);
+
+  function stepValidationMessage(): string | null {
+    if (step === 0) {
+      if (!form.firstName.trim()) return "Enter your first name.";
+      if (!isValidEmail(form.email)) return "Enter a valid email address.";
+      if (form.phone.trim().length < 6) return "Enter a phone number so we can help you finish signing up.";
+      return null;
+    }
+    if (step === 1) {
+      if (!selectedPlanId) return "Select a plan to continue.";
+      return null;
+    }
+    if (!form.line1.trim() || !form.city.trim()) return "Enter your address and city.";
+    if (!isValidUkPostcode(form.postcode)) return "Enter a valid UK postcode (e.g. LS1 4AP).";
+    if (!form.availability.trim()) return "Tell us when visits work best for you.";
+    if (form.password.length < MIN_PASSWORD_LENGTH) {
+      return `Choose a password with at least ${MIN_PASSWORD_LENGTH} characters.`;
+    }
+    if (!acceptedTerms) return "Accept the terms and privacy policy to continue.";
+    return null;
   }
 
   function canAdvance() {
-    if (step === 0) return !!selectedPlanId;
-    if (step === 1) {
-      return form.firstName && form.lastName && form.email && form.password && form.phone && acceptedTerms;
+    return stepValidationMessage() === null;
+  }
+
+  async function tryAdvance() {
+    const message = stepValidationMessage();
+    if (message) {
+      setStepHint(message);
+      return;
     }
-    return form.line1 && form.city && form.postcode && form.availability;
+    setStepHint(null);
+    if (step <= 1) await captureLead();
+    setStep((s) => s + 1);
   }
 
   async function continueToPayment(auth: AuthResponse) {
@@ -115,34 +199,43 @@ export default function SignupPage() {
   }
 
   async function submit() {
+    const message = stepValidationMessage();
+    if (message) {
+      setStepHint(message);
+      return;
+    }
+
     setLoading(true);
     setError(null);
+    setStepHint(null);
     try {
       if (selectedPlanId.startsWith("fallback-")) {
         throw new Error("Plans could not be loaded from the server. Refresh the page and try again.");
       }
 
+      await captureLead();
+
       const auth = await api.registerCustomer({
-        firstName: form.firstName,
-        lastName: form.lastName,
-        email: form.email,
+        firstName: form.firstName.trim(),
+        lastName: form.lastName.trim(),
+        email: form.email.trim(),
         password: form.password,
-        phone: form.phone,
-        line1: form.line1,
-        line2: form.line2 || null,
-        city: form.city,
-        postcode: form.postcode,
+        phone: form.phone.trim(),
+        line1: form.line1.trim(),
+        line2: form.line2.trim() || null,
+        city: form.city.trim(),
+        postcode: normalizeUkPostcode(form.postcode),
         gardenSize: form.gardenSize,
-        availabilityPreference: form.availability,
+        availabilityPreference: form.availability.trim(),
         subscriptionPlanId: selectedPlanId,
         acceptedTerms: true,
       });
       saveAuth(auth);
       await continueToPayment(auth);
     } catch (err) {
-      const message = err instanceof Error ? err.message : "Signup failed";
+      const msg = err instanceof Error ? err.message : "Signup failed";
       const shouldRetryLogin =
-        /already registered/i.test(message) || /server took too long/i.test(message);
+        /already registered/i.test(msg) || /server took too long/i.test(msg);
 
       if (shouldRetryLogin) {
         try {
@@ -151,7 +244,7 @@ export default function SignupPage() {
           await continueToPayment(auth);
           return;
         } catch (retryErr) {
-          if (/already registered/i.test(message)) {
+          if (/already registered/i.test(msg)) {
             setError(
               "This email is already registered. Log in with your password to continue to payment."
             );
@@ -159,8 +252,8 @@ export default function SignupPage() {
             const retryMessage =
               retryErr instanceof Error ? retryErr.message : "Could not continue checkout.";
             setError(
-              retryMessage === message
-                ? `${message} Try logging in to continue checkout.`
+              retryMessage === msg
+                ? `${msg} Try logging in to continue checkout.`
                 : retryMessage
             );
           }
@@ -168,253 +261,417 @@ export default function SignupPage() {
         }
       }
 
-      setError(message);
+      setError(msg);
     } finally {
       setLoading(false);
     }
   }
 
-  const selectedPlan = plans.find((p) => p.id === selectedPlanId);
-  const checkoutPrice =
-    selectedPlan && form.gardenSize
-      ? planPriceForGarden(selectedPlan, form.gardenSize as GardenSize)
-      : null;
+  const usingFallback = plans.length > 0 && plans[0]?.id.startsWith("fallback-");
+  const visibleTiers = useMemo(
+    () =>
+      PLAN_TIERS.map((tier) => ({
+        ...tier,
+        plan: findTierPlanForBilling(plans, tier.id, billing),
+      })).filter((t) => t.plan),
+    [plans, billing]
+  );
 
   return (
-    <div className="pb-28 pt-8 md:pb-12 md:pt-12">
-      <div className="mx-auto max-w-xl px-4">
+    <div className="pb-32 pt-8 md:pb-12 md:pt-12">
+      <div className="mx-auto max-w-5xl px-4">
         <div className="text-center">
-          <h1 className="font-display text-2xl font-bold text-gardens-dark sm:text-3xl">Start your subscription</h1>
-          <p className="mt-2 text-stone-600">Step {step + 1} of {STEPS.length} — {STEPS[step]}</p>
+          <h1 className="font-display text-2xl font-bold text-gardens-dark sm:text-3xl">
+            Start your subscription
+          </h1>
+          <p className="mt-2 text-stone-600">
+            Step {step + 1} of {STEPS.length} — {STEPS[step]}
+          </p>
         </div>
 
-        <div className="mt-6 flex gap-2">
-          {STEPS.map((_, i) => (
-            <div
-              key={STEPS[i]}
-              className={`h-1.5 flex-1 rounded-full ${i <= step ? "bg-gardens-primary" : "bg-stone-200"}`}
-            />
+        <div className="mt-6 flex gap-2" aria-hidden>
+          {STEPS.map((label, i) => (
+            <div key={label} className="flex-1">
+              <div
+                className={`h-1.5 rounded-full ${i <= step ? "bg-gardens-primary" : "bg-stone-200"}`}
+              />
+              <p className="mt-1 hidden text-center text-xs text-stone-500 sm:block">{label}</p>
+            </div>
           ))}
         </div>
 
-        {plans.length > 0 && plans[0]?.id.startsWith("fallback-") && (
-          <p className="mt-4 rounded-xl bg-amber-50 p-3 text-sm text-amber-900">
-            {process.env.NODE_ENV === "development"
-              ? "Live plans could not be loaded. Signup will work once the API connection is restored."
-              : "We're having trouble loading the latest plans. Please refresh the page before continuing."}
-          </p>
+        {usingFallback && (
+          <AlertBanner
+            variant="warning"
+            message={
+              process.env.NODE_ENV === "development"
+                ? "Live plans could not be loaded. Signup will work once the API connection is restored."
+                : "We're having trouble loading the latest plans. Please refresh the page before continuing."
+            }
+            className="mt-6"
+          />
         )}
 
         {skipPayment && process.env.NODE_ENV === "development" && (
-          <p className="mt-6 rounded-xl bg-amber-50 p-3 text-sm text-amber-900">
-            Dev mode: payment skipped — subscription activates immediately.
-          </p>
+          <AlertBanner
+            variant="warning"
+            message="Dev mode: payment skipped — subscription activates immediately."
+            className="mt-6"
+          />
         )}
 
-        {error && <p className="mt-4 text-sm text-red-600">{error}</p>}
-
-        {step === 0 && (
-          <div className="mt-8 space-y-3">
-            {plans.map((p) => {
-              const selected = selectedPlanId === p.id;
-              const isMonthly = p.billingInterval === "Monthly";
-              const features = planFeatures(p).slice(0, 3);
-              return (
-                <button
-                  key={p.id}
-                  type="button"
-                  onClick={() => setSelectedPlanId(p.id)}
-                  className={`w-full rounded-2xl border p-5 text-left transition ${
-                    selected
-                      ? "border-gardens-primary bg-gardens-light/50 ring-2 ring-gardens-primary/30"
-                      : "border-stone-200 bg-white"
-                  }`}
-                >
-                  <div className="flex items-start justify-between gap-3">
-                    <div>
-                      <p className="font-semibold text-gardens-dark">{p.name}</p>
-                      <p className="mt-1 text-sm text-stone-600">{planVisitSummary(p)}</p>
-                      <p className="mt-2 text-2xl font-bold text-gardens-primary">
-                        from £{formatGbp(planPriceForGarden(p, "Small"))}
-                        <span className="text-sm font-normal text-stone-500">/{isMonthly ? "mo" : "yr"}</span>
-                      </p>
-                      <p className="mt-1 text-xs text-stone-500">Small garden — price adjusts for medium/large</p>
-                      <ul className="mt-3 space-y-1 text-xs text-stone-600">
-                        {features.map((f) => (
-                          <li key={f}>• {f}</li>
-                        ))}
-                      </ul>
-                    </div>
-                    {selected && <Check className="h-5 w-5 shrink-0 text-gardens-primary" />}
-                  </div>
-                </button>
-              );
-            })}
-          </div>
+        {error && (
+          <AlertBanner variant="error" message={error} onDismiss={() => setError(null)} className="mt-6" />
         )}
 
-        {step === 1 && (
-          <div className="mt-8 space-y-4 rounded-2xl border border-stone-200 bg-white p-5 shadow-soft sm:p-6">
-            <div className="grid gap-4 sm:grid-cols-2">
-              <Field label="First name" value={form.firstName} onChange={(v) => updateField("firstName", v)} required />
-              <Field label="Last name" value={form.lastName} onChange={(v) => updateField("lastName", v)} required />
-            </div>
-            <Field label="Email" type="email" value={form.email} onChange={(v) => updateField("email", v)} required />
-            <Field label="Password" type="password" value={form.password} onChange={(v) => updateField("password", v)} required />
-            <Field label="Phone" type="tel" value={form.phone} onChange={(v) => updateField("phone", v)} required autoComplete="tel" />
-            <label className="flex items-start gap-3 rounded-xl border border-stone-200 bg-stone-50 p-4 text-sm text-stone-700">
-              <input
-                type="checkbox"
-                checked={acceptedTerms}
-                onChange={(e) => setAcceptedTerms(e.target.checked)}
-                className="mt-1 h-4 w-4 rounded border-stone-300 text-gardens-primary focus:ring-gardens-primary"
-                required
-              />
-              <span>
-                I agree to the{" "}
-                <Link href="/terms" className="font-medium text-gardens-primary hover:underline" target="_blank">
-                  terms of service
-                </Link>{" "}
-                and{" "}
-                <Link href="/privacy" className="font-medium text-gardens-primary hover:underline" target="_blank">
-                  privacy policy
-                </Link>
-                .
-              </span>
-            </label>
-          </div>
-        )}
-
-        {step === 2 && (
-          <div className="mt-8 space-y-4 rounded-2xl border border-stone-200 bg-white p-5 shadow-soft sm:p-6">
-            <Field label="Address line 1" value={form.line1} onChange={(v) => updateField("line1", v)} required autoComplete="address-line1" />
-            <Field label="Address line 2" value={form.line2} onChange={(v) => updateField("line2", v)} autoComplete="address-line2" />
-            <div className="grid gap-4 sm:grid-cols-2">
-              <Field label="City" value={form.city} onChange={(v) => updateField("city", v)} required autoComplete="address-level2" />
-              <Field label="Postcode" value={form.postcode} onChange={(v) => updateField("postcode", v)} required autoComplete="postal-code" />
-            </div>
-            {process.env.NODE_ENV === "development" && (
-              <p className="text-xs text-stone-400">
-                Dev note: demo provider covers LS1, LS2, and WF1 for testing job claiming.
-              </p>
-            )}
-            <label className="block text-sm font-medium text-stone-700">
-              Garden size
-              <select
-                value={form.gardenSize}
-                onChange={(e) => updateField("gardenSize", e.target.value)}
-                className="field-input"
-                required
-              >
-                {(Object.keys(GARDEN_SIZE_GUIDE) as GardenSize[]).map((size) => (
-                  <option key={size} value={size}>
-                    {GARDEN_SIZE_GUIDE[size].label}
-                  </option>
-                ))}
-              </select>
-            </label>
-            <p className="rounded-xl bg-stone-50 px-4 py-3 text-sm text-stone-600">
-              <strong>{GARDEN_SIZE_GUIDE[form.gardenSize as GardenSize].label}:</strong>{" "}
-              {GARDEN_SIZE_GUIDE[form.gardenSize as GardenSize].description}{" "}
-              {GARDEN_SIZE_GUIDE[form.gardenSize as GardenSize].examples}
-            </p>
-            {checkoutPrice != null && selectedPlan && (
-              <p className="rounded-xl border border-gardens-primary/20 bg-gardens-light/40 px-4 py-3 text-sm text-gardens-dark">
-                Your subscription:{" "}
-                <strong>
-                  £{formatGbp(checkoutPrice)}
-                  /{selectedPlan.billingInterval === "Monthly" ? "month" : "year"}
-                </strong>{" "}
-                for a {form.gardenSize.toLowerCase()} garden on {selectedPlan.name}.
-              </p>
-            )}
-            <Field
-              label="Preferred availability (e.g. Weekday mornings)"
-              value={form.availability}
-              onChange={(v) => updateField("availability", v)}
-              required
-            />
-            <div className="space-y-3 border-t border-stone-100 pt-4">
-              <div>
-                <p className="text-sm font-medium text-stone-700">Garden photos (optional)</p>
-                <p className="text-xs text-stone-500">Add up to 3 photos now — they&apos;ll upload after payment from your account.</p>
+        <div className={`mt-8 ${step >= 1 && selectedPlan ? "lg:grid lg:grid-cols-[1fr_280px] lg:gap-8" : ""}`}>
+          <div>
+            {step === 0 && (
+              <div className="space-y-4 rounded-2xl border border-stone-200 bg-white p-5 shadow-soft sm:p-6">
+                <p className="text-sm text-stone-600">
+                  Start here — we&apos;ll save your progress so we can help if you need to finish later.
+                </p>
+                <Field label="First name" value={form.firstName} onChange={(v) => updateField("firstName", v)} required autoComplete="given-name" />
+                <Field label="Last name (optional)" value={form.lastName} onChange={(v) => updateField("lastName", v)} autoComplete="family-name" />
+                <Field label="Email" type="email" value={form.email} onChange={(v) => updateField("email", v)} required autoComplete="email" />
+                <Field
+                  label="Mobile number"
+                  type="tel"
+                  value={form.phone}
+                  onChange={(v) => updateField("phone", v)}
+                  required
+                  autoComplete="tel"
+                  hint="For signup help, visit reminders, and your gardener"
+                />
+                <label className="flex items-start gap-3 rounded-xl border border-stone-200 bg-stone-50 p-4 text-sm text-stone-700">
+                  <input
+                    type="checkbox"
+                    checked={marketingOptIn}
+                    onChange={(e) => setMarketingOptIn(e.target.checked)}
+                    className="mt-1 h-4 w-4 rounded border-stone-300 text-gardens-primary focus:ring-gardens-primary"
+                  />
+                  <span>
+                    Send me garden care tips, offers, and reminders by email or SMS (optional — you can unsubscribe anytime).
+                  </span>
+                </label>
+                <p className="text-xs text-stone-500">
+                  We&apos;ll always use your contact details to help you complete signup and manage your account, even if you don&apos;t opt in to marketing.
+                </p>
               </div>
-              <div className="flex flex-wrap gap-3">
-                {pendingPhotos.map((photo, index) => (
-                  <div key={`${photo.name}-${index}`} className="rounded-xl border border-stone-200 bg-stone-50 px-3 py-2 text-xs text-stone-600">
-                    {photo.name}
-                    <button
-                      type="button"
-                      className="ml-2 text-red-600 hover:underline"
-                      onClick={() => setPendingPhotos((files) => files.filter((_, i) => i !== index))}
-                    >
-                      Remove
-                    </button>
+            )}
+
+            {step === 1 && (
+              <div className="space-y-6">
+                {plansLoading ? (
+                  <div className="space-y-4" aria-busy="true">
+                    <div className="h-10 animate-pulse rounded-xl bg-stone-200" />
+                    <div className="grid gap-3 sm:grid-cols-3">
+                      {[0, 1, 2].map((i) => (
+                        <div key={i} className="h-24 animate-pulse rounded-2xl bg-stone-200" />
+                      ))}
+                    </div>
+                    <div className="space-y-3">
+                      {[0, 1, 2].map((i) => (
+                        <div key={i} className="h-36 animate-pulse rounded-2xl bg-stone-200" />
+                      ))}
+                    </div>
                   </div>
-                ))}
-                {pendingPhotos.length < 3 && (
-                  <label className="inline-flex cursor-pointer items-center rounded-full border border-stone-200 px-4 py-2 text-sm font-medium text-stone-700 hover:bg-stone-50">
-                    {photoBusy ? "Processing…" : "Add photo"}
-                    <input
-                      type="file"
-                      accept="image/jpeg,image/png,image/webp,image/*"
-                      className="sr-only"
-                      disabled={photoBusy || loading}
-                      onChange={(e) => {
-                        const file = e.target.files?.[0];
-                        e.target.value = "";
-                        if (!file) return;
-                        setPhotoBusy(true);
-                        void compressImageFile(file)
-                          .then((compressed) => {
-                            setPendingPhotos((files) => [...files, compressed].slice(0, 3));
-                          })
-                          .catch(() => {
-                            setError("Could not process that photo. Try a smaller image.");
-                          })
-                          .finally(() => setPhotoBusy(false));
-                      }}
-                    />
-                  </label>
+                ) : (
+                  <>
+                    <div className="flex flex-wrap items-center justify-between gap-3">
+                      <div className="inline-flex rounded-full border border-stone-200 bg-white p-1">
+                        {(["Monthly", "Annual"] as const).map((choice) => (
+                          <button
+                            key={choice}
+                            type="button"
+                            onClick={() => setBilling(choice)}
+                            className={`rounded-full px-4 py-2 text-sm font-medium transition ${
+                              billing === choice
+                                ? "bg-gardens-primary text-white"
+                                : "text-stone-600 hover:text-gardens-dark"
+                            }`}
+                          >
+                            {choice}
+                            {choice === "Annual" && (
+                              <span className="ml-1.5 text-xs opacity-90">Save ~2 months</span>
+                            )}
+                          </button>
+                        ))}
+                      </div>
+                      <Link href="/#pricing" className="text-sm font-medium text-gardens-primary hover:underline">
+                        Compare all features
+                      </Link>
+                    </div>
+
+                    <fieldset>
+                      <legend className="text-sm font-medium text-stone-700">Garden size</legend>
+                      <p className="mt-1 text-xs text-stone-500">Price updates based on how much garden we maintain.</p>
+                      <div className="mt-3 grid gap-3 sm:grid-cols-3">
+                        {(Object.keys(GARDEN_SIZE_GUIDE) as GardenSize[]).map((size) => {
+                          const selected = form.gardenSize === size;
+                          const guide = GARDEN_SIZE_GUIDE[size];
+                          return (
+                            <button
+                              key={size}
+                              type="button"
+                              onClick={() => updateField("gardenSize", size)}
+                              className={`rounded-2xl border p-4 text-left transition ${
+                                selected
+                                  ? "border-gardens-primary bg-gardens-light/50 ring-2 ring-gardens-primary/30"
+                                  : "border-stone-200 bg-white hover:border-stone-300"
+                              }`}
+                            >
+                              <p className="font-semibold text-gardens-dark">{guide.label}</p>
+                              <p className="mt-1 text-xs text-stone-600">{guide.description}</p>
+                            </button>
+                          );
+                        })}
+                      </div>
+                    </fieldset>
+
+                    <div className="space-y-3">
+                      {visibleTiers.map(({ id, label, tagline, plan }) => {
+                        if (!plan) return null;
+                        const selected = selectedTier === id;
+                        const price = planPriceForGarden(plan, form.gardenSize);
+                        const isPremium = id === "premium";
+                        return (
+                          <button
+                            key={plan.id}
+                            type="button"
+                            onClick={() => setSelectedTier(id)}
+                            className={`relative w-full rounded-2xl border p-5 text-left transition ${
+                              selected
+                                ? "border-gardens-primary bg-gardens-light/50 ring-2 ring-gardens-primary/30"
+                                : "border-stone-200 bg-white hover:border-stone-300"
+                            }`}
+                          >
+                            {isPremium && (
+                              <span className="absolute -top-2.5 left-4 rounded-full bg-gardens-primary px-2.5 py-0.5 text-xs font-semibold text-white">
+                                Most popular
+                              </span>
+                            )}
+                            <div className="flex items-start justify-between gap-3">
+                              <div>
+                                <p className="font-semibold text-gardens-dark">{label}</p>
+                                <p className="text-sm text-stone-500">{tagline}</p>
+                                <p className="mt-1 text-sm text-stone-600">{planVisitSummary(plan)}</p>
+                                <p className="mt-3 text-2xl font-bold text-gardens-primary">
+                                  £{formatGbp(price)}
+                                  <span className="text-sm font-normal text-stone-500">
+                                    /{billing === "Monthly" ? "mo" : "yr"}
+                                  </span>
+                                </p>
+                                <p className="mt-1 text-xs text-stone-500">
+                                  {form.gardenSize} garden · {plan.minimumTermMonths}-month minimum
+                                </p>
+                                <ul className="mt-3 space-y-1 text-xs text-stone-600">
+                                  {planFeatures(plan).slice(0, 3).map((f) => (
+                                    <li key={f}>• {f}</li>
+                                  ))}
+                                </ul>
+                              </div>
+                              {selected && <Check className="h-5 w-5 shrink-0 text-gardens-primary" />}
+                            </div>
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </>
                 )}
               </div>
+            )}
+
+            {step === 2 && (
+              <div className="space-y-5 rounded-2xl border border-stone-200 bg-white p-5 shadow-soft sm:p-6">
+                <p className="text-sm text-stone-600">
+                  Where should we maintain your garden? We match you with a local gardener in your area.
+                </p>
+                <Field label="Address line 1" value={form.line1} onChange={(v) => updateField("line1", v)} required autoComplete="address-line1" />
+                <Field label="Address line 2 (optional)" value={form.line2} onChange={(v) => updateField("line2", v)} autoComplete="address-line2" />
+                <div className="grid gap-4 sm:grid-cols-2">
+                  <Field label="City" value={form.city} onChange={(v) => updateField("city", v)} required autoComplete="address-level2" />
+                  <Field
+                    label="Postcode"
+                    value={form.postcode}
+                    onChange={(v) => updateField("postcode", v)}
+                    onBlur={() => updateField("postcode", normalizeUkPostcode(form.postcode))}
+                    required
+                    autoComplete="postal-code"
+                  />
+                </div>
+                <AvailabilityPicker value={form.availability} onChange={(v) => updateField("availability", v)} />
+                <Field
+                  label="Create a password"
+                  type="password"
+                  value={form.password}
+                  onChange={(v) => updateField("password", v)}
+                  required
+                  autoComplete="new-password"
+                  hint={`At least ${MIN_PASSWORD_LENGTH} characters`}
+                />
+                <label className="flex items-start gap-3 rounded-xl border border-stone-200 bg-stone-50 p-4 text-sm text-stone-700">
+                  <input
+                    type="checkbox"
+                    checked={acceptedTerms}
+                    onChange={(e) => {
+                      setAcceptedTerms(e.target.checked);
+                      setStepHint(null);
+                    }}
+                    className="mt-1 h-4 w-4 rounded border-stone-300 text-gardens-primary focus:ring-gardens-primary"
+                    required
+                  />
+                  <span>
+                    I agree to the{" "}
+                    <Link href="/terms" className="font-medium text-gardens-primary hover:underline" target="_blank">
+                      terms of service
+                    </Link>{" "}
+                    and{" "}
+                    <Link href="/privacy" className="font-medium text-gardens-primary hover:underline" target="_blank">
+                      privacy policy
+                    </Link>
+                    .
+                  </span>
+                </label>
+                <div className="space-y-3 border-t border-stone-100 pt-4">
+                  <div>
+                    <p className="text-sm font-medium text-stone-700">Garden photos (optional)</p>
+                    <p className="text-xs text-stone-500">
+                      Up to 3 photos help your gardener prepare — uploaded after payment.
+                    </p>
+                  </div>
+                  <div className="flex flex-wrap gap-3">
+                    {photoPreviewUrls.map((url, index) => (
+                      <div key={url} className="relative">
+                        {/* eslint-disable-next-line @next/next/no-img-element */}
+                        <img
+                          src={url}
+                          alt={`Garden photo ${index + 1}`}
+                          className="h-20 w-20 rounded-xl border border-stone-200 object-cover"
+                        />
+                        <button
+                          type="button"
+                          className="absolute -right-2 -top-2 rounded-full bg-white px-2 py-0.5 text-xs text-red-600 shadow ring-1 ring-stone-200"
+                          onClick={() => setPendingPhotos((files) => files.filter((_, i) => i !== index))}
+                        >
+                          Remove
+                        </button>
+                      </div>
+                    ))}
+                    {pendingPhotos.length < 3 && (
+                      <label className="inline-flex h-20 w-20 cursor-pointer flex-col items-center justify-center rounded-xl border border-dashed border-stone-300 text-xs font-medium text-stone-600 hover:bg-stone-50">
+                        {photoBusy ? <LoadingSpinner label="" /> : "+ Add"}
+                        <input
+                          type="file"
+                          accept="image/jpeg,image/png,image/webp,image/*"
+                          className="sr-only"
+                          disabled={photoBusy || loading}
+                          onChange={(e) => {
+                            const file = e.target.files?.[0];
+                            e.target.value = "";
+                            if (!file) return;
+                            setPhotoBusy(true);
+                            void compressImageFile(file)
+                              .then((compressed) => {
+                                setPendingPhotos((files) => [...files, compressed].slice(0, 3));
+                              })
+                              .catch(() => {
+                                setError("Could not process that photo. Try a smaller image.");
+                              })
+                              .finally(() => setPhotoBusy(false));
+                          }}
+                        />
+                      </label>
+                    )}
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {stepHint && (
+              <p className="mt-4 text-sm text-amber-800" role="status">
+                {stepHint}
+              </p>
+            )}
+
+            <div className="mt-8 hidden flex-col gap-3 sm:flex sm:flex-row sm:justify-between">
+              {step > 0 ? (
+                <button
+                  type="button"
+                  onClick={() => {
+                    setStepHint(null);
+                    setStep((s) => s - 1);
+                  }}
+                  className="inline-flex min-h-[48px] items-center justify-center gap-1 rounded-full border border-stone-200 px-6 text-base font-medium text-stone-700"
+                >
+                  <ChevronLeft className="h-4 w-4" /> Back
+                </button>
+              ) : (
+                <div />
+              )}
+
+              {step < STEPS.length - 1 ? (
+                <button
+                  type="button"
+                  onClick={tryAdvance}
+                  className="btn-primary gap-1 sm:ml-auto"
+                >
+                  Continue <ChevronRight className="h-4 w-4" />
+                </button>
+              ) : (
+                <button
+                  type="button"
+                  disabled={loading}
+                  onClick={submit}
+                  className="btn-primary sm:ml-auto"
+                >
+                  {loading ? "Continuing to payment…" : skipPayment ? "Create account" : "Continue to secure payment"}
+                </button>
+              )}
             </div>
           </div>
-        )}
 
-        <div className="mt-8 flex flex-col gap-3 sm:flex-row sm:justify-between">
-          {step > 0 ? (
-            <button
-              type="button"
-              onClick={() => setStep((s) => s - 1)}
-              className="inline-flex min-h-[48px] items-center justify-center gap-1 rounded-full border border-stone-200 px-6 text-base font-medium text-stone-700"
-            >
-              <ChevronLeft className="h-4 w-4" /> Back
-            </button>
-          ) : (
-            <div className="hidden sm:block" />
-          )}
-
-          {step < STEPS.length - 1 ? (
-            <button
-              type="button"
-              disabled={!canAdvance()}
-              onClick={() => setStep((s) => s + 1)}
-              className="btn-primary gap-1 sm:ml-auto"
-            >
-              Continue <ChevronRight className="h-4 w-4" />
-            </button>
-          ) : (
-            <button
-              type="button"
-              disabled={loading || !canAdvance()}
-              onClick={submit}
-              className="btn-primary sm:ml-auto"
-            >
-              {loading ? "Continuing to payment…" : skipPayment ? "Create account" : "Continue to payment"}
-            </button>
+          {step >= 1 && selectedPlan && (
+            <aside className="hidden lg:block">
+              <div className="sticky top-24">
+                <SignupSummary plan={selectedPlan} gardenSize={form.gardenSize} />
+              </div>
+            </aside>
           )}
         </div>
+
+        {(step >= 1 && selectedPlan) || step === 0 ? (
+          <div className="fixed inset-x-0 bottom-0 z-40 border-t border-stone-200 bg-white/95 p-3 backdrop-blur-md pb-[max(0.75rem,env(safe-area-inset-bottom))] sm:hidden">
+            {step >= 1 && selectedPlan ? (
+              <SignupSummary plan={selectedPlan} gardenSize={form.gardenSize} compact />
+            ) : (
+              <p className="text-center text-xs text-stone-500">Step 1 of 3 — quick contact details only</p>
+            )}
+            <div className="mt-3 flex gap-2">
+              {step > 0 && (
+                <button
+                  type="button"
+                  onClick={() => {
+                    setStepHint(null);
+                    setStep((s) => s - 1);
+                  }}
+                  className="inline-flex min-h-[48px] flex-1 items-center justify-center rounded-full border border-stone-200 text-sm font-medium text-stone-700"
+                >
+                  Back
+                </button>
+              )}
+              {step < STEPS.length - 1 ? (
+                <button type="button" onClick={tryAdvance} className="btn-primary min-h-[48px] flex-[2]">
+                  Continue
+                </button>
+              ) : (
+                <button type="button" disabled={loading} onClick={submit} className="btn-primary min-h-[48px] flex-[2]">
+                  {loading ? "Processing…" : skipPayment ? "Create account" : "Pay securely"}
+                </button>
+              )}
+            </div>
+          </div>
+        ) : null}
 
         <p className="mt-6 text-center text-sm text-stone-500">
           Already have an account?{" "}
@@ -431,16 +688,20 @@ function Field({
   label,
   value,
   onChange,
+  onBlur,
   type = "text",
   required,
   autoComplete,
+  hint,
 }: {
   label: string;
   value: string;
   onChange: (v: string) => void;
+  onBlur?: () => void;
   type?: string;
   required?: boolean;
   autoComplete?: string;
+  hint?: string;
 }) {
   return (
     <label className="block text-sm font-medium text-stone-700">
@@ -449,10 +710,12 @@ function Field({
         type={type}
         value={value}
         onChange={(e) => onChange(e.target.value)}
+        onBlur={onBlur}
         required={required}
         autoComplete={autoComplete}
         className="field-input"
       />
+      {hint && <span className="mt-1 block text-xs font-normal text-stone-500">{hint}</span>}
     </label>
   );
 }

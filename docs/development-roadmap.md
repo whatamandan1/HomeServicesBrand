@@ -6,17 +6,17 @@ Living checklist comparing the current GardensSorted / Sorted platform build aga
 Use this document to track what is done, what is partial, and what to build next. Update
 statuses as features ship.
 
-**Last reviewed:** 2026-05-24 (demo polish + landlord portal)  
-**Live site:** https://home-services-brand.vercel.app/  
+**Last reviewed:** 2026-05-26 (custom domain + operational polish)  
+**Live site:** https://gardenssorted.co.uk/ (canonical; `gardenssorted.com` redirects here)  
 **Live API:** https://homeservicesbrand-production.up.railway.app/
 
-**Current focus:** Demo phase — Multi-Property Solutions phase 1 shipped; polish consumer pilot.
+**Current focus:** Demo phase — custom domain live; operational polish shipped; Multi-Property Solutions phase 2 next.
 
 ### What's next (demo phase)
 
-1. **Operational polish** — loading states, error feedback, mobile CRM (in progress)
-2. **Multi-Property Solutions phase 2** — pricing rules + AI indicative quote + admin review
-3. **Multi-brand frontend** — when a second brand is ready
+1. **Multi-Property Solutions phase 2** — pricing rules + AI indicative quote + admin review
+2. **Multi-brand frontend** — when a second brand is ready
+3. **Pre-launch gate** — real admin, disable demo seed — only when inviting paying customers
 
 **Multi-Property Solutions** (full requirements: [`multi-property-solutions-requirements.md`](multi-property-solutions-requirements.md)):
 
@@ -33,7 +33,7 @@ statuses as features ship.
 |------|----------------|
 | **Twilio SMS** | UK sender registration pending; email covers demo |
 | **Stripe Connect (v2 payouts)** | Manual admin mark-paid is fine for demo |
-| **Pre-launch gate** | Real admin, `Features__SeedDemoData=false`, custom domain — only when inviting paying customers |
+| **Pre-launch gate** | Real admin, `Features__SeedDemoData=false` — only when inviting paying customers (custom domain ✅) |
 
 ### Plan visit cadence (product truth)
 
@@ -79,7 +79,7 @@ These are the spec's top priorities for initial launch.
 | Payment processing | ✅ Done | Renewals, past_due, cancellation via webhooks |
 | Provider onboarding | ✅ Done | Self-signup at `/providers#apply` + admin approval; base postcode + radius |
 | Provider job claiming | ✅ Done | Radius/outcode coverage + distance fallback; claim with conflict check |
-| Operational CRM | 🟡 Partial | Dashboard, visits, escalations, workflow/AI viewers, customer detail, provider coverage edit |
+| Operational CRM | 🟡 Partial | Dashboard, visits, escalations, workflow/AI viewers, customer detail, provider coverage edit; mobile section nav + loading/error polish |
 | Recurring scheduling | 🟡 Partial | Plan cadence via `PlanCatalog` (Essential 30d, Premium 15d); background top-up; legacy weekly visits may remain in demo DB |
 | Communication systems | 🟡 Partial | SendGrid live; Twilio deferred (UK regulatory) |
 | AI support assistant | ✅ Done | Customer portal chat + guest homepage chat |
@@ -349,6 +349,8 @@ Quick snapshot of implemented features as of last review.
 
 ### Frontend
 - Marketing: customer-focused `/`, `/about`, `/providers`; **For landlords** `/multi-property-solutions`; SEO (sitemap, robots); compressed hero; lazy chat; `/privacy` and `/terms`; OG image (~200KB JPEG)
+- Custom domain: `gardenssorted.co.uk` + `gardenssorted.com` (redirect to `.co.uk`; see `docs/custom-domain-setup.md`)
+- Operational polish: shared loading spinners, alert banners, admin mobile section nav, dashboard skeleton
 - Signup: 3-step customer wizard; provider apply form (postcode + radius slider)
 - Portals: `/portal` (Manage billing, photos, preferred gardener), `/provider` (coverage, availability, earnings), `/admin` (CRM + trends + photo lightbox), `/landlord` (multi-property demo dashboard)
 - Mobile UX: responsive layouts, hamburger nav, mobile CTA bar

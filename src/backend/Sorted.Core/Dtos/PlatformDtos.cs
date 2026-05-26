@@ -187,6 +187,7 @@ public record AdminDashboardResponse(
     int OpenVisits,
     int OpenEscalations,
     int NewPortfolioEnquiries,
+    int ActiveSignupLeads,
     AdminDashboardTrends Trends);
 
 public record AdminCustomerSubscriptionResponse(
@@ -316,6 +317,36 @@ public record PortfolioEnquiryDetailResponse(
     IReadOnlyList<PortfolioEnquiryPropertyResponse> Properties);
 
 public record UpdatePortfolioEnquiryStatusRequest(PortfolioEnquiryStatus Status);
+
+public record CaptureSignupLeadRequest(
+    string Email,
+    string Phone,
+    string FirstName,
+    string? LastName,
+    bool MarketingOptIn,
+    int LastStep,
+    string? SelectedPlanName,
+    GardenSize? GardenSize,
+    string? Postcode,
+    string? SessionId,
+    string BrandCode = "gardens-sorted");
+
+public record CaptureSignupLeadResponse(Guid LeadId, bool Saved);
+
+public record SignupLeadSummaryResponse(
+    Guid Id,
+    string FirstName,
+    string? LastName,
+    string Email,
+    string Phone,
+    bool MarketingOptIn,
+    int LastStep,
+    string? SelectedPlanName,
+    GardenSize? GardenSize,
+    string? Postcode,
+    SignupLeadStatus Status,
+    DateTime CreatedAtUtc,
+    DateTime? UpdatedAtUtc);
 
 public record LandlordPropertyResponse(
     Guid Id,

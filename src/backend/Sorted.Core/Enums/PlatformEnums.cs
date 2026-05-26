@@ -80,3 +80,9 @@ public enum PortfolioEnquiryStatus
     Active = 5,
     Closed = 6
 }
+
+public enum SignupLeadStatus
+{
+    Active = 1,
+    Converted = 2
+}

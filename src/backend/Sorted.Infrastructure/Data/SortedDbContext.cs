@@ -27,6 +27,7 @@ public class SortedDbContext(DbContextOptions<SortedDbContext> options) : DbCont
     public DbSet<PasswordResetToken> PasswordResetTokens => Set<PasswordResetToken>();
     public DbSet<PortfolioEnquiry> PortfolioEnquiries => Set<PortfolioEnquiry>();
     public DbSet<PortfolioEnquiryProperty> PortfolioEnquiryProperties => Set<PortfolioEnquiryProperty>();
+    public DbSet<SignupLead> SignupLeads => Set<SignupLead>();
     public DbSet<MultiPropertyAccount> MultiPropertyAccounts => Set<MultiPropertyAccount>();
     public DbSet<MultiPropertyAccountProperty> MultiPropertyAccountProperties => Set<MultiPropertyAccountProperty>();
 
@@ -85,6 +86,10 @@ public class SortedDbContext(DbContextOptions<SortedDbContext> options) : DbCont
             .HasOne(e => e.Brand).WithMany().HasForeignKey(e => e.BrandId);
         modelBuilder.Entity<PortfolioEnquiry>()
             .HasIndex(e => e.Email);
+        modelBuilder.Entity<SignupLead>()
+            .HasOne(l => l.Brand).WithMany().HasForeignKey(l => l.BrandId);
+        modelBuilder.Entity<SignupLead>()
+            .HasIndex(l => new { l.BrandId, l.Email });
         modelBuilder.Entity<MultiPropertyAccount>()
             .HasOne(a => a.User).WithMany().HasForeignKey(a => a.UserId);
         modelBuilder.Entity<MultiPropertyAccount>()

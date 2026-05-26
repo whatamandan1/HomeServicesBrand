@@ -25,7 +25,8 @@ public class AdminController(
     IProviderCoverageService coverage,
     IProviderAvailabilityService availability,
     IProviderEarningsService earnings,
-    IPortfolioEnquiryService portfolioEnquiries) : ControllerBase
+    IPortfolioEnquiryService portfolioEnquiries,
+    ISignupLeadService signupLeads) : ControllerBase
 {
     [HttpGet("dashboard")]
     public async Task<ActionResult<AdminDashboardResponse>> Dashboard([FromQuery] int days = 30, CancellationToken ct = default)
@@ -37,6 +38,9 @@ public class AdminController(
         var escalations = await db.Escalations.CountAsync(e => e.Status == EscalationStatus.Open && !e.IsDeleted, ct);
         var newPortfolioEnquiries = await db.PortfolioEnquiries.CountAsync(
             e => e.Status == PortfolioEnquiryStatus.New && !e.IsDeleted,
+            ct);
+        var activeSignupLeads = await db.SignupLeads.CountAsync(
+            l => l.Status == SignupLeadStatus.Active && !l.IsDeleted,
             ct);
 
         var rangeDays = Math.Clamp(days, 7, 90);
@@ -72,7 +76,7 @@ public class AdminController(
             BuildDailyTrend(newSubscriptionDates, fromDate, toDate),
             BuildDailyTrend(completedVisitDates, fromDate, toDate));
 
-        return Ok(new AdminDashboardResponse(customers, activeSubs, providers, openVisits, escalations, newPortfolioEnquiries, trends));
+        return Ok(new AdminDashboardResponse(customers, activeSubs, providers, openVisits, escalations, newPortfolioEnquiries, activeSignupLeads, trends));
     }
 
     private static IReadOnlyList<AdminDashboardTrendPoint> BuildDailyTrend(
@@ -793,6 +797,10 @@ public class AdminController(
         if (thread is null) return NotFound();
         return Ok(thread);
     }
+
+    [HttpGet("signup-leads")]
+    public async Task<ActionResult<IReadOnlyList<SignupLeadSummaryResponse>>> SignupLeads(CancellationToken ct)
+        => Ok(await signupLeads.ListActiveForAdminAsync(ct));
 
     [HttpGet("portfolios/enquiries")]
     public async Task<ActionResult<IReadOnlyList<PortfolioEnquirySummaryResponse>>> PortfolioEnquiries(CancellationToken ct)

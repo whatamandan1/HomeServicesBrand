@@ -9,6 +9,7 @@ import { BillingSection } from "@/components/billing/BillingSection";
 import { VisitList } from "@/components/visits/VisitList";
 import { SupportChat } from "@/components/support/SupportChat";
 import { PropertyList } from "@/components/properties/PropertyList";
+import { AlertBanner, LoadingSpinner, PageLoading } from "@/components/ui/feedback";
 import { stashedPhotoToFile, takeSignupPhotos } from "@/lib/pending-signup-photos";
 
 export default function PortalPage() {
@@ -113,7 +114,7 @@ export default function PortalPage() {
     }
   }
 
-  if (!ready) return <p className="text-stone-500">Loading…</p>;
+  if (!ready) return <PageLoading label="Checking session…" />;
   if (!auth) {
     return (
       <p>
@@ -151,9 +152,11 @@ export default function PortalPage() {
         </button>
       </div>
 
-      {error && <p className="text-sm text-red-600">{error}</p>}
+      {error && (
+        <AlertBanner variant="error" message={error} onDismiss={() => setError(null)} />
+      )}
 
-      {loading && <p className="text-sm text-stone-500">Loading your account…</p>}
+      {loading && <LoadingSpinner label="Loading your account…" className="block" />}
 
       {!loading && subs.some((s) => s.preferredGardenerName) && (
         <p className="rounded-xl border border-gardens-primary/15 bg-gardens-light/40 px-4 py-3 text-sm text-gardens-dark">
@@ -182,7 +185,7 @@ export default function PortalPage() {
           Update your address, garden size, and access notes for your gardener.
         </p>
         {loading ? (
-          <p className="mt-3 text-sm text-stone-500">Loading properties…</p>
+          <LoadingSpinner label="Loading properties…" className="mt-3 block" />
         ) : (
         <PropertyList
           properties={properties}
@@ -202,7 +205,7 @@ export default function PortalPage() {
           Reschedule or cancel before your gardener starts the visit.
         </p>
         {loading ? (
-          <p className="mt-3 text-sm text-stone-500">Loading visits…</p>
+          <LoadingSpinner label="Loading visits…" className="mt-3 block" />
         ) : (
         <VisitList
           visits={upcoming}

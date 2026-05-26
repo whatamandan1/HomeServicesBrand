@@ -4,8 +4,10 @@
 
 | Component | Host | URL |
 |-----------|------|-----|
-| Frontend | [Vercel](https://vercel.com) | https://home-services-brand.vercel.app |
+| Frontend | [Vercel](https://vercel.com) | https://gardenssorted.co.uk (+ `gardenssorted.com` → redirect) |
 | API | [Railway](https://railway.app) | https://homeservicesbrand-production.up.railway.app |
+
+See [`custom-domain-setup.md`](custom-domain-setup.md) for DNS, CORS, and Stripe redirect variables.
 
 ## 1. Push code to GitHub
 
@@ -48,8 +50,10 @@ Ensure `appsettings.Development.local.json` is **not** committed (it is gitignor
 | `Plans__EliteMonthly` | `89.95` |
 | `Plans__EliteAnnual` | `899.95` |
 | `Features__BypassStripeCheckout` | `false` — must be false in production (API refuses to start if true) |
-| `Stripe__SuccessUrl` | `https://YOUR-VERCEL-URL/signup/success` |
-| `Stripe__CancelUrl` | `https://YOUR-VERCEL-URL/signup` |
+| `Stripe__SuccessUrl` | `https://gardenssorted.co.uk/signup/success` |
+| `Stripe__CancelUrl` | `https://gardenssorted.co.uk/signup` |
+| `Stripe__BillingPortalReturnUrl` | `https://gardenssorted.co.uk/portal` |
+| `App__FrontendBaseUrl` | `https://gardenssorted.co.uk` |
 | `SendGrid__ApiKey` | optional — see [dev-costs-and-email.md](dev-costs-and-email.md) |
 | `SendGrid__FromEmail` | verified sender (must match SendGrid single sender) |
 | `SendGrid__FromName` | `GardensSorted` |
@@ -57,7 +61,7 @@ Ensure `appsettings.Development.local.json` is **not** committed (it is gitignor
 | `Twilio__AuthToken` | Twilio auth token |
 | `Twilio__FromPhoneNumber` | E.164, e.g. `+447...` |
 | `OpenAI__ApiKey` | optional |
-| `Cors__AllowedOrigins__0` | `https://YOUR-VERCEL-URL` |
+| `Cors__AllowedOrigins__0` | `https://gardenssorted.co.uk` |
 | `Cors__AllowedOrigins__1` | `http://localhost:3000` |
 
 4. Deploy → **Generate a public URL** (see below) → production API: `https://homeservicesbrand-production.up.railway.app`
@@ -116,7 +120,7 @@ If you only see project-level settings, you clicked the wrong level — go back 
 | Variable | Value |
 |----------|-------|
 | `API_URL` | Your Railway API URL (no trailing slash) — **required** for pricing/signup |
-| `NEXT_PUBLIC_SITE_URL` | `https://home-services-brand.vercel.app` |
+| `NEXT_PUBLIC_SITE_URL` | `https://gardenssorted.co.uk` |
 | `NEXT_PUBLIC_SHOW_DEMO_LOGIN` | **Leave unset** on production (demo credentials hidden). Set `true` only for local dev. |
 | `NEXT_PUBLIC_API_URL` | optional — leave unset; `/api` is proxied via `API_URL` |
 
@@ -124,7 +128,7 @@ Legacy: if you already use `NEXT_PUBLIC_API_URL` pointing at Railway, that still
 
 4. Deploy → copy URL e.g. `https://gardenssorted.vercel.app`
 
-5. Update Railway variables `Stripe__SuccessUrl`, `Stripe__CancelUrl`, and `Cors__AllowedOrigins__0` with the Vercel URL, then redeploy API.
+5. Update Railway variables (`Stripe__*`, `Cors__*`, `App__FrontendBaseUrl`) if the domain changed — see [`custom-domain-setup.md`](custom-domain-setup.md), then redeploy API.
 
 ---
 
@@ -152,7 +156,7 @@ Optional: add Vercel/Railway deploy hooks later.
 - [ ] `Stripe__WebhookSecret` set — API refuses to start without it in production  
 - [ ] `Features__BypassStripeCheckout=false` on Railway  
 - [ ] Stripe webhook points to Railway URL, not `stripe listen`  
-- [ ] CORS includes Vercel domain  
+- [ ] CORS includes custom domain (`https://gardenssorted.co.uk`)  
 - [ ] `API_URL` on Vercel matches Railway URL  
 - [ ] `NEXT_PUBLIC_SHOW_DEMO_LOGIN` **not** set on Vercel (demo login hints hidden)  
 - [ ] All **six** Stripe Price IDs set — see [`stripe-price-ids-checklist.md`](stripe-price-ids-checklist.md)

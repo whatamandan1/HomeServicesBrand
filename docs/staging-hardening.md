@@ -166,7 +166,7 @@ Test: Customer portal → Support chat. Without a key, you get a dev fallback me
 
 ## 5. Optional next builds
 
-- Custom domain on Vercel (`gardenssorted.co.uk`)
+- Custom domains on Vercel (`gardenssorted.co.uk` + `gardenssorted.com` redirect) — see [`custom-domain-setup.md`](custom-domain-setup.md)
 - Stripe **live** mode + live webhook
 - Provider self-registration approval flow polish
 - Azure migration path (when scaling)

@@ -253,6 +253,24 @@ public class PortfolioEnquiryProperty : AuditableEntity
     public GardenSize GardenSize { get; set; }
 }
 
+public class SignupLead : AuditableEntity
+{
+    public Guid BrandId { get; set; }
+    public Brand Brand { get; set; } = null!;
+    public string Email { get; set; } = string.Empty;
+    public string Phone { get; set; } = string.Empty;
+    public string FirstName { get; set; } = string.Empty;
+    public string? LastName { get; set; }
+    public bool MarketingOptIn { get; set; }
+    public int LastStep { get; set; }
+    public string? SelectedPlanName { get; set; }
+    public GardenSize? GardenSize { get; set; }
+    public string? Postcode { get; set; }
+    public string? SessionId { get; set; }
+    public SignupLeadStatus Status { get; set; } = SignupLeadStatus.Active;
+    public DateTime? ConvertedAtUtc { get; set; }
+}
+
 public class MultiPropertyAccount : AuditableEntity
 {
     public Guid UserId { get; set; }

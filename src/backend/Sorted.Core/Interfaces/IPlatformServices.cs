@@ -134,6 +134,13 @@ public interface IPortfolioEnquiryService
     Task<PortfolioEnquiryDetailResponse> UpdateStatusAsync(Guid enquiryId, PortfolioEnquiryStatus status, CancellationToken ct = default);
 }
 
+public interface ISignupLeadService
+{
+    Task<CaptureSignupLeadResponse> CaptureAsync(CaptureSignupLeadRequest request, CancellationToken ct = default);
+    Task MarkConvertedAsync(string email, string brandCode = "gardens-sorted", CancellationToken ct = default);
+    Task<IReadOnlyList<SignupLeadSummaryResponse>> ListActiveForAdminAsync(CancellationToken ct = default);
+}
+
 public interface IWorkflowLogger
 {
     Task LogAsync(string workflowName, string eventName, string? entityType, Guid? entityId, object? payload = null, CancellationToken ct = default);

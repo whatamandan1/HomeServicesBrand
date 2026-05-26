@@ -71,6 +71,22 @@ export type PortfolioEnquirySummary = {
   createdAtUtc: string;
 };
 
+export type SignupLeadSummary = {
+  id: string;
+  firstName: string;
+  lastName: string | null;
+  email: string;
+  phone: string;
+  marketingOptIn: boolean;
+  lastStep: number;
+  selectedPlanName: string | null;
+  gardenSize: GardenSize | null;
+  postcode: string | null;
+  status: "Active" | "Converted";
+  createdAtUtc: string;
+  updatedAtUtc: string | null;
+};
+
 export type PortfolioEnquiryDetail = {
   id: string;
   contactName: string;
@@ -147,6 +163,7 @@ export type AdminDashboard = {
   openVisits: number;
   openEscalations: number;
   newPortfolioEnquiries: number;
+  activeSignupLeads: number;
   trends: {
     fromUtc: string;
     toUtc: string;
@@ -412,6 +429,22 @@ export const api = {
     request<{ bypassStripeCheckout: boolean }>("/api/config/public"),
   getPlans: () =>
     request<SubscriptionPlan[]>("/api/brands/gardens-sorted/plans"),
+  captureSignupLead: (body: {
+    email: string;
+    phone: string;
+    firstName: string;
+    lastName?: string | null;
+    marketingOptIn: boolean;
+    lastStep: number;
+    selectedPlanName?: string | null;
+    gardenSize?: GardenSize | null;
+    postcode?: string | null;
+    sessionId?: string | null;
+  }) =>
+    request<{ leadId: string; saved: boolean }>("/api/marketing/signup-leads", {
+      method: "POST",
+      body: JSON.stringify(body),
+    }),
   registerCustomer: (body: unknown) =>
     request<AuthResponse>("/api/auth/register/customer", {
       method: "POST",
@@ -738,6 +771,8 @@ export const api = {
     }),
   adminPortfolioEnquiries: (token: string) =>
     request<PortfolioEnquirySummary[]>("/api/admin/portfolios/enquiries", {}, token),
+  adminSignupLeads: (token: string) =>
+    request<SignupLeadSummary[]>("/api/admin/signup-leads", {}, token),
   adminPortfolioEnquiry: (token: string, id: string) =>
     request<PortfolioEnquiryDetail>(`/api/admin/portfolios/enquiries/${id}`, {}, token),
   adminUpdatePortfolioEnquiryStatus: (token: string, id: string, status: PortfolioEnquiryStatus) =>

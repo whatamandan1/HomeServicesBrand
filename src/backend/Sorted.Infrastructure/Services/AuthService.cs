@@ -21,6 +21,7 @@ public class AuthService(
     ISmsService sms,
     IPostcodeGeocodingService geocoding,
     IProviderCoverageService coverage,
+    ISignupLeadService signupLeads,
     IServiceScopeFactory scopeFactory,
     IOptions<AppOptions> appOptions) : IAuthService
 {
@@ -85,6 +86,8 @@ public class AuthService(
         SchedulePropertyGeocoding(property.Id, property.Postcode);
 
         await workflow.LogAsync("customer_signup", "registered", nameof(Customer), customer.Id, new { user.Email, plan.Name }, ct);
+
+        await signupLeads.MarkConvertedAsync(user.Email, brand.Code, ct);
 
         var welcomeEmail = user.Email;
         var welcomeFirstName = user.FirstName;

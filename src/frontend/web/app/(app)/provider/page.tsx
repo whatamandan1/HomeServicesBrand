@@ -9,6 +9,7 @@ import { ListMapToggle, type ViewMode } from "@/components/map/ListMapToggle";
 import { VisitMap } from "@/components/map/VisitMap";
 import { ProviderAvailabilitySection } from "@/components/provider/ProviderAvailabilitySection";
 import { ProviderEarningsSection } from "@/components/provider/ProviderEarningsSection";
+import { AlertBanner, LoadingSpinner, PageLoading } from "@/components/ui/feedback";
 
 export default function ProviderPage() {
   const { auth, ready } = useAuth();
@@ -140,7 +141,7 @@ export default function ProviderPage() {
     }
   }
 
-  if (!ready) return <p className="text-stone-500">Loading…</p>;
+  if (!ready) return <PageLoading label="Checking session…" />;
   if (!auth) {
     return (
       <p>
@@ -266,11 +267,11 @@ export default function ProviderPage() {
         <ProviderEarningsSection token={auth.token} refreshKey={earningsRefreshKey} />
       )}
       {notice && (
-        <p className="rounded-lg border border-green-200 bg-green-50 px-4 py-3 text-sm text-green-900">
-          {notice}
-        </p>
+        <AlertBanner variant="success" message={notice} onDismiss={() => setNotice(null)} />
       )}
-      {error && <p className="text-sm text-red-600">{error}</p>}
+      {error && (
+        <AlertBanner variant="error" message={error} onDismiss={() => setError(null)} />
+      )}
 
       <section>
         <div className="flex flex-wrap items-center justify-between gap-3">
@@ -278,7 +279,7 @@ export default function ProviderPage() {
           {open.length > 0 && <ListMapToggle value={openView} onChange={setOpenView} />}
         </div>
         {initialLoading ? (
-          <p className="mt-2 text-sm text-stone-500">Loading open jobs…</p>
+          <LoadingSpinner label="Loading open jobs…" className="mt-2 block" />
         ) : open.length === 0 ? (
           <div className="mt-2 space-y-2 text-sm text-stone-500">
             <p>No open visits in your coverage area right now.</p>
@@ -354,7 +355,7 @@ export default function ProviderPage() {
           {upcoming.length > 0 && <ListMapToggle value={myVisitsView} onChange={setMyVisitsView} />}
         </div>
         {initialLoading ? (
-          <p className="mt-2 text-sm text-stone-500">Loading your visits…</p>
+          <LoadingSpinner label="Loading your visits…" className="mt-2 block" />
         ) : upcoming.length === 0 ? (
           <p className="mt-2 text-sm text-stone-500">No active visits — claim a job above.</p>
         ) : myVisitsView === "map" ? (
