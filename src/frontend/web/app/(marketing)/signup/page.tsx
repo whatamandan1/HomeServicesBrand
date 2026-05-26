@@ -7,6 +7,9 @@ import { Check, ChevronLeft, ChevronRight } from "lucide-react";
 import { api, type AuthResponse, type GardenSize, type SubscriptionPlan } from "@/lib/api";
 import { FALLBACK_PLANS, sortPlans } from "@/lib/plans";
 import {
+  ANNUAL_BILLING_HINT,
+  ANNUAL_BILLING_SAVINGS,
+  annualEquivalentMonthly,
   findTierPlanForBilling,
   formatPriceFrom,
   GARDEN_SIZE_GUIDE,
@@ -17,6 +20,7 @@ import {
   type BillingChoice,
   type PlanTier,
 } from "@/lib/consumer-plans";
+import { BillingIntervalToggle } from "@/components/marketing/BillingIntervalToggle";
 import { saveAuth } from "@/lib/auth-storage";
 import { stashSignupPhotos } from "@/lib/pending-signup-photos";
 import { compressImageFile } from "@/lib/compress-image";
@@ -27,6 +31,7 @@ import {
   normalizeUkPostcode,
   tierFromPlan,
 } from "@/lib/signup-utils";
+import { formatGbp } from "@/lib/format";
 import { useSignupLeadCapture } from "@/lib/use-signup-lead";
 import { AlertBanner, LoadingSpinner } from "@/components/ui/feedback";
 import { AvailabilityPicker } from "@/components/signup/AvailabilityPicker";
@@ -362,25 +367,10 @@ export default function SignupPage() {
                   </div>
                 ) : (
                   <>
-                    <div className="flex flex-wrap items-center justify-between gap-3">
-                      <div className="inline-flex rounded-full border border-stone-200 bg-white p-1">
-                        {(["Annual", "Monthly"] as const).map((choice) => (
-                          <button
-                            key={choice}
-                            type="button"
-                            onClick={() => setBilling(choice)}
-                            className={`rounded-full px-4 py-2 text-sm font-medium transition ${
-                              billing === choice
-                                ? "bg-gardens-primary text-white"
-                                : "text-stone-600 hover:text-gardens-dark"
-                            }`}
-                          >
-                            {choice}
-                            {choice === "Annual" && (
-                              <span className="ml-1.5 text-xs opacity-90">Save ~2 months</span>
-                            )}
-                          </button>
-                        ))}
+                    <div className="flex flex-wrap items-start justify-between gap-3">
+                      <div className="space-y-2">
+                        <BillingIntervalToggle billing={billing} onChange={setBilling} />
+                        <p className="text-xs text-stone-500">{ANNUAL_BILLING_HINT}</p>
                       </div>
                       <Link href="/#pricing" className="text-sm font-medium text-gardens-primary hover:underline">
                         Compare all features
@@ -443,6 +433,15 @@ export default function SignupPage() {
                                 <p className="mt-3 text-2xl font-bold text-gardens-primary">
                                   {formatPriceFrom(price, billing === "Monthly" ? "mo" : "yr")}
                                 </p>
+                                {billing === "Annual" ? (
+                                  <p className="mt-1 text-xs font-medium text-gardens-primary">
+                                    From £{formatGbp(annualEquivalentMonthly(price))}/mo — billed once a year
+                                  </p>
+                                ) : (
+                                  <p className="mt-1 text-xs text-stone-500">
+                                    Annual is best value — {ANNUAL_BILLING_SAVINGS.toLowerCase()} vs monthly
+                                  </p>
+                                )}
                                 <p className="mt-1 text-xs text-stone-500">
                                   {GARDEN_SIZE_GUIDE[form.gardenSize].label} garden · {plan.minimumTermMonths}-month minimum
                                 </p>

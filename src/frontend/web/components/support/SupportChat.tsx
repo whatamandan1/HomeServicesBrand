@@ -193,6 +193,92 @@ export function SupportChat({
   );
 }
 
+export function CustomerChatWidget({
+  token,
+  promptSeed = null,
+}: {
+  token: string;
+  promptSeed?: { key: number; text: string } | null;
+}) {
+  const [open, setOpen] = useState(false);
+  const [session, setSession] = useState(0);
+
+  useEffect(() => {
+    if (!promptSeed) return;
+    setOpen(true);
+  }, [promptSeed?.key]);
+
+  useEffect(() => {
+    if (typeof window === "undefined" || window.location.hash !== "#chat") return;
+    setOpen(true);
+    window.history.replaceState(null, "", window.location.pathname + window.location.search);
+  }, []);
+
+  function resetChat() {
+    localStorage.removeItem("gardens-support-thread");
+    setSession((s) => s + 1);
+  }
+
+  const fabPosition = "fixed right-4 z-50 bottom-20 md:bottom-6";
+
+  return (
+    <>
+      {open && (
+        <div
+          className={`${fabPosition} flex w-[min(calc(100vw-2rem),380px)] flex-col overflow-hidden rounded-2xl border border-stone-200 bg-white shadow-2xl`}
+          role="dialog"
+          aria-label="Customer service chat"
+        >
+          <div className="flex items-start justify-between gap-3 border-b border-stone-100 bg-gardens-light/30 px-4 py-3">
+            <div className="min-w-0">
+              <p className="text-sm font-semibold text-gardens-dark">Customer service</p>
+              <p className="text-xs text-stone-500">Ask about your plan, visits, or billing</p>
+            </div>
+            <div className="flex shrink-0 items-center gap-1">
+              <button
+                type="button"
+                onClick={resetChat}
+                className="rounded-lg px-2 py-1 text-xs text-gardens-primary hover:bg-gardens-light/50 hover:underline"
+              >
+                New chat
+              </button>
+              <button
+                type="button"
+                onClick={() => setOpen(false)}
+                className="flex h-9 w-9 items-center justify-center rounded-lg text-stone-500 transition hover:bg-stone-100 hover:text-stone-800"
+                aria-label="Close chat"
+              >
+                <X className="h-5 w-5" />
+              </button>
+            </div>
+          </div>
+          <SupportChat
+            key={session}
+            mode="customer"
+            token={token}
+            hideHeader
+            compact
+            promptSeed={promptSeed}
+            className="rounded-none border-0 shadow-none"
+          />
+        </div>
+      )}
+
+      {!open && (
+        <button
+          type="button"
+          onClick={() => setOpen(true)}
+          className={`${fabPosition} flex min-h-[48px] items-center gap-2 rounded-full bg-gardens-primary px-4 py-3 text-sm font-semibold text-white shadow-lg transition hover:bg-gardens-dark`}
+          aria-label="Open customer service chat"
+        >
+          <MessageCircle className="h-5 w-5" />
+          <span className="hidden sm:inline">Customer service</span>
+        </button>
+      )}
+    </>
+  );
+}
+
 export function GuestChatWidget() {
   const pathname = usePathname();
   const [open, setOpen] = useState(false);

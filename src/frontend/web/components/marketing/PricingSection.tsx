@@ -6,6 +6,10 @@ import { Check } from "lucide-react";
 import { api, type SubscriptionPlan } from "@/lib/api";
 import { FALLBACK_PLANS, sortPlans } from "@/lib/plans";
 import {
+  ANNUAL_BILLING_BADGE,
+  ANNUAL_BILLING_HINT,
+  ANNUAL_BILLING_SAVINGS,
+  annualEquivalentMonthly,
   findTierPlanForBilling,
   formatPriceFrom,
   GARDEN_SIZE_GUIDE,
@@ -29,7 +33,7 @@ export function PricingSection() {
   const [plans, setPlans] = useState<SubscriptionPlan[]>([]);
   const [loaded, setLoaded] = useState(false);
   const [offline, setOffline] = useState(false);
-  const [billing, setBilling] = useState<BillingChoice>("Monthly");
+  const [billing, setBilling] = useState<BillingChoice>("Annual");
 
   useEffect(() => {
     api.getPlans()
@@ -77,6 +81,13 @@ export function PricingSection() {
 
       <PlanCompareTable plans={displayPlans} billing={billing} onBillingChange={setBilling} />
 
+      {billing === "Monthly" && (
+        <p className="rounded-xl border border-gardens-primary/20 bg-gardens-light/60 px-4 py-3 text-center text-sm text-gardens-dark">
+          <span className="font-semibold">{ANNUAL_BILLING_BADGE}:</span> {ANNUAL_BILLING_HINT} Switch to{" "}
+          <span className="font-semibold">Annual</span> above to see yearly pricing.
+        </p>
+      )}
+
       <div className="grid gap-6 md:grid-cols-3">
         {visibleTiers.map(({ id, label, plan }) => {
           if (!plan) return null;
@@ -92,7 +103,7 @@ export function PricingSection() {
             >
               {isAnnual && (
                 <span className="absolute -top-3 left-1/2 -translate-x-1/2 rounded-full bg-gardens-accent px-4 py-1 text-xs font-semibold text-gardens-dark">
-                  Save ~2 months
+                  {ANNUAL_BILLING_BADGE} · {ANNUAL_BILLING_SAVINGS}
                 </span>
               )}
               {!isAnnual && isElite && (
@@ -108,6 +119,11 @@ export function PricingSection() {
                   {formatPriceFrom(planPriceForGarden(plan, "Small"), isAnnual ? "year" : "month")}
                 </span>
               </div>
+              {isAnnual && (
+                <p className="mt-1 text-sm font-medium text-gardens-primary">
+                  From £{formatGbp(annualEquivalentMonthly(planPriceForGarden(plan, "Small")))}/mo — billed once a year
+                </p>
+              )}
               <ul className="mt-6 space-y-3">
                 {features.slice(0, 5).map((f) => (
                   <li key={f} className="flex items-start gap-2 text-sm text-stone-700">

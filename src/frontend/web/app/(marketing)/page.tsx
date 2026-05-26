@@ -3,15 +3,15 @@ import type { Metadata } from "next";
 import {
   CalendarCheck,
   CheckCircle2,
-  MapPin,
-  ShieldCheck,
   Sparkles,
   Users,
 } from "lucide-react";
 import { Button, Section } from "@/components/marketing/ui";
+import { FaqAccordion } from "@/components/marketing/FaqAccordion";
+import { HeroProductPreview } from "@/components/marketing/HeroProductPreview";
 import { PricingSection } from "@/components/marketing/PricingSection";
-import { HeroImage } from "@/components/marketing/HeroImage";
 import { SocialProofSection } from "@/components/marketing/SocialProofSection";
+import { PRIMARY_CTA_HREF, PRIMARY_CTA_LABEL } from "@/lib/marketing-cta";
 
 export const metadata: Metadata = {
   title: "Garden care subscriptions in Yorkshire",
@@ -43,9 +43,9 @@ const steps = [
 ];
 
 const included = [
-  "Essential: monthly lawn, borders, and tidy",
-  "Premium: twice-monthly visits plus hedges & beds",
-  "Elite: 3 visits per month (~every 10 days) with Premium inclusions",
+  "Essential: 10 visits per year — lawn, borders, and tidy",
+  "Premium: 20 visits per year plus hedges & beds",
+  "Elite: 30 visits per year (~every 10 days) with patio refresh included",
   "Pricing scales for small, medium, and large gardens",
   "Online account to view and manage every visit",
 ];
@@ -53,19 +53,19 @@ const included = [
 const faqs = [
   {
     q: "What's included in Essential?",
-    a: "One visit each month: lawn mowing and edging, light border and bed tidy, and clippings removed. Manage visits and get support through your online account.",
+    a: "10 visits per year (about monthly): lawn mowing and edging, light border and bed tidy, and clippings removed. Manage visits and get support through your online account.",
   },
   {
     q: "What's included in Premium?",
-    a: "Two visits each month (about every two weeks), plus everything in Essential — light hedge trim, bed weeding, and seasonal tidy work like leaves and light pruning.",
+    a: "20 visits per year (about every two weeks), plus everything in Essential — light hedge trim, bed weeding, and seasonal tidy work like leaves and light pruning.",
   },
   {
     q: "What's included in Elite?",
-    a: "Three visits each month (about every 10 days), with everything in Premium. Best for fast-growing gardens or owners who want consistent upkeep through the season.",
+    a: "30 visits per year (about every 10 days), with everything in Premium plus one included patio & path refresh per year. Best for fast-growing gardens or owners who want consistent upkeep through the season.",
   },
   {
     q: "How does garden size affect price?",
-    a: "Small gardens are our base price (from £29.95/month Essential). Medium gardens add £10/month; large gardens add £20/month. Premium starts from £54.95/month and Elite from £89.95/month with the same uplifts. Annual plans use £100 medium / £200 large per year.",
+    a: "Small gardens are our base price (from £29.95/month Essential, or from about £25/month on annual billing). Medium gardens add £10/month; large gardens add £20/month. Premium and Elite have the same uplifts. Annual plans use £100 medium / £200 large per year.",
   },
   {
     q: "What's not included?",
@@ -100,43 +100,13 @@ const faqs = [
 export default function HomePage() {
   return (
     <>
-      <section className="relative overflow-hidden bg-gradient-to-br from-gardens-dark via-gardens-primary to-gardens-primary">
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_30%_20%,rgba(149,213,178,0.25),transparent_50%)]" />
-        <div className="relative mx-auto grid max-w-6xl gap-8 px-4 py-12 sm:gap-12 sm:py-16 md:grid-cols-2 md:items-center md:py-28">
-          <div className="text-white">
-            <p className="inline-flex items-center gap-2 rounded-full bg-white/10 px-4 py-1.5 text-sm font-medium text-gardens-accent backdrop-blur">
-              <MapPin className="h-4 w-4 shrink-0" />
-              Serving Yorkshire homeowners
-            </p>
-            <h1 className="mt-4 font-display text-3xl font-bold leading-tight sm:mt-6 sm:text-4xl md:text-5xl lg:text-6xl text-balance">
-              Your garden, looked after all year.
-            </h1>
-            <p className="mt-4 max-w-lg text-base text-gardens-accent/95 text-balance sm:mt-6 sm:text-lg">
-              One simple subscription. We schedule regular visits and match you with trusted local gardeners — so you can enjoy your garden, not worry about it.
-            </p>
-            <div className="mt-6 flex flex-col gap-3 sm:mt-8 sm:flex-row sm:flex-wrap sm:gap-4">
-              <Button href="/signup" className="w-full sm:w-auto !bg-white !text-gardens-dark hover:!bg-gardens-light">
-                See plans & sign up
-              </Button>
-              <Button href="/#how-it-works" variant="secondary" className="w-full sm:w-auto !border-white/30 !bg-white/10 !text-white hover:!bg-white/20">
-                How it works
-              </Button>
-            </div>
-            <div className="mt-8 flex flex-col gap-3 text-sm text-gardens-accent/90 sm:mt-10 sm:flex-row sm:flex-wrap sm:gap-6">
-              <span className="flex items-center gap-2"><ShieldCheck className="h-4 w-4" /> Approved gardeners</span>
-              <span className="flex items-center gap-2"><CalendarCheck className="h-4 w-4" /> Regular visits</span>
-              <span className="flex items-center gap-2"><MapPin className="h-4 w-4" /> From £29.95/month</span>
-            </div>
-          </div>
-
-          <HeroImage className="max-md:order-last" />
-        </div>
-      </section>
+      <HeroProductPreview />
 
       <Section
         id="how-it-works"
         title="How it works"
         subtitle="Garden care made simple — no chasing quotes or hunting for someone reliable each time."
+        className="bg-stone-50/80"
       >
         <div className="grid gap-8 md:grid-cols-3">
           {steps.map((step, i) => (
@@ -154,11 +124,11 @@ export default function HomePage() {
 
       <SocialProofSection />
 
-      <section className="border-y border-gardens-primary/10 bg-gardens-light/40 py-16">
+      <section className="border-y border-gardens-primary/15 bg-gardens-light/50 py-16">
         <div className="mx-auto max-w-6xl px-4">
           <div className="grid gap-10 md:grid-cols-2 md:items-center">
             <div>
-              <p className="text-sm font-semibold uppercase tracking-wide text-gardens-primary">What you get</p>
+              <p className="text-sm font-semibold text-gardens-primary">What you get</p>
               <h2 className="mt-2 font-display text-3xl font-semibold text-gardens-dark md:text-4xl text-balance">
                 Everything you need for a garden that stays sorted
               </h2>
@@ -181,8 +151,8 @@ export default function HomePage() {
       <section className="border-b border-gardens-primary/10 bg-white py-12">
         <div className="mx-auto grid max-w-6xl gap-8 px-4 md:grid-cols-3 md:text-center">
           {[
-            ["Weekly", "Visits on a regular schedule"],
-            ["Local", "Gardeners in your area"],
+            ["Scheduled", "Regular visits through the season"],
+            ["Local", "Approved gardeners in your area"],
             ["Online", "Manage visits in your account"],
           ].map(([stat, label]) => (
             <div key={label}>
@@ -193,27 +163,30 @@ export default function HomePage() {
         </div>
       </section>
 
-      <Section id="pricing" title="Simple, transparent pricing" subtitle="Three plans. No hidden fees. Clear minimum terms shown before you pay.">
+      <Section
+        id="pricing"
+        title="Simple, transparent pricing"
+        subtitle="Three plans. Annual billing is best value — save about two months vs paying monthly."
+        className="bg-stone-50/80"
+      >
         <PricingSection />
       </Section>
 
-      <Section id="faq" title="Common questions" subtitle="Still unsure? Chat with us — we're happy to help before you sign up.">
-        <div className="mx-auto max-w-2xl divide-y divide-stone-200 rounded-2xl border border-stone-200 bg-white shadow-soft">
-          {faqs.map((faq) => (
-            <div key={faq.q} className="p-6">
-              <h3 className="font-semibold text-gardens-dark">{faq.q}</h3>
-              <p className="mt-2 text-sm leading-relaxed text-stone-600">{faq.a}</p>
-            </div>
-          ))}
-        </div>
+      <Section
+        id="faq"
+        title="Common questions"
+        subtitle="Still unsure? Chat with us — we're happy to help before you sign up."
+        className="border-t border-gardens-primary/10 bg-white"
+      >
+        <FaqAccordion items={faqs} />
         <p className="mx-auto mt-6 max-w-2xl text-center text-sm text-stone-600">
           Have a question we haven&apos;t answered?{" "}
           <Link href="/#chat" className="font-medium text-gardens-primary hover:underline">
             Start a chat
           </Link>{" "}
           or{" "}
-          <Link href="/signup" className="font-medium text-gardens-primary hover:underline">
-            begin signup
+          <Link href={PRIMARY_CTA_HREF} className="font-medium text-gardens-primary hover:underline">
+            {PRIMARY_CTA_LABEL.toLowerCase()}
           </Link>
           .
         </p>
@@ -224,8 +197,8 @@ export default function HomePage() {
           <h2 className="font-display text-3xl font-bold md:text-4xl">Ready for a garden you&apos;re proud of?</h2>
           <p className="mt-4 text-gardens-accent">Join Yorkshire homeowners who want reliable care without the hassle.</p>
           <div className="mt-8 flex flex-wrap justify-center gap-4">
-            <Button href="/signup" className="!bg-white !text-gardens-dark hover:!bg-gardens-light">
-              Get started
+            <Button href={PRIMARY_CTA_HREF} className="!bg-white !text-gardens-dark hover:!bg-gardens-light">
+              {PRIMARY_CTA_LABEL}
             </Button>
             <Link
               href="/#chat"

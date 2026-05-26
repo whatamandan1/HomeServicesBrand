@@ -1,15 +1,19 @@
 "use client";
 
-import { useState } from "react";
+import { useCallback, useState } from "react";
 import type { JobVisit } from "@/lib/api";
 import { StatusBadge } from "@/components/ui";
-import { canManageVisit, todayDateInputValue, toApiDate } from "@/lib/visit-status";
+import { AdminListToolbar } from "@/components/admin/AdminListToolbar";
+import { matchesSearch, useAdminListControls } from "@/lib/admin-list-controls";
+import { canManageVisit, customerVisitStatusLabel, todayDateInputValue, toApiDate } from "@/lib/visit-status";
 
 type VisitListProps = {
   visits: JobVisit[];
   busyId: string | null;
   allowInProgress?: boolean;
   readOnly?: boolean;
+  /** Customer portal hides internal statuses (Claimed → Confirmed, scheduled → no badge). */
+  audience?: "customer" | "staff";
   onCancel: (visitId: string) => Promise<void>;
   onReschedule: (visitId: string, scheduledDate: string) => Promise<void>;
   emptyMessage?: string;
@@ -20,22 +24,51 @@ export function VisitList({
   busyId,
   allowInProgress = false,
   readOnly = false,
+  audience = "staff",
   onCancel,
   onReschedule,
   emptyMessage = "No visits scheduled.",
 }: VisitListProps) {
   const [rescheduleId, setRescheduleId] = useState<string | null>(null);
   const [newDate, setNewDate] = useState(todayDateInputValue());
+  const isStaff = audience === "staff";
+
+  const searchFn = useCallback(
+    (visit: JobVisit, query: string) =>
+      matchesSearch(
+        query,
+        visit.scheduledDate,
+        visit.postcode,
+        visit.availabilityWindow,
+        isStaff ? visit.status : customerVisitStatusLabel(visit.status) ?? "",
+        visit.assignedProviderName
+      ),
+    [isStaff]
+  );
+  const controls = useAdminListControls(visits, searchFn);
 
   if (visits.length === 0) {
     return <p className="mt-2 text-sm text-stone-500">{emptyMessage}</p>;
   }
 
+  const visibleVisits = isStaff ? controls.pageItems : visits;
+
   return (
-    <ul className="mt-2 space-y-3">
-      {visits.map((v) => {
+    <div className="mt-2 space-y-3">
+      {isStaff && (
+        <AdminListToolbar
+          controls={controls}
+          placeholder="Search postcode, gardener, status, date…"
+        />
+      )}
+      {isStaff && controls.pageItems.length === 0 ? (
+        <p className="text-sm text-stone-500">No visits match your search.</p>
+      ) : (
+    <ul className="space-y-3">
+      {visibleVisits.map((v) => {
         const manageable = !readOnly && canManageVisit(v.status, allowInProgress);
         const isRescheduling = rescheduleId === v.id;
+        const customerStatus = customerVisitStatusLabel(v.status);
 
         return (
           <li key={v.id} className="rounded-lg border bg-white p-4 shadow-sm">
@@ -46,8 +79,12 @@ export function VisitList({
                 </div>
                 <div className="text-sm text-stone-500">{v.availabilityWindow}</div>
                 <div className="mt-2 flex flex-wrap items-center gap-2">
-                  <StatusBadge status={v.status} />
-                  {v.assignedProviderName && (
+                  {isStaff ? (
+                    <StatusBadge status={v.status} />
+                  ) : (
+                    customerStatus && <StatusBadge status={customerStatus} />
+                  )}
+                  {v.assignedProviderName && (isStaff || customerStatus === "Confirmed") && (
                     <span className="text-xs text-stone-500">Gardener: {v.assignedProviderName}</span>
                   )}
                 </div>
@@ -115,5 +152,7 @@ export function VisitList({
         );
       })}
     </ul>
+      )}
+    </div>
   );
 }

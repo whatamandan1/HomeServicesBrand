@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { api, type AdminCustomer, type AdminDashboard, type AdminProvider, type AiActionLog, type CommunicationThreadSummary, type Escalation, type JobVisit, type PortfolioEnquirySummary, type SignupLeadSummary, type WorkflowEvent } from "@/lib/api";
 import { useAuth } from "@/lib/use-auth";
 import { DashboardTrends } from "@/components/admin/DashboardTrends";
@@ -9,8 +9,10 @@ import { PortfolioEnquiryList } from "@/components/admin/PortfolioEnquiryList";
 import { SignupLeadList } from "@/components/admin/SignupLeadList";
 import { ProviderDetailPanel } from "@/components/admin/ProviderDetailPanel";
 import { ActAsUserButton } from "@/components/admin/ActAsUserButton";
+import { AdminListToolbar } from "@/components/admin/AdminListToolbar";
 import { StatCard } from "@/components/ui";
 import { AdminSectionNav } from "@/components/admin/AdminSectionNav";
+import { matchesSearch, useAdminListControls, withPinnedItem } from "@/lib/admin-list-controls";
 import {
   AlertBanner,
   DashboardSkeleton,
@@ -230,6 +232,41 @@ export default function AdminPage() {
     }
   }
 
+  const searchCustomer = useCallback(
+    (customer: AdminCustomer, query: string) =>
+      matchesSearch(query, customer.name, customer.email, customer.createdAtUtc),
+    []
+  );
+  const searchProvider = useCallback(
+    (provider: AdminProvider, query: string) =>
+      matchesSearch(
+        query,
+        provider.name,
+        provider.email,
+        provider.coveragePostcode,
+        provider.coverageRadiusMiles,
+        provider.isApproved ? "approved" : "pending",
+        provider.coveredOutcodes?.join(" ")
+      ),
+    []
+  );
+  const searchVisit = useCallback(
+    (visit: JobVisit, query: string) =>
+      matchesSearch(
+        query,
+        visit.scheduledDate,
+        visit.postcode,
+        visit.availabilityWindow,
+        visit.status,
+        visit.assignedProviderName
+      ),
+    []
+  );
+
+  const customerControls = useAdminListControls(customers, searchCustomer);
+  const providerControls = useAdminListControls(providers, searchProvider);
+  const visitControls = useAdminListControls(visits, searchVisit);
+
   if (!ready) return <PageLoading label="Checking session…" />;
   if (!auth) {
     return (
@@ -249,6 +286,16 @@ export default function AdminPage() {
 
   const activeEscalations = escalations.filter((e) => e.status !== "Resolved");
   const resolvedEscalations = escalations.filter((e) => e.status === "Resolved");
+  const visibleCustomers = withPinnedItem(
+    customerControls.pageItems,
+    customerControls.filtered,
+    selectedCustomerId
+  );
+  const visibleProviders = withPinnedItem(
+    providerControls.pageItems,
+    providerControls.filtered,
+    selectedProviderId
+  );
 
   return (
     <div className="space-y-8">
@@ -380,13 +427,31 @@ export default function AdminPage() {
           <ListMapToggle value={providerView} onChange={setProviderView} />
         </div>
         {providerView === "map" ? (
-          <ProviderCoverageMap
-            providers={providers}
-            emptyMessage="No provider coverage areas with coordinates yet."
-          />
+          <>
+            <AdminListToolbar
+              controls={providerControls}
+              placeholder="Search name, email, postcode, coverage…"
+              className="mt-3"
+            />
+            <ProviderCoverageMap
+              providers={providerControls.filtered}
+              emptyMessage={
+                providerControls.query
+                  ? "No providers match your search."
+                  : "No provider coverage areas with coordinates yet."
+              }
+            />
+          </>
         ) : (
         <div className="mt-2 space-y-2">
-          {providers.map((p) => (
+          <AdminListToolbar
+            controls={providerControls}
+            placeholder="Search name, email, postcode, coverage…"
+          />
+          {visibleProviders.length === 0 && providers.length > 0 ? (
+            <p className="text-sm text-stone-500">No providers match your search.</p>
+          ) : null}
+          {visibleProviders.map((p) => (
             <div key={p.id} id={`provider-${p.id}`} className="space-y-2">
               <div className="flex flex-wrap items-center justify-between gap-2 rounded-lg border bg-white p-3 text-sm shadow-sm">
                 <div>
@@ -486,7 +551,14 @@ export default function AdminPage() {
           <AlertBanner variant="error" message={customerError} onDismiss={() => setCustomerError(null)} />
         )}
         <div className="mt-2 space-y-2">
-          {customers.map((c) => (
+          <AdminListToolbar
+            controls={customerControls}
+            placeholder="Search name or email…"
+          />
+          {visibleCustomers.length === 0 && customers.length > 0 ? (
+            <p className="text-sm text-stone-500">No customers match your search.</p>
+          ) : null}
+          {visibleCustomers.map((c) => (
             <div key={c.id} id={`customer-${c.id}`} className="space-y-2">
               <div className="flex flex-wrap items-center justify-between gap-2 rounded-lg border bg-white p-3 text-sm shadow-sm">
                 <div>
@@ -584,11 +656,22 @@ export default function AdminPage() {
           <AlertBanner variant="error" message={visitError} onDismiss={() => setVisitError(null)} />
         )}
         {visitView === "map" ? (
-          <VisitMap
-            visits={visits}
-            className="mt-2"
-            emptyMessage="No visits with map coordinates yet."
-          />
+          <>
+            <AdminListToolbar
+              controls={visitControls}
+              placeholder="Search postcode, gardener, status, date…"
+              className="mt-2"
+            />
+            <VisitMap
+              visits={visitControls.filtered}
+              className="mt-2"
+              emptyMessage={
+                visitControls.query
+                  ? "No visits match your search."
+                  : "No visits with map coordinates yet."
+              }
+            />
+          </>
         ) : (
         <VisitList
           visits={visits}

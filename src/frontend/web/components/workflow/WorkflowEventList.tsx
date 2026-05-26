@@ -1,8 +1,14 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useCallback, useMemo, useState } from "react";
 import type { WorkflowEvent } from "@/lib/api";
 import { DataTable } from "@/components/ui";
+import { AdminListToolbar } from "@/components/admin/AdminListToolbar";
+import {
+  DEFAULT_ADMIN_TABLE_PAGE_SIZE,
+  matchesSearch,
+  useAdminListControls,
+} from "@/lib/admin-list-controls";
 
 function formatWhen(iso: string) {
   const d = new Date(iso);
@@ -39,10 +45,30 @@ export function WorkflowEventList({
     [events]
   );
 
-  const filtered =
+  const workflowFiltered =
     workflowFilter === "all"
       ? events
       : events.filter((e) => e.workflowName === workflowFilter);
+
+  const searchFn = useCallback(
+    (event: WorkflowEvent, query: string) =>
+      matchesSearch(
+        query,
+        event.workflowName,
+        event.eventName,
+        event.entityType,
+        event.entityId,
+        event.payloadJson,
+        formatWhen(event.createdAtUtc)
+      ),
+    []
+  );
+
+  const controls = useAdminListControls(workflowFiltered, searchFn, DEFAULT_ADMIN_TABLE_PAGE_SIZE);
+
+  if (events.length === 0) {
+    return <p className="mt-2 text-sm text-stone-500">{emptyMessage}</p>;
+  }
 
   return (
     <div className="mt-2 space-y-3">
@@ -67,6 +93,11 @@ export function WorkflowEventList({
         </div>
       )}
 
+      <AdminListToolbar
+        controls={controls}
+        placeholder="Search workflow, event, entity, payload…"
+      />
+
       <DataTable
         columns={[
           { key: "when", label: "When" },
@@ -75,7 +106,7 @@ export function WorkflowEventList({
           { key: "entity", label: "Entity" },
           { key: "payload", label: "Payload" },
         ]}
-        rows={filtered.map((e) => ({
+        rows={controls.pageItems.map((e) => ({
           when: formatWhen(e.createdAtUtc),
           workflow: e.workflowName,
           event: e.eventName,
@@ -84,7 +115,7 @@ export function WorkflowEventList({
             : "—",
           payload: shortenPayload(e.payloadJson),
         }))}
-        emptyMessage={emptyMessage}
+        emptyMessage={controls.query ? "No events match your search." : emptyMessage}
       />
     </div>
   );

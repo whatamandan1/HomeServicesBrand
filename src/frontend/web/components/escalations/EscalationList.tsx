@@ -1,8 +1,10 @@
 "use client";
 
-import { useState } from "react";
+import { useCallback, useState } from "react";
 import type { Escalation } from "@/lib/api";
 import { StatusBadge } from "@/components/ui";
+import { AdminListToolbar } from "@/components/admin/AdminListToolbar";
+import { matchesSearch, useAdminListControls } from "@/lib/admin-list-controls";
 
 type EscalationListProps = {
   escalations: Escalation[];
@@ -24,13 +26,35 @@ export function EscalationList({
   const [resolveId, setResolveId] = useState<string | null>(null);
   const [notes, setNotes] = useState("");
 
+  const searchFn = useCallback(
+    (escalation: Escalation, query: string) =>
+      matchesSearch(
+        query,
+        escalation.status,
+        escalation.customerEmail,
+        escalation.reason,
+        escalation.notes,
+        escalation.createdAtUtc
+      ),
+    []
+  );
+  const controls = useAdminListControls(escalations, searchFn);
+
   if (escalations.length === 0) {
     return <p className="mt-2 text-sm text-stone-500">{emptyMessage}</p>;
   }
 
   return (
-    <ul className="mt-2 space-y-3">
-      {escalations.map((e) => {
+    <div className="mt-2 space-y-3">
+      <AdminListToolbar
+        controls={controls}
+        placeholder="Search email, reason, status, notes…"
+      />
+      {controls.pageItems.length === 0 ? (
+        <p className="text-sm text-stone-500">No escalations match your search.</p>
+      ) : (
+    <ul className="space-y-3">
+      {controls.pageItems.map((e) => {
         const isResolving = resolveId === e.id;
         const status = e.status.replace(/\s+/g, "");
 
@@ -120,5 +144,7 @@ export function EscalationList({
         );
       })}
     </ul>
+      )}
+    </div>
   );
 }

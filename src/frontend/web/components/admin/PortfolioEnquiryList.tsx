@@ -1,7 +1,9 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { api, type PortfolioEnquiryDetail, type PortfolioEnquiryStatus, type PortfolioEnquirySummary } from "@/lib/api";
+import { AdminListToolbar } from "@/components/admin/AdminListToolbar";
+import { matchesSearch, useAdminListControls, withPinnedItem } from "@/lib/admin-list-controls";
 
 const STATUS_LABELS: Record<PortfolioEnquiryStatus, string> = {
   New: "New",
@@ -73,14 +75,37 @@ export function PortfolioEnquiryList({
     }
   }
 
+  const searchFn = useCallback(
+    (enquiry: PortfolioEnquirySummary, query: string) =>
+      matchesSearch(
+        query,
+        enquiry.contactName,
+        enquiry.email,
+        enquiry.phone,
+        enquiry.companyName,
+        STATUS_LABELS[enquiry.status],
+        enquiry.propertyCount
+      ),
+    []
+  );
+  const controls = useAdminListControls(enquiries, searchFn);
+  const visibleEnquiries = withPinnedItem(controls.pageItems, controls.filtered, selectedId);
+
   if (enquiries.length === 0) {
     return <p className="text-sm text-stone-500">No multi-property enquiries yet.</p>;
   }
 
   return (
     <div className="space-y-4">
+      <AdminListToolbar
+        controls={controls}
+        placeholder="Search name, email, company, status…"
+      />
+      {visibleEnquiries.length === 0 ? (
+        <p className="text-sm text-stone-500">No enquiries match your search.</p>
+      ) : (
       <ul className="space-y-2">
-        {enquiries.map((enquiry) => (
+        {visibleEnquiries.map((enquiry) => (
           <li key={enquiry.id} className="rounded-lg border bg-white p-4 shadow-sm">
             <div className="flex flex-wrap items-start justify-between gap-3">
               <div>
@@ -148,6 +173,7 @@ export function PortfolioEnquiryList({
           </li>
         ))}
       </ul>
+      )}
     </div>
   );
 }

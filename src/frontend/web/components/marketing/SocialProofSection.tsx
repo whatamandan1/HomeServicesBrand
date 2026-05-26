@@ -17,7 +17,7 @@ const testimonials = [
 
 export function SocialProofSection() {
   return (
-    <section className="border-y border-gardens-primary/10 bg-white py-16 md:py-20">
+    <section className="border-y border-gardens-primary/10 bg-gardens-light/30 py-16 md:py-20">
       <div className="mx-auto max-w-6xl px-4">
         <div className="mx-auto max-w-3xl text-center">
           <p className="text-sm font-semibold uppercase tracking-wide text-gardens-primary">Why homeowners choose us</p>
@@ -27,13 +27,14 @@ export function SocialProofSection() {
           <p className="mt-4 text-stone-600 leading-relaxed">
             GardensSorted is built for people who want their outdoor space maintained properly — without becoming a part-time project manager.
           </p>
+          <p className="mt-3 text-xs text-stone-500">Feedback from early Yorkshire customers</p>
         </div>
 
         <div className="mt-10 grid gap-6 md:grid-cols-2">
           {testimonials.map((t) => (
             <blockquote
               key={t.name}
-              className="rounded-2xl border border-stone-200 bg-stone-50 p-6 md:p-8"
+              className="rounded-2xl border border-gardens-primary/10 bg-white/80 p-6 md:p-8"
             >
               <div className="flex gap-1 text-gardens-primary" aria-hidden>
                 {Array.from({ length: 5 }).map((_, i) => (

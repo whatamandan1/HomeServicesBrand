@@ -7,7 +7,7 @@ import { useAuth } from "@/lib/use-auth";
 import { isActiveVisit } from "@/lib/visit-status";
 import { BillingSection } from "@/components/billing/BillingSection";
 import { VisitList } from "@/components/visits/VisitList";
-import { SupportChat } from "@/components/support/SupportChat";
+import { CustomerChatWidget } from "@/components/support/SupportChat";
 import { PropertyList } from "@/components/properties/PropertyList";
 import { AlertBanner, LoadingSpinner, PageLoading } from "@/components/ui/feedback";
 import { stashedPhotoToFile, takeSignupPhotos } from "@/lib/pending-signup-photos";
@@ -174,7 +174,6 @@ export default function PortalPage() {
           onSubscriptionUpdated={refreshSubscriptions}
           onContactSupport={(message) => {
             setChatPrompt({ key: Date.now(), text: message });
-            document.getElementById("support-chat")?.scrollIntoView({ behavior: "smooth" });
           }}
         />
       )}
@@ -210,6 +209,7 @@ export default function PortalPage() {
         <VisitList
           visits={upcoming}
           busyId={busyId}
+          audience="customer"
           onCancel={(id) => runVisitAction(id, "cancel")}
           onReschedule={(id, date) => runVisitAction(id, "reschedule", date)}
           emptyMessage="No visits scheduled yet."
@@ -223,6 +223,7 @@ export default function PortalPage() {
           <VisitList
             visits={past}
             busyId={null}
+            audience="customer"
             readOnly
             onCancel={async () => {}}
             onReschedule={async () => {}}
@@ -231,16 +232,9 @@ export default function PortalPage() {
         </section>
       )}
 
-      <section id="support-chat">
-        <SupportChat
-          token={auth.token}
-          mode="customer"
-          title="Customer service"
-          subtitle="Ask about your plan, visits, or cancellation requests"
-          emptyHint="Ask about your visits, plan, or billing — e.g. “When is my next visit?”"
-          promptSeed={chatPrompt}
-        />
-      </section>
+      {!loading && auth?.token && (
+        <CustomerChatWidget token={auth.token} promptSeed={chatPrompt} />
+      )}
     </div>
   );
 }

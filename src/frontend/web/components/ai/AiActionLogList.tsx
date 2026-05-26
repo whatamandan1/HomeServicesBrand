@@ -1,8 +1,14 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useCallback, useMemo, useState } from "react";
 import type { AiActionLog } from "@/lib/api";
 import { DataTable } from "@/components/ui";
+import { AdminListToolbar } from "@/components/admin/AdminListToolbar";
+import {
+  DEFAULT_ADMIN_TABLE_PAGE_SIZE,
+  matchesSearch,
+  useAdminListControls,
+} from "@/lib/admin-list-controls";
 
 function formatWhen(iso: string) {
   const d = new Date(iso);
@@ -40,11 +46,32 @@ export function AiActionLogList({
     [logs]
   );
 
-  const filtered = logs.filter((l) => {
+  const filterApplied = logs.filter((l) => {
     if (escalatedOnly && !l.escalated) return false;
     if (actionFilter !== "all" && l.actionType !== actionFilter) return false;
     return true;
   });
+
+  const searchFn = useCallback(
+    (log: AiActionLog, query: string) =>
+      matchesSearch(
+        query,
+        log.actionType,
+        log.customerEmail,
+        log.customerId,
+        log.promptSummary,
+        log.responseSummary,
+        log.escalated ? "escalated" : "",
+        formatWhen(log.createdAtUtc)
+      ),
+    []
+  );
+
+  const controls = useAdminListControls(filterApplied, searchFn, DEFAULT_ADMIN_TABLE_PAGE_SIZE);
+
+  if (logs.length === 0) {
+    return <p className="mt-2 text-sm text-stone-500">{emptyMessage}</p>;
+  }
 
   return (
     <div className="mt-2 space-y-3">
@@ -80,6 +107,11 @@ export function AiActionLogList({
         </label>
       </div>
 
+      <AdminListToolbar
+        controls={controls}
+        placeholder="Search customer, prompt, response, action…"
+      />
+
       <DataTable
         columns={[
           { key: "when", label: "When" },
@@ -90,7 +122,7 @@ export function AiActionLogList({
           { key: "confidence", label: "Conf." },
           { key: "escalated", label: "Esc." },
         ]}
-        rows={filtered.map((l) => ({
+        rows={controls.pageItems.map((l) => ({
           when: formatWhen(l.createdAtUtc),
           action: l.actionType,
           customer: l.customerEmail ?? (l.customerId ? l.customerId.slice(0, 8) : "Guest"),
@@ -99,9 +131,8 @@ export function AiActionLogList({
           confidence: formatConfidence(l.confidenceScore),
           escalated: l.escalated ? "Yes" : "—",
         }))}
-        emptyMessage={emptyMessage}
+        emptyMessage={controls.query ? "No AI actions match your search." : emptyMessage}
       />
     </div>
   );
-
 }

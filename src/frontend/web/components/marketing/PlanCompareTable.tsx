@@ -4,6 +4,8 @@ import Link from "next/link";
 import { Check, Minus } from "lucide-react";
 import type { SubscriptionPlan } from "@/lib/api";
 import {
+  annualEquivalentMonthly,
+  ANNUAL_BILLING_HINT,
   findTierPlanForBilling,
   PLAN_COMPARE_ROWS,
   PLAN_TIERS,
@@ -13,6 +15,7 @@ import {
 } from "@/lib/consumer-plans";
 import { formatGbp } from "@/lib/format";
 import { planSignupHref } from "@/lib/plans";
+import { BillingIntervalToggle } from "@/components/marketing/BillingIntervalToggle";
 
 type PlanCompareTableProps = {
   plans: SubscriptionPlan[];
@@ -51,27 +54,9 @@ export function PlanCompareTable({ plans, billing, onBillingChange }: PlanCompar
       <div className="flex flex-col gap-4 border-b border-stone-100 bg-gardens-light/30 px-4 py-5 sm:flex-row sm:items-center sm:justify-between sm:px-6">
         <div>
           <h3 className="font-display text-lg font-semibold text-gardens-dark">Compare plans</h3>
+          <p className="mt-1 text-sm text-stone-600">{ANNUAL_BILLING_HINT}</p>
         </div>
-        <div
-          className="inline-flex self-start rounded-full border border-stone-200 bg-white p-1"
-          role="group"
-          aria-label="Billing interval"
-        >
-          {(["Monthly", "Annual"] as const).map((option) => (
-            <button
-              key={option}
-              type="button"
-              onClick={() => onBillingChange(option)}
-              className={`rounded-full px-4 py-2 text-sm font-medium transition ${
-                billing === option
-                  ? "bg-gardens-primary text-white"
-                  : "text-stone-600 hover:text-gardens-dark"
-              }`}
-            >
-              {option}
-            </button>
-          ))}
-        </div>
+        <BillingIntervalToggle billing={billing} onChange={onBillingChange} />
       </div>
 
       <div className="overflow-x-auto">
@@ -90,6 +75,11 @@ export function PlanCompareTable({ plans, billing, onBillingChange }: PlanCompar
                       <span className="text-sm font-normal text-stone-500">
                         /{isAnnual ? "yr" : "mo"}
                       </span>
+                    </p>
+                  )}
+                  {plan && isAnnual && (
+                    <p className="mt-1 text-xs font-medium text-gardens-primary">
+                      From £{formatGbp(annualEquivalentMonthly(planPriceForGarden(plan, "Small")))}/mo billed annually
                     </p>
                   )}
                   {plan && (

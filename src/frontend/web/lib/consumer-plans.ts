@@ -83,6 +83,15 @@ export const SHARED_FEATURES = [
 export type PlanTier = "essential" | "premium" | "elite";
 export type BillingChoice = "Monthly" | "Annual";
 
+export const ANNUAL_BILLING_BADGE = "Best value";
+export const ANNUAL_BILLING_SAVINGS = "Save ~2 months";
+export const ANNUAL_BILLING_HINT =
+  "Pay once a year and get about two months free compared with monthly billing.";
+
+export function annualEquivalentMonthly(priceGbp: number): number {
+  return Math.round((priceGbp / 12) * 100) / 100;
+}
+
 export type PlanCompareRow = {
   label: string;
   essential: boolean | string;

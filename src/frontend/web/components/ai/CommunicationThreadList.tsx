@@ -1,7 +1,14 @@
 "use client";
 
-import { useState } from "react";
+import { useCallback, useState } from "react";
 import type { CommunicationThreadDetail, CommunicationThreadSummary } from "@/lib/api";
+import { AdminListToolbar } from "@/components/admin/AdminListToolbar";
+import {
+  DEFAULT_ADMIN_TABLE_PAGE_SIZE,
+  matchesSearch,
+  useAdminListControls,
+  withPinnedItem,
+} from "@/lib/admin-list-controls";
 
 function formatWhen(iso: string) {
   const d = new Date(iso);
@@ -59,6 +66,23 @@ export function CommunicationThreadList({
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
+  const searchFn = useCallback(
+    (thread: CommunicationThreadSummary, query: string) =>
+      matchesSearch(
+        query,
+        thread.subject,
+        thread.customerEmail,
+        thread.customerId,
+        thread.lastMessagePreview,
+        thread.messageCount,
+        formatWhen(thread.createdAtUtc)
+      ),
+    []
+  );
+
+  const controls = useAdminListControls(threads, searchFn, DEFAULT_ADMIN_TABLE_PAGE_SIZE);
+  const visibleThreads = withPinnedItem(controls.pageItems, controls.filtered, expandedId);
+
   async function toggleThread(id: string) {
     if (expandedId === id) {
       setExpandedId(null);
@@ -86,8 +110,17 @@ export function CommunicationThreadList({
 
   return (
     <div className="mt-2 space-y-3">
+      <AdminListToolbar
+        controls={controls}
+        placeholder="Search subject, customer, message preview…"
+      />
+
+      {visibleThreads.length === 0 ? (
+        <p className="text-sm text-stone-500">No threads match your search.</p>
+      ) : (
+        <>
       <div className="space-y-3 md:hidden">
-        {threads.map((t) => (
+        {visibleThreads.map((t) => (
           <div key={t.id} className="rounded-xl border bg-white p-4 shadow-sm">
             <p className="font-medium text-gardens-dark">{t.subject}</p>
             <p className="mt-1 text-xs text-stone-500">{formatWhen(t.createdAtUtc)}</p>
@@ -124,7 +157,7 @@ export function CommunicationThreadList({
             </tr>
           </thead>
           <tbody>
-            {threads.map((t) => (
+            {visibleThreads.map((t) => (
               <tr key={t.id} className="border-b last:border-0">
                 <td className="px-4 py-3 text-stone-600">{formatWhen(t.createdAtUtc)}</td>
                 <td className="px-4 py-3 font-medium">{t.subject}</td>
@@ -149,6 +182,8 @@ export function CommunicationThreadList({
           </tbody>
         </table>
       </div>
+        </>
+      )}
 
       {expandedId && (
         <div className="rounded-lg border border-stone-200 bg-stone-50 p-4">

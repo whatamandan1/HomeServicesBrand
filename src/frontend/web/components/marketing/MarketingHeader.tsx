@@ -5,6 +5,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { Menu, X } from "lucide-react";
 import { Logo } from "@/components/marketing/Logo";
+import { PRIMARY_CTA_HREF, PRIMARY_CTA_LABEL } from "@/lib/marketing-cta";
 
 const links = [
   { href: "/#how-it-works", label: "How it works" },
@@ -29,8 +30,16 @@ export function MarketingHeader() {
     };
   }, [open]);
 
+  const onHome = pathname === "/";
+
   return (
-    <header className="sticky top-0 z-50 border-b border-gardens-primary/10 bg-white/95 backdrop-blur-md">
+    <header
+      className={`sticky top-0 z-50 border-b backdrop-blur-md ${
+        onHome
+          ? "border-gardens-primary/15 bg-gardens-light/85"
+          : "border-gardens-primary/10 bg-white/95"
+      }`}
+    >
       <div className="mx-auto flex max-w-6xl items-center justify-between gap-3 px-4 py-3 md:py-4">
         <Logo />
 
@@ -50,10 +59,10 @@ export function MarketingHeader() {
             Log in
           </Link>
           <Link
-            href="/signup"
+            href={PRIMARY_CTA_HREF}
             className="inline-flex min-h-[44px] items-center rounded-full bg-gardens-primary px-4 py-2.5 text-sm font-semibold text-white shadow-soft transition hover:bg-gardens-dark sm:px-5"
           >
-            Get started
+            {PRIMARY_CTA_LABEL}
           </Link>
           <button
             type="button"

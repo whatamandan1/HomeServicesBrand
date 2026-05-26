@@ -7,7 +7,7 @@ export default function MarketingLayout({ children }: { children: React.ReactNod
   return (
     <>
       <MarketingHeader />
-      <main className="pb-20 md:pb-0">{children}</main>
+      <main className="bg-stone-50/80 pb-20 md:pb-0">{children}</main>
       <MarketingFooter />
       <MobileCtaBar />
       <LazyGuestChat />
