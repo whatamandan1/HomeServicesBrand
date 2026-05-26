@@ -17,9 +17,6 @@ public class SignupLeadService(SortedDbContext db, IWorkflowLogger workflow) : I
         if (string.IsNullOrWhiteSpace(email) || !email.Contains('@'))
             throw new InvalidOperationException("Enter a valid email address.");
 
-        if (string.IsNullOrWhiteSpace(request.Phone))
-            throw new InvalidOperationException("Enter a phone number.");
-
         if (string.IsNullOrWhiteSpace(request.FirstName))
             throw new InvalidOperationException("Enter your first name.");
 
@@ -48,7 +45,7 @@ public class SignupLeadService(SortedDbContext db, IWorkflowLogger workflow) : I
             db.SignupLeads.Add(lead);
         }
 
-        lead.Phone = request.Phone.Trim();
+        lead.Phone = string.IsNullOrWhiteSpace(request.Phone) ? string.Empty : request.Phone.Trim();
         lead.FirstName = request.FirstName.Trim();
         lead.LastName = string.IsNullOrWhiteSpace(request.LastName) ? null : request.LastName.Trim();
         lead.MarketingOptIn = request.MarketingOptIn;

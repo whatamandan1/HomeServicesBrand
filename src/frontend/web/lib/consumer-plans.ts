@@ -11,24 +11,24 @@ export const GARDEN_SIZE_GUIDE: Record<
   { label: string; description: string; examples: string }
 > = {
   Small: {
-    label: "Small",
-    description: "Up to about 100 m² of lawn and borders combined.",
+    label: "75 m²",
+    description: "Courtyard, terrace, or compact town garden.",
     examples: "Typical courtyard, terrace, or compact town garden.",
   },
   Medium: {
-    label: "Medium",
-    description: "About 100–250 m² of maintained garden.",
+    label: "150 m²",
+    description: "Typical suburban rear garden with lawn and beds.",
     examples: "Typical suburban rear garden with lawn and planting beds.",
   },
   Large: {
-    label: "Large",
-    description: "Roughly 250 m²+ or extensive borders and planting.",
+    label: "150+ m²",
+    description: "Generous lawns, long borders, or multiple zones.",
     examples: "Generous lawns, long borders, or multiple garden zones.",
   },
 };
 
 export const ESSENTIAL_FEATURES = [
-  "1 professional visit every month",
+  "10 professional visits per year",
   "Lawn mowing and edging",
   "Light border and bed tidy",
   "Grass clippings removed from site",
@@ -39,7 +39,7 @@ export const ESSENTIAL_FEATURES = [
 
 export const PREMIUM_FEATURES = [
   "Everything in Essential",
-  "2 visits every month (about every 2 weeks)",
+  "20 visits per year (about every 2 weeks)",
   "Light hedge trim and shaping (where accessible)",
   "Weeding in planted beds",
   "Seasonal tidy — leaf blow/clear in garden, light pruning",
@@ -48,7 +48,7 @@ export const PREMIUM_FEATURES = [
 
 export const ELITE_FEATURES = [
   "Everything in Premium",
-  "3 visits every month (about every 10 days)",
+  "30 visits per year (about every 10 days)",
   "Ideal for fast-growing lawns and high-use gardens",
   "Consistent upkeep through peak growing season",
   "First choice for scheduling windows where possible",
@@ -91,7 +91,7 @@ export type PlanCompareRow = {
 
 /** Side-by-side feature matrix for Essential / Premium / Elite. */
 export const PLAN_COMPARE_ROWS: PlanCompareRow[] = [
-  { label: "Visits included", essential: "1 / month", premium: "2 / month", elite: "3 / month" },
+  { label: "Visits included", essential: "10 / year", premium: "20 / year", elite: "30 / year" },
   { label: "Lawn mowing & edging", essential: true, premium: true, elite: true },
   { label: "Border & bed tidy", essential: true, premium: true, elite: true },
   { label: "Clippings removed", essential: true, premium: true, elite: true },
@@ -134,7 +134,11 @@ export function planPriceForGarden(plan: SubscriptionPlan, gardenSize: GardenSiz
 export function formatPlanPrice(plan: SubscriptionPlan, gardenSize: GardenSize = "Small") {
   const price = planPriceForGarden(plan, gardenSize);
   const period = isAnnualPlan(plan) ? "year" : "month";
-  return { price, label: `£${formatGbp(price)}/${period}` };
+  return { price, label: `From £${formatGbp(price)}/${period}` };
+}
+
+export function formatPriceFrom(price: number, period: "month" | "year" | "mo" | "yr") {
+  return `From £${formatGbp(price)}/${period}`;
 }
 
 export function planFeatures(plan: SubscriptionPlan): string[] {
@@ -149,10 +153,17 @@ export function planTierLabel(plan: SubscriptionPlan) {
   return "Essential";
 }
 
+export function planVisitsPerYear(plan: SubscriptionPlan): number {
+  if (isElitePlan(plan.name)) return 30;
+  if (isPremiumPlan(plan.name)) return 20;
+  return 10;
+}
+
 export function planVisitSummary(plan: SubscriptionPlan) {
-  if (isElitePlan(plan.name)) return "3 visits per month (~every 10 days)";
-  if (isPremiumPlan(plan.name)) return "2 visits per month";
-  return "1 visit per month";
+  const visits = planVisitsPerYear(plan);
+  if (visits === 30) return "30 visits per year";
+  if (visits === 20) return "20 visits per year";
+  return "10 visits per year";
 }
 
 function findTierPlan(basePlans: SubscriptionPlan[], tier: PlanTier, billing: BillingChoice) {

@@ -60,7 +60,7 @@ export function PlanCompareTable({ plans, billing, onBillingChange }: PlanCompar
           role="group"
           aria-label="Billing interval"
         >
-          {(["Monthly", "Annual"] as const).map((option) => (
+          {(["Annual", "Monthly"] as const).map((option) => (
             <button
               key={option}
               type="button"
@@ -88,6 +88,7 @@ export function PlanCompareTable({ plans, billing, onBillingChange }: PlanCompar
                   <p className="mt-1 text-xs font-normal text-stone-500">{tagline}</p>
                   {plan && (
                     <p className="mt-3 font-display text-2xl font-bold text-gardens-dark">
+                      <span className="text-sm font-normal text-stone-500">From </span>
                       £{formatGbp(planPriceForGarden(plan, "Small"))}
                       <span className="text-sm font-normal text-stone-500">
                         /{isAnnual ? "yr" : "mo"}

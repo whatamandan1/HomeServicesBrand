@@ -7,8 +7,6 @@ export type SignupLeadSnapshot = {
   firstName: string;
   lastName: string;
   email: string;
-  phone: string;
-  marketingOptIn: boolean;
   lastStep: number;
   selectedPlanName?: string;
   gardenSize?: GardenSize;
@@ -16,20 +14,16 @@ export type SignupLeadSnapshot = {
 };
 
 function canCapture(snapshot: SignupLeadSnapshot): boolean {
-  return (
-    snapshot.firstName.trim().length > 0 &&
-    isValidEmail(snapshot.email) &&
-    snapshot.phone.trim().length >= 6
-  );
+  return snapshot.firstName.trim().length > 0 && isValidEmail(snapshot.email);
 }
 
 function buildPayload(snapshot: SignupLeadSnapshot) {
   return {
     email: snapshot.email.trim(),
-    phone: snapshot.phone.trim(),
+    phone: "",
     firstName: snapshot.firstName.trim(),
     lastName: snapshot.lastName.trim() || null,
-    marketingOptIn: snapshot.marketingOptIn,
+    marketingOptIn: false,
     lastStep: snapshot.lastStep,
     selectedPlanName: snapshot.selectedPlanName ?? null,
     gardenSize: snapshot.gardenSize ?? null,

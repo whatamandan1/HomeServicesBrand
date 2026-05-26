@@ -1,6 +1,5 @@
 import type { GardenSize, SubscriptionPlan } from "@/lib/api";
-import { formatGbp } from "@/lib/format";
-import { planPriceForGarden, planVisitSummary } from "@/lib/consumer-plans";
+import { formatPriceFrom, GARDEN_SIZE_GUIDE, planPriceForGarden, planVisitSummary } from "@/lib/consumer-plans";
 
 export function SignupSummary({
   plan,
@@ -26,11 +25,10 @@ export function SignupSummary({
       </p>
       <p className="mt-1 text-sm text-stone-600">{planVisitSummary(plan)}</p>
       <p className="mt-2 text-sm text-stone-600">
-        {gardenSize} garden · {plan.billingInterval === "Monthly" ? "Monthly" : "Annual"} billing
+        {GARDEN_SIZE_GUIDE[gardenSize].label} garden · {plan.billingInterval === "Monthly" ? "Monthly" : "Annual"} billing
       </p>
       <p className={`font-bold text-gardens-primary ${compact ? "mt-2 text-xl" : "mt-3 text-2xl"}`}>
-        £{formatGbp(price)}
-        <span className="text-sm font-normal text-stone-500">/{period}</span>
+        {formatPriceFrom(price, period === "year" ? "yr" : "mo")}
       </p>
       {!compact && (
         <p className="mt-2 text-xs text-stone-500">

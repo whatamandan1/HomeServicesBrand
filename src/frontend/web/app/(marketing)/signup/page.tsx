@@ -1,14 +1,14 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { Check, ChevronLeft, ChevronRight } from "lucide-react";
 import { api, type AuthResponse, type GardenSize, type SubscriptionPlan } from "@/lib/api";
-import { formatGbp } from "@/lib/format";
 import { FALLBACK_PLANS, sortPlans } from "@/lib/plans";
 import {
   findTierPlanForBilling,
+  formatPriceFrom,
   GARDEN_SIZE_GUIDE,
   planFeatures,
   planPriceForGarden,
@@ -39,7 +39,7 @@ export default function SignupPage() {
   const [step, setStep] = useState(0);
   const [plans, setPlans] = useState<SubscriptionPlan[]>([]);
   const [plansLoading, setPlansLoading] = useState(true);
-  const [billing, setBilling] = useState<BillingChoice>("Monthly");
+  const [billing, setBilling] = useState<BillingChoice>("Annual");
   const [selectedTier, setSelectedTier] = useState<PlanTier>("essential");
   const [selectedPlanId, setSelectedPlanId] = useState("");
   const [skipPayment, setSkipPayment] = useState(false);
@@ -51,7 +51,6 @@ export default function SignupPage() {
     lastName: "",
     email: "",
     password: "",
-    phone: "",
     line1: "",
     line2: "",
     city: "",
@@ -59,11 +58,10 @@ export default function SignupPage() {
     gardenSize: "Small" as GardenSize,
     availability: "",
   });
-  const [acceptedTerms, setAcceptedTerms] = useState(false);
-  const [marketingOptIn, setMarketingOptIn] = useState(false);
   const [pendingPhotos, setPendingPhotos] = useState<File[]>([]);
   const [photoBusy, setPhotoBusy] = useState(false);
   const [photoPreviewUrls, setPhotoPreviewUrls] = useState<string[]>([]);
+  const topRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     const urls = pendingPhotos.map((file) => URL.createObjectURL(file));
@@ -110,6 +108,11 @@ export default function SignupPage() {
     if (plan) setSelectedPlanId(plan.id);
   }, [billing, selectedTier, plans]);
 
+  useLayoutEffect(() => {
+    topRef.current?.scrollIntoView({ block: "start" });
+    window.scrollTo({ top: 0, left: 0, behavior: "instant" });
+  }, [step]);
+
   function updateField(name: string, value: string) {
     setForm((f) => ({ ...f, [name]: value }));
     setStepHint(null);
@@ -122,14 +125,12 @@ export default function SignupPage() {
       firstName: form.firstName,
       lastName: form.lastName,
       email: form.email,
-      phone: form.phone,
-      marketingOptIn,
       lastStep: step,
       selectedPlanName: selectedPlan?.name,
       gardenSize: form.gardenSize,
       postcode: form.postcode ? normalizeUkPostcode(form.postcode) : undefined,
     }),
-    [form, marketingOptIn, step, selectedPlan?.name]
+    [form, step, selectedPlan?.name]
   );
 
   const { captureLead } = useSignupLeadCapture(leadSnapshot);
@@ -138,7 +139,6 @@ export default function SignupPage() {
     if (step === 0) {
       if (!form.firstName.trim()) return "Enter your first name.";
       if (!isValidEmail(form.email)) return "Enter a valid email address.";
-      if (form.phone.trim().length < 6) return "Enter a phone number so we can help you finish signing up.";
       return null;
     }
     if (step === 1) {
@@ -151,7 +151,6 @@ export default function SignupPage() {
     if (form.password.length < MIN_PASSWORD_LENGTH) {
       return `Choose a password with at least ${MIN_PASSWORD_LENGTH} characters.`;
     }
-    if (!acceptedTerms) return "Accept the terms and privacy policy to continue.";
     return null;
   }
 
@@ -167,6 +166,7 @@ export default function SignupPage() {
     }
     setStepHint(null);
     if (step <= 1) await captureLead();
+    (document.activeElement as HTMLElement | null)?.blur?.();
     setStep((s) => s + 1);
   }
 
@@ -220,7 +220,7 @@ export default function SignupPage() {
         lastName: form.lastName.trim(),
         email: form.email.trim(),
         password: form.password,
-        phone: form.phone.trim(),
+        phone: "",
         line1: form.line1.trim(),
         line2: form.line2.trim() || null,
         city: form.city.trim(),
@@ -279,7 +279,7 @@ export default function SignupPage() {
 
   return (
     <div className="pb-32 pt-8 md:pb-12 md:pt-12">
-      <div className="mx-auto max-w-5xl px-4">
+      <div ref={topRef} className="mx-auto max-w-5xl scroll-mt-8 px-4">
         <div className="text-center">
           <h1 className="font-display text-2xl font-bold text-gardens-dark sm:text-3xl">
             Start your subscription
@@ -334,28 +334,9 @@ export default function SignupPage() {
                 <Field label="First name" value={form.firstName} onChange={(v) => updateField("firstName", v)} required autoComplete="given-name" />
                 <Field label="Last name (optional)" value={form.lastName} onChange={(v) => updateField("lastName", v)} autoComplete="family-name" />
                 <Field label="Email" type="email" value={form.email} onChange={(v) => updateField("email", v)} required autoComplete="email" />
-                <Field
-                  label="Mobile number"
-                  type="tel"
-                  value={form.phone}
-                  onChange={(v) => updateField("phone", v)}
-                  required
-                  autoComplete="tel"
-                  hint="For signup help, visit reminders, and your gardener"
-                />
-                <label className="flex items-start gap-3 rounded-xl border border-stone-200 bg-stone-50 p-4 text-sm text-stone-700">
-                  <input
-                    type="checkbox"
-                    checked={marketingOptIn}
-                    onChange={(e) => setMarketingOptIn(e.target.checked)}
-                    className="mt-1 h-4 w-4 rounded border-stone-300 text-gardens-primary focus:ring-gardens-primary"
-                  />
-                  <span>
-                    Send me garden care tips, offers, and reminders by email or SMS (optional — you can unsubscribe anytime).
-                  </span>
-                </label>
                 <p className="text-xs text-stone-500">
-                  We&apos;ll always use your contact details to help you complete signup and manage your account, even if you don&apos;t opt in to marketing.
+                  By continuing, you agree we may contact you by email about your signup and account. Marketing
+                  emails are optional and you can opt out anytime.
                 </p>
               </div>
             )}
@@ -380,7 +361,7 @@ export default function SignupPage() {
                   <>
                     <div className="flex flex-wrap items-center justify-between gap-3">
                       <div className="inline-flex rounded-full border border-stone-200 bg-white p-1">
-                        {(["Monthly", "Annual"] as const).map((choice) => (
+                        {(["Annual", "Monthly"] as const).map((choice) => (
                           <button
                             key={choice}
                             type="button"
@@ -457,13 +438,10 @@ export default function SignupPage() {
                                 <p className="text-sm text-stone-500">{tagline}</p>
                                 <p className="mt-1 text-sm text-stone-600">{planVisitSummary(plan)}</p>
                                 <p className="mt-3 text-2xl font-bold text-gardens-primary">
-                                  £{formatGbp(price)}
-                                  <span className="text-sm font-normal text-stone-500">
-                                    /{billing === "Monthly" ? "mo" : "yr"}
-                                  </span>
+                                  {formatPriceFrom(price, billing === "Monthly" ? "mo" : "yr")}
                                 </p>
                                 <p className="mt-1 text-xs text-stone-500">
-                                  {form.gardenSize} garden · {plan.minimumTermMonths}-month minimum
+                                  {GARDEN_SIZE_GUIDE[form.gardenSize].label} garden · {plan.minimumTermMonths}-month minimum
                                 </p>
                                 <ul className="mt-3 space-y-1 text-xs text-stone-600">
                                   {planFeatures(plan).slice(0, 3).map((f) => (
@@ -510,29 +488,17 @@ export default function SignupPage() {
                   autoComplete="new-password"
                   hint={`At least ${MIN_PASSWORD_LENGTH} characters`}
                 />
-                <label className="flex items-start gap-3 rounded-xl border border-stone-200 bg-stone-50 p-4 text-sm text-stone-700">
-                  <input
-                    type="checkbox"
-                    checked={acceptedTerms}
-                    onChange={(e) => {
-                      setAcceptedTerms(e.target.checked);
-                      setStepHint(null);
-                    }}
-                    className="mt-1 h-4 w-4 rounded border-stone-300 text-gardens-primary focus:ring-gardens-primary"
-                    required
-                  />
-                  <span>
-                    I agree to the{" "}
-                    <Link href="/terms" className="font-medium text-gardens-primary hover:underline" target="_blank">
-                      terms of service
-                    </Link>{" "}
-                    and{" "}
-                    <Link href="/privacy" className="font-medium text-gardens-primary hover:underline" target="_blank">
-                      privacy policy
-                    </Link>
-                    .
-                  </span>
-                </label>
+                <p className="text-xs text-stone-500">
+                  By continuing to payment, you agree to our{" "}
+                  <Link href="/terms" className="font-medium text-gardens-primary hover:underline" target="_blank">
+                    terms of service
+                  </Link>{" "}
+                  and{" "}
+                  <Link href="/privacy" className="font-medium text-gardens-primary hover:underline" target="_blank">
+                    privacy policy
+                  </Link>
+                  .
+                </p>
                 <div className="space-y-3 border-t border-stone-100 pt-4">
                   <div>
                     <p className="text-sm font-medium text-stone-700">Garden photos (optional)</p>
@@ -600,6 +566,7 @@ export default function SignupPage() {
                   type="button"
                   onClick={() => {
                     setStepHint(null);
+                    (document.activeElement as HTMLElement | null)?.blur?.();
                     setStep((s) => s - 1);
                   }}
                   className="inline-flex min-h-[48px] items-center justify-center gap-1 rounded-full border border-stone-200 px-6 text-base font-medium text-stone-700"
@@ -653,6 +620,7 @@ export default function SignupPage() {
                   type="button"
                   onClick={() => {
                     setStepHint(null);
+                    (document.activeElement as HTMLElement | null)?.blur?.();
                     setStep((s) => s - 1);
                   }}
                   className="inline-flex min-h-[48px] flex-1 items-center justify-center rounded-full border border-stone-200 text-sm font-medium text-stone-700"

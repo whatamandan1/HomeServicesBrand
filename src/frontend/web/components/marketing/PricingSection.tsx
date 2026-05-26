@@ -7,6 +7,8 @@ import { api, type SubscriptionPlan } from "@/lib/api";
 import { FALLBACK_PLANS, sortPlans } from "@/lib/plans";
 import {
   findTierPlanForBilling,
+  formatPriceFrom,
+  GARDEN_SIZE_GUIDE,
   NOT_INCLUDED,
   ON_VISIT_WHEN_POSSIBLE,
   PLAN_TIERS,
@@ -25,7 +27,7 @@ export function PricingSection() {
   const [plans, setPlans] = useState<SubscriptionPlan[]>([]);
   const [loaded, setLoaded] = useState(false);
   const [offline, setOffline] = useState(false);
-  const [billing, setBilling] = useState<BillingChoice>("Monthly");
+  const [billing, setBilling] = useState<BillingChoice>("Annual");
 
   useEffect(() => {
     api.getPlans()
@@ -102,9 +104,8 @@ export function PricingSection() {
               <p className="mt-2 text-sm text-stone-600">{planVisitSummary(plan)}</p>
               <div className="mt-6 flex items-baseline gap-1">
                 <span className="font-display text-4xl font-bold text-gardens-primary">
-                  £{formatGbp(planPriceForGarden(plan, "Small"))}
+                  {formatPriceFrom(planPriceForGarden(plan, "Small"), isAnnual ? "year" : "month")}
                 </span>
-                <span className="text-stone-500">/{isAnnual ? "year" : "month"}</span>
               </div>
               <p className="mt-1 text-xs text-stone-500">Small garden — see table below for medium &amp; large</p>
               <p className="mt-2 text-xs text-stone-500">{plan.minimumTermMonths}-month minimum term</p>
@@ -162,10 +163,10 @@ export function PricingSection() {
               <tbody>
                 {matrix.map((row) => (
                   <tr key={row.size} className="border-b border-stone-100 last:border-0">
-                    <td className="py-3 pr-4 font-medium text-gardens-dark">{row.size}</td>
-                    <td className="py-3 px-4 text-stone-700">£{formatGbp(row.essential)}/mo</td>
-                    <td className="py-3 px-4 text-stone-700">£{formatGbp(row.premium)}/mo</td>
-                    <td className="py-3 pl-4 text-stone-700">£{formatGbp(row.elite)}/mo</td>
+                    <td className="py-3 pr-4 font-medium text-gardens-dark">{GARDEN_SIZE_GUIDE[row.size].label}</td>
+                    <td className="py-3 px-4 text-stone-700">From £{formatGbp(row.essential)}/mo</td>
+                    <td className="py-3 px-4 text-stone-700">From £{formatGbp(row.premium)}/mo</td>
+                    <td className="py-3 pl-4 text-stone-700">From £{formatGbp(row.elite)}/mo</td>
                   </tr>
                 ))}
               </tbody>
