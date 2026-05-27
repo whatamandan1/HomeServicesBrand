@@ -20,8 +20,6 @@ export default function PortalPage() {
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [busyId, setBusyId] = useState<string | null>(null);
-  const [chatPrompt, setChatPrompt] = useState<{ key: number; text: string } | null>(null);
-
   function refreshVisits() {
     if (!auth?.token) return;
     api.customerVisits(auth.token).then(setVisits);
@@ -172,9 +170,6 @@ export default function PortalPage() {
           subscriptions={subs}
           onError={setError}
           onSubscriptionUpdated={refreshSubscriptions}
-          onContactSupport={(message) => {
-            setChatPrompt({ key: Date.now(), text: message });
-          }}
         />
       )}
 
@@ -233,7 +228,7 @@ export default function PortalPage() {
       )}
 
       {!loading && auth?.token && (
-        <CustomerChatWidget token={auth.token} promptSeed={chatPrompt} />
+        <CustomerChatWidget token={auth.token} />
       )}
     </div>
   );

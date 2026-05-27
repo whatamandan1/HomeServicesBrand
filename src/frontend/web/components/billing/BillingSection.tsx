@@ -9,7 +9,6 @@ import { StatusBadge } from "@/components/ui";
 type BillingSectionProps = {
   token: string;
   subscriptions: CustomerSubscription[];
-  onContactSupport: (message: string) => void;
   onSubscriptionUpdated: () => void;
   onError: (message: string | null) => void;
 };
@@ -43,7 +42,6 @@ function isActiveSubscription(sub: CustomerSubscription) {
 export function BillingSection({
   token,
   subscriptions,
-  onContactSupport,
   onSubscriptionUpdated,
   onError,
 }: BillingSectionProps) {
@@ -123,7 +121,7 @@ export function BillingSection({
         <h2 className="font-semibold text-gardens-dark">Subscriptions</h2>
         <p className="mt-1 text-sm text-stone-500">
           Update your payment method or download invoices in a new tab. Switch to annual billing or
-          upgrade your plan instantly below. Cancellations go through customer service.
+          upgrade your plan instantly below. To cancel, contact us via chat.
         </p>
         {subscriptions.length === 0 ? (
           <p className="mt-3 text-sm text-stone-500">No subscriptions yet.</p>
@@ -183,19 +181,6 @@ export function BillingSection({
                       {upgradingId === s.id
                         ? "Upgrading…"
                         : `Upgrade to ${nextUpgradePlanLabel(s.planName, s.billingInterval) ?? "next tier"}`}
-                    </button>
-                  )}
-                  {isActiveSubscription(s) && (
-                    <button
-                      type="button"
-                      className="rounded-lg border border-stone-200 px-3 py-2 text-sm font-medium text-stone-700 hover:bg-stone-50"
-                      onClick={() =>
-                        onContactSupport(
-                          `I'd like to cancel my ${s.planName} subscription. Please can you help?`
-                        )
-                      }
-                    >
-                      Request cancellation
                     </button>
                   )}
                 </div>

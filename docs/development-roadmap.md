@@ -74,7 +74,7 @@ These are the spec's top priorities for initial launch.
 
 | Priority | Status | Notes / next step |
 |----------|--------|-------------------|
-| Customer signup | ✅ Done | 3-step wizard at `/signup`; dev Stripe bypass available |
+| Customer signup | ✅ Done | 3-step wizard at `/signup`; dev Stripe bypass; see [`signup-needs-map.md`](signup-needs-map.md) |
 | Recurring subscriptions | ✅ Done | Stripe Checkout subscription mode + renewal webhooks |
 | Payment processing | ✅ Done | Renewals, past_due, cancellation via webhooks |
 | Provider onboarding | ✅ Done | Self-signup at `/providers#apply` + admin approval; base postcode + radius |
