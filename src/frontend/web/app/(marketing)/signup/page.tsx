@@ -47,7 +47,7 @@ const STEPS = ["Garden size", "Find your plan", "Your quote", "Finish signup"] a
 
 const SERVICE_GROUPS: SignupServiceGroup[] = ["core", "garden-care", "visit-frequency", "extras"];
 
-const DEFAULT_SERVICES: SignupServiceId[] = ["lawn-borders", "monthly-visits"];
+const DEFAULT_SERVICES: SignupServiceId[] = ["lawn-borders", "monthly"];
 
 export default function SignupPage() {
   const router = useRouter();

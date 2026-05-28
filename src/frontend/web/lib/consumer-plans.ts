@@ -52,7 +52,7 @@ export const GARDEN_SIZE_GUIDE: Record<
 };
 
 export const ESSENTIAL_FEATURES = [
-  "10 professional visits per year",
+  "Monthly professional visits",
   "Lawn mowing and edging",
   "Light border and bed tidy",
   "Grass clippings removed from site",
@@ -63,7 +63,7 @@ export const ESSENTIAL_FEATURES = [
 
 export const PREMIUM_FEATURES = [
   "Everything in Essential",
-  "20 visits per year (about every 2 weeks)",
+  "Fortnightly visits (about 20 per year)",
   "Light hedge trim and shaping (where accessible)",
   "Weeding in planted beds",
   "Seasonal tidy — leaf blow/clear in garden, light pruning",
@@ -72,7 +72,7 @@ export const PREMIUM_FEATURES = [
 
 export const ELITE_FEATURES = [
   "Everything in Premium",
-  "30 visits per year (about every 10 days)",
+  "Weekly visits (about 30 per year)",
   "1× thorough patio & path refresh per year (included)",
   "First-choice visit windows when booking",
   "Ideal for fast-growing lawns and high-use gardens",
@@ -126,7 +126,7 @@ export type PlanCompareRow = {
 /** Side-by-side feature matrix for Essential / Premium / Elite. */
 export const PLAN_COMPARE_ROWS: PlanCompareRow[] = [
   { label: "Visits included", essential: "10 / year", premium: "20 / year", elite: "30 / year" },
-  { label: "Typical visit spacing", essential: "~ monthly", premium: "~ every 2 weeks", elite: "~ every 10 days" },
+  { label: "Typical visit spacing", essential: "Monthly", premium: "Fortnightly", elite: "Weekly" },
   { label: "Lawn mowing & edging", essential: true, premium: true, elite: true },
   { label: "Border & bed tidy", essential: true, premium: true, elite: true },
   { label: "Clippings removed", essential: true, premium: true, elite: true },
@@ -142,8 +142,8 @@ export const PLAN_COMPARE_ROWS: PlanCompareRow[] = [
 
 export const PLAN_TIERS: { id: PlanTier; label: string; tagline: string }[] = [
   { id: "essential", label: "Essential", tagline: "Monthly upkeep" },
-  { id: "premium", label: "Premium", tagline: "Twice-monthly + hedges" },
-  { id: "elite", label: "Elite", tagline: "Every ~10 days + patio refresh" },
+  { id: "premium", label: "Premium", tagline: "Fortnightly + hedges" },
+  { id: "elite", label: "Elite", tagline: "Weekly + patio refresh" },
 ];
 
 export type SignupServiceId =
@@ -151,9 +151,9 @@ export type SignupServiceId =
   | "hedges"
   | "weeding"
   | "seasonal"
-  | "monthly-visits"
-  | "twice-monthly"
-  | "frequent-visits"
+  | "monthly"
+  | "fortnightly"
+  | "weekly"
   | "patio";
 
 export type SignupServiceGroup = "core" | "garden-care" | "visit-frequency" | "extras";
@@ -197,23 +197,23 @@ export const SIGNUP_SERVICES: SignupServiceOption[] = [
     group: "garden-care",
   },
   {
-    id: "monthly-visits",
-    label: "About 10 visits per year",
-    description: "Roughly one professional visit per month — Essential upkeep.",
+    id: "monthly",
+    label: "Monthly",
+    description: "About one visit per month — Essential upkeep.",
     minTier: "essential",
     group: "visit-frequency",
   },
   {
-    id: "twice-monthly",
-    label: "Visits about every 2 weeks",
-    description: "Roughly 20 professional visits per year.",
+    id: "fortnightly",
+    label: "Fortnightly",
+    description: "A visit every two weeks — Premium care.",
     minTier: "premium",
     group: "visit-frequency",
   },
   {
-    id: "frequent-visits",
-    label: "Visits about every 10 days",
-    description: "Roughly 30 visits per year through peak season.",
+    id: "weekly",
+    label: "Weekly",
+    description: "A visit every week through the season — Elite care.",
     minTier: "elite",
     group: "visit-frequency",
   },
@@ -312,9 +312,9 @@ export function planVisitsPerYear(plan: SubscriptionPlan): number {
 
 export function planVisitSummary(plan: SubscriptionPlan) {
   const visits = planVisitsPerYear(plan);
-  if (visits === 30) return "30 visits per year";
-  if (visits === 20) return "20 visits per year";
-  return "10 visits per year";
+  if (visits === 30) return "Weekly visits";
+  if (visits === 20) return "Fortnightly visits";
+  return "Monthly visits";
 }
 
 function findTierPlan(basePlans: SubscriptionPlan[], tier: PlanTier, billing: BillingChoice) {
