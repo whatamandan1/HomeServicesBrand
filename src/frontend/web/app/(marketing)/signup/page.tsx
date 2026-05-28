@@ -3,7 +3,7 @@
 import { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { Check, ChevronLeft, ChevronRight } from "lucide-react";
+import { Check, ChevronDown, ChevronLeft, ChevronRight, ChevronUp } from "lucide-react";
 import { api, type AuthResponse, type GardenSize, type SubscriptionPlan } from "@/lib/api";
 import { FALLBACK_PLANS, sortPlans } from "@/lib/plans";
 import {
@@ -13,12 +13,17 @@ import {
   findTierPlanForBilling,
   formatPriceFrom,
   GARDEN_SIZE_GUIDE,
+  matchPlanTierFromServices,
   planFeatures,
   planPriceForGarden,
   planVisitSummary,
   PLAN_TIERS,
+  SIGNUP_SERVICE_GROUP_LABELS,
+  SIGNUP_SERVICES,
   type BillingChoice,
   type PlanTier,
+  type SignupServiceGroup,
+  type SignupServiceId,
 } from "@/lib/consumer-plans";
 import { BillingIntervalToggle } from "@/components/marketing/BillingIntervalToggle";
 import { saveAuth } from "@/lib/auth-storage";
@@ -37,7 +42,11 @@ import { AlertBanner, LoadingSpinner } from "@/components/ui/feedback";
 import { AvailabilityPicker } from "@/components/signup/AvailabilityPicker";
 import { SignupSummary } from "@/components/signup/SignupSummary";
 
-const STEPS = ["Get started", "Choose plan", "Finish signup"] as const;
+const STEPS = ["Garden size", "Your services", "Your plan", "Get started", "Finish signup"] as const;
+
+const SERVICE_GROUPS: SignupServiceGroup[] = ["core", "garden-care", "visit-frequency", "extras"];
+
+const DEFAULT_SERVICES: SignupServiceId[] = ["lawn-borders"];
 
 export default function SignupPage() {
   const router = useRouter();
@@ -46,6 +55,8 @@ export default function SignupPage() {
   const [plansLoading, setPlansLoading] = useState(true);
   const [billing, setBilling] = useState<BillingChoice>("Annual");
   const [selectedTier, setSelectedTier] = useState<PlanTier>("essential");
+  const [selectedServices, setSelectedServices] = useState<SignupServiceId[]>(DEFAULT_SERVICES);
+  const [showPlanAlternatives, setShowPlanAlternatives] = useState(false);
   const [selectedPlanId, setSelectedPlanId] = useState("");
   const [skipPayment, setSkipPayment] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -67,6 +78,11 @@ export default function SignupPage() {
   const [photoBusy, setPhotoBusy] = useState(false);
   const [photoPreviewUrls, setPhotoPreviewUrls] = useState<string[]>([]);
   const topRef = useRef<HTMLDivElement>(null);
+
+  const matchedTier = useMemo(
+    () => matchPlanTierFromServices(selectedServices),
+    [selectedServices]
+  );
 
   useEffect(() => {
     const urls = pendingPhotos.map((file) => URL.createObjectURL(file));
@@ -115,6 +131,12 @@ export default function SignupPage() {
     if (plan) setSelectedPlanId(plan.id);
   }, [billing, selectedTier, plans]);
 
+  useEffect(() => {
+    if (step < 2) {
+      setSelectedTier(matchedTier);
+    }
+  }, [matchedTier, step]);
+
   useLayoutEffect(() => {
     topRef.current?.scrollIntoView({ block: "start" });
     window.scrollTo({ top: 0, left: 0, behavior: "instant" });
@@ -125,7 +147,19 @@ export default function SignupPage() {
     setStepHint(null);
   }
 
+  function toggleService(id: SignupServiceId) {
+    setSelectedServices((current) => {
+      if (current.includes(id)) {
+        const next = current.filter((s) => s !== id);
+        return next.length === 0 ? current : next;
+      }
+      return [...current, id];
+    });
+    setStepHint(null);
+  }
+
   const selectedPlan = plans.find((p) => p.id === selectedPlanId);
+  const matchedTierMeta = PLAN_TIERS.find((t) => t.id === matchedTier);
 
   const leadSnapshot = useMemo(
     () => ({
@@ -143,27 +177,30 @@ export default function SignupPage() {
   const { captureLead } = useSignupLeadCapture(leadSnapshot);
 
   function stepValidationMessage(): string | null {
-    if (step === 0) {
+    if (step === 1) {
+      if (selectedServices.length === 0) return "Select at least one service to continue.";
+      return null;
+    }
+    if (step === 2) {
+      if (!selectedPlanId) return "We could not match a plan — please refresh and try again.";
+      return null;
+    }
+    if (step === 3) {
       if (!form.firstName.trim()) return "Enter your first name.";
       if (!form.lastName.trim()) return "Enter your last name.";
       if (!isValidEmail(form.email)) return "Enter a valid email address.";
       return null;
     }
-    if (step === 1) {
-      if (!selectedPlanId) return "Select a plan to continue.";
+    if (step === 4) {
+      if (!form.line1.trim() || !form.city.trim()) return "Enter your address and city.";
+      if (!isValidUkPostcode(form.postcode)) return "Enter a valid UK postcode (e.g. LS1 4AP).";
+      if (!form.availability.trim()) return "Tell us when visits work best for you.";
+      if (form.password.length < MIN_PASSWORD_LENGTH) {
+        return `Choose a password with at least ${MIN_PASSWORD_LENGTH} characters.`;
+      }
       return null;
     }
-    if (!form.line1.trim() || !form.city.trim()) return "Enter your address and city.";
-    if (!isValidUkPostcode(form.postcode)) return "Enter a valid UK postcode (e.g. LS1 4AP).";
-    if (!form.availability.trim()) return "Tell us when visits work best for you.";
-    if (form.password.length < MIN_PASSWORD_LENGTH) {
-      return `Choose a password with at least ${MIN_PASSWORD_LENGTH} characters.`;
-    }
     return null;
-  }
-
-  function canAdvance() {
-    return stepValidationMessage() === null;
   }
 
   async function tryAdvance() {
@@ -173,7 +210,7 @@ export default function SignupPage() {
       return;
     }
     setStepHint(null);
-    if (step <= 1) await captureLead();
+    if (step === 3) await captureLead();
     (document.activeElement as HTMLElement | null)?.blur?.();
     setStep((s) => s + 1);
   }
@@ -276,6 +313,9 @@ export default function SignupPage() {
   }
 
   const usingFallback = plans.length > 0 && plans[0]?.id.startsWith("fallback-");
+  const showSummary = step >= 2 && selectedPlan;
+  const showSummaryPrice = step >= 2;
+
   const visibleTiers = useMemo(
     () =>
       PLAN_TIERS.map((tier) => ({
@@ -284,6 +324,8 @@ export default function SignupPage() {
       })).filter((t) => t.plan),
     [plans, billing]
   );
+
+  const matchedPlan = findTierPlanForBilling(plans, matchedTier, billing);
 
   return (
     <div className="pb-32 pt-8 md:pb-12 md:pt-12">
@@ -332,12 +374,213 @@ export default function SignupPage() {
           <AlertBanner variant="error" message={error} onDismiss={() => setError(null)} className="mt-6" />
         )}
 
-        <div className={`mt-8 ${step >= 1 && selectedPlan ? "lg:grid lg:grid-cols-[1fr_280px] lg:gap-8" : ""}`}>
+        <div className={`mt-8 ${showSummary ? "lg:grid lg:grid-cols-[1fr_280px] lg:gap-8" : ""}`}>
           <div>
             {step === 0 && (
               <div className="space-y-4 rounded-2xl border border-stone-200 bg-white p-5 shadow-soft sm:p-6">
                 <p className="text-sm text-stone-600">
-                  Start here — we&apos;ll save your progress so we can help if you need to finish later.
+                  How much garden will we maintain? This helps us match the right visit scope — pricing
+                  comes after we recommend a plan.
+                </p>
+                <fieldset>
+                  <legend className="sr-only">Garden size</legend>
+                  <div className="grid gap-3 sm:grid-cols-3">
+                    {(Object.keys(GARDEN_SIZE_GUIDE) as GardenSize[]).map((size) => {
+                      const selected = form.gardenSize === size;
+                      const guide = GARDEN_SIZE_GUIDE[size];
+                      return (
+                        <button
+                          key={size}
+                          type="button"
+                          onClick={() => updateField("gardenSize", size)}
+                          className={`rounded-2xl border p-4 text-left transition ${
+                            selected
+                              ? "border-gardens-primary bg-gardens-light/50 ring-2 ring-gardens-primary/30"
+                              : "border-stone-200 bg-white hover:border-stone-300"
+                          }`}
+                        >
+                          <p className="font-semibold text-gardens-dark">{guide.label}</p>
+                          <p className="mt-1 text-xs text-stone-600">{guide.description}</p>
+                        </button>
+                      );
+                    })}
+                  </div>
+                </fieldset>
+              </div>
+            )}
+
+            {step === 1 && (
+              <div className="space-y-6 rounded-2xl border border-stone-200 bg-white p-5 shadow-soft sm:p-6">
+                <p className="text-sm text-stone-600">
+                  Tick everything you&apos;d like us to take care of. We&apos;ll recommend the plan that
+                  covers your choices.
+                </p>
+                {SERVICE_GROUPS.map((group) => {
+                  const options = SIGNUP_SERVICES.filter((s) => s.group === group);
+                  if (options.length === 0) return null;
+                  return (
+                    <fieldset key={group}>
+                      <legend className="text-sm font-medium text-stone-700">
+                        {SIGNUP_SERVICE_GROUP_LABELS[group]}
+                      </legend>
+                      <ul className="mt-3 space-y-2">
+                        {options.map((service) => {
+                          const checked = selectedServices.includes(service.id);
+                          return (
+                            <li key={service.id}>
+                              <label
+                                className={`flex cursor-pointer gap-3 rounded-xl border p-4 transition ${
+                                  checked
+                                    ? "border-gardens-primary bg-gardens-light/40 ring-1 ring-gardens-primary/30"
+                                    : "border-stone-200 bg-white hover:border-stone-300"
+                                }`}
+                              >
+                                <input
+                                  type="checkbox"
+                                  className="mt-0.5 h-4 w-4 shrink-0 rounded border-stone-300 text-gardens-primary focus:ring-gardens-primary"
+                                  checked={checked}
+                                  onChange={() => toggleService(service.id)}
+                                />
+                                <span>
+                                  <span className="font-medium text-gardens-dark">{service.label}</span>
+                                  <span className="mt-0.5 block text-xs text-stone-600">
+                                    {service.description}
+                                  </span>
+                                </span>
+                              </label>
+                            </li>
+                          );
+                        })}
+                      </ul>
+                    </fieldset>
+                  );
+                })}
+              </div>
+            )}
+
+            {step === 2 && (
+              <div className="space-y-6">
+                {plansLoading ? (
+                  <div className="space-y-4" aria-busy="true">
+                    <div className="h-10 animate-pulse rounded-xl bg-stone-200" />
+                    <div className="h-48 animate-pulse rounded-2xl bg-stone-200" />
+                  </div>
+                ) : (
+                  <>
+                    <div className="rounded-2xl border border-gardens-primary/30 bg-gardens-light/40 p-5">
+                      <p className="text-xs font-semibold uppercase tracking-wide text-gardens-primary">
+                        Recommended for you
+                      </p>
+                      {matchedTierMeta && matchedPlan && (
+                        <>
+                          <p className="mt-2 font-display text-xl font-bold text-gardens-dark">
+                            {matchedTierMeta.label}
+                          </p>
+                          <p className="text-sm text-stone-600">{matchedTierMeta.tagline}</p>
+                          <p className="mt-2 text-sm text-stone-600">{planVisitSummary(matchedPlan)}</p>
+                          <ul className="mt-3 space-y-1 text-xs text-stone-600">
+                            {planFeatures(matchedPlan).slice(0, 4).map((f) => (
+                              <li key={f}>• {f}</li>
+                            ))}
+                          </ul>
+                        </>
+                      )}
+                    </div>
+
+                    <div className="flex flex-wrap items-start justify-between gap-3">
+                      <div className="space-y-2">
+                        <BillingIntervalToggle billing={billing} onChange={setBilling} />
+                        <p className="text-xs text-stone-500">{ANNUAL_BILLING_HINT}</p>
+                      </div>
+                      <Link href="/#pricing" className="text-sm font-medium text-gardens-primary hover:underline">
+                        Compare all features
+                      </Link>
+                    </div>
+
+                    {matchedPlan && (
+                      <div className="rounded-2xl border border-stone-200 bg-white p-5">
+                        <p className="text-sm text-stone-600">
+                          {GARDEN_SIZE_GUIDE[form.gardenSize].label} garden ·{" "}
+                          {matchedPlan.minimumTermMonths}-month minimum
+                        </p>
+                        <p className="mt-3 text-2xl font-bold text-gardens-primary">
+                          {formatPriceFrom(
+                            planPriceForGarden(matchedPlan, form.gardenSize),
+                            billing === "Monthly" ? "mo" : "yr"
+                          )}
+                        </p>
+                        {billing === "Annual" && (
+                          <p className="mt-1 text-xs font-medium text-gardens-primary">
+                            From £
+                            {formatGbp(
+                              annualEquivalentMonthly(planPriceForGarden(matchedPlan, form.gardenSize))
+                            )}
+                            /mo — billed once a year
+                          </p>
+                        )}
+                        {billing === "Monthly" && (
+                          <p className="mt-1 text-xs text-stone-500">
+                            Annual is best value — {ANNUAL_BILLING_SAVINGS.toLowerCase()} vs monthly
+                          </p>
+                        )}
+                      </div>
+                    )}
+
+                    <button
+                      type="button"
+                      onClick={() => setShowPlanAlternatives((v) => !v)}
+                      className="flex w-full items-center justify-between rounded-xl border border-stone-200 bg-white px-4 py-3 text-sm font-medium text-stone-700"
+                    >
+                      Choose a different plan
+                      {showPlanAlternatives ? (
+                        <ChevronUp className="h-4 w-4" />
+                      ) : (
+                        <ChevronDown className="h-4 w-4" />
+                      )}
+                    </button>
+
+                    {showPlanAlternatives && (
+                      <div className="space-y-3">
+                        {visibleTiers.map(({ id, label, tagline, plan }) => {
+                          if (!plan) return null;
+                          const selected = selectedTier === id;
+                          const price = planPriceForGarden(plan, form.gardenSize);
+                          return (
+                            <button
+                              key={plan.id}
+                              type="button"
+                              onClick={() => setSelectedTier(id)}
+                              className={`relative w-full rounded-2xl border p-5 text-left transition ${
+                                selected
+                                  ? "border-gardens-primary bg-gardens-light/50 ring-2 ring-gardens-primary/30"
+                                  : "border-stone-200 bg-white hover:border-stone-300"
+                              }`}
+                            >
+                              <div className="flex items-start justify-between gap-3">
+                                <div>
+                                  <p className="font-semibold text-gardens-dark">{label}</p>
+                                  <p className="text-sm text-stone-500">{tagline}</p>
+                                  <p className="mt-1 text-sm text-stone-600">{planVisitSummary(plan)}</p>
+                                  <p className="mt-3 text-xl font-bold text-gardens-primary">
+                                    {formatPriceFrom(price, billing === "Monthly" ? "mo" : "yr")}
+                                  </p>
+                                </div>
+                                {selected && <Check className="h-5 w-5 shrink-0 text-gardens-primary" />}
+                              </div>
+                            </button>
+                          );
+                        })}
+                      </div>
+                    )}
+                  </>
+                )}
+              </div>
+            )}
+
+            {step === 3 && (
+              <div className="space-y-4 rounded-2xl border border-stone-200 bg-white p-5 shadow-soft sm:p-6">
+                <p className="text-sm text-stone-600">
+                  Almost there — we&apos;ll save your progress so we can help if you need to finish later.
                 </p>
                 <Field label="First name" value={form.firstName} onChange={(v) => updateField("firstName", v)} required autoComplete="given-name" />
                 <Field label="Last name" value={form.lastName} onChange={(v) => updateField("lastName", v)} required autoComplete="family-name" />
@@ -349,120 +592,7 @@ export default function SignupPage() {
               </div>
             )}
 
-            {step === 1 && (
-              <div className="space-y-6">
-                {plansLoading ? (
-                  <div className="space-y-4" aria-busy="true">
-                    <div className="h-10 animate-pulse rounded-xl bg-stone-200" />
-                    <div className="grid gap-3 sm:grid-cols-3">
-                      {[0, 1, 2].map((i) => (
-                        <div key={i} className="h-24 animate-pulse rounded-2xl bg-stone-200" />
-                      ))}
-                    </div>
-                    <div className="space-y-3">
-                      {[0, 1, 2].map((i) => (
-                        <div key={i} className="h-36 animate-pulse rounded-2xl bg-stone-200" />
-                      ))}
-                    </div>
-                  </div>
-                ) : (
-                  <>
-                    <div className="flex flex-wrap items-start justify-between gap-3">
-                      <div className="space-y-2">
-                        <BillingIntervalToggle billing={billing} onChange={setBilling} />
-                        <p className="text-xs text-stone-500">{ANNUAL_BILLING_HINT}</p>
-                      </div>
-                      <Link href="/#pricing" className="text-sm font-medium text-gardens-primary hover:underline">
-                        Compare all features
-                      </Link>
-                    </div>
-
-                    <fieldset>
-                      <legend className="text-sm font-medium text-stone-700">Garden size</legend>
-                      <p className="mt-1 text-xs text-stone-500">Price updates based on how much garden we maintain.</p>
-                      <div className="mt-3 grid gap-3 sm:grid-cols-3">
-                        {(Object.keys(GARDEN_SIZE_GUIDE) as GardenSize[]).map((size) => {
-                          const selected = form.gardenSize === size;
-                          const guide = GARDEN_SIZE_GUIDE[size];
-                          return (
-                            <button
-                              key={size}
-                              type="button"
-                              onClick={() => updateField("gardenSize", size)}
-                              className={`rounded-2xl border p-4 text-left transition ${
-                                selected
-                                  ? "border-gardens-primary bg-gardens-light/50 ring-2 ring-gardens-primary/30"
-                                  : "border-stone-200 bg-white hover:border-stone-300"
-                              }`}
-                            >
-                              <p className="font-semibold text-gardens-dark">{guide.label}</p>
-                              <p className="mt-1 text-xs text-stone-600">{guide.description}</p>
-                            </button>
-                          );
-                        })}
-                      </div>
-                    </fieldset>
-
-                    <div className="space-y-3">
-                      {visibleTiers.map(({ id, label, tagline, plan }) => {
-                        if (!plan) return null;
-                        const selected = selectedTier === id;
-                        const price = planPriceForGarden(plan, form.gardenSize);
-                        const isPremium = id === "premium";
-                        return (
-                          <button
-                            key={plan.id}
-                            type="button"
-                            onClick={() => setSelectedTier(id)}
-                            className={`relative w-full rounded-2xl border p-5 text-left transition ${
-                              selected
-                                ? "border-gardens-primary bg-gardens-light/50 ring-2 ring-gardens-primary/30"
-                                : "border-stone-200 bg-white hover:border-stone-300"
-                            }`}
-                          >
-                            {isPremium && (
-                              <span className="absolute -top-2.5 left-4 rounded-full bg-gardens-primary px-2.5 py-0.5 text-xs font-semibold text-white">
-                                Most popular
-                              </span>
-                            )}
-                            <div className="flex items-start justify-between gap-3">
-                              <div>
-                                <p className="font-semibold text-gardens-dark">{label}</p>
-                                <p className="text-sm text-stone-500">{tagline}</p>
-                                <p className="mt-1 text-sm text-stone-600">{planVisitSummary(plan)}</p>
-                                <p className="mt-3 text-2xl font-bold text-gardens-primary">
-                                  {formatPriceFrom(price, billing === "Monthly" ? "mo" : "yr")}
-                                </p>
-                                {billing === "Annual" ? (
-                                  <p className="mt-1 text-xs font-medium text-gardens-primary">
-                                    From £{formatGbp(annualEquivalentMonthly(price))}/mo — billed once a year
-                                  </p>
-                                ) : (
-                                  <p className="mt-1 text-xs text-stone-500">
-                                    Annual is best value — {ANNUAL_BILLING_SAVINGS.toLowerCase()} vs monthly
-                                  </p>
-                                )}
-                                <p className="mt-1 text-xs text-stone-500">
-                                  {GARDEN_SIZE_GUIDE[form.gardenSize].label} garden · {plan.minimumTermMonths}-month minimum
-                                </p>
-                                <ul className="mt-3 space-y-1 text-xs text-stone-600">
-                                  {planFeatures(plan).slice(0, 3).map((f) => (
-                                    <li key={f}>• {f}</li>
-                                  ))}
-                                </ul>
-                              </div>
-                              {selected && <Check className="h-5 w-5 shrink-0 text-gardens-primary" />}
-                            </div>
-                          </button>
-                        );
-                      })}
-                    </div>
-                  </>
-                )}
-              </div>
-            )}
-
-            {step === 2 && (
+            {step === 4 && (
               <div className="space-y-5 rounded-2xl border border-stone-200 bg-white p-5 shadow-soft sm:p-6">
                 <p className="text-sm text-stone-600">
                   Where should we maintain your garden? We match you with a local gardener in your area.
@@ -600,48 +730,59 @@ export default function SignupPage() {
             </div>
           </div>
 
-          {step >= 1 && selectedPlan && (
+          {showSummary && selectedPlan && (
             <aside className="hidden lg:block">
               <div className="sticky top-24">
-                <SignupSummary plan={selectedPlan} gardenSize={form.gardenSize} />
+                <SignupSummary
+                  plan={selectedPlan}
+                  gardenSize={form.gardenSize}
+                  showPrice={showSummaryPrice}
+                />
               </div>
             </aside>
           )}
         </div>
 
-        {(step >= 1 && selectedPlan) || step === 0 ? (
-          <div className="fixed inset-x-0 bottom-0 z-40 border-t border-stone-200 bg-white/95 p-3 backdrop-blur-md pb-[max(0.75rem,env(safe-area-inset-bottom))] sm:hidden">
-            {step >= 1 && selectedPlan ? (
-              <SignupSummary plan={selectedPlan} gardenSize={form.gardenSize} compact />
-            ) : (
-              <p className="text-center text-xs text-stone-500">Step 1 of 3 — quick contact details only</p>
+        <div className="fixed inset-x-0 bottom-0 z-40 border-t border-stone-200 bg-white/95 p-3 backdrop-blur-md pb-[max(0.75rem,env(safe-area-inset-bottom))] sm:hidden">
+          {showSummary && selectedPlan ? (
+            <SignupSummary
+              plan={selectedPlan}
+              gardenSize={form.gardenSize}
+              compact
+              showPrice={showSummaryPrice}
+            />
+          ) : (
+            <p className="text-center text-xs text-stone-500">
+              Step {step + 1} of {STEPS.length}
+              {step === 0 && " — pick your garden size"}
+              {step === 1 && " — choose your services"}
+            </p>
+          )}
+          <div className="mt-3 flex gap-2">
+            {step > 0 && (
+              <button
+                type="button"
+                onClick={() => {
+                  setStepHint(null);
+                  (document.activeElement as HTMLElement | null)?.blur?.();
+                  setStep((s) => s - 1);
+                }}
+                className="inline-flex min-h-[48px] flex-1 items-center justify-center rounded-full border border-stone-200 text-sm font-medium text-stone-700"
+              >
+                Back
+              </button>
             )}
-            <div className="mt-3 flex gap-2">
-              {step > 0 && (
-                <button
-                  type="button"
-                  onClick={() => {
-                    setStepHint(null);
-                    (document.activeElement as HTMLElement | null)?.blur?.();
-                    setStep((s) => s - 1);
-                  }}
-                  className="inline-flex min-h-[48px] flex-1 items-center justify-center rounded-full border border-stone-200 text-sm font-medium text-stone-700"
-                >
-                  Back
-                </button>
-              )}
-              {step < STEPS.length - 1 ? (
-                <button type="button" onClick={tryAdvance} className="btn-primary min-h-[48px] flex-[2]">
-                  Continue
-                </button>
-              ) : (
-                <button type="button" disabled={loading} onClick={submit} className="btn-primary min-h-[48px] flex-[2]">
-                  {loading ? "Processing…" : skipPayment ? "Create account" : "Pay securely"}
-                </button>
-              )}
-            </div>
+            {step < STEPS.length - 1 ? (
+              <button type="button" onClick={tryAdvance} className="btn-primary min-h-[48px] flex-[2]">
+                Continue
+              </button>
+            ) : (
+              <button type="button" disabled={loading} onClick={submit} className="btn-primary min-h-[48px] flex-[2]">
+                {loading ? "Processing…" : skipPayment ? "Create account" : "Pay securely"}
+              </button>
+            )}
           </div>
-        ) : null}
+        </div>
 
         <p className="mt-6 text-center text-sm text-stone-500">
           Already have an account?{" "}

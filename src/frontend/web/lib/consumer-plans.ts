@@ -122,6 +122,108 @@ export const PLAN_TIERS: { id: PlanTier; label: string; tagline: string }[] = [
   { id: "elite", label: "Elite", tagline: "Every ~10 days + patio refresh" },
 ];
 
+export type SignupServiceId =
+  | "lawn-borders"
+  | "hedges"
+  | "weeding"
+  | "seasonal"
+  | "twice-monthly"
+  | "frequent-visits"
+  | "patio";
+
+export type SignupServiceGroup = "core" | "garden-care" | "visit-frequency" | "extras";
+
+export type SignupServiceOption = {
+  id: SignupServiceId;
+  label: string;
+  description: string;
+  minTier: PlanTier;
+  group: SignupServiceGroup;
+};
+
+/** Services shown during signup — selections drive automatic plan matching. */
+export const SIGNUP_SERVICES: SignupServiceOption[] = [
+  {
+    id: "lawn-borders",
+    label: "Lawn mowing, edging & border tidy",
+    description: "Regular cut, neat edges, and light bed maintenance.",
+    minTier: "essential",
+    group: "core",
+  },
+  {
+    id: "hedges",
+    label: "Hedge trim & shaping",
+    description: "Light shaping where safely reachable from ground level.",
+    minTier: "premium",
+    group: "garden-care",
+  },
+  {
+    id: "weeding",
+    label: "Weeding in planted beds",
+    description: "Keep beds clear of weeds during each visit.",
+    minTier: "premium",
+    group: "garden-care",
+  },
+  {
+    id: "seasonal",
+    label: "Seasonal tidy & leaf clearance",
+    description: "Autumn leaf blow, light pruning, and general neatening.",
+    minTier: "premium",
+    group: "garden-care",
+  },
+  {
+    id: "twice-monthly",
+    label: "Visits about every 2 weeks",
+    description: "Roughly 20 professional visits per year.",
+    minTier: "premium",
+    group: "visit-frequency",
+  },
+  {
+    id: "frequent-visits",
+    label: "Visits about every 10 days",
+    description: "Roughly 30 visits per year through peak season.",
+    minTier: "elite",
+    group: "visit-frequency",
+  },
+  {
+    id: "patio",
+    label: "Patio & path refresh",
+    description: "One thorough clean of garden paving or decking per year.",
+    minTier: "elite",
+    group: "extras",
+  },
+];
+
+export const SIGNUP_SERVICE_GROUP_LABELS: Record<SignupServiceGroup, string> = {
+  core: "Core maintenance",
+  "garden-care": "Garden care",
+  "visit-frequency": "Visit frequency",
+  extras: "Included extras",
+};
+
+const TIER_RANK: Record<PlanTier, number> = {
+  essential: 0,
+  premium: 1,
+  elite: 2,
+};
+
+export function tierFromRank(rank: number): PlanTier {
+  if (rank >= 2) return "elite";
+  if (rank >= 1) return "premium";
+  return "essential";
+}
+
+/** Pick the lowest tier that covers every selected service. */
+export function matchPlanTierFromServices(selected: SignupServiceId[]): PlanTier {
+  if (selected.length === 0) return "essential";
+  let maxRank = 0;
+  for (const id of selected) {
+    const option = SIGNUP_SERVICES.find((s) => s.id === id);
+    if (option) maxRank = Math.max(maxRank, TIER_RANK[option.minTier]);
+  }
+  return tierFromRank(maxRank);
+}
+
 function isElitePlan(name: string) {
   return name.toLowerCase().includes("elite");
 }

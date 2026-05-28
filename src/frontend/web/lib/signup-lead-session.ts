@@ -13,10 +13,14 @@ export function getSignupSessionId(): string {
 export function signupLeadStepLabel(step: number): string {
   switch (step) {
     case 0:
-      return "Contact details";
+      return "Garden size";
     case 1:
-      return "Plan selected";
+      return "Services selected";
     case 2:
+      return "Plan matched";
+    case 3:
+      return "Contact details";
+    case 4:
       return "Address entered";
     default:
       return "Signup started";

@@ -5,10 +5,12 @@ export function SignupSummary({
   plan,
   gardenSize,
   compact = false,
+  showPrice = true,
 }: {
   plan: SubscriptionPlan;
   gardenSize: GardenSize;
   compact?: boolean;
+  showPrice?: boolean;
 }) {
   const price = planPriceForGarden(plan, gardenSize);
   const period = plan.billingInterval === "Monthly" ? "month" : "year";
@@ -25,15 +27,20 @@ export function SignupSummary({
       </p>
       <p className="mt-1 text-sm text-stone-600">{planVisitSummary(plan)}</p>
       <p className="mt-2 text-sm text-stone-600">
-        {GARDEN_SIZE_GUIDE[gardenSize].label} garden · {plan.billingInterval === "Monthly" ? "Monthly" : "Annual"} billing
+        {GARDEN_SIZE_GUIDE[gardenSize].label} garden
+        {showPrice ? ` · ${plan.billingInterval === "Monthly" ? "Monthly" : "Annual"} billing` : ""}
       </p>
-      <p className={`font-bold text-gardens-primary ${compact ? "mt-2 text-xl" : "mt-3 text-2xl"}`}>
-        {formatPriceFrom(price, period === "year" ? "yr" : "mo")}
-      </p>
-      {!compact && (
-        <p className="mt-2 text-xs text-stone-500">
-          {plan.minimumTermMonths}-month minimum term · Cancel via support after minimum term
-        </p>
+      {showPrice && (
+        <>
+          <p className={`font-bold text-gardens-primary ${compact ? "mt-2 text-xl" : "mt-3 text-2xl"}`}>
+            {formatPriceFrom(price, period === "year" ? "yr" : "mo")}
+          </p>
+          {!compact && (
+            <p className="mt-2 text-xs text-stone-500">
+              {plan.minimumTermMonths}-month minimum term · Cancel via support after minimum term
+            </p>
+          )}
+        </>
       )}
     </div>
   );
