@@ -151,6 +151,7 @@ export type SignupServiceId =
   | "hedges"
   | "weeding"
   | "seasonal"
+  | "monthly-visits"
   | "twice-monthly"
   | "frequent-visits"
   | "patio";
@@ -194,6 +195,13 @@ export const SIGNUP_SERVICES: SignupServiceOption[] = [
     description: "Autumn leaf blow, light pruning, and general neatening.",
     minTier: "premium",
     group: "garden-care",
+  },
+  {
+    id: "monthly-visits",
+    label: "About 10 visits per year",
+    description: "Roughly one professional visit per month — Essential upkeep.",
+    minTier: "essential",
+    group: "visit-frequency",
   },
   {
     id: "twice-monthly",

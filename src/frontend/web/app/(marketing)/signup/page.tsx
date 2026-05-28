@@ -43,11 +43,11 @@ import { AlertBanner, LoadingSpinner } from "@/components/ui/feedback";
 import { AvailabilityPicker } from "@/components/signup/AvailabilityPicker";
 import { SignupSummary } from "@/components/signup/SignupSummary";
 
-const STEPS = ["Garden size", "Your services", "Your plan", "Get started", "Finish signup"] as const;
+const STEPS = ["Garden size", "Find your plan", "Your quote", "Finish signup"] as const;
 
 const SERVICE_GROUPS: SignupServiceGroup[] = ["core", "garden-care", "visit-frequency", "extras"];
 
-const DEFAULT_SERVICES: SignupServiceId[] = ["lawn-borders"];
+const DEFAULT_SERVICES: SignupServiceId[] = ["lawn-borders", "monthly-visits"];
 
 export default function SignupPage() {
   const router = useRouter();
@@ -58,6 +58,7 @@ export default function SignupPage() {
   const [selectedTier, setSelectedTier] = useState<PlanTier>("essential");
   const [selectedServices, setSelectedServices] = useState<SignupServiceId[]>(DEFAULT_SERVICES);
   const [showPlanAlternatives, setShowPlanAlternatives] = useState(false);
+  const [planOverridden, setPlanOverridden] = useState(false);
   const [selectedPlanId, setSelectedPlanId] = useState("");
   const [skipPayment, setSkipPayment] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -78,6 +79,7 @@ export default function SignupPage() {
   const [pendingPhotos, setPendingPhotos] = useState<File[]>([]);
   const [photoBusy, setPhotoBusy] = useState(false);
   const [photoPreviewUrls, setPhotoPreviewUrls] = useState<string[]>([]);
+  const [quoteUnveiled, setQuoteUnveiled] = useState(false);
   const topRef = useRef<HTMLDivElement>(null);
 
   const matchedTier = useMemo(
@@ -99,6 +101,7 @@ export default function SignupPage() {
       const fromUrl = sorted[Number(planIndex)];
       const tier = tierFromPlan(fromUrl);
       setSelectedTier(tier);
+      setPlanOverridden(true);
       setBilling("Annual");
       const annualPlan = findTierPlanForBilling(sorted, tier, "Annual");
       setSelectedPlanId(annualPlan?.id ?? fromUrl.id);
@@ -133,10 +136,8 @@ export default function SignupPage() {
   }, [billing, selectedTier, plans]);
 
   useEffect(() => {
-    if (step < 2) {
-      setSelectedTier(matchedTier);
-    }
-  }, [matchedTier, step]);
+    if (!planOverridden) setSelectedTier(matchedTier);
+  }, [matchedTier, planOverridden]);
 
   useLayoutEffect(() => {
     topRef.current?.scrollIntoView({ block: "start" });
@@ -156,11 +157,11 @@ export default function SignupPage() {
       }
       return [...current, id];
     });
+    setPlanOverridden(false);
     setStepHint(null);
   }
 
   const selectedPlan = plans.find((p) => p.id === selectedPlanId);
-  const matchedTierMeta = PLAN_TIERS.find((t) => t.id === matchedTier);
 
   const leadSnapshot = useMemo(
     () => ({
@@ -180,19 +181,17 @@ export default function SignupPage() {
   function stepValidationMessage(): string | null {
     if (step === 1) {
       if (selectedServices.length === 0) return "Select at least one service to continue.";
+      if (!selectedPlanId) return "We could not find a plan — please refresh and try again.";
       return null;
     }
     if (step === 2) {
-      if (!selectedPlanId) return "We could not match a plan — please refresh and try again.";
+      if (!isValidEmail(form.email)) return "Enter a valid email address to see your quote.";
       return null;
     }
     if (step === 3) {
+      if (!quoteUnveiled) return "View your quote before continuing.";
       if (!form.firstName.trim()) return "Enter your first name.";
       if (!form.lastName.trim()) return "Enter your last name.";
-      if (!isValidEmail(form.email)) return "Enter a valid email address.";
-      return null;
-    }
-    if (step === 4) {
       if (!form.line1.trim() || !form.city.trim()) return "Enter your address and city.";
       if (!isValidUkPostcode(form.postcode)) return "Enter a valid UK postcode (e.g. LS1 4AP).";
       if (!form.availability.trim()) return "Tell us when visits work best for you.";
@@ -212,8 +211,23 @@ export default function SignupPage() {
     }
     setStepHint(null);
     if (step === 3) await captureLead();
+    if (step === 2 && !quoteUnveiled) {
+      await captureLead();
+      setQuoteUnveiled(true);
+      return;
+    }
     (document.activeElement as HTMLElement | null)?.blur?.();
     setStep((s) => s + 1);
+  }
+
+  function goBack() {
+    setStepHint(null);
+    (document.activeElement as HTMLElement | null)?.blur?.();
+    setStep((s) => {
+      const prev = s - 1;
+      if (s === 2 && quoteUnveiled) setQuoteUnveiled(false);
+      return prev;
+    });
   }
 
   async function continueToPayment(auth: AuthResponse) {
@@ -314,8 +328,8 @@ export default function SignupPage() {
   }
 
   const usingFallback = plans.length > 0 && plans[0]?.id.startsWith("fallback-");
-  const showSummary = step >= 2 && selectedPlan;
-  const showSummaryPrice = step >= 2;
+  const showSummary = step >= 1 && selectedPlan;
+  const showSummaryPrice = quoteUnveiled && step >= 2;
 
   const visibleTiers = useMemo(
     () =>
@@ -326,14 +340,15 @@ export default function SignupPage() {
     [plans, billing]
   );
 
-  const matchedPlan = findTierPlanForBilling(plans, matchedTier, billing);
+  const activePlan = findTierPlanForBilling(plans, selectedTier, billing);
+  const activeTierMeta = PLAN_TIERS.find((t) => t.id === selectedTier);
 
   return (
     <div className="pb-32 pt-8 md:pb-12 md:pt-12">
       <div ref={topRef} className="mx-auto max-w-5xl scroll-mt-8 px-4">
         <div className="text-center">
           <h1 className="font-display text-2xl font-bold text-gardens-dark sm:text-3xl">
-            Start your subscription
+            {step === 2 ? "Your quote" : "Find your plan"}
           </h1>
           <p className="mt-2 text-stone-600">
             Step {step + 1} of {STEPS.length} — {STEPS[step]}
@@ -411,128 +426,132 @@ export default function SignupPage() {
             )}
 
             {step === 1 && (
-              <div className="space-y-6 rounded-2xl border border-stone-200 bg-white p-5 shadow-soft sm:p-6">
-                <p className="text-sm text-stone-600">
-                  Tick everything you&apos;d like us to take care of. We&apos;ll recommend the plan that
-                  covers your choices.
+              <div className="rounded-2xl border border-stone-200 bg-white p-4 shadow-soft sm:p-5">
+                <p className="text-xs text-stone-600 sm:text-sm">
+                  Tick what you need — we&apos;ll match a plan. Price on the next step.
                 </p>
-                {SERVICE_GROUPS.map((group) => {
-                  const options = SIGNUP_SERVICES.filter((s) => s.group === group);
-                  if (options.length === 0) return null;
-                  return (
-                    <fieldset key={group}>
-                      <legend className="text-sm font-medium text-stone-700">
-                        {SIGNUP_SERVICE_GROUP_LABELS[group]}
-                      </legend>
-                      <ul className="mt-3 space-y-2">
-                        {options.map((service) => {
-                          const checked = selectedServices.includes(service.id);
-                          return (
-                            <li key={service.id}>
-                              <label
-                                className={`flex cursor-pointer gap-3 rounded-xl border p-4 transition ${
-                                  checked
-                                    ? "border-gardens-primary bg-gardens-light/40 ring-1 ring-gardens-primary/30"
-                                    : "border-stone-200 bg-white hover:border-stone-300"
-                                }`}
-                              >
-                                <input
-                                  type="checkbox"
-                                  className="mt-0.5 h-4 w-4 shrink-0 rounded border-stone-300 text-gardens-primary focus:ring-gardens-primary"
-                                  checked={checked}
-                                  onChange={() => toggleService(service.id)}
-                                />
-                                <span>
-                                  <span className="font-medium text-gardens-dark">{service.label}</span>
-                                  <span className="mt-0.5 block text-xs text-stone-600">
-                                    {service.description}
-                                  </span>
-                                </span>
-                              </label>
-                            </li>
-                          );
-                        })}
-                      </ul>
-                    </fieldset>
-                  );
-                })}
+                <div className="mt-3 space-y-3">
+                  {SERVICE_GROUPS.map((group) => {
+                    const options = SIGNUP_SERVICES.filter((s) => s.group === group);
+                    if (options.length === 0) return null;
+                    return (
+                      <fieldset key={group}>
+                        <legend className="text-xs font-semibold uppercase tracking-wide text-stone-500">
+                          {SIGNUP_SERVICE_GROUP_LABELS[group]}
+                        </legend>
+                        <ul className="mt-1.5 grid gap-1 sm:grid-cols-2">
+                          {options.map((service) => {
+                            const checked = selectedServices.includes(service.id);
+                            return (
+                              <li key={service.id}>
+                                <label
+                                  title={service.description}
+                                  className={`flex cursor-pointer items-center gap-2 rounded-lg border px-2.5 py-2 text-sm transition ${
+                                    checked
+                                      ? "border-gardens-primary bg-gardens-light/50 text-gardens-dark"
+                                      : "border-stone-200 bg-white text-stone-700 hover:border-stone-300"
+                                  }`}
+                                >
+                                  <input
+                                    type="checkbox"
+                                    className="h-3.5 w-3.5 shrink-0 rounded border-stone-300 text-gardens-primary focus:ring-gardens-primary"
+                                    checked={checked}
+                                    onChange={() => toggleService(service.id)}
+                                  />
+                                  <span className="leading-tight">{service.label}</span>
+                                </label>
+                              </li>
+                            );
+                          })}
+                        </ul>
+                      </fieldset>
+                    );
+                  })}
+                </div>
+
+                {plansLoading ? (
+                  <div className="mt-3 h-10 animate-pulse rounded-lg bg-stone-200" aria-busy="true" />
+                ) : (
+                  activeTierMeta &&
+                  activePlan && (
+                    <div className="mt-3 flex flex-wrap items-center justify-between gap-2 rounded-lg border border-gardens-primary/25 bg-gardens-light/50 px-3 py-2">
+                      <p className="text-sm text-gardens-dark">
+                        <span className="font-semibold">{activeTierMeta.label}</span>
+                        <span className="text-stone-600"> · {planVisitSummary(activePlan)}</span>
+                      </p>
+                      <p className="text-xs font-medium text-gardens-primary">Email next for price →</p>
+                    </div>
+                  )
+                )}
               </div>
             )}
 
             {step === 2 && (
               <div className="space-y-6">
-                {plansLoading ? (
-                  <div className="space-y-4" aria-busy="true">
-                    <div className="h-10 animate-pulse rounded-xl bg-stone-200" />
-                    <div className="h-48 animate-pulse rounded-2xl bg-stone-200" />
+                <div className="rounded-2xl border border-stone-200 bg-white p-5 shadow-soft sm:p-6">
+                  <p className="text-sm text-stone-600">
+                    Enter your email and we&apos;ll show your personalised quote for a{" "}
+                    {GARDEN_SIZE_GUIDE[form.gardenSize].label.toLowerCase()} garden.
+                  </p>
+                  <div className="mt-4">
+                    <Field
+                      label="Email"
+                      type="email"
+                      value={form.email}
+                      onChange={(v) => updateField("email", v)}
+                      required
+                      autoComplete="email"
+                    />
                   </div>
-                ) : (
-                  <>
-                    <div className="rounded-2xl border border-gardens-primary/30 bg-gardens-light/40 p-5">
-                      <p className="text-xs font-semibold uppercase tracking-wide text-gardens-primary">
-                        Recommended for you
-                      </p>
-                      {matchedTierMeta && matchedPlan && (
-                        <>
-                          <p className="mt-2 font-display text-xl font-bold text-gardens-dark">
-                            {matchedTierMeta.label}
-                          </p>
-                          <p className="text-sm text-stone-600">{matchedTierMeta.tagline}</p>
-                          <p className="mt-2 text-sm text-stone-600">{planVisitSummary(matchedPlan)}</p>
-                          <ul className="mt-3 space-y-1 text-xs text-stone-600">
-                            {planFeatures(matchedPlan).slice(0, 4).map((f) => (
-                              <li key={f}>• {f}</li>
-                            ))}
-                          </ul>
-                        </>
-                      )}
-                    </div>
+                  <p className="mt-3 text-xs text-stone-500">
+                    We&apos;ll email your quote and save your progress if you need to finish later. Marketing
+                    emails are optional and you can opt out anytime.
+                  </p>
+                </div>
 
-                    <div className="flex flex-wrap items-start justify-between gap-3">
+                {quoteUnveiled && !plansLoading && activeTierMeta && activePlan && (
+                  <div className="rounded-2xl border border-gardens-primary/30 bg-gardens-light/40 p-5 sm:p-6">
+                    <p className="text-xs font-semibold uppercase tracking-wide text-gardens-primary">
+                      Your personalised quote
+                    </p>
+                    <p className="mt-2 font-display text-xl font-bold text-gardens-dark">
+                      {activeTierMeta.label}
+                    </p>
+                    <p className="text-sm text-stone-600">{activeTierMeta.tagline}</p>
+                    <p className="mt-2 text-sm text-stone-600">{planVisitSummary(activePlan)}</p>
+                    <div className="mt-4 flex flex-wrap items-end justify-between gap-4 border-t border-gardens-primary/15 pt-4">
                       <div className="space-y-2">
                         <BillingIntervalToggle billing={billing} onChange={setBilling} />
                         <p className="text-xs text-stone-500">{ANNUAL_BILLING_HINT}</p>
                       </div>
-                      <Link href="/#pricing" className="text-sm font-medium text-gardens-primary hover:underline">
-                        Compare all features
-                      </Link>
-                    </div>
-
-                    {matchedPlan && (
-                      <div className="rounded-2xl border border-stone-200 bg-white p-5">
-                        <p className="text-sm text-stone-600">
-                          {GARDEN_SIZE_GUIDE[form.gardenSize].label} garden ·{" "}
-                          {matchedPlan.minimumTermMonths}-month minimum
+                      <div className="text-right">
+                        <p className="text-xs text-stone-600">
+                          {GARDEN_SIZE_GUIDE[form.gardenSize].label} · {activePlan.minimumTermMonths}-month min
                         </p>
-                        <p className="mt-3 text-2xl font-bold text-gardens-primary">
+                        <p className="mt-1 text-2xl font-bold text-gardens-primary">
                           {formatPriceFrom(
-                            planPriceForGarden(matchedPlan, form.gardenSize),
+                            planPriceForGarden(activePlan, form.gardenSize),
                             billing === "Monthly" ? "mo" : "yr"
                           )}
                         </p>
                         {billing === "Annual" && (
-                          <p className="mt-1 text-xs font-medium text-gardens-primary">
+                          <p className="text-xs font-medium text-gardens-primary">
                             From £
                             {formatGbp(
-                              annualEquivalentMonthly(planPriceForGarden(matchedPlan, form.gardenSize))
+                              annualEquivalentMonthly(planPriceForGarden(activePlan, form.gardenSize))
                             )}
-                            /mo — billed once a year
-                          </p>
-                        )}
-                        {billing === "Monthly" && (
-                          <p className="mt-1 text-xs text-stone-500">
-                            Annual is best value — {ANNUAL_BILLING_SAVINGS.toLowerCase()} vs monthly
+                            /mo billed yearly
                           </p>
                         )}
                       </div>
-                    )}
+                    </div>
 
                     <button
                       type="button"
                       onClick={() => setShowPlanAlternatives((v) => !v)}
-                      className="flex w-full items-center justify-between rounded-xl border border-stone-200 bg-white px-4 py-3 text-sm font-medium text-stone-700"
+                      className="mt-4 flex w-full items-center justify-between rounded-xl border border-stone-200/80 bg-white/80 px-4 py-2.5 text-sm font-medium text-stone-700"
                     >
-                      Choose a different plan
+                      See other plans (optional)
                       {showPlanAlternatives ? (
                         <ChevronUp className="h-4 w-4" />
                       ) : (
@@ -541,7 +560,7 @@ export default function SignupPage() {
                     </button>
 
                     {showPlanAlternatives && (
-                      <div className="space-y-3">
+                      <div className="mt-3 space-y-2">
                         {visibleTiers.map(({ id, label, tagline, plan }) => {
                           if (!plan) return null;
                           const selected = selectedTier === id;
@@ -550,19 +569,21 @@ export default function SignupPage() {
                             <button
                               key={plan.id}
                               type="button"
-                              onClick={() => setSelectedTier(id)}
-                              className={`relative w-full rounded-2xl border p-5 text-left transition ${
+                              onClick={() => {
+                                setSelectedTier(id);
+                                setPlanOverridden(true);
+                              }}
+                              className={`relative w-full rounded-xl border p-4 text-left transition ${
                                 selected
-                                  ? "border-gardens-primary bg-gardens-light/50 ring-2 ring-gardens-primary/30"
+                                  ? "border-gardens-primary bg-white ring-2 ring-gardens-primary/30"
                                   : "border-stone-200 bg-white hover:border-stone-300"
                               }`}
                             >
                               <div className="flex items-start justify-between gap-3">
                                 <div>
                                   <p className="font-semibold text-gardens-dark">{label}</p>
-                                  <p className="text-sm text-stone-500">{tagline}</p>
-                                  <p className="mt-1 text-sm text-stone-600">{planVisitSummary(plan)}</p>
-                                  <p className="mt-3 text-xl font-bold text-gardens-primary">
+                                  <p className="text-xs text-stone-500">{tagline}</p>
+                                  <p className="mt-2 text-lg font-bold text-gardens-primary">
                                     {formatPriceFrom(price, billing === "Monthly" ? "mo" : "yr")}
                                   </p>
                                 </div>
@@ -571,33 +592,26 @@ export default function SignupPage() {
                             </button>
                           );
                         })}
+                        <Link
+                          href="/#pricing"
+                          className="block pt-1 text-center text-xs font-medium text-gardens-primary hover:underline"
+                        >
+                          Full feature comparison
+                        </Link>
                       </div>
                     )}
-                  </>
+                  </div>
                 )}
               </div>
             )}
 
             {step === 3 && (
-              <div className="space-y-4 rounded-2xl border border-stone-200 bg-white p-5 shadow-soft sm:p-6">
+              <div className="space-y-5 rounded-2xl border border-stone-200 bg-white p-5 shadow-soft sm:p-6">
                 <p className="text-sm text-stone-600">
-                  Almost there — we&apos;ll save your progress so we can help if you need to finish later.
+                  Last step — tell us who you are and where we&apos;ll maintain your garden.
                 </p>
                 <Field label="First name" value={form.firstName} onChange={(v) => updateField("firstName", v)} required autoComplete="given-name" />
                 <Field label="Last name" value={form.lastName} onChange={(v) => updateField("lastName", v)} required autoComplete="family-name" />
-                <Field label="Email" type="email" value={form.email} onChange={(v) => updateField("email", v)} required autoComplete="email" />
-                <p className="text-xs text-stone-500">
-                  By continuing, you agree we may contact you by email about your signup and account. Marketing
-                  emails are optional and you can opt out anytime.
-                </p>
-              </div>
-            )}
-
-            {step === 4 && (
-              <div className="space-y-5 rounded-2xl border border-stone-200 bg-white p-5 shadow-soft sm:p-6">
-                <p className="text-sm text-stone-600">
-                  Where should we maintain your garden? We match you with a local gardener in your area.
-                </p>
                 <Field label="Address line 1" value={form.line1} onChange={(v) => updateField("line1", v)} required autoComplete="address-line1" />
                 <Field label="Address line 2 (optional)" value={form.line2} onChange={(v) => updateField("line2", v)} autoComplete="address-line2" />
                 <div className="grid gap-4 sm:grid-cols-2">
@@ -697,11 +711,7 @@ export default function SignupPage() {
               {step > 0 ? (
                 <button
                   type="button"
-                  onClick={() => {
-                    setStepHint(null);
-                    (document.activeElement as HTMLElement | null)?.blur?.();
-                    setStep((s) => s - 1);
-                  }}
+                  onClick={goBack}
                   className="inline-flex min-h-[48px] items-center justify-center gap-1 rounded-full border border-stone-200 px-6 text-base font-medium text-stone-700"
                 >
                   <ChevronLeft className="h-4 w-4" /> Back
@@ -716,7 +726,8 @@ export default function SignupPage() {
                   onClick={tryAdvance}
                   className="btn-primary gap-1 sm:ml-auto"
                 >
-                  Continue <ChevronRight className="h-4 w-4" />
+                  {step === 2 && !quoteUnveiled ? "See my quote" : "Continue"}
+                  {!(step === 2 && !quoteUnveiled) && <ChevronRight className="h-4 w-4" />}
                 </button>
               ) : (
                 <button
@@ -756,18 +767,15 @@ export default function SignupPage() {
             <p className="text-center text-xs text-stone-500">
               Step {step + 1} of {STEPS.length}
               {step === 0 && " — pick your garden size"}
-              {step === 1 && " — choose your services"}
+              {step === 1 && " — tick services, we find your plan"}
+              {step === 2 && !quoteUnveiled && " — enter email for your quote"}
             </p>
           )}
           <div className="mt-3 flex gap-2">
             {step > 0 && (
               <button
                 type="button"
-                onClick={() => {
-                  setStepHint(null);
-                  (document.activeElement as HTMLElement | null)?.blur?.();
-                  setStep((s) => s - 1);
-                }}
+                onClick={goBack}
                 className="inline-flex min-h-[48px] flex-1 items-center justify-center rounded-full border border-stone-200 text-sm font-medium text-stone-700"
               >
                 Back
@@ -775,7 +783,7 @@ export default function SignupPage() {
             )}
             {step < STEPS.length - 1 ? (
               <button type="button" onClick={tryAdvance} className="btn-primary min-h-[48px] flex-[2]">
-                Continue
+                {step === 2 && !quoteUnveiled ? "See my quote" : "Continue"}
               </button>
             ) : (
               <button type="button" disabled={loading} onClick={submit} className="btn-primary min-h-[48px] flex-[2]">

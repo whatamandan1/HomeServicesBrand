@@ -12,14 +12,12 @@ import {
   annualEquivalentMonthly,
   findTierPlanForBilling,
   formatPriceFrom,
-  GARDEN_SIZE_GUIDE,
   NOT_INCLUDED,
   ON_VISIT_WHEN_POSSIBLE,
   PLAN_TIERS,
   planFeatures,
   planPriceForGarden,
   planVisitSummary,
-  monthlyPriceMatrix,
   SEASONAL_ADDONS,
   SHARED_FEATURES,
   type BillingChoice,
@@ -33,7 +31,7 @@ export function PricingSection() {
   const [plans, setPlans] = useState<SubscriptionPlan[]>([]);
   const [loaded, setLoaded] = useState(false);
   const [offline, setOffline] = useState(false);
-  const [billing, setBilling] = useState<BillingChoice>("Annual");
+  const [billing, setBilling] = useState<BillingChoice>("Monthly");
 
   useEffect(() => {
     api.getPlans()
@@ -65,7 +63,6 @@ export function PricingSection() {
   }
 
   const displayPlans = sortPlans(plans);
-  const matrix = monthlyPriceMatrix(displayPlans);
   const visibleTiers = PLAN_TIERS.map((tier) => ({
     ...tier,
     plan: findTierPlanForBilling(displayPlans, tier.id, billing),
@@ -79,7 +76,12 @@ export function PricingSection() {
         </p>
       )}
 
-      <PlanCompareTable plans={displayPlans} billing={billing} onBillingChange={setBilling} />
+      <PlanCompareTable
+        plans={displayPlans}
+        billing={billing}
+        onBillingChange={setBilling}
+        annualFirst={false}
+      />
 
       {billing === "Monthly" && (
         <p className="rounded-xl border border-gardens-primary/20 bg-gardens-light/60 px-4 py-3 text-center text-sm text-gardens-dark">
@@ -155,40 +157,6 @@ export function PricingSection() {
           </li>
         ))}
       </ul>
-
-      {matrix && (
-        <div className="rounded-2xl border border-stone-200 bg-white p-5 shadow-soft sm:p-6">
-          <h3 className="font-display text-lg font-semibold text-gardens-dark">
-            Monthly price by garden size
-          </h3>
-          <p className="mt-1 text-sm text-stone-600">
-            Prices scale with the amount of garden we maintain. Choose your size at signup — we&apos;ll confirm it
-            matches your property.
-          </p>
-          <div className="mt-4 overflow-x-auto">
-            <table className="min-w-full text-left text-sm">
-              <thead>
-                <tr className="border-b text-xs uppercase tracking-wide text-stone-500">
-                  <th className="py-2 pr-4 font-medium">Garden size</th>
-                  <th className="py-2 px-4 font-medium">Essential</th>
-                  <th className="py-2 px-4 font-medium">Premium</th>
-                  <th className="py-2 pl-4 font-medium">Elite</th>
-                </tr>
-              </thead>
-              <tbody>
-                {matrix.map((row) => (
-                  <tr key={row.size} className="border-b border-stone-100 last:border-0">
-                    <td className="py-3 pr-4 font-medium text-gardens-dark">{GARDEN_SIZE_GUIDE[row.size].label}</td>
-                    <td className="py-3 px-4 text-stone-700">From £{formatGbp(row.essential)}/mo</td>
-                    <td className="py-3 px-4 text-stone-700">From £{formatGbp(row.premium)}/mo</td>
-                    <td className="py-3 pl-4 text-stone-700">From £{formatGbp(row.elite)}/mo</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        </div>
-      )}
 
       <div className="rounded-2xl border border-stone-200 bg-stone-50 p-5 sm:p-6">
         <h3 className="font-display text-lg font-semibold text-gardens-dark">On visit vs seasonal add-ons</h3>

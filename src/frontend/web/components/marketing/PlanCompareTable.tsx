@@ -21,6 +21,8 @@ type PlanCompareTableProps = {
   plans: SubscriptionPlan[];
   billing: BillingChoice;
   onBillingChange: (billing: BillingChoice) => void;
+  /** Toggle order; default Annual first. Pricing uses Monthly first. */
+  annualFirst?: boolean;
 };
 
 function CompareCell({ value }: { value: boolean | string }) {
@@ -42,7 +44,12 @@ function CompareCell({ value }: { value: boolean | string }) {
   );
 }
 
-export function PlanCompareTable({ plans, billing, onBillingChange }: PlanCompareTableProps) {
+export function PlanCompareTable({
+  plans,
+  billing,
+  onBillingChange,
+  annualFirst = true,
+}: PlanCompareTableProps) {
   const isAnnual = billing === "Annual";
   const tierPlans = PLAN_TIERS.map((tier) => ({
     ...tier,
@@ -56,7 +63,7 @@ export function PlanCompareTable({ plans, billing, onBillingChange }: PlanCompar
           <h3 className="font-display text-lg font-semibold text-gardens-dark">Compare plans</h3>
           <p className="mt-1 text-sm text-stone-600">{ANNUAL_BILLING_HINT}</p>
         </div>
-        <BillingIntervalToggle billing={billing} onChange={onBillingChange} />
+        <BillingIntervalToggle billing={billing} onChange={onBillingChange} annualFirst={annualFirst} />
       </div>
 
       <div className="overflow-x-auto">

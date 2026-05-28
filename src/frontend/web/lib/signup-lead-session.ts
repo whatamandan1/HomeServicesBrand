@@ -15,13 +15,11 @@ export function signupLeadStepLabel(step: number): string {
     case 0:
       return "Garden size";
     case 1:
-      return "Services selected";
+      return "Plan found";
     case 2:
-      return "Plan matched";
+      return "Email for quote";
     case 3:
-      return "Contact details";
-    case 4:
-      return "Address entered";
+      return "Finish signup";
     default:
       return "Signup started";
   }
