@@ -10,6 +10,8 @@ public class ProviderVisitPayTests
     [InlineData("Premium Monthly", GardenSize.Small, 15.00)]
     [InlineData("Elite Monthly", GardenSize.Small, 15.00)]
     [InlineData("Elite Monthly", GardenSize.Large, 21.00)]
+    [InlineData("Elite Monthly", GardenSize.XLarge, 24.00)]
+    [InlineData("Elite Monthly", GardenSize.XXLarge, 27.00)]
     public void Flat_per_visit_rate_by_garden_size(string planName, GardenSize gardenSize, decimal expected)
     {
         _ = planName;

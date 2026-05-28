@@ -42,7 +42,7 @@ export type CustomerPayment = {
   stripeInvoiceId: string | null;
 };
 
-export type GardenSize = "Small" | "Medium" | "Large";
+export type GardenSize = "Small" | "Medium" | "Large" | "XLarge" | "XXLarge";
 
 export type PortfolioEnquiryStatus =
   | "New"

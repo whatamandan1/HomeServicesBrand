@@ -179,7 +179,7 @@ public class OpenAiSupportService(
         var planLines = plans.Count > 0
             ? string.Join("\n", plans.Select(p =>
                 $"- {p.Name}: £{p.PriceGbp}/{(p.BillingInterval == SubscriptionBillingInterval.Monthly ? "month" : "year")}, {p.MinimumTermMonths}-month minimum. {p.Description}"))
-            : "- Essential Monthly: £29.95/month, 3-month minimum\n- Essential Annual: £299.95/year, 12-month minimum\n- Premium Monthly: £54.95/month, 3-month minimum\n- Premium Annual: £549.95/year, 12-month minimum\n- Elite Monthly: £89.95/month (3 visits/month), 3-month minimum\n- Elite Annual: £899.95/year, 12-month minimum";
+            : "- Essential Monthly: £39.95/month (small garden up to 50 m²), 3-month minimum\n- Essential Annual: £399.95/year, 12-month minimum\n- Premium Monthly: £64.95/month, 3-month minimum\n- Premium Annual: £559.95/year, 12-month minimum\n- Elite Monthly: £99.95/month (3 visits/month), 3-month minimum\n- Elite Annual: £909.95/year, 12-month minimum\n- Garden sizes: Small (50 m²), Medium (75), Large (100), X Large (125), XX Large (150) — each step adds £10/month or £100/year";
 
         return $"""
             Visitor status: Not signed in (pre-sales / general questions)

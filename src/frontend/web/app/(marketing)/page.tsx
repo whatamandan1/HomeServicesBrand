@@ -16,7 +16,7 @@ import { PRIMARY_CTA_HREF, PRIMARY_CTA_LABEL } from "@/lib/marketing-cta";
 export const metadata: Metadata = {
   title: "Garden care subscriptions in Yorkshire",
   description:
-    "Regular garden maintenance for Yorkshire homes. Subscribe online, choose your plan, and we schedule trusted local gardeners — from £29.95/month.",
+    "Regular garden maintenance for Yorkshire homes. Subscribe online, choose your plan, and we schedule trusted local gardeners — from £39.95/month.",
   openGraph: {
     title: "GardensSorted — Garden care subscriptions in Yorkshire",
     description:
@@ -46,7 +46,7 @@ const included = [
   "Essential: 10 visits per year — lawn, borders, and tidy",
   "Premium: 20 visits per year plus hedges & beds",
   "Elite: 30 visits per year (~every 10 days) with patio refresh included",
-  "Pricing scales for small, medium, and large gardens",
+  "Pricing scales across five garden sizes (up to 150 m²)",
   "Online account to view and manage every visit",
 ];
 
@@ -65,7 +65,7 @@ const faqs = [
   },
   {
     q: "How does garden size affect price?",
-    a: "Small gardens are our base price (from £29.95/month Essential, or from about £25/month on annual billing). Medium gardens add £10/month; large gardens add £20/month. Premium and Elite have the same uplifts. Annual plans use £100 medium / £200 large per year.",
+    a: "Small gardens (up to 50 m²) are our base price — from £39.95/month Essential, or from about £33/month on annual billing. Each larger size band adds £10/month (£100/year on annual plans): Medium up to 75 m², Large up to 100 m², X Large up to 125 m², XX Large up to 150 m². Premium and Elite use the same uplifts.",
   },
   {
     q: "What's not included?",

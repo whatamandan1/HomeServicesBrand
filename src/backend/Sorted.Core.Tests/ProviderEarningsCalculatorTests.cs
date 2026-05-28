@@ -20,6 +20,8 @@ public class ProviderEarningsCalculatorTests
     [InlineData(GardenSize.Small, 15.00)]
     [InlineData(GardenSize.Medium, 18.00)]
     [InlineData(GardenSize.Large, 21.00)]
+    [InlineData(GardenSize.XLarge, 24.00)]
+    [InlineData(GardenSize.XXLarge, 27.00)]
     public void Visit_pay_scales_with_garden_size_not_tier(GardenSize gardenSize, decimal expected)
     {
         Assert.Equal(expected, ProviderEarningsCalculator.CalculateVisitEarningGbp(gardenSize));

@@ -4,24 +4,30 @@ namespace Sorted.Core.Plans;
 
 /// <summary>
 /// Consumer Essential/Premium pricing. Base prices are for a <see cref="GardenSize.Small"/> garden;
-/// medium and large gardens add a fixed uplift (monthly or annual equivalent).
+/// each larger size band adds a fixed uplift (monthly or annual equivalent).
 /// </summary>
 public static class ConsumerPlanPricing
 {
-    public const decimal MediumMonthlyUpliftGbp = 10m;
-    public const decimal LargeMonthlyUpliftGbp = 20m;
-    public const decimal MediumAnnualUpliftGbp = 100m;
-    public const decimal LargeAnnualUpliftGbp = 200m;
+    public const decimal MonthlyUpliftPerSizeStepGbp = 10m;
+    public const decimal AnnualUpliftPerSizeStepGbp = 100m;
+
+    public static int GardenSizeRank(GardenSize gardenSize) =>
+        gardenSize switch
+        {
+            GardenSize.Medium => 1,
+            GardenSize.Large => 2,
+            GardenSize.XLarge => 3,
+            GardenSize.XXLarge => 4,
+            _ => 0
+        };
 
     public static decimal GardenSizeUplift(GardenSize gardenSize, SubscriptionBillingInterval billingInterval)
     {
-        var isAnnual = billingInterval == SubscriptionBillingInterval.Annual;
-        return gardenSize switch
-        {
-            GardenSize.Medium => isAnnual ? MediumAnnualUpliftGbp : MediumMonthlyUpliftGbp,
-            GardenSize.Large => isAnnual ? LargeAnnualUpliftGbp : LargeMonthlyUpliftGbp,
-            _ => 0m
-        };
+        var steps = GardenSizeRank(gardenSize);
+        var perStep = billingInterval == SubscriptionBillingInterval.Annual
+            ? AnnualUpliftPerSizeStepGbp
+            : MonthlyUpliftPerSizeStepGbp;
+        return steps * perStep;
     }
 
     public static decimal ApplyGardenSizeUplift(

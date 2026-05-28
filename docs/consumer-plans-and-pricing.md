@@ -96,13 +96,15 @@ Future: optional seasonal packs or landlord bundles (see multi-property track).
 
 ## Garden size definitions
 
-Customers choose **Small**, **Medium**, or **Large** at signup. We use this to price fairly and allocate enough time on site.
+Customers choose a garden size band at signup. We use this to price fairly and allocate enough time on site.
 
 | Size | Maintained area (guide) | Typical examples |
 |------|-------------------------|------------------|
-| **Small** | Up to ~100 m² lawn + borders combined | Courtyard, terrace, compact town garden |
-| **Medium** | ~100–250 m² | Standard suburban rear garden |
-| **Large** | ~250 m²+ or extensive planting | Large lawns, long borders, multiple zones |
+| **Small** | Up to 50 m² | Courtyard, terrace, compact town garden |
+| **Medium** | Up to 75 m² | Small suburban rear garden |
+| **Large** | Up to 100 m² | Typical family garden |
+| **X Large** | Up to 125 m² | Generous lawn with multiple beds |
+| **XX Large** | Up to 150 m² | Large plot with extensive lawn and planting |
 
 If your garden is between sizes, choose the closest fit — we can adjust after the first visit if needed.
 
@@ -116,22 +118,25 @@ Base prices are configured in `Plans__*` env vars and seeded plans. Garden-size 
 
 | Garden size | Essential | Premium | Elite |
 |-------------|-----------|---------|-------|
-| Small | £29.95 | £54.95 | £89.95 |
-| Medium | £39.95 (+£10) | £64.95 (+£10) | £99.95 (+£10) |
-| Large | £49.95 (+£20) | £74.95 (+£20) | £109.95 (+£20) |
+| Small | £39.95 | £64.95 | £99.95 |
+| Medium | £49.95 | £74.95 | £109.95 |
+| Large | £59.95 | £84.95 | £119.95 |
+| X Large | £69.95 | £94.95 | £129.95 |
+| XX Large | £79.95 | £104.95 | £139.95 |
 
 ### Annual billing (~2 months free vs paying monthly)
 
 | Garden size | Essential | Premium | Elite |
 |-------------|-----------|---------|-------|
-| Small | £299.95 | £549.95 | £899.95 |
-| Medium | £399.95 (+£100) | £649.95 (+£100) | £999.95 (+£100) |
-| Large | £499.95 (+£200) | £749.95 (+£200) | £1,099.95 (+£200) |
+| Small | £399.95 | £559.95 | £909.95 |
+| Medium | £499.95 | £659.95 | £1,009.95 |
+| Large | £599.95 | £759.95 | £1,109.95 |
+| X Large | £699.95 | £859.95 | £1,209.95 |
+| XX Large | £799.95 | £959.95 | £1,309.95 |
 
 ### Uplift rules (code)
 
-- Monthly: Medium **+£10**, Large **+£20**
-- Annual: Medium **+£100**, Large **+£200**
+- Each size band above Small adds **+£10/month** or **+£100/year** (five bands: Small → XX Large)
 
 Implementation: `Sorted.Core/Plans/ConsumerPlanPricing.cs`, frontend mirror in `src/frontend/web/lib/consumer-plans.ts`.
 

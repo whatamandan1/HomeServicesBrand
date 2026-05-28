@@ -1,5 +1,6 @@
 namespace Sorted.Core.Options;
 
+using Sorted.Core.Enums;
 using Sorted.Core.Plans;
 
 public class JwtOptions
@@ -38,12 +39,12 @@ public class StripePriceOptions
 public class PlanPricingOptions
 {
     public const string Section = "Plans";
-    public decimal EssentialMonthly { get; set; } = 29.95m;
-    public decimal EssentialAnnual { get; set; } = 299.95m;
-    public decimal PremiumMonthly { get; set; } = 54.95m;
-    public decimal PremiumAnnual { get; set; } = 549.95m;
-    public decimal EliteMonthly { get; set; } = 89.95m;
-    public decimal EliteAnnual { get; set; } = 899.95m;
+    public decimal EssentialMonthly { get; set; } = 39.95m;
+    public decimal EssentialAnnual { get; set; } = 399.95m;
+    public decimal PremiumMonthly { get; set; } = 64.95m;
+    public decimal PremiumAnnual { get; set; } = 559.95m;
+    public decimal EliteMonthly { get; set; } = 99.95m;
+    public decimal EliteAnnual { get; set; } = 909.95m;
 }
 
 public class SendGridOptions
@@ -105,6 +106,8 @@ public class ProviderPayoutOptions
     public const string Section = "ProviderPayout";
     /// <summary>Fixed pay per completed visit (small garden) — same for Essential, Premium, and Elite.</summary>
     public decimal SmallVisitGbp { get; set; } = ProviderVisitPay.SmallVisitGbp;
-    public decimal MediumVisitGbp { get; set; } = ProviderVisitPay.SmallVisitGbp + ProviderVisitPay.MediumVisitUpliftGbp;
-    public decimal LargeVisitGbp { get; set; } = ProviderVisitPay.SmallVisitGbp + ProviderVisitPay.LargeVisitUpliftGbp;
+    public decimal MediumVisitGbp { get; set; } = ProviderVisitPay.ForGardenSize(GardenSize.Medium);
+    public decimal LargeVisitGbp { get; set; } = ProviderVisitPay.ForGardenSize(GardenSize.Large);
+    public decimal XLargeVisitGbp { get; set; } = ProviderVisitPay.ForGardenSize(GardenSize.XLarge);
+    public decimal XXLargeVisitGbp { get; set; } = ProviderVisitPay.ForGardenSize(GardenSize.XXLarge);
 }

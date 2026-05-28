@@ -9,7 +9,7 @@ export const FALLBACK_PLANS: SubscriptionPlan[] = [
     description: "One visit per month (small garden) — lawn, borders, and tidy. 3-month minimum.",
     billingInterval: "Monthly",
     minimumTermMonths: 3,
-    priceGbp: 29.95,
+    priceGbp: 39.95,
   },
   {
     id: "fallback-premium-monthly",
@@ -17,7 +17,7 @@ export const FALLBACK_PLANS: SubscriptionPlan[] = [
     description: "Two visits per month (small garden) — hedges, beds, seasonal tidy. 3-month minimum.",
     billingInterval: "Monthly",
     minimumTermMonths: 3,
-    priceGbp: 54.95,
+    priceGbp: 64.95,
   },
   {
     id: "fallback-elite-monthly",
@@ -25,7 +25,7 @@ export const FALLBACK_PLANS: SubscriptionPlan[] = [
     description: "Three visits per month (~every 10 days, small garden) — everything in Premium. 3-month minimum.",
     billingInterval: "Monthly",
     minimumTermMonths: 3,
-    priceGbp: 89.95,
+    priceGbp: 99.95,
   },
   {
     id: "fallback-essential-annual",
@@ -33,7 +33,7 @@ export const FALLBACK_PLANS: SubscriptionPlan[] = [
     description: "One visit per month (small garden), 12-month commitment — discounted.",
     billingInterval: "Annual",
     minimumTermMonths: 12,
-    priceGbp: 299.95,
+    priceGbp: 399.95,
   },
   {
     id: "fallback-premium-annual",
@@ -41,7 +41,7 @@ export const FALLBACK_PLANS: SubscriptionPlan[] = [
     description: "Two visits per month (small garden), 12-month commitment — discounted.",
     billingInterval: "Annual",
     minimumTermMonths: 12,
-    priceGbp: 549.95,
+    priceGbp: 559.95,
   },
   {
     id: "fallback-elite-annual",
@@ -49,7 +49,7 @@ export const FALLBACK_PLANS: SubscriptionPlan[] = [
     description: "Three visits per month (~every 10 days, small garden), 12-month commitment — discounted.",
     billingInterval: "Annual",
     minimumTermMonths: 12,
-    priceGbp: 899.95,
+    priceGbp: 909.95,
   },
 ];
 
@@ -79,5 +79,5 @@ export function planSignupHref(
 
 /** @deprecated Use nextUpgradePlanLabel from consumer-plans */
 export function premiumPlanLabel(billingInterval: string) {
-  return billingInterval === "Annual" ? "Premium Annual (£549.95/year)" : "Premium Monthly (£54.95/month)";
+  return billingInterval === "Annual" ? "Premium Annual (£559.95/year)" : "Premium Monthly (£64.95/month)";
 }

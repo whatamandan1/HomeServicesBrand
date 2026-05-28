@@ -176,9 +176,11 @@ export function PortfolioEnquiryForm() {
                       onChange={(e) => updateProperty(index, "gardenSize", e.target.value)}
                       className="field-input"
                     >
-                      <option value="Small">Small</option>
-                      <option value="Medium">Medium</option>
-                      <option value="Large">Large</option>
+                      <option value="Small">Small (up to 50 m²)</option>
+                      <option value="Medium">Medium (up to 75 m²)</option>
+                      <option value="Large">Large (up to 100 m²)</option>
+                      <option value="XLarge">X Large (up to 125 m²)</option>
+                      <option value="XXLarge">XX Large (up to 150 m²)</option>
                     </select>
                   </label>
                 </div>

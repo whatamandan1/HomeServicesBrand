@@ -61,7 +61,9 @@ public enum GardenSize
 {
     Small = 1,
     Medium = 2,
-    Large = 3
+    Large = 3,
+    XLarge = 4,
+    XXLarge = 5
 }
 
 public enum ProviderEarningStatus

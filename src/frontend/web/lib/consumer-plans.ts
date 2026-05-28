@@ -1,9 +1,23 @@
 import type { GardenSize, SubscriptionPlan } from "@/lib/api";
 import { formatGbp } from "@/lib/format";
 
-export const GARDEN_SIZE_UPLIFT = {
-  monthly: { Medium: 10, Large: 20 } as const,
-  annual: { Medium: 100, Large: 200 } as const,
+/** Added to the small-garden base price per size band (monthly; annual uses 10×). */
+export const GARDEN_SIZE_STEP_UPLIFT = { monthly: 10, annual: 100 } as const;
+
+export const GARDEN_SIZE_ORDER: GardenSize[] = [
+  "Small",
+  "Medium",
+  "Large",
+  "XLarge",
+  "XXLarge",
+];
+
+const GARDEN_SIZE_RANK: Record<GardenSize, number> = {
+  Small: 0,
+  Medium: 1,
+  Large: 2,
+  XLarge: 3,
+  XXLarge: 4,
 };
 
 export const GARDEN_SIZE_GUIDE: Record<
@@ -11,19 +25,29 @@ export const GARDEN_SIZE_GUIDE: Record<
   { label: string; description: string; examples: string }
 > = {
   Small: {
-    label: "Up to 75 m²",
+    label: "Up to 50 m²",
     description: "Courtyard, terrace, or compact town garden.",
     examples: "Typical courtyard, terrace, or compact town garden.",
   },
   Medium: {
-    label: "75–150 m²",
-    description: "Typical suburban rear garden with lawn and beds.",
-    examples: "Typical suburban rear garden with lawn and planting beds.",
+    label: "Up to 75 m²",
+    description: "Small suburban rear garden with lawn and beds.",
+    examples: "Small suburban rear garden with lawn and planting beds.",
   },
   Large: {
-    label: "150+ m²",
-    description: "Generous lawns, long borders, or multiple zones.",
-    examples: "Generous lawns, long borders, or multiple garden zones.",
+    label: "Up to 100 m²",
+    description: "Typical family garden with lawn and borders.",
+    examples: "Typical family garden with lawn and borders.",
+  },
+  XLarge: {
+    label: "Up to 125 m²",
+    description: "Generous lawn with multiple beds or zones.",
+    examples: "Generous lawn with multiple beds or garden zones.",
+  },
+  XXLarge: {
+    label: "Up to 150 m²",
+    description: "Large plot with extensive lawn and planting.",
+    examples: "Large plot with extensive lawn and planting.",
   },
 };
 
@@ -236,10 +260,14 @@ function isAnnualPlan(plan: SubscriptionPlan) {
   return plan.billingInterval !== "Monthly";
 }
 
+export function gardenSizeRank(gardenSize: GardenSize): number {
+  return GARDEN_SIZE_RANK[gardenSize] ?? 0;
+}
+
 export function gardenSizeUplift(gardenSize: GardenSize, annual: boolean): number {
-  if (gardenSize === "Small") return 0;
-  const table = annual ? GARDEN_SIZE_UPLIFT.annual : GARDEN_SIZE_UPLIFT.monthly;
-  return table[gardenSize];
+  const steps = gardenSizeRank(gardenSize);
+  const perStep = annual ? GARDEN_SIZE_STEP_UPLIFT.annual : GARDEN_SIZE_STEP_UPLIFT.monthly;
+  return steps * perStep;
 }
 
 export function planPriceForGarden(plan: SubscriptionPlan, gardenSize: GardenSize): number {
@@ -306,8 +334,7 @@ export function monthlyPriceMatrix(basePlans: SubscriptionPlan[]) {
   const elite = findTierPlan(basePlans, "elite", "Monthly");
   if (!essential || !premium || !elite) return null;
 
-  const sizes: GardenSize[] = ["Small", "Medium", "Large"];
-  return sizes.map((size) => ({
+  return GARDEN_SIZE_ORDER.map((size) => ({
     size,
     essential: planPriceForGarden(essential, size),
     premium: planPriceForGarden(premium, size),
@@ -320,7 +347,7 @@ export function nextUpgradePlanLabel(planName: string, billingInterval: string):
   const name = planName.toLowerCase();
   if (name.includes("elite")) return null;
   if (name.includes("premium")) {
-    return annual ? "Elite Annual (£899.95/year)" : "Elite Monthly (£89.95/month)";
+    return annual ? "Elite Annual (£909.95/year)" : "Elite Monthly (£99.95/month)";
   }
-  return annual ? "Premium Annual (£549.95/year)" : "Premium Monthly (£54.95/month)";
+  return annual ? "Premium Annual (£559.95/year)" : "Premium Monthly (£64.95/month)";
 }

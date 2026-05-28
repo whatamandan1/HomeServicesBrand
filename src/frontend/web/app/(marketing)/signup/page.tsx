@@ -13,6 +13,7 @@ import {
   findTierPlanForBilling,
   formatPriceFrom,
   GARDEN_SIZE_GUIDE,
+  GARDEN_SIZE_ORDER,
   matchPlanTierFromServices,
   planFeatures,
   planPriceForGarden,
@@ -384,8 +385,8 @@ export default function SignupPage() {
                 </p>
                 <fieldset>
                   <legend className="sr-only">Garden size</legend>
-                  <div className="grid gap-3 sm:grid-cols-3">
-                    {(Object.keys(GARDEN_SIZE_GUIDE) as GardenSize[]).map((size) => {
+                  <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5">
+                    {GARDEN_SIZE_ORDER.map((size) => {
                       const selected = form.gardenSize === size;
                       const guide = GARDEN_SIZE_GUIDE[size];
                       return (
