@@ -24,9 +24,10 @@ export default function TermsPage() {
 
       <h2>2. The service</h2>
       <p>
-        GardensSorted arranges recurring garden maintenance visits for residential properties in areas we cover. We
-        schedule visits, match work to approved local gardeners, and provide an online account to view upcoming visits
-        and contact support.
+        GardensSorted arranges recurring garden maintenance visits for residential properties in postcodes we actively
+        cover (shown during signup). We schedule visits, match work to approved local gardeners, and provide an online
+        account to view upcoming visits and contact support. If we cannot serve your address, we will tell you before you
+        pay.
       </p>
       <p>
         On each scheduled visit, your plan includes routine maintenance within the maintained area you selected at
@@ -69,7 +70,19 @@ export default function TermsPage() {
         current price until you change plan or renew under new terms we notify you about.
       </p>
 
-      <h2>4. Payment</h2>
+      <h2>4. Quotes, signup, and photos</h2>
+      <p>
+        Prices and visit frequency shown in the quote flow are the price you agree to pay for your selected garden size
+        and add-ons at checkout, subject to VAT as stated. If you enter your email before completing signup, we may save
+        your progress and email your quote or reminders; see our{" "}
+        <Link href="/privacy">privacy policy</Link>.
+      </p>
+      <p>
+        You may upload optional garden photos after signup to help gardeners prepare. You confirm you have the right to
+        share those images and that they accurately represent the areas we will maintain.
+      </p>
+
+      <h2>5. Payment</h2>
       <p>
         Subscriptions are billed in advance through Stripe. You authorise recurring charges to your chosen payment
         method. If payment fails, we may suspend scheduling until your account is brought up to date.
@@ -79,7 +92,7 @@ export default function TermsPage() {
         Stripe&apos;s secure billing portal).
       </p>
 
-      <h2>5. Your responsibilities before each visit</h2>
+      <h2>6. Your responsibilities before each visit</h2>
       <p>You agree to prepare your property so gardeners can work safely and efficiently:</p>
       <ul>
         <li>
@@ -112,7 +125,7 @@ export default function TermsPage() {
         visit may be marked incomplete and we are not obliged to refund that visit.
       </p>
 
-      <h2>6. Visits, seasonality, and rescheduling</h2>
+      <h2>7. Visits, seasonality, and rescheduling</h2>
       <p>
         You can view upcoming visits in your account and request rescheduling through support where reasonable notice
         is given. Severe weather or operational issues may require us to reschedule visits.
@@ -123,7 +136,7 @@ export default function TermsPage() {
         winter call-outs.
       </p>
 
-      <h2>7. Cancellation, visit equalisation, and changes</h2>
+      <h2>8. Cancellation, visit equalisation, and changes</h2>
       <p>
         You may request cancellation by contacting customer support through your account chat. Cancellation is not
         available as a self-service button in the billing portal during your minimum term.
@@ -153,14 +166,14 @@ export default function TermsPage() {
         not reduce your obligation to pay charges due through the end of your minimum term.
       </p>
 
-      <h2>8. Upgrades and plan changes</h2>
+      <h2>9. Upgrades and plan changes</h2>
       <p>
         Where available in your account, you may switch billing interval, such as monthly to annual.
         Changes may be prorated through Stripe. Downgrades are handled by support and may take effect at the next
         eligible billing date.
       </p>
 
-      <h2>9. Gardeners and off-platform work</h2>
+      <h2>10. Gardeners and off-platform work</h2>
       <p>
         Gardeners who perform visits are independent contractors approved to use our platform. GardensSorted coordinates
         scheduling, customer billing, and quality standards; the gardener performs the agreed maintenance at your
@@ -184,13 +197,21 @@ export default function TermsPage() {
         were not introduced through GardensSorted.
       </p>
 
-      <h2>10. Acceptable use</h2>
+      <h2>11. Quality and complaints</h2>
+      <p>
+        If you are unhappy with a visit, contact us promptly through account support with details and photos where
+        helpful. We will review fairly and may offer a return visit, credit, or other remedy where the work did not meet
+        the agreed maintenance standard and the issue was reported in reasonable time. This does not limit your statutory
+        consumer rights.
+      </p>
+
+      <h2>12. Acceptable use</h2>
       <p>
         You must not misuse the service, provide false information, harass staff or gardeners, or use the platform for
         unlawful purposes. We may suspend or terminate accounts that breach these terms.
       </p>
 
-      <h2>11. Liability</h2>
+      <h2>13. Liability</h2>
       <p>
         Nothing in these terms limits our liability for death or personal injury caused by negligence, fraud, or any
         other liability that cannot be excluded under UK law.
@@ -201,20 +222,35 @@ export default function TermsPage() {
         loss of profit) except where such exclusion is not permitted by law.
       </p>
 
-      <h2>12. Complaints and contact</h2>
+      <h2>14. Your consumer rights</h2>
+      <p>
+        Nothing in these terms affects your statutory rights as a consumer in the UK, including rights under the Consumer
+        Rights Act 2015. For online contracts, you may have a 14-day right to cancel in some circumstances; if you ask
+        us to start the service during the cancellation period, you may need to pay for work already done. Digital
+        content and ongoing subscription rules can vary - contact us if you need advice on your specific situation.
+      </p>
+
+      <h2>15. Complaints and contact</h2>
       <p>
         Contact us through your account support chat or email{" "}
         <a href="mailto:hello@gardenssorted.co.uk">hello@gardenssorted.co.uk</a>. We aim to respond within a
         reasonable time.
       </p>
 
-      <h2>13. Changes to these terms</h2>
+      <h2>16. Website, cookies, and privacy</h2>
+      <p>
+        Use of our website is also governed by our <Link href="/privacy">privacy policy</Link> and{" "}
+        <Link href="/cookies">cookie policy</Link>. Non-essential cookies (such as advertising pixels) are only used with
+        your consent.
+      </p>
+
+      <h2>17. Changes to these terms</h2>
       <p>
         We may update these terms. Material changes will be communicated by email or notice in your account. Continued
         use of the service after changes take effect constitutes acceptance where permitted by law.
       </p>
 
-      <h2>14. Governing law</h2>
+      <h2>18. Governing law</h2>
       <p>
         These terms are governed by the laws of England and Wales. Disputes are subject to the exclusive jurisdiction of
         the courts of England and Wales, without prejudice to your statutory rights as a consumer.

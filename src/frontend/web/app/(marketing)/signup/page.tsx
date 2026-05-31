@@ -8,10 +8,9 @@ import { api, type AuthResponse, type GardenSize, type SubscriptionPlan } from "
 import { FALLBACK_PLANS, sortPlans } from "@/lib/plans";
 import {
   findSignupMonthlyPlanForFrequency,
-  formatPriceFrom,
+  formatQuotedPrice,
   GARDEN_SIZE_ABOVE_BAND_NOTE,
   GARDEN_SIZE_GUIDE,
-  CUSTOMER_VISIT_GARDENER_BRINGS,
   CUSTOMER_VISIT_RESPONSIBILITIES,
   CUSTOMER_VISIT_RESPONSIBILITIES_SUMMARY,
   GARDEN_SIZE_MAINTAINED_AREA_NOTE,
@@ -541,8 +540,7 @@ export default function SignupPage() {
                             return (
                               <li key={service.id}>
                                 <label
-                                  title={service.description}
-                                  className={`flex min-h-[48px] cursor-pointer items-start gap-2 rounded-lg border px-2.5 py-2.5 text-sm transition sm:min-h-0 sm:py-2 ${
+                                  className={`flex min-h-[48px] cursor-pointer items-center gap-2 rounded-lg border px-2.5 py-2.5 text-sm transition sm:min-h-0 sm:py-2 ${
                                     checked
                                       ? "border-gardens-primary bg-gardens-light/50 text-gardens-dark"
                                       : "border-stone-200 bg-white text-stone-700 hover:border-stone-300"
@@ -550,20 +548,17 @@ export default function SignupPage() {
                                 >
                                   <input
                                     type="checkbox"
-                                    className="mt-0.5 h-4 w-4 shrink-0 rounded border-stone-300 text-gardens-primary focus:ring-gardens-primary"
+                                    className="h-4 w-4 shrink-0 rounded border-stone-300 text-gardens-primary focus:ring-gardens-primary"
                                     checked={checked}
                                     onChange={() => toggleService(service.id)}
                                   />
                                   <span className="min-w-0 leading-snug">
                                     <span className="font-medium text-stone-800">{service.label}</span>
                                     {occLabel ? (
-                                      <span className="ml-1 text-xs font-normal text-gardens-primary">
+                                      <span className="ml-1.5 text-xs font-normal text-gardens-primary">
                                         {occLabel}
                                       </span>
                                     ) : null}
-                                    <span className="mt-0.5 block text-xs font-normal text-stone-500 sm:mt-0 sm:inline sm:before:content-['·_']">
-                                      {service.description}
-                                    </span>
                                   </span>
                                 </label>
                               </li>
@@ -616,7 +611,7 @@ export default function SignupPage() {
                           {GARDEN_SIZE_GUIDE[form.gardenSize].label} · {minimumTermMonths}-month min
                         </p>
                         <p className="mt-1 text-2xl font-bold text-gardens-primary">
-                          {formatPriceFrom(
+                          {formatQuotedPrice(
                             planPriceForGarden(activePlan, form.gardenSize, selectedServices),
                             "mo"
                           )}
@@ -691,7 +686,6 @@ export default function SignupPage() {
                     Before each visit - your part
                   </summary>
                   <p className="mt-2 text-xs text-stone-600">{CUSTOMER_VISIT_RESPONSIBILITIES_SUMMARY}</p>
-                  <p className="mt-2 text-xs text-stone-600">{CUSTOMER_VISIT_GARDENER_BRINGS}</p>
                   <p className="mt-2 text-xs">
                     <Link href="/terms" className="font-medium text-gardens-primary hover:underline" target="_blank">
                       Full prep list in terms
@@ -705,7 +699,6 @@ export default function SignupPage() {
                       <li key={item}>{item}</li>
                     ))}
                   </ul>
-                  <p className="mt-2">{CUSTOMER_VISIT_GARDENER_BRINGS}</p>
                 </div>
                 <p className="text-xs text-stone-500">
                   By continuing, you agree to our{" "}

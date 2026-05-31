@@ -153,7 +153,7 @@ export const CUSTOMER_VISIT_GARDENER_BRINGS =
 
 /** One-line summary for FAQs and short copy. */
 export const CUSTOMER_VISIT_RESPONSIBILITIES_SUMMARY =
-  "Clear access and the lawn, a working tap and power socket, and deal with clippings or your garden-waste bin. We bring hose and a 20-metre extension lead.";
+  "Clear access and the lawn, a working tap and power socket, and deal with clippings or your garden-waste bin.";
 
 export const NOT_INCLUDED = [
   "Hauling green waste away unless you leave a garden-waste bin we can use",
@@ -438,6 +438,11 @@ export function formatPlanPrice(plan: SubscriptionPlan, gardenSize: GardenSize =
 
 export function formatPriceFrom(price: number, period: "month" | "year" | "mo" | "yr") {
   return `From £${formatGbp(price)}/${period}`;
+}
+
+/** Personalised signup quote — exact price for garden size and add-ons. */
+export function formatQuotedPrice(price: number, period: "month" | "year" | "mo" | "yr") {
+  return `£${formatGbp(price)}/${period}`;
 }
 
 export function planFeatures(_plan?: SubscriptionPlan): string[] {

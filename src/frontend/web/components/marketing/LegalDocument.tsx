@@ -23,7 +23,7 @@ export function LegalDocument({
         </div>
       </section>
 
-      <article className="mx-auto max-w-3xl space-y-8 px-4 py-12 text-stone-700 [&_a]:font-medium [&_a]:text-gardens-primary [&_a]:hover:underline [&_h2]:font-display [&_h2]:text-2xl [&_h2]:font-semibold [&_h2]:text-gardens-dark [&_li]:leading-relaxed [&_p]:leading-relaxed [&_strong]:text-stone-900 [&_ul]:list-disc [&_ul]:space-y-2 [&_ul]:pl-5">
+      <article className="mx-auto max-w-3xl space-y-8 px-4 py-12 text-stone-700 [&_a]:font-medium [&_a]:text-gardens-primary [&_a]:hover:underline [&_code]:rounded [&_code]:bg-stone-100 [&_code]:px-1 [&_code]:text-sm [&_h2]:font-display [&_h2]:text-2xl [&_h2]:font-semibold [&_h2]:text-gardens-dark [&_h3]:mt-4 [&_li]:leading-relaxed [&_p]:leading-relaxed [&_strong]:text-stone-900 [&_table]:text-sm [&_ul]:list-disc [&_ul]:space-y-2 [&_ul]:pl-5">
         {children}
       </article>
 

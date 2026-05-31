@@ -1,3 +1,5 @@
+import { CookieConsent } from "@/components/marketing/CookieConsent";
+import { MarketingAnalytics } from "@/components/marketing/MarketingAnalytics";
 import { MarketingFooterSignupAware } from "@/components/marketing/MarketingFooterSignupAware";
 import { MarketingHeader } from "@/components/marketing/MarketingHeader";
 import { MarketingMain } from "@/components/marketing/MarketingMain";
@@ -12,6 +14,8 @@ export default function MarketingLayout({ children }: { children: React.ReactNod
       <MarketingFooterSignupAware />
       <MobileCtaBar />
       <LazyGuestChat />
+      <CookieConsent />
+      <MarketingAnalytics />
     </div>
   );
 }

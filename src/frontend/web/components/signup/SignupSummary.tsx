@@ -3,7 +3,7 @@ import type { SignupServiceId } from "@/lib/consumer-plans";
 import {
   countSignupAddons,
   effectiveMinimumTermMonths,
-  formatPriceFrom,
+  formatQuotedPrice,
   GARDEN_SIZE_GUIDE,
   planPriceForGarden,
   planVisitSummary,
@@ -51,7 +51,7 @@ export function SignupSummary({
       {showPrice && (
         <>
           <p className={`font-bold text-gardens-primary ${compact ? "mt-2 text-xl" : "mt-3 text-2xl"}`}>
-            {formatPriceFrom(price, period === "year" ? "yr" : "mo")}
+            {formatQuotedPrice(price, period === "year" ? "yr" : "mo")}
           </p>
           {!compact && (
             <p className="mt-2 text-xs text-stone-500">
