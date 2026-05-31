@@ -154,7 +154,7 @@ export function MarketingHeader() {
           <div className="flex shrink-0 items-center gap-2 sm:gap-3">
             <Link
               href="/login"
-              className="hidden min-h-[44px] items-center text-sm font-medium text-stone-600 hover:text-gardens-primary sm:inline-flex"
+              className={onSignup ? "hidden" : "hidden min-h-[44px] items-center text-sm font-medium text-stone-600 hover:text-gardens-primary sm:inline-flex"}
             >
               Log in
             </Link>

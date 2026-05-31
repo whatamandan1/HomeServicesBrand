@@ -781,54 +781,51 @@ export default function SignupPage() {
             )}
 
 
-            <div className="mt-8 hidden flex-col gap-3 md:flex md:flex-row md:justify-between">
-              {step > 0 ? (
-                <button
-                  type="button"
-                  onClick={goBack}
-                  className="inline-flex min-h-[48px] items-center justify-center gap-1 rounded-full border border-stone-200 px-6 text-base font-medium text-stone-700"
-                >
-                  <ChevronLeft className="h-4 w-4" /> Back
-                </button>
-              ) : (
-                <div />
-              )}
+            <div className="mt-8 hidden w-full md:block">
+              <div className="flex w-full flex-row items-center justify-between gap-3">
+                {step > 0 ? (
+                  <button
+                    type="button"
+                    onClick={goBack}
+                    className="inline-flex min-h-[48px] items-center justify-center gap-1 rounded-full border border-stone-200 px-6 text-base font-medium text-stone-700"
+                  >
+                    <ChevronLeft className="h-4 w-4" /> Back
+                  </button>
+                ) : (
+                  <div className="min-w-0 flex-1" aria-hidden />
+                )}
 
-              {step < STEPS.length - 1 ? (
-                <button
-                  type="button"
-                  onClick={tryAdvance}
-                  className="btn-primary gap-1 md:ml-auto"
-                >
-                  {step === 2 && !quoteUnveiled ? "See my quote" : "Continue"}
-                  {!(step === 2 && !quoteUnveiled) && <ChevronRight className="h-4 w-4" />}
-                </button>
-              ) : (
-                <button
-                  type="button"
-                  disabled={loading}
-                  onClick={submit}
-                  className="btn-primary md:ml-auto"
-                >
-                  {loading ? "Processing…" : skipPayment ? "Create account" : "Continue"}
-                </button>
-              )}
+                {step < STEPS.length - 1 ? (
+                  <button type="button" onClick={tryAdvance} className="btn-primary shrink-0 gap-1">
+                    {step === 2 && !quoteUnveiled ? "See my quote" : "Continue"}
+                    {!(step === 2 && !quoteUnveiled) && <ChevronRight className="h-4 w-4" />}
+                  </button>
+                ) : (
+                  <button
+                    type="button"
+                    disabled={loading}
+                    onClick={submit}
+                    className="btn-primary shrink-0"
+                  >
+                    {loading ? "Processing…" : skipPayment ? "Create account" : "Continue"}
+                  </button>
+                )}
+              </div>
+              <p className="mt-4 w-full text-center text-sm text-stone-500">
+                Already have an account?{" "}
+                <Link href="/login" className="font-medium text-gardens-primary hover:underline">
+                  Log in
+                </Link>
+              </p>
             </div>
         </div>
 
         <div
           data-testid="signup-mobile-footer"
-          className="shrink-0 border-t border-stone-200 bg-white/95 px-3 pt-3 shadow-[0_-4px_20px_rgba(0,0,0,0.06)] backdrop-blur-md pb-[max(0.75rem,env(safe-area-inset-bottom))] max-md:fixed max-md:inset-x-0 max-md:bottom-0 max-md:z-30 md:hidden"
+          className="hidden shrink-0 border-t border-stone-200 bg-white/95 px-3 pt-3 shadow-[0_-4px_20px_rgba(0,0,0,0.06)] backdrop-blur-md pb-[max(0.75rem,env(safe-area-inset-bottom))] max-md:fixed max-md:inset-x-0 max-md:bottom-0 max-md:z-30 max-md:block"
         >
           {mobileFooter}
         </div>
-
-        <p className="mt-6 hidden text-center text-sm text-stone-500 md:block">
-          Already have an account?{" "}
-          <Link href="/login" className="font-medium text-gardens-primary hover:underline">
-            Log in
-          </Link>
-        </p>
       </div>
     </div>
   );
