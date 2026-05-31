@@ -44,7 +44,6 @@ public class SignupAddonPricingTests
     {
         var monthly = SignupAddonPricing.MonthlyAddonsTotalGbp(
             GardenSize.Large,
-            "Essential Monthly",
             ["hedges", "patio"]);
         Assert.Equal(16.67m + 8.33m, monthly);
     }

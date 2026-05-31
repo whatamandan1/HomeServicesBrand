@@ -45,7 +45,7 @@ public static class SignupAddonPricing
     public static decimal PlatformMarginPerOccurrence(GardenSize gardenSize) =>
         PlatformRatePerHourGbp * AddonOnSiteHours(gardenSize);
 
-    /// <summary>Full-schedule monthly charge (no tier inclusion) — used for display reference.</summary>
+    /// <summary>Annual add-on cost spread over 12 months (full scheduled sessions).</summary>
     public static decimal MonthlyCustomerPriceForAddon(GardenSize gardenSize, string addonId)
     {
         var annual = CustomerPricePerOccurrence(gardenSize) * OccurrencesPerYear(addonId);
@@ -55,22 +55,22 @@ public static class SignupAddonPricing
     public static int CountAddons(IEnumerable<string>? addonIds) =>
         addonIds?.Count(id => AddonServiceIds.Contains(id)) ?? 0;
 
-    public static decimal MonthlyAddonsTotalGbp(
-        GardenSize gardenSize,
-        string planName,
-        IEnumerable<string>? addonIds)
-    {
-        return TierIncludedAddons.OrderedSelectedAddons(addonIds)
-            .Sum(id => TierIncludedAddons.MonthlyCustomerPriceForAddon(gardenSize, planName, id, addonIds));
-    }
+    public static IReadOnlyList<string> OrderedSelectedAddons(IEnumerable<string>? addonIds) =>
+        addonIds?
+            .Where(id => AddonServiceIds.Contains(id))
+            .Distinct(StringComparer.OrdinalIgnoreCase)
+            .ToList() ?? [];
+
+    public static decimal MonthlyAddonsTotalGbp(GardenSize gardenSize, IEnumerable<string>? addonIds) =>
+        OrderedSelectedAddons(addonIds)
+            .Sum(id => MonthlyCustomerPriceForAddon(gardenSize, id));
 
     public static decimal ResolveAddonsCharge(
         GardenSize gardenSize,
-        string planName,
         IEnumerable<string>? addonIds,
         SubscriptionBillingInterval billingInterval)
     {
-        var monthly = MonthlyAddonsTotalGbp(gardenSize, planName, addonIds);
+        var monthly = MonthlyAddonsTotalGbp(gardenSize, addonIds);
         return billingInterval == SubscriptionBillingInterval.Annual
             ? monthly * GardenSizePricing.AnnualMonthsCharged
             : monthly;

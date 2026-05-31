@@ -491,15 +491,7 @@ export default function SignupPage() {
                                     <span className="block text-xs font-normal text-stone-500">
                                       {service.description}
                                       {isSignupAddon(service.id) && (
-                                        <>
-                                          {" "}
-                                          ·{" "}
-                                          {formatSignupAddonOccurrencesLabel(
-                                            service.id,
-                                            activePlan?.name ?? "Essential Monthly",
-                                            selectedServices
-                                          )}
-                                        </>
+                                        <> · {formatSignupAddonOccurrencesLabel(service.id)}</>
                                       )}
                                     </span>
                                   </span>
