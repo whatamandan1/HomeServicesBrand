@@ -22,15 +22,17 @@ html.mobile-nav-open body {
   overflow: hidden;
 }
 
-/* Signup wizard: single scroll surface on mobile (avoid iOS body + inner scroll fighting). */
-html.signup-wizard-active {
-  overflow: hidden;
-  height: 100%;
-}
+/* Signup wizard: lock body scroll on mobile only; desktop uses normal page scroll. */
+@media (max-width: 767px) {
+  html.signup-wizard-active {
+    overflow: hidden;
+    height: 100%;
+  }
 
-html.signup-wizard-active body {
-  overflow: hidden;
-  overscroll-behavior-y: auto;
+  html.signup-wizard-active body {
+    overflow: hidden;
+    overscroll-behavior-y: auto;
+  }
 }
 
 /*

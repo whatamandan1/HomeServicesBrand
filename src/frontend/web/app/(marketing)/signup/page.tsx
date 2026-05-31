@@ -370,7 +370,7 @@ export default function SignupPage() {
   return (
     <div
       data-signup-wizard
-      className="flex min-h-0 flex-1 flex-col overflow-hidden pt-4 max-md:pt-3 md:pb-12 md:pt-12"
+      className="pt-4 max-md:flex max-md:min-h-0 max-md:flex-1 max-md:flex-col max-md:overflow-hidden max-md:pt-3 md:pb-12 md:pt-12"
     >
       <div ref={topRef} className="mx-auto w-full max-w-5xl shrink-0 scroll-mt-8 px-4">
         <div className="text-center">
@@ -396,7 +396,7 @@ export default function SignupPage() {
 
       </div>
 
-      <div className="mx-auto flex w-full max-w-5xl min-h-0 flex-1 flex-col md:px-4">
+      <div className="mx-auto flex w-full max-w-5xl max-md:min-h-0 max-md:flex-1 max-md:flex-col md:px-4">
         <div
           ref={mobileScrollRef}
           data-testid="signup-mobile-scroll"
