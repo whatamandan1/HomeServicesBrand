@@ -1,11 +1,12 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useLayoutEffect, useRef, useState } from "react";
+import { createPortal } from "react-dom";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { Loader2, MessageCircle, Send, X } from "lucide-react";
 import { api } from "@/lib/api";
-import { guestChatFabClosedClass, guestChatPanelClass } from "@/lib/mobile-chrome";
+import { guestChatFabVariant } from "@/lib/mobile-chrome";
 
 type ChatMessage = {
   id: string;
@@ -284,6 +285,13 @@ export function GuestChatWidget() {
   const pathname = usePathname();
   const [open, setOpen] = useState(false);
   const [session, setSession] = useState(0);
+  const [portaled, setPortaled] = useState(false);
+  const fabVariant = guestChatFabVariant(pathname);
+
+  useLayoutEffect(() => {
+    setPortaled(true);
+  }, []);
+
   useEffect(() => {
     if (typeof window === "undefined" || window.location.hash !== "#chat") return;
     setOpen(true);
@@ -295,17 +303,10 @@ export function GuestChatWidget() {
     setSession((s) => s + 1);
   }
 
-  const fabClosedClass = guestChatFabClosedClass(pathname);
-  const panelClass = guestChatPanelClass();
-
-  return (
+  const chrome = (
     <>
       {open && (
-        <div
-          className={`${panelClass} flex w-[min(calc(100vw-2rem),380px)] max-md:w-auto flex-col overflow-hidden rounded-2xl border border-stone-200 bg-white shadow-2xl max-md:max-h-[min(70dvh,32rem)]`}
-          role="dialog"
-          aria-label="Live chat"
-        >
+        <div className="guest-chat-panel" role="dialog" aria-label="Live chat">
           <div className="flex items-start justify-between gap-3 border-b border-stone-100 bg-gardens-light/30 px-4 py-3">
             <div className="min-w-0">
               <p className="text-sm font-semibold text-gardens-dark">Questions?</p>
@@ -334,7 +335,7 @@ export function GuestChatWidget() {
             mode="guest"
             hideHeader
             compact
-            className="rounded-none border-0 shadow-none"
+            className="min-h-0 flex-1 rounded-none border-0 shadow-none"
           />
         </div>
       )}
@@ -343,7 +344,7 @@ export function GuestChatWidget() {
         <button
           type="button"
           onClick={() => setOpen(true)}
-          className={`${fabClosedClass} flex min-h-[48px] items-center gap-2 rounded-full bg-gardens-primary px-4 py-3 text-sm font-semibold text-white shadow-lg transition hover:bg-gardens-dark ${pathname === "/signup" ? "max-md:hidden" : ""}`}
+          className={`guest-chat-fab ${fabVariant} flex min-h-[48px] items-center gap-2 rounded-full bg-gardens-primary px-4 py-3 text-sm font-semibold text-white shadow-lg transition hover:bg-gardens-dark ${pathname === "/signup" ? "guest-chat-fab--hide-mobile" : ""}`}
           aria-label="Open live chat"
         >
           <MessageCircle className="h-5 w-5" />
@@ -352,4 +353,7 @@ export function GuestChatWidget() {
       )}
     </>
   );
+
+  if (!portaled) return null;
+  return createPortal(chrome, document.body);
 }
