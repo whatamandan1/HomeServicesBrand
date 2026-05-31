@@ -1,8 +1,8 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { Menu, X } from "lucide-react";
 import { Logo } from "@/components/marketing/Logo";
 import { PRIMARY_CTA_HREF, PRIMARY_CTA_LABEL } from "@/lib/marketing-cta";
@@ -10,19 +10,38 @@ import { useBodyScrollLock } from "@/lib/use-body-scroll-lock";
 
 const links = [
   { href: "/#how-it-works", label: "How it works" },
-  { href: "/#pricing", label: "Pricing" },
   { href: "/about", label: "About us" },
   { href: "/providers", label: "For gardeners" },
   { href: "/multi-property-solutions", label: "For landlords" },
 ];
 
+function isLegacyPricingHash() {
+  return typeof window !== "undefined" && window.location.hash.toLowerCase() === "#pricing";
+}
+
 export function MarketingHeader() {
   const [open, setOpen] = useState(false);
   const pathname = usePathname();
+  const router = useRouter();
+
+  const closeMenu = useCallback(() => setOpen(false), []);
 
   useEffect(() => {
-    setOpen(false);
-  }, [pathname]);
+    closeMenu();
+  }, [pathname, closeMenu]);
+
+  useEffect(() => {
+    const onHashChange = () => {
+      closeMenu();
+      if (isLegacyPricingHash()) {
+        router.replace("/signup");
+      }
+    };
+
+    onHashChange();
+    window.addEventListener("hashchange", onHashChange);
+    return () => window.removeEventListener("hashchange", onHashChange);
+  }, [closeMenu, router]);
 
   useBodyScrollLock(open);
 
@@ -38,7 +57,16 @@ export function MarketingHeader() {
           : "border-gardens-primary/10 bg-white/95"
       }`}
     >
-      <div className="mx-auto flex max-w-6xl items-center justify-between gap-2 px-4 py-3 md:gap-3 md:py-4">
+      {open && (
+        <button
+          type="button"
+          aria-label="Close menu"
+          className="fixed inset-0 z-40 bg-black/25 md:hidden"
+          onClick={closeMenu}
+        />
+      )}
+
+      <div className="relative z-50 mx-auto flex max-w-6xl items-center justify-between gap-2 px-4 py-3 md:gap-3 md:py-4">
         <Logo variant="icon" className="shrink-0 md:hidden" href="/" />
         <Logo className="hidden shrink-0 md:inline-flex" href="/" />
 
@@ -80,7 +108,7 @@ export function MarketingHeader() {
 
       {open && (
         <nav
-          className="border-t border-stone-100 bg-white px-4 py-4 md:hidden"
+          className="relative z-50 border-t border-stone-100 bg-white px-4 py-4 md:hidden"
           aria-label="Mobile"
         >
           <ul className="space-y-1">
@@ -89,7 +117,7 @@ export function MarketingHeader() {
                 <Link
                   href={PRIMARY_CTA_HREF}
                   className="flex min-h-[48px] items-center justify-center rounded-full bg-gardens-primary px-4 text-base font-semibold text-white shadow-soft hover:bg-gardens-dark"
-                  onClick={() => setOpen(false)}
+                  onClick={closeMenu}
                 >
                   {PRIMARY_CTA_LABEL}
                 </Link>
@@ -100,7 +128,7 @@ export function MarketingHeader() {
                 <Link
                   href={l.href}
                   className="flex min-h-[48px] items-center rounded-xl px-3 text-base font-medium text-stone-700 hover:bg-gardens-light/50"
-                  onClick={() => setOpen(false)}
+                  onClick={closeMenu}
                 >
                   {l.label}
                 </Link>
@@ -110,7 +138,7 @@ export function MarketingHeader() {
               <Link
                 href="/login"
                 className="flex min-h-[48px] items-center rounded-xl px-3 text-base font-medium text-stone-700 hover:bg-gardens-light/50"
-                onClick={() => setOpen(false)}
+                onClick={closeMenu}
               >
                 Log in
               </Link>

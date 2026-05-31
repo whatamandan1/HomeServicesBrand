@@ -9,7 +9,6 @@ import {
 import { Button, Section } from "@/components/marketing/ui";
 import { FaqAccordion } from "@/components/marketing/FaqAccordion";
 import { HeroProductPreview } from "@/components/marketing/HeroProductPreview";
-import { PricingSection } from "@/components/marketing/PricingSection";
 import { ServicePillarsSection } from "@/components/marketing/ServicePillarsSection";
 import { SocialProofSection } from "@/components/marketing/SocialProofSection";
 import { CUSTOMER_VISIT_RESPONSIBILITIES_SUMMARY } from "@/lib/consumer-plans";
@@ -18,7 +17,7 @@ import { PRIMARY_CTA_HREF, PRIMARY_CTA_LABEL } from "@/lib/marketing-cta";
 export const metadata: Metadata = {
   title: "Garden care subscriptions in Yorkshire",
   description:
-    "Regular garden maintenance for Yorkshire homes. Pick your garden size, add optional extras, and we schedule trusted local gardeners - from £59.99/month.",
+    "Regular garden maintenance for Yorkshire homes. Pick your garden size, add optional extras, and we schedule trusted local gardeners.",
   openGraph: {
     title: "GardensSorted - Garden care subscriptions in Yorkshire",
     description:
@@ -58,7 +57,7 @@ const faqs = [
   },
   {
     q: "How does garden size affect price?",
-    a: "We price by the lawn and beds we maintain, not your whole plot: up to 50 m² from £59.99/month, up to 100 m² £79.99, up to 150 m² £99.99 for 10 visits per year. Hedges, seasonal tidy, and patio are optional add-ons at signup. Above 150 m² we quote separately.",
+    a: "We price by the lawn and beds we maintain, not your whole plot, plus how often you want visits and any add-ons you choose. Use Get your quote to see your personalised monthly price before you pay. Above 150 m² maintained we quote separately.",
   },
   {
     q: "What add-ons can I choose?",
@@ -154,15 +153,6 @@ export default function HomePage() {
       </section>
 
       <ServicePillarsSection />
-
-      <Section
-        id="pricing"
-        title="Simple, transparent pricing"
-        subtitle="One subscription - monthly price by garden size, with optional add-ons."
-        className="bg-stone-50/80"
-      >
-        <PricingSection />
-      </Section>
 
       <Section
         id="faq"

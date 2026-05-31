@@ -17,8 +17,7 @@ export function MarketingFooter() {
           <p className="text-sm font-semibold text-white">Product</p>
           <ul className="mt-3 space-y-2 text-sm text-gardens-accent/80">
             <li><Link href="/#how-it-works" className="inline-flex min-h-[44px] items-center hover:text-white">How it works</Link></li>
-            <li><Link href="/#pricing" className="inline-flex min-h-[44px] items-center hover:text-white">Pricing</Link></li>
-            <li><Link href="/signup" className="inline-flex min-h-[44px] items-center hover:text-white">Sign up</Link></li>
+            <li><Link href="/signup" className="inline-flex min-h-[44px] items-center hover:text-white">Get your quote</Link></li>
           </ul>
         </div>
         <div>

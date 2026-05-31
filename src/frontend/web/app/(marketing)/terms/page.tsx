@@ -34,14 +34,14 @@ export default function TermsPage() {
         <strong>general garden clean-up and tidy</strong>, and <strong>light watering</strong> of pots, beds, and obvious
         dry spots while we are on site when you provide water access.
         Optional add-ons at signup, such as hedge trim, seasonal tidy, or patio refresh, are delivered on a separate
-        schedule shown on our pricing page. We do not guarantee a specific visual outcome each visit. Results depend on weather,
+        schedule shown in your quote at signup. We do not guarantee a specific visual outcome each visit. Results depend on weather,
         season, and garden condition, but we aim to deliver consistent maintenance as described in your plan.
       </p>
 
       <h2>3. Plans, pricing, and minimum terms</h2>
       <p>
-        Plan names, prices, visit frequency, and minimum commitment periods are shown on our{" "}
-        <Link href="/#pricing">pricing page</Link> and during signup before you pay.
+        Plan names, prices, visit frequency, and minimum commitment periods are shown in our{" "}
+        <Link href="/signup">quote flow</Link> before you pay.
       </p>
       <ul>
         <li>

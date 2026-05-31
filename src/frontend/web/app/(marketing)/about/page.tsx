@@ -103,18 +103,12 @@ export default function AboutPage() {
           <CalendarCheck className="mx-auto h-10 w-10 text-gardens-accent" aria-hidden />
           <h2 className="mt-4 font-display text-3xl font-bold">See if we cover your area</h2>
           <p className="mt-4 text-gardens-accent">
-            Enter your postcode at signup and we&apos;ll confirm availability. Plans start from £59.99/month.
+            Enter your postcode in our quote flow and we&apos;ll confirm availability and show your personalised price.
           </p>
           <div className="mt-8 flex flex-wrap justify-center gap-4">
             <Button href="/signup" className="!bg-white !text-gardens-dark hover:!bg-gardens-light">
-              View plans & sign up
+              Get your quote
             </Button>
-            <Link
-              href="/#pricing"
-              className="inline-flex items-center rounded-full border border-white/30 px-6 py-3 text-sm font-semibold text-white transition hover:bg-white/10"
-            >
-              See pricing
-            </Link>
           </div>
         </div>
       </section>
