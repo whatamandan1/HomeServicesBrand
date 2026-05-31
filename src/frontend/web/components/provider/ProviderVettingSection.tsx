@@ -3,7 +3,11 @@
 import { useEffect, useState } from "react";
 import { api, type ProviderVettingDetails, type ProviderVettingStatus, type SubmitProviderVettingPayload } from "@/lib/api";
 import { ID_DOCUMENT_TYPES } from "@/lib/provider-vetting";
-import { PROVIDER_VETTING_SUMMARY } from "@/lib/provider-requirements";
+import {
+  PROVIDER_ADDON_EQUIPMENT,
+  PROVIDER_ADDON_EQUIPMENT_SUMMARY,
+  PROVIDER_VETTING_SUMMARY,
+} from "@/lib/provider-requirements";
 import { LoadingSpinner } from "@/components/ui/feedback";
 
 type Props = {
@@ -26,6 +30,9 @@ export function ProviderVettingSection({ token, isApproved, status, onSubmitted,
   const [dbsCertificateNumber, setDbsCertificateNumber] = useState("");
   const [dbsIssueDate, setDbsIssueDate] = useState("");
   const [dbsOnUpdateService, setDbsOnUpdateService] = useState(false);
+  const [hasLeafBlower, setHasLeafBlower] = useState(false);
+  const [hasHedgeTrimmer, setHasHedgeTrimmer] = useState(false);
+  const [hasPressureWasherForPatio, setHasPressureWasherForPatio] = useState(false);
   const [localMessage, setLocalMessage] = useState<string | null>(null);
 
   useEffect(() => {
@@ -46,6 +53,9 @@ export function ProviderVettingSection({ token, isApproved, status, onSubmitted,
         if (d.dbsCertificateNumber) setDbsCertificateNumber(d.dbsCertificateNumber);
         if (d.dbsIssueDate) setDbsIssueDate(d.dbsIssueDate);
         setDbsOnUpdateService(d.dbsOnUpdateService);
+        setHasLeafBlower(d.hasLeafBlower);
+        setHasHedgeTrimmer(d.hasHedgeTrimmer);
+        setHasPressureWasherForPatio(d.hasPressureWasherForPatio);
       })
       .catch(() => {
         /* first visit — empty form */
@@ -71,6 +81,9 @@ export function ProviderVettingSection({ token, isApproved, status, onSubmitted,
       dbsCertificateNumber: dbsCertificateNumber.trim(),
       dbsIssueDate,
       dbsOnUpdateService,
+      hasLeafBlower,
+      hasHedgeTrimmer,
+      hasPressureWasherForPatio,
     };
 
     try {
@@ -89,6 +102,9 @@ export function ProviderVettingSection({ token, isApproved, status, onSubmitted,
       <div className="rounded-2xl border border-stone-200 bg-white p-5 shadow-soft">
         <h2 className="font-display text-lg font-semibold text-gardens-dark">Vetting</h2>
         <p className="mt-2 text-sm text-stone-600">Your checks are complete and your account is approved.</p>
+        <p className="mt-3 text-sm text-stone-600">
+          To change add-on equipment, contact support — we need to keep visit matching accurate.
+        </p>
       </div>
     );
   }
@@ -238,6 +254,45 @@ export function ProviderVettingSection({ token, isApproved, status, onSubmitted,
           />
           Registered with the DBS Update Service
         </label>
+
+        <fieldset className="space-y-3 border-t border-stone-100 pt-4">
+          <legend className="text-sm font-medium text-stone-700">Add-on equipment you own</legend>
+          <p className="text-xs text-stone-500">{PROVIDER_ADDON_EQUIPMENT_SUMMARY}</p>
+          <ul className="space-y-3">
+            {PROVIDER_ADDON_EQUIPMENT.map((item) => {
+              const checked =
+                item.field === "hasLeafBlower"
+                  ? hasLeafBlower
+                  : item.field === "hasHedgeTrimmer"
+                    ? hasHedgeTrimmer
+                    : hasPressureWasherForPatio;
+              const setChecked =
+                item.field === "hasLeafBlower"
+                  ? setHasLeafBlower
+                  : item.field === "hasHedgeTrimmer"
+                    ? setHasHedgeTrimmer
+                    : setHasPressureWasherForPatio;
+              return (
+                <li key={item.field}>
+                  <label className="flex items-start gap-2 text-sm text-stone-700">
+                    <input
+                      type="checkbox"
+                      checked={checked}
+                      onChange={(e) => setChecked(e.target.checked)}
+                      className="mt-1"
+                    />
+                    <span>
+                      <span className="font-medium">{item.label}</span>
+                      <span className="block text-xs text-stone-500">
+                        For: {item.enables}. {item.detail}
+                      </span>
+                    </span>
+                  </label>
+                </li>
+              );
+            })}
+          </ul>
+        </fieldset>
 
         <p className="text-xs text-stone-500">
           We store this securely for verification only. You may be asked to show original documents before approval.

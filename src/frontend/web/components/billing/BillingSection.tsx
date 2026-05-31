@@ -193,7 +193,12 @@ export function BillingSection({
       {cancellableSubs.length > 0 && (
         <p className="rounded-xl border border-stone-200 bg-stone-50 px-4 py-3 text-sm text-stone-600">
           Plan upgrades and annual billing apply immediately. Cancellations are handled by our
-          team — if you&apos;re within your minimum term, billing continues until that date.
+          team — if you&apos;re within your minimum term, billing continues until that date. If you have add-on
+          services and cancel early, remaining visits may be adjusted per our{" "}
+          <a href="/terms" className="font-medium text-gardens-primary hover:underline">
+            terms
+          </a>{" "}
+          (visit equalisation).
         </p>
       )}
 

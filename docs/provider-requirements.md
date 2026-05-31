@@ -34,6 +34,20 @@ Approved gardeners must **bring their own equipment** to every visit. GardensSor
 
 Code: `Sorted.Core/Plans/ProviderEquipmentRequirements.cs`, frontend `src/frontend/web/lib/provider-requirements.ts`.
 
+### Add-on equipment (declare in vetting)
+
+To receive **hedge**, **seasonal tidy / leaf clearance**, or **patio & path refresh** add-on visits, gardeners must own the matching tools and tick them in **Checks & documents** (`/provider`):
+
+| Equipment | Customer add-ons enabled |
+|-----------|--------------------------|
+| **Leaf blower** | Seasonal tidy, leaf clearance |
+| **Hedge trimmer** | Hedge trimming |
+| **Pressure washer** with patio-safe attachment or low-pressure setting | Patio & path refresh (avoid damaging slabs, pointing, decking) |
+
+Stored on `Provider`: `HasLeafBlower`, `HasHedgeTrimmer`, `HasPressureWasherForPatio`. Code: `ProviderAddonEquipmentRequirements.cs`.
+
+Admin should only assign matching add-on visits when the provider has declared the tool (see provider vetting panel).
+
 ---
 
 ## At the customer property

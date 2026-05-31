@@ -6,6 +6,7 @@ using Sorted.Core.Dtos;
 using Sorted.Core.Enums;
 using Sorted.Core.Interfaces;
 using Sorted.Core.Options;
+using Sorted.Core.Plans;
 using Sorted.Infrastructure.Data;
 
 namespace Sorted.Api.Controllers;
@@ -96,7 +97,7 @@ public class DevController(
 
         sub.Status = SubscriptionStatus.Active;
         sub.StartedAtUtc = DateTime.UtcNow;
-        sub.EndsAtUtc = DateTime.UtcNow.AddMonths(sub.Plan.MinimumTermMonths);
+        sub.EndsAtUtc = SubscriptionCommitment.MinimumTermEndsAtUtc(sub);
         await db.SaveChangesAsync(ct);
         await scheduling.GenerateVisitsForSubscriptionAsync(subscriptionId, ct: ct);
         await scheduling.OpenVisitsForDispatchAsync(ct);

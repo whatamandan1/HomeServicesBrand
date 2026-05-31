@@ -4,25 +4,17 @@ import Link from "next/link";
 import { Check, Minus } from "lucide-react";
 import type { SubscriptionPlan } from "@/lib/api";
 import {
-  annualEquivalentMonthly,
-  ANNUAL_BILLING_HINT,
   findTierPlanForBilling,
   PLAN_COMPARE_ROWS,
   PLAN_TIERS,
   planPriceForGarden,
-  type BillingChoice,
   type PlanTier,
 } from "@/lib/consumer-plans";
 import { formatGbp } from "@/lib/format";
 import { planSignupHref } from "@/lib/plans";
-import { BillingIntervalToggle } from "@/components/marketing/BillingIntervalToggle";
 
 type PlanCompareTableProps = {
   plans: SubscriptionPlan[];
-  billing: BillingChoice;
-  onBillingChange: (billing: BillingChoice) => void;
-  /** Toggle order; default Annual first. Pricing uses Monthly first. */
-  annualFirst?: boolean;
 };
 
 function CompareCell({ value }: { value: boolean | string }) {
@@ -44,26 +36,17 @@ function CompareCell({ value }: { value: boolean | string }) {
   );
 }
 
-export function PlanCompareTable({
-  plans,
-  billing,
-  onBillingChange,
-  annualFirst = true,
-}: PlanCompareTableProps) {
-  const isAnnual = billing === "Annual";
+export function PlanCompareTable({ plans }: PlanCompareTableProps) {
   const tierPlans = PLAN_TIERS.map((tier) => ({
     ...tier,
-    plan: findTierPlanForBilling(plans, tier.id, billing),
+    plan: findTierPlanForBilling(plans, tier.id, "Monthly"),
   }));
 
   return (
     <div className="rounded-2xl border border-stone-200 bg-white shadow-soft overflow-hidden">
-      <div className="flex flex-col gap-4 border-b border-stone-100 bg-gardens-light/30 px-4 py-5 sm:flex-row sm:items-center sm:justify-between sm:px-6">
-        <div>
-          <h3 className="font-display text-lg font-semibold text-gardens-dark">Compare plans</h3>
-          <p className="mt-1 text-sm text-stone-600">{ANNUAL_BILLING_HINT}</p>
-        </div>
-        <BillingIntervalToggle billing={billing} onChange={onBillingChange} annualFirst={annualFirst} />
+      <div className="border-b border-stone-100 bg-gardens-light/30 px-4 py-5 sm:px-6">
+        <h3 className="font-display text-lg font-semibold text-gardens-dark">Compare plans</h3>
+        <p className="mt-1 text-sm text-stone-600">All prices shown are monthly billing.</p>
       </div>
 
       <div className="overflow-x-auto">
@@ -79,19 +62,12 @@ export function PlanCompareTable({
                     <p className="mt-3 font-display text-2xl font-bold text-gardens-dark">
                       <span className="text-sm font-normal text-stone-500">From </span>
                       £{formatGbp(planPriceForGarden(plan, "Small"))}
-                      <span className="text-sm font-normal text-stone-500">
-                        /{isAnnual ? "yr" : "mo"}
-                      </span>
-                    </p>
-                  )}
-                  {plan && isAnnual && (
-                    <p className="mt-1 text-xs font-medium text-gardens-primary">
-                      From £{formatGbp(annualEquivalentMonthly(planPriceForGarden(plan, "Small")))}/mo billed annually
+                      <span className="text-sm font-normal text-stone-500">/mo</span>
                     </p>
                   )}
                   {plan && (
                     <Link
-                      href={planSignupHref(plans, id as PlanTier, billing)}
+                      href={planSignupHref(plans, id as PlanTier)}
                       className={`mt-3 inline-block rounded-full px-4 py-2 text-xs font-semibold ${
                         id === "premium"
                           ? "bg-gardens-primary text-white hover:bg-gardens-dark"

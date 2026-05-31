@@ -13,18 +13,20 @@ public static class PlanPricing
     public static decimal ResolvePrice(
         SubscriptionPlan plan,
         PlanPricingOptions options,
-        GardenSize gardenSize)
-        => ResolvePrice(plan.BillingInterval, plan.Name, plan.PriceGbp, options, gardenSize);
+        GardenSize gardenSize,
+        IEnumerable<string>? signupAddonIds = null)
+        => ResolvePrice(plan.BillingInterval, plan.Name, plan.PriceGbp, options, gardenSize, signupAddonIds);
 
     public static decimal ResolvePrice(
         SubscriptionBillingInterval billingInterval,
         string planName,
         decimal storedPrice,
         PlanPricingOptions options,
-        GardenSize gardenSize = GardenSize.Small)
+        GardenSize gardenSize = GardenSize.Small,
+        IEnumerable<string>? signupAddonIds = null)
     {
         _ = ResolveBasePrice(billingInterval, planName, storedPrice, options);
-        return GardenSizePricing.ResolvePrice(planName, gardenSize, billingInterval);
+        return GardenSizePricing.ResolvePrice(planName, gardenSize, billingInterval, signupAddonIds);
     }
 
     private static decimal ResolveBasePrice(

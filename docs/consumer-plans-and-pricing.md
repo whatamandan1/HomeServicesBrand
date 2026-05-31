@@ -88,7 +88,39 @@ Within the **maintained area** (lawn, planted beds, edges — not whole plot or 
 | General garden clean-up and tidy | Yes |
 | Light watering (pots, beds, obvious dry spots — while on site) | Yes |
 
-**Premium** adds fortnightly visits, light hedge trim, and seasonal tidy. **Elite** adds weekly visits and patio/path refresh.
+**Premium** adds 20 visits/year, light hedge trim, and seasonal tidy. **Elite** adds 30 visits/year and patio/path refresh.
+
+### Signup add-ons (extra cost, same plan tier)
+
+Add-ons do **not** change Essential / Premium / Elite — only **visit frequency** sets the tier. Each add-on is delivered on a **fixed schedule** (not every maintenance visit). The **monthly subscription charge** spreads the annual cost over 12 months.
+
+| Add-on | Sessions / year |
+|--------|-----------------|
+| Hedge trim, seasonal tidy | **4** |
+| Patio & path refresh | **2** |
+
+Per session (by garden band): provider **£20/hr**, platform **£5/hr**, customer **£25/hr** of on-site time (1 hr at ≤50 m², 1.5 hr at ≤100 m², 2 hr at ≤150 m²).
+
+| Garden | Per session (customer) | Example: hedges (4×/yr) / mo | Example: patio (2×/yr) / mo |
+|--------|------------------------|------------------------------|---------------------------|
+| ≤50 m² | £25 | £8.33 | £4.17 |
+| ≤100 m² | £37.50 | £12.50 | £6.25 |
+| ≤150 m² | £50 | £16.67 | £8.33 |
+
+Provider is paid per add-on **session** when it is carried out (not on every core visit). Code: `SignupAddonPricing.cs`.
+
+### Minimum term with add-ons
+
+| Billing | Core only | With signup add-ons |
+|---------|-----------|---------------------|
+| Monthly | 3 months | **6 months** |
+| Annual | 12 months | 12 months |
+
+Code: `SubscriptionCommitment.cs`. Stripe checkout and `EndsAtUtc` use the effective minimum at activation.
+
+### Cancellation and visit equalisation
+
+Visits are **seasonal** (more in spring/summer, fewer in winter). If a customer cancels before receiving all paid visits (including add-on sessions), remaining visits in the notice period may be **reduced** so delivered work matches what was paid for. Example: signup in April, cancel in June — visits from June onward may be scaled back. Full policy: [`/terms`](/terms) §6–7.
 
 **Water:** Customer provides **access** (working outdoor tap or agreed supply). **Gardener brings** hose or watering can. No separate watering-only visits.
 

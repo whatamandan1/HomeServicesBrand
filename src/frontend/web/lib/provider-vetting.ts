@@ -25,6 +25,9 @@ export type ProviderVettingDetails = {
   dbsCertificateNumber: string | null;
   dbsIssueDate: string | null;
   dbsOnUpdateService: boolean;
+  hasLeafBlower: boolean;
+  hasHedgeTrimmer: boolean;
+  hasPressureWasherForPatio: boolean;
 };
 
 export type SubmitProviderVettingPayload = {
@@ -36,6 +39,9 @@ export type SubmitProviderVettingPayload = {
   dbsCertificateNumber: string;
   dbsIssueDate: string;
   dbsOnUpdateService: boolean;
+  hasLeafBlower: boolean;
+  hasHedgeTrimmer: boolean;
+  hasPressureWasherForPatio: boolean;
 };
 
 export type AdminProviderVetting = ProviderVettingDetails & {

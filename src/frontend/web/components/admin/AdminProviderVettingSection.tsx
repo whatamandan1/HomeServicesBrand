@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { api, type AdminProviderVetting } from "@/lib/api";
 import { ID_DOCUMENT_TYPES } from "@/lib/provider-vetting";
+import { PROVIDER_ADDON_EQUIPMENT } from "@/lib/provider-requirements";
 import { LoadingSpinner } from "@/components/ui/feedback";
 
 function idTypeLabel(value: string | null) {
@@ -100,6 +101,31 @@ export function AdminProviderVettingSection({
           </dd>
         </div>
       </dl>
+
+      <div className="border-t border-stone-200 pt-3">
+        <p className="text-xs font-medium text-stone-600">Add-on equipment declared</p>
+        <ul className="mt-2 space-y-1">
+          {PROVIDER_ADDON_EQUIPMENT.map((item) => {
+            const has =
+              item.field === "hasLeafBlower"
+                ? vetting.hasLeafBlower
+                : item.field === "hasHedgeTrimmer"
+                  ? vetting.hasHedgeTrimmer
+                  : vetting.hasPressureWasherForPatio;
+            return (
+              <li key={item.field} className="flex justify-between gap-2">
+                <span className="text-stone-700">{item.label}</span>
+                <span className={has ? "font-medium text-gardens-primary" : "text-stone-400"}>
+                  {has ? "Yes" : "No"}
+                </span>
+              </li>
+            );
+          })}
+        </ul>
+        <p className="mt-2 text-xs text-stone-500">
+          Only assign hedge, seasonal, or patio add-on visits when the matching tool is Yes.
+        </p>
+      </div>
 
       {!isApproved && (
         <div className="space-y-2 border-t border-stone-200 pt-3">

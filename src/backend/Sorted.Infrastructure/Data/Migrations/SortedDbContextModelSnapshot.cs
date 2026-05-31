@@ -261,6 +261,9 @@ namespace Sorted.Infrastructure.Data.Migrations
                     b.Property<Guid?>("PreferredProviderId")
                         .HasColumnType("TEXT");
 
+                    b.Property<string>("SelectedSignupAddonsJson")
+                        .HasColumnType("TEXT");
+
                     b.Property<DateTime?>("StartedAtUtc")
                         .HasColumnType("TEXT");
 
@@ -812,6 +815,15 @@ namespace Sorted.Infrastructure.Data.Migrations
 
                     b.Property<DateTime?>("DbsVerifiedAtUtc")
                         .HasColumnType("TEXT");
+
+                    b.Property<bool>("HasHedgeTrimmer")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<bool>("HasLeafBlower")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<bool>("HasPressureWasherForPatio")
+                        .HasColumnType("INTEGER");
 
                     b.Property<string>("IdDocumentNumber")
                         .HasColumnType("TEXT");

@@ -7,6 +7,7 @@ using Sorted.Core.Entities;
 using Sorted.Core.Enums;
 using Sorted.Core.Interfaces;
 using Sorted.Core.Options;
+using System.Text.Json;
 using Sorted.Core.Plans;
 using Sorted.Infrastructure.Data;
 using Stripe;
@@ -47,7 +48,9 @@ public class StripePaymentService(
             .Select(p => p.GardenSize)
             .FirstOrDefaultAsync(ct);
 
-        var chargePrice = PlanPricing.ResolvePrice(plan, _planPricing, gardenSize);
+        var addonIds = SignupAddonPricing.ParseSignupAddonIds(subscription.SelectedSignupAddonsJson);
+        var minimumTermMonths = SubscriptionCommitment.ResolveMinimumTermMonths(plan, addonIds);
+        var chargePrice = PlanPricing.ResolvePrice(plan, _planPricing, gardenSize, addonIds);
         var lineItem = BuildSubscriptionLineItem(plan, chargePrice, gardenSize);
         var sessionService = new SessionService();
         var session = await sessionService.CreateAsync(new SessionCreateOptions
@@ -67,7 +70,7 @@ public class StripePaymentService(
                 {
                     ["subscriptionId"] = subscription.Id.ToString(),
                     ["planId"] = plan.Id.ToString(),
-                    ["minimumTermMonths"] = plan.MinimumTermMonths.ToString()
+                    ["minimumTermMonths"] = minimumTermMonths.ToString()
                 }
             },
             LineItems = [lineItem]
@@ -643,7 +646,7 @@ public class StripePaymentService(
     {
         subscription.Status = SubscriptionStatus.Active;
         subscription.StartedAtUtc = DateTime.UtcNow;
-        subscription.EndsAtUtc = DateTime.UtcNow.AddMonths(subscription.Plan.MinimumTermMonths);
+        subscription.EndsAtUtc = SubscriptionCommitment.MinimumTermEndsAtUtc(subscription);
 
         var payment = await db.Payments
             .Where(p => p.CustomerSubscriptionId == subscription.Id && p.Status == PaymentStatus.Pending)
@@ -712,7 +715,11 @@ public class StripePaymentService(
                 {
                     ["subscriptionId"] = subscription.Id.ToString(),
                     ["planId"] = targetPlan.Id.ToString(),
-                    ["minimumTermMonths"] = targetPlan.MinimumTermMonths.ToString(),
+                    ["minimumTermMonths"] = SubscriptionCommitment
+                        .ResolveMinimumTermMonths(
+                            targetPlan,
+                            SignupAddonPricing.ParseSignupAddonIds(subscription.SelectedSignupAddonsJson))
+                        .ToString(),
                 },
             },
             cancellationToken: ct);
@@ -725,7 +732,8 @@ public class StripePaymentService(
         CancellationToken ct)
     {
         var now = DateTime.UtcNow;
-        var minimumEnd = now.AddMonths(newPlan.MinimumTermMonths);
+        var addonIds = SignupAddonPricing.ParseSignupAddonIds(subscription.SelectedSignupAddonsJson);
+        var minimumEnd = now.AddMonths(SubscriptionCommitment.ResolveMinimumTermMonths(newPlan, addonIds));
         subscription.SubscriptionPlanId = newPlan.Id;
         subscription.Plan = newPlan;
         subscription.EndsAtUtc = subscription.EndsAtUtc is { } existing && existing > minimumEnd

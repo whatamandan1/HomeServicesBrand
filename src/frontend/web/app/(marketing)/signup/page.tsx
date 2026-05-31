@@ -7,9 +7,6 @@ import { Check, ChevronDown, ChevronLeft, ChevronRight, ChevronUp } from "lucide
 import { api, type AuthResponse, type GardenSize, type SubscriptionPlan } from "@/lib/api";
 import { FALLBACK_PLANS, sortPlans } from "@/lib/plans";
 import {
-  ANNUAL_BILLING_HINT,
-  ANNUAL_BILLING_SAVINGS,
-  annualEquivalentMonthly,
   findTierPlanForBilling,
   formatPriceFrom,
   GARDEN_SIZE_ABOVE_BAND_NOTE,
@@ -17,10 +14,15 @@ import {
   CUSTOMER_VISIT_RESPONSIBILITIES,
   GARDEN_SIZE_MAINTAINED_AREA_NOTE,
   GARDEN_SIZE_ORDER,
+  countSignupAddons,
+  effectiveMinimumTermMonths,
+  formatSignupAddonSurcharge,
+  SIGNUP_ADDON_COMMITMENT_NOTE,
   isVisitFrequencyService,
-  matchPlanTierFromServices,
+  matchPlanTierFromVisitFrequency,
   planFeatures,
   planPriceForGarden,
+  SIGNUP_ADDON_SERVICE_IDS,
   planVisitSummary,
   PLAN_TIERS,
   CORE_VISIT_WORK,
@@ -28,11 +30,9 @@ import {
   SIGNUP_SERVICE_GROUP_LABELS,
   SIGNUP_SERVICES,
   signupVisitFrequencyOptions,
-  type BillingChoice,
   type PlanTier,
   type SignupServiceId,
 } from "@/lib/consumer-plans";
-import { BillingIntervalToggle } from "@/components/marketing/BillingIntervalToggle";
 import { saveAuth } from "@/lib/auth-storage";
 import { stashSignupPhotos } from "@/lib/pending-signup-photos";
 import { compressImageFile } from "@/lib/compress-image";
@@ -43,12 +43,9 @@ import {
   normalizeUkPostcode,
   tierFromPlan,
 } from "@/lib/signup-utils";
-import { formatGbp } from "@/lib/format";
 import { useSignupLeadCapture } from "@/lib/use-signup-lead";
 import { AlertBanner, LoadingSpinner } from "@/components/ui/feedback";
 import { AvailabilityPicker } from "@/components/signup/AvailabilityPicker";
-import { SignupSummary } from "@/components/signup/SignupSummary";
-
 const STEPS = ["Garden size", "Find your plan", "Your quote", "Finish signup"] as const;
 
 const DEFAULT_SERVICES: SignupServiceId[] = ["lawn-borders"];
@@ -59,7 +56,7 @@ export default function SignupPage() {
   const [step, setStep] = useState(0);
   const [plans, setPlans] = useState<SubscriptionPlan[]>([]);
   const [plansLoading, setPlansLoading] = useState(true);
-  const [billing, setBilling] = useState<BillingChoice>("Annual");
+  const billing = "Monthly" as const;
   const [selectedTier, setSelectedTier] = useState<PlanTier>("essential");
   const [selectedServices, setSelectedServices] = useState<SignupServiceId[]>(DEFAULT_SERVICES);
   const [visitFrequency, setVisitFrequency] = useState<SignupServiceId>(DEFAULT_VISIT_FREQUENCY);
@@ -88,14 +85,16 @@ export default function SignupPage() {
   const [quoteUnveiled, setQuoteUnveiled] = useState(false);
   const topRef = useRef<HTMLDivElement>(null);
 
-  const servicesForMatching = useMemo(
-    () => [...selectedServices.filter((id) => !isVisitFrequencyService(id)), visitFrequency],
-    [selectedServices, visitFrequency]
+  const matchedTier = useMemo(
+    () => matchPlanTierFromVisitFrequency(visitFrequency),
+    [visitFrequency]
   );
 
-  const matchedTier = useMemo(
-    () => matchPlanTierFromServices(servicesForMatching),
-    [servicesForMatching]
+  const addonCount = useMemo(() => countSignupAddons(selectedServices), [selectedServices]);
+
+  const selectedAddonIds = useMemo(
+    () => selectedServices.filter((id) => SIGNUP_ADDON_SERVICE_IDS.includes(id)),
+    [selectedServices]
   );
 
   useEffect(() => {
@@ -113,9 +112,8 @@ export default function SignupPage() {
       const tier = tierFromPlan(fromUrl);
       setSelectedTier(tier);
       setPlanOverridden(true);
-      setBilling("Annual");
-      const annualPlan = findTierPlanForBilling(sorted, tier, "Annual");
-      setSelectedPlanId(annualPlan?.id ?? fromUrl.id);
+      const monthlyPlan = findTierPlanForBilling(sorted, tier, "Monthly");
+      setSelectedPlanId(monthlyPlan?.id ?? fromUrl.id);
     } else {
       const defaultPlan = findTierPlanForBilling(sorted, selectedTier, billing) ?? sorted[0];
       if (defaultPlan) setSelectedPlanId(defaultPlan.id);
@@ -144,7 +142,7 @@ export default function SignupPage() {
     if (plans.length === 0) return;
     const plan = findTierPlanForBilling(plans, selectedTier, billing);
     if (plan) setSelectedPlanId(plan.id);
-  }, [billing, selectedTier, plans]);
+  }, [selectedTier, plans]);
 
   useEffect(() => {
     if (!planOverridden) setSelectedTier(matchedTier);
@@ -306,6 +304,7 @@ export default function SignupPage() {
         availabilityPreference: form.availability.trim(),
         subscriptionPlanId: selectedPlanId,
         acceptedTerms: true,
+        selectedSignupAddons: selectedAddonIds,
       });
       saveAuth(auth);
       await continueToPayment(auth);
@@ -345,8 +344,6 @@ export default function SignupPage() {
   }
 
   const usingFallback = plans.length > 0 && plans[0]?.id.startsWith("fallback-");
-  const showSummary = step >= 1 && selectedPlan;
-  const showSummaryPrice = quoteUnveiled && step >= 2;
 
   const visibleTiers = useMemo(
     () =>
@@ -359,6 +356,10 @@ export default function SignupPage() {
 
   const activePlan = findTierPlanForBilling(plans, selectedTier, billing);
   const activeTierMeta = PLAN_TIERS.find((t) => t.id === selectedTier);
+  const minimumTermMonths = useMemo(
+    () => (activePlan ? effectiveMinimumTermMonths(activePlan, selectedServices) : 3),
+    [activePlan, selectedServices]
+  );
 
   return (
     <div className="pb-32 pt-8 md:pb-12 md:pt-12">
@@ -407,8 +408,7 @@ export default function SignupPage() {
           <AlertBanner variant="error" message={error} onDismiss={() => setError(null)} className="mt-6" />
         )}
 
-        <div className={`mt-8 ${showSummary ? "lg:grid lg:grid-cols-[1fr_280px] lg:gap-8" : ""}`}>
-          <div>
+        <div className="mt-8">
             {step === 0 && (
               <div className="space-y-4 rounded-2xl border border-stone-200 bg-white p-5 shadow-soft sm:p-6">
                 <p className="text-sm text-stone-600">{GARDEN_SIZE_MAINTAINED_AREA_NOTE}</p>
@@ -486,12 +486,20 @@ export default function SignupPage() {
                                     checked={checked}
                                     onChange={() => toggleService(service.id)}
                                   />
-                                  <span className="leading-tight">{service.label}</span>
+                                  <span className="leading-tight">
+                                    {service.label}
+                                    <span className="block text-xs font-normal text-stone-500">
+                                      {formatSignupAddonSurcharge(form.gardenSize, service.id)}
+                                    </span>
+                                  </span>
                                 </label>
                               </li>
                             );
                           })}
                         </ul>
+                        {group === "addons" && addonCount > 0 && (
+                          <p className="mt-2 text-xs text-amber-900">{SIGNUP_ADDON_COMMITMENT_NOTE}</p>
+                        )}
                       </fieldset>
                     );
                   })}
@@ -579,29 +587,17 @@ export default function SignupPage() {
                     <p className="text-sm text-stone-600">{activeTierMeta.tagline}</p>
                     <p className="mt-2 text-sm text-stone-600">{planVisitSummary(activePlan)}</p>
                     <div className="mt-4 flex flex-wrap items-end justify-between gap-4 border-t border-gardens-primary/15 pt-4">
-                      <div className="space-y-2">
-                        <BillingIntervalToggle billing={billing} onChange={setBilling} />
-                        <p className="text-xs text-stone-500">{ANNUAL_BILLING_HINT}</p>
-                      </div>
+                      <p className="text-xs text-stone-500">Billed monthly</p>
                       <div className="text-right">
                         <p className="text-xs text-stone-600">
-                          {GARDEN_SIZE_GUIDE[form.gardenSize].label} · {activePlan.minimumTermMonths}-month min
+                          {GARDEN_SIZE_GUIDE[form.gardenSize].label} · {minimumTermMonths}-month min
                         </p>
                         <p className="mt-1 text-2xl font-bold text-gardens-primary">
                           {formatPriceFrom(
-                            planPriceForGarden(activePlan, form.gardenSize),
-                            billing === "Monthly" ? "mo" : "yr"
+                            planPriceForGarden(activePlan, form.gardenSize, selectedServices),
+                            "mo"
                           )}
                         </p>
-                        {billing === "Annual" && (
-                          <p className="text-xs font-medium text-gardens-primary">
-                            From £
-                            {formatGbp(
-                              annualEquivalentMonthly(planPriceForGarden(activePlan, form.gardenSize))
-                            )}
-                            /mo billed yearly
-                          </p>
-                        )}
                       </div>
                     </div>
 
@@ -623,7 +619,7 @@ export default function SignupPage() {
                         {visibleTiers.map(({ id, label, tagline, plan }) => {
                           if (!plan) return null;
                           const selected = selectedTier === id;
-                          const price = planPriceForGarden(plan, form.gardenSize);
+                          const price = planPriceForGarden(plan, form.gardenSize, selectedServices);
                           return (
                             <button
                               key={plan.id}
@@ -643,7 +639,7 @@ export default function SignupPage() {
                                   <p className="font-semibold text-gardens-dark">{label}</p>
                                   <p className="text-xs text-stone-500">{tagline}</p>
                                   <p className="mt-2 text-lg font-bold text-gardens-primary">
-                                    {formatPriceFrom(price, billing === "Monthly" ? "mo" : "yr")}
+                                    {formatPriceFrom(price, "mo")}
                                   </p>
                                 </div>
                                 {selected && <Check className="h-5 w-5 shrink-0 text-gardens-primary" />}
@@ -719,7 +715,9 @@ export default function SignupPage() {
                   <Link href="/privacy" className="font-medium text-gardens-primary hover:underline" target="_blank">
                     privacy policy
                   </Link>
-                  .
+                  , including a {minimumTermMonths}-month minimum term
+                  {addonCount > 0 ? " with add-on services" : ""}{" "}
+                  and our visit scheduling policy if you cancel early (see terms §6–7).
                 </p>
                 <div className="space-y-3 border-t border-stone-100 pt-4">
                   <div>
@@ -815,37 +813,16 @@ export default function SignupPage() {
                 </button>
               )}
             </div>
-          </div>
-
-          {showSummary && selectedPlan && (
-            <aside className="hidden lg:block">
-              <div className="sticky top-24">
-                <SignupSummary
-                  plan={selectedPlan}
-                  gardenSize={form.gardenSize}
-                  showPrice={showSummaryPrice}
-                />
-              </div>
-            </aside>
-          )}
         </div>
 
         <div className="fixed inset-x-0 bottom-0 z-40 border-t border-stone-200 bg-white/95 p-3 backdrop-blur-md pb-[max(0.75rem,env(safe-area-inset-bottom))] sm:hidden">
-          {showSummary && selectedPlan ? (
-            <SignupSummary
-              plan={selectedPlan}
-              gardenSize={form.gardenSize}
-              compact
-              showPrice={showSummaryPrice}
-            />
-          ) : (
-            <p className="text-center text-xs text-stone-500">
-              Step {step + 1} of {STEPS.length}
-              {step === 0 && " — pick your garden size"}
-              {step === 1 && " — tick services, we find your plan"}
-              {step === 2 && !quoteUnveiled && " — enter email for your quote"}
-            </p>
-          )}
+          <p className="text-center text-xs text-stone-500">
+            Step {step + 1} of {STEPS.length}
+            {step === 0 && " — pick your garden size"}
+            {step === 1 && " — tick services, we find your plan"}
+            {step === 2 && !quoteUnveiled && " — enter email for your quote"}
+            {step === 3 && " — finish signup"}
+          </p>
           <div className="mt-3 flex gap-2">
             {step > 0 && (
               <button

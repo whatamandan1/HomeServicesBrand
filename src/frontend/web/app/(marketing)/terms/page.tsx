@@ -41,9 +41,28 @@ export default function TermsPage() {
       <h2>3. Plans, pricing, and minimum terms</h2>
       <p>
         Plan names, prices, visit frequency, and minimum commitment periods are shown on our{" "}
-        <Link href="/#pricing">pricing page</Link> and during signup before you pay. Monthly plans typically have a
-        3-month minimum term; annual plans have a 12-month minimum term. Your minimum term end date is shown in your
-        account.
+        <Link href="/#pricing">pricing page</Link> and during signup before you pay.
+      </p>
+      <ul>
+        <li>
+          <strong>Monthly billing (core maintenance only):</strong> typically a <strong>3-month</strong> minimum term.
+        </li>
+        <li>
+          <strong>Monthly billing with signup add-ons</strong> (hedge trim, seasonal tidy, patio &amp; path refresh): a{" "}
+          <strong>6-month</strong> minimum term applies to that subscription.
+        </li>
+        <li>
+          <strong>Annual billing:</strong> a <strong>12-month</strong> minimum term.
+        </li>
+      </ul>
+      <p>
+        Your minimum term end date is shown in your account and set when you subscribe, based on the plan and add-ons
+        you selected at signup.
+      </p>
+      <p>
+        Signup add-ons are delivered on a fixed schedule (not every maintenance visit). Hedge and seasonal work is
+        typically <strong>four times per year</strong>; patio and path refresh is typically <strong>twice per year</strong>.
+        The monthly subscription charge spreads that annual cost evenly over twelve months.
       </p>
       <p>
         Prices include VAT where applicable. We may change prices for new customers; existing subscriptions keep their
@@ -97,13 +116,19 @@ export default function TermsPage() {
         visit may be marked incomplete and we are not obliged to refund that visit.
       </p>
 
-      <h2>6. Visits and rescheduling</h2>
+      <h2>6. Visits, seasonality, and rescheduling</h2>
       <p>
         You can view upcoming visits in your account and request rescheduling through support where reasonable notice
         is given. Severe weather or operational issues may require us to reschedule visits.
       </p>
+      <p>
+        Garden maintenance is seasonal in the UK: we typically schedule <strong>more visits in spring and summer</strong>{" "}
+        and <strong>fewer in autumn and winter</strong>, including core maintenance and signup add-on sessions (hedges,
+        seasonal tidy, patio refresh). This keeps your garden cared for when it grows fastest and avoids unnecessary
+        winter call-outs.
+      </p>
 
-      <h2>7. Cancellation and changes</h2>
+      <h2>7. Cancellation, visit equalisation, and changes</h2>
       <p>
         You may request cancellation by contacting customer support through your account chat. Cancellation is not
         available as a self-service button in the billing portal during your minimum term.
@@ -112,6 +137,25 @@ export default function TermsPage() {
         If you cancel, service continues until the end of your minimum term or current billing period (whichever applies
         to your plan), and you remain liable for charges due up to that date. We do not generally offer refunds for
         partial periods already billed, except where required by law or at our discretion in exceptional circumstances.
+      </p>
+      <p>
+        <strong>Visit equalisation if you cancel early.</strong> Your subscription fee covers a set number of maintenance
+        and add-on sessions over the year, spread across the seasons as described above. If you cancel before you have
+        received the visits you have paid for (including add-on sessions still due on the annual schedule), we may{" "}
+        <strong>reduce the number of remaining visits</strong> in the notice period after cancellation so that, overall,
+        you receive approximately the visits and add-on work you have paid for — no more and no less.
+      </p>
+      <p>
+        <strong>Example:</strong> you subscribe in <strong>April</strong> with add-ons and cancel in <strong>June</strong>.
+        Visits already completed in April–May count toward what you have used. Scheduled visits from{" "}
+        <strong>June through September</strong> (or through the end of your minimum term, if later) may be{" "}
+        <strong>reduced or rescheduled</strong> so we do not deliver a full summer-heavy schedule after you have cancelled,
+        while still honouring work you have already paid for. Add-on sessions (e.g. patio refresh) due later in the year
+        may be cancelled if you cancel before those sessions would have taken place.
+      </p>
+      <p>
+        We will confirm any changes to your remaining visit schedule through your account or support. This policy does
+        not reduce your obligation to pay charges due through the end of your minimum term.
       </p>
 
       <h2>8. Upgrades and plan changes</h2>

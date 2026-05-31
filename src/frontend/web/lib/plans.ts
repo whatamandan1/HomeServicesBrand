@@ -67,12 +67,8 @@ export function planSignupIndex(plans: SubscriptionPlan[], planId: string): numb
   return idx >= 0 ? idx : 0;
 }
 
-export function planSignupHref(
-  plans: SubscriptionPlan[],
-  tier: PlanTier,
-  _billing?: BillingChoice
-): string {
-  const plan = findTierPlanForBilling(plans, tier, "Annual");
+export function planSignupHref(plans: SubscriptionPlan[], tier: PlanTier): string {
+  const plan = findTierPlanForBilling(plans, tier, "Monthly");
   if (!plan) return "/signup";
   return `/signup?plan=${planSignupIndex(plans, plan.id)}`;
 }

@@ -93,7 +93,7 @@ const faqs = [
   },
   {
     q: "How does billing work?",
-    a: "You subscribe online with a clear monthly or annual price. After your minimum term, get in touch if you need to make changes to your plan.",
+    a: "You subscribe online with a clear monthly price for your garden size and plan. After your minimum term, get in touch if you need to make changes.",
   },
   {
     q: "Can I reschedule a visit?",
@@ -174,7 +174,7 @@ export default function HomePage() {
       <Section
         id="pricing"
         title="Simple, transparent pricing"
-        subtitle="Three plans. Annual billing is best value — save about two months vs paying monthly."
+        subtitle="Three plans — simple monthly pricing for your garden size."
         className="bg-stone-50/80"
       >
         <PricingSection />

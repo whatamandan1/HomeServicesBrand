@@ -1,5 +1,6 @@
 using System.Security.Cryptography;
 using System.Text;
+using System.Text.Json;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
@@ -9,6 +10,7 @@ using Sorted.Core.Enums;
 using Sorted.Core.Geo;
 using Sorted.Core.Interfaces;
 using Sorted.Core.Options;
+using Sorted.Core.Plans;
 using Sorted.Infrastructure.Data;
 
 namespace Sorted.Infrastructure.Services;
@@ -76,12 +78,18 @@ public class AuthService(
         };
         db.CustomerProperties.Add(property);
 
+        var signupAddons = (request.SelectedSignupAddons ?? [])
+            .Where(id => SignupAddonPricing.AddonServiceIds.Contains(id))
+            .Distinct(StringComparer.OrdinalIgnoreCase)
+            .ToArray();
+
         var subscription = new CustomerSubscription
         {
             Customer = customer,
             SubscriptionPlanId = plan.Id,
             Status = SubscriptionStatus.PendingPayment,
-            AvailabilityPreference = request.AvailabilityPreference
+            AvailabilityPreference = request.AvailabilityPreference,
+            SelectedSignupAddonsJson = signupAddons.Length > 0 ? JsonSerializer.Serialize(signupAddons) : null
         };
         db.CustomerSubscriptions.Add(subscription);
         await db.SaveChangesAsync(ct);

@@ -265,6 +265,16 @@ internal static class PostgresSchemaRepair
         ALTER TABLE "Providers" ADD COLUMN IF NOT EXISTS "DbsVerifiedAtUtc" timestamp with time zone NULL;
         """;
 
+    private const string ProviderAddonEquipmentSql = """
+        ALTER TABLE "Providers" ADD COLUMN IF NOT EXISTS "HasLeafBlower" boolean NOT NULL DEFAULT FALSE;
+        ALTER TABLE "Providers" ADD COLUMN IF NOT EXISTS "HasHedgeTrimmer" boolean NOT NULL DEFAULT FALSE;
+        ALTER TABLE "Providers" ADD COLUMN IF NOT EXISTS "HasPressureWasherForPatio" boolean NOT NULL DEFAULT FALSE;
+        """;
+
+    private const string SubscriptionSignupAddonsSql = """
+        ALTER TABLE "CustomerSubscriptions" ADD COLUMN IF NOT EXISTS "SelectedSignupAddonsJson" TEXT NULL;
+        """;
+
     public static async Task ApplyAsync(SortedDbContext db, ILogger logger, CancellationToken ct = default)
     {
         if (!(db.Database.ProviderName ?? "").Contains("Npgsql", StringComparison.OrdinalIgnoreCase))
@@ -281,6 +291,8 @@ internal static class PostgresSchemaRepair
             await db.Database.ExecuteSqlRawAsync(MultiPropertyAccountsSql, ct);
             await db.Database.ExecuteSqlRawAsync(SignupLeadsSql, ct);
             await db.Database.ExecuteSqlRawAsync(ProviderVettingSql, ct);
+            await db.Database.ExecuteSqlRawAsync(ProviderAddonEquipmentSql, ct);
+            await db.Database.ExecuteSqlRawAsync(SubscriptionSignupAddonsSql, ct);
             logger.LogInformation("PostgreSQL schema repair completed");
         }
         catch (Exception ex)

@@ -6,10 +6,6 @@ import { Check } from "lucide-react";
 import { api, type SubscriptionPlan } from "@/lib/api";
 import { FALLBACK_PLANS, sortPlans } from "@/lib/plans";
 import {
-  ANNUAL_BILLING_BADGE,
-  ANNUAL_BILLING_HINT,
-  ANNUAL_BILLING_SAVINGS,
-  annualEquivalentMonthly,
   findTierPlanForBilling,
   formatPriceFrom,
   CUSTOMER_VISIT_RESPONSIBILITIES,
@@ -21,10 +17,8 @@ import {
   planVisitSummary,
   SEASONAL_ADDONS,
   SHARED_FEATURES,
-  type BillingChoice,
   type PlanTier,
 } from "@/lib/consumer-plans";
-import { formatGbp } from "@/lib/format";
 import { planSignupHref } from "@/lib/plans";
 import { PlanCompareTable } from "@/components/marketing/PlanCompareTable";
 
@@ -32,8 +26,6 @@ export function PricingSection() {
   const [plans, setPlans] = useState<SubscriptionPlan[]>([]);
   const [loaded, setLoaded] = useState(false);
   const [offline, setOffline] = useState(false);
-  const [billing, setBilling] = useState<BillingChoice>("Monthly");
-
   useEffect(() => {
     api.getPlans()
       .then((p) => {
@@ -66,7 +58,7 @@ export function PricingSection() {
   const displayPlans = sortPlans(plans);
   const visibleTiers = PLAN_TIERS.map((tier) => ({
     ...tier,
-    plan: findTierPlanForBilling(displayPlans, tier.id, billing),
+    plan: findTierPlanForBilling(displayPlans, tier.id, "Monthly"),
   })).filter((t) => t.plan);
 
   return (
@@ -77,25 +69,12 @@ export function PricingSection() {
         </p>
       )}
 
-      <PlanCompareTable
-        plans={displayPlans}
-        billing={billing}
-        onBillingChange={setBilling}
-        annualFirst={false}
-      />
-
-      {billing === "Monthly" && (
-        <p className="rounded-xl border border-gardens-primary/20 bg-gardens-light/60 px-4 py-3 text-center text-sm text-gardens-dark">
-          <span className="font-semibold">{ANNUAL_BILLING_BADGE}:</span> {ANNUAL_BILLING_HINT} Switch to{" "}
-          <span className="font-semibold">Annual</span> above to see yearly pricing.
-        </p>
-      )}
+      <PlanCompareTable plans={displayPlans} />
 
       <div className="grid gap-6 md:grid-cols-3">
         {visibleTiers.map(({ id, label, plan }) => {
           if (!plan) return null;
           const isElite = id === "elite";
-          const isAnnual = billing === "Annual";
           const features = planFeatures(plan);
           return (
             <div
@@ -104,12 +83,7 @@ export function PricingSection() {
                 isElite ? "border-gardens-dark ring-2 ring-gardens-dark/10" : "border-stone-200"
               }`}
             >
-              {isAnnual && (
-                <span className="absolute -top-3 left-1/2 -translate-x-1/2 rounded-full bg-gardens-accent px-4 py-1 text-xs font-semibold text-gardens-dark">
-                  {ANNUAL_BILLING_BADGE} · {ANNUAL_BILLING_SAVINGS}
-                </span>
-              )}
-              {!isAnnual && isElite && (
+              {isElite && (
                 <span className="absolute -top-3 left-1/2 -translate-x-1/2 rounded-full bg-gardens-dark px-4 py-1 text-xs font-semibold text-white">
                   Most frequent
                 </span>
@@ -119,14 +93,10 @@ export function PricingSection() {
               <p className="mt-2 text-sm text-stone-600">{planVisitSummary(plan)}</p>
               <div className="mt-6 flex items-baseline gap-1">
                 <span className="font-display text-4xl font-bold text-gardens-primary">
-                  {formatPriceFrom(planPriceForGarden(plan, "Small"), isAnnual ? "year" : "month")}
+                  {formatPriceFrom(planPriceForGarden(plan, "Small"), "month")}
                 </span>
               </div>
-              {isAnnual && (
-                <p className="mt-1 text-sm font-medium text-gardens-primary">
-                  From £{formatGbp(annualEquivalentMonthly(planPriceForGarden(plan, "Small")))}/mo — billed once a year
-                </p>
-              )}
+              <p className="mt-1 text-sm text-stone-500">Billed monthly</p>
               <ul className="mt-6 space-y-3">
                 {features.slice(0, 5).map((f) => (
                   <li key={f} className="flex items-start gap-2 text-sm text-stone-700">

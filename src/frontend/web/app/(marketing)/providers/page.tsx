@@ -3,7 +3,12 @@ import type { Metadata } from "next";
 import { Banknote, Calendar, MapPin, Shield } from "lucide-react";
 import { Button, Section } from "@/components/marketing/ui";
 import { ProviderSignupForm } from "@/components/providers/ProviderSignupForm";
-import { PROVIDER_EQUIPMENT_REQUIRED, PROVIDER_VETTING_REQUIRED } from "@/lib/provider-requirements";
+import {
+  PROVIDER_ADDON_EQUIPMENT,
+  PROVIDER_ADDON_EQUIPMENT_SUMMARY,
+  PROVIDER_EQUIPMENT_REQUIRED,
+  PROVIDER_VETTING_REQUIRED,
+} from "@/lib/provider-requirements";
 
 export const metadata: Metadata = {
   title: "Work with GardensSorted",
@@ -105,6 +110,22 @@ export default function ProvidersPage() {
                 •
               </span>
               {item}
+            </li>
+          ))}
+        </ul>
+      </Section>
+
+      <Section
+        title="Add-on equipment (optional)"
+        subtitle="Declare what you own in the portal after signup — we match you to the right customer add-ons."
+      >
+        <p className="mx-auto max-w-2xl text-sm text-stone-600">{PROVIDER_ADDON_EQUIPMENT_SUMMARY}</p>
+        <ul className="mx-auto mt-4 max-w-2xl space-y-3 text-sm text-stone-700">
+          {PROVIDER_ADDON_EQUIPMENT.map((item) => (
+            <li key={item.field} className="rounded-lg border border-stone-200 bg-white px-4 py-3">
+              <p className="font-medium text-gardens-dark">{item.label}</p>
+              <p className="mt-1 text-stone-600">{item.enables}</p>
+              <p className="mt-1 text-xs text-stone-500">{item.detail}</p>
             </li>
           ))}
         </ul>

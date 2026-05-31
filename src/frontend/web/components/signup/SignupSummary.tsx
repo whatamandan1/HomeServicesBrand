@@ -1,18 +1,31 @@
 import type { GardenSize, SubscriptionPlan } from "@/lib/api";
-import { formatPriceFrom, GARDEN_SIZE_GUIDE, planPriceForGarden, planVisitSummary } from "@/lib/consumer-plans";
+import type { SignupServiceId } from "@/lib/consumer-plans";
+import {
+  countSignupAddons,
+  effectiveMinimumTermMonths,
+  formatPriceFrom,
+  GARDEN_SIZE_GUIDE,
+  planPriceForGarden,
+  planVisitSummary,
+  SIGNUP_ADDON_COMMITMENT_NOTE,
+} from "@/lib/consumer-plans";
 
 export function SignupSummary({
   plan,
   gardenSize,
+  selectedAddons = [],
   compact = false,
   showPrice = true,
 }: {
   plan: SubscriptionPlan;
   gardenSize: GardenSize;
+  selectedAddons?: SignupServiceId[];
   compact?: boolean;
   showPrice?: boolean;
 }) {
-  const price = planPriceForGarden(plan, gardenSize);
+  const addonCount = countSignupAddons(selectedAddons);
+  const minimumTermMonths = effectiveMinimumTermMonths(plan, selectedAddons);
+  const price = planPriceForGarden(plan, gardenSize, selectedAddons);
   const period = plan.billingInterval === "Monthly" ? "month" : "year";
 
   return (
@@ -30,6 +43,11 @@ export function SignupSummary({
         {GARDEN_SIZE_GUIDE[gardenSize].label} garden
         {showPrice ? ` · ${plan.billingInterval === "Monthly" ? "Monthly" : "Annual"} billing` : ""}
       </p>
+      {showPrice && addonCount > 0 && (
+        <p className="mt-2 text-xs text-stone-600">
+          Includes {addonCount} add-on{addonCount === 1 ? "" : "s"} · {SIGNUP_ADDON_COMMITMENT_NOTE}
+        </p>
+      )}
       {showPrice && (
         <>
           <p className={`font-bold text-gardens-primary ${compact ? "mt-2 text-xl" : "mt-3 text-2xl"}`}>
@@ -37,7 +55,7 @@ export function SignupSummary({
           </p>
           {!compact && (
             <p className="mt-2 text-xs text-stone-500">
-              {plan.minimumTermMonths}-month minimum term · Cancel via support after minimum term
+              {minimumTermMonths}-month minimum term · Cancel via support after minimum term
             </p>
           )}
         </>

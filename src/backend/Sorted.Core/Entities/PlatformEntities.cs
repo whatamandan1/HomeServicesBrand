@@ -91,6 +91,8 @@ public class CustomerSubscription : AuditableEntity
     public string? StripeSubscriptionId { get; set; }
     public string? StripeCustomerId { get; set; }
     public string AvailabilityPreference { get; set; } = string.Empty;
+    /// <summary>JSON array of signup add-on ids (e.g. hedges, seasonal, patio).</summary>
+    public string? SelectedSignupAddonsJson { get; set; }
     public Guid? PreferredProviderId { get; set; }
     public Provider? PreferredProvider { get; set; }
 }
@@ -132,6 +134,13 @@ public class Provider : AuditableEntity
     public DateTime? IdVerifiedAtUtc { get; set; }
     public DateTime? RightToWorkVerifiedAtUtc { get; set; }
     public DateTime? DbsVerifiedAtUtc { get; set; }
+
+    /// <summary>Own leaf blower — seasonal tidy and leaf clearance add-ons.</summary>
+    public bool HasLeafBlower { get; set; }
+    /// <summary>Own hedge trimmer — hedge trimming add-ons.</summary>
+    public bool HasHedgeTrimmer { get; set; }
+    /// <summary>Own pressure washer with patio-safe attachment — patio &amp; path refresh add-ons.</summary>
+    public bool HasPressureWasherForPatio { get; set; }
 
     public ICollection<ProviderTerritory> Territories { get; set; } = [];
     public ICollection<ProviderBlockedDate> BlockedDates { get; set; } = [];

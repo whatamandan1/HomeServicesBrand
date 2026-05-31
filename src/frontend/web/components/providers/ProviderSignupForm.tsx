@@ -7,6 +7,7 @@ import { api } from "@/lib/api";
 import { saveAuth } from "@/lib/auth-storage";
 import {
   PROVIDER_EQUIPMENT_NOTE,
+  PROVIDER_ADDON_EQUIPMENT_SUMMARY,
   PROVIDER_EQUIPMENT_SUMMARY,
   PROVIDER_VETTING_SUMMARY,
 } from "@/lib/provider-requirements";
@@ -70,6 +71,9 @@ export function ProviderSignupForm() {
         <p className="mt-3 rounded-xl border border-stone-200 bg-stone-50 px-4 py-3 text-xs text-stone-600">
           <span className="font-medium text-stone-800">Equipment:</span> {PROVIDER_EQUIPMENT_SUMMARY}{" "}
           {PROVIDER_EQUIPMENT_NOTE}
+        </p>
+        <p className="mt-3 rounded-xl border border-stone-200 bg-stone-50 px-4 py-3 text-xs text-stone-600">
+          <span className="font-medium text-stone-800">Add-on visits:</span> {PROVIDER_ADDON_EQUIPMENT_SUMMARY}
         </p>
 
         <form onSubmit={onSubmit} className="mt-6 space-y-4">

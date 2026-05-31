@@ -62,8 +62,16 @@ public static class GardenSizePricing
     public static decimal ResolvePrice(
         string planName,
         GardenSize gardenSize,
-        SubscriptionBillingInterval billingInterval) =>
-        billingInterval == SubscriptionBillingInterval.Annual
+        SubscriptionBillingInterval billingInterval,
+        IEnumerable<string>? signupAddonIds = null) =>
+        (billingInterval == SubscriptionBillingInterval.Annual
             ? AnnualPriceGbp(planName, gardenSize)
-            : MonthlyPriceGbp(planName, gardenSize);
+            : MonthlyPriceGbp(planName, gardenSize))
+        + SignupAddonPricing.ResolveAddonsCharge(gardenSize, signupAddonIds, billingInterval);
+
+    public static decimal MonthlyTotalGbp(
+        string planName,
+        GardenSize gardenSize,
+        IEnumerable<string>? signupAddonIds = null) =>
+        MonthlyPriceGbp(planName, gardenSize) + SignupAddonPricing.MonthlyAddonsTotalGbp(gardenSize, signupAddonIds);
 }

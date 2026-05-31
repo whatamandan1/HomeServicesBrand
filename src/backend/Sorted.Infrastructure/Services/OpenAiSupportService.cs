@@ -179,7 +179,7 @@ public class OpenAiSupportService(
         var planLines = plans.Count > 0
             ? string.Join("\n", plans.Select(p =>
                 $"- {p.Name}: £{p.PriceGbp}/{(p.BillingInterval == SubscriptionBillingInterval.Monthly ? "month" : "year")}, {p.MinimumTermMonths}-month minimum. {p.Description}"))
-            : "- Essential Monthly: from £59.99/month (garden-size band), 10 visits per year, 3-month minimum\n- Each visit includes: mow & edge, border/bed weeding, general tidy, light watering while on site\n- Customer provides water access (tap); gardener brings own tools (mower, edger/strimmer, hose, rake, brush) and outdoor power is at property where needed\n- Do not hire platform-introduced gardeners off-platform during subscription or for 12 months after last visit (see terms)\n- Garden sizes: ≤50 m² (£59.99), ≤100 m² (£79.99), ≤150 m² (£99.99); above 150 m² quoted";
+            : "- Essential Monthly: from £59.99/month (garden-size band), 10 visits per year, 3-month minimum (6-month if signup add-ons selected)\n- Signup add-ons (hedges, seasonal tidy, patio): fixed sessions per year; monthly fee spreads annual cost; 6-month minimum on monthly billing\n- Early cancellation: remaining visits may be reduced to equalise paid vs delivered work (seasonal scheduling — see terms)\n- Each visit includes: mow & edge, border/bed weeding, general tidy, light watering while on site\n- Customer provides water access (tap); gardener brings own tools; do not hire platform gardeners off-platform (12 months after last visit)\n- Garden sizes: ≤50 m² (£59.99), ≤100 m² (£79.99), ≤150 m² (£99.99); above 150 m² quoted";
 
         return $"""
             Visitor status: Not signed in (pre-sales / general questions)

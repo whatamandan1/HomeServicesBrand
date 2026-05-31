@@ -117,7 +117,10 @@ public record ProviderVettingDetailsResponse(
     string? RightToWorkDocumentDescription,
     string? DbsCertificateNumber,
     DateOnly? DbsIssueDate,
-    bool DbsOnUpdateService);
+    bool DbsOnUpdateService,
+    bool HasLeafBlower,
+    bool HasHedgeTrimmer,
+    bool HasPressureWasherForPatio);
 
 public record SubmitProviderVettingRequest(
     DateOnly? DateOfBirth,
@@ -127,7 +130,10 @@ public record SubmitProviderVettingRequest(
     string? RightToWorkDocumentDescription,
     string? DbsCertificateNumber,
     DateOnly? DbsIssueDate,
-    bool DbsOnUpdateService);
+    bool DbsOnUpdateService,
+    bool HasLeafBlower = false,
+    bool HasHedgeTrimmer = false,
+    bool HasPressureWasherForPatio = false);
 
 public record AdminProviderVettingResponse(
     Guid ProviderId,
@@ -139,7 +145,10 @@ public record AdminProviderVettingResponse(
     string? RightToWorkDocumentDescription,
     string? DbsCertificateNumber,
     DateOnly? DbsIssueDate,
-    bool DbsOnUpdateService);
+    bool DbsOnUpdateService,
+    bool HasLeafBlower,
+    bool HasHedgeTrimmer,
+    bool HasPressureWasherForPatio);
 
 public record AdminUpdateProviderVettingVerificationRequest(
     bool? IdVerified,

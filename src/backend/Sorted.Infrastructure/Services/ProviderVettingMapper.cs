@@ -25,7 +25,10 @@ public static class ProviderVettingMapper
             p.RightToWorkDocumentDescription,
             p.DbsCertificateNumber,
             p.DbsIssueDate,
-            p.DbsOnUpdateService);
+            p.DbsOnUpdateService,
+            p.HasLeafBlower,
+            p.HasHedgeTrimmer,
+            p.HasPressureWasherForPatio);
 
     public static AdminProviderVettingResponse ToAdminDetails(Provider p) =>
         new(
@@ -38,7 +41,10 @@ public static class ProviderVettingMapper
             p.RightToWorkDocumentDescription,
             p.DbsCertificateNumber,
             p.DbsIssueDate,
-            p.DbsOnUpdateService);
+            p.DbsOnUpdateService,
+            p.HasLeafBlower,
+            p.HasHedgeTrimmer,
+            p.HasPressureWasherForPatio);
 
     private static string? MaskIdNumber(string? number)
     {
@@ -72,6 +78,9 @@ public static class ProviderVettingMapper
         p.DbsCertificateNumber = request.DbsCertificateNumber?.Trim();
         p.DbsIssueDate = request.DbsIssueDate;
         p.DbsOnUpdateService = request.DbsOnUpdateService;
+        p.HasLeafBlower = request.HasLeafBlower;
+        p.HasHedgeTrimmer = request.HasHedgeTrimmer;
+        p.HasPressureWasherForPatio = request.HasPressureWasherForPatio;
         p.VettingSubmittedAtUtc = DateTime.UtcNow;
         p.UpdatedAtUtc = DateTime.UtcNow;
     }

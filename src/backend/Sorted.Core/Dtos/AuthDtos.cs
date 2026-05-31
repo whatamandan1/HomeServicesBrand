@@ -16,6 +16,7 @@ public record RegisterCustomerRequest(
     Guid SubscriptionPlanId,
     string AvailabilityPreference,
     bool AcceptedTerms,
+    string[]? SelectedSignupAddons = null,
     string BrandCode = "gardens-sorted");
 
 public record RegisterProviderRequest(

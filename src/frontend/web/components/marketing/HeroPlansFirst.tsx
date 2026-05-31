@@ -1,10 +1,8 @@
 import Link from "next/link";
 import { MapPin } from "lucide-react";
 import {
-  ANNUAL_BILLING_BADGE,
-  ANNUAL_BILLING_SAVINGS,
-  annualEquivalentMonthly,
   findTierPlanForBilling,
+  planPriceForGarden,
   PLAN_TIERS,
   type PlanTier,
 } from "@/lib/consumer-plans";
@@ -20,8 +18,8 @@ const VISITS_BY_TIER: Record<PlanTier, string> = {
 
 export function HeroPlansFirst() {
   const tiers = PLAN_TIERS.map((tier) => {
-    const plan = findTierPlanForBilling(FALLBACK_PLANS, tier.id, "Annual");
-    const monthlyFrom = plan ? annualEquivalentMonthly(plan.priceGbp) : 0;
+    const plan = findTierPlanForBilling(FALLBACK_PLANS, tier.id, "Monthly");
+    const monthlyFrom = plan ? planPriceForGarden(plan, "Small") : 0;
     return {
       ...tier,
       visits: VISITS_BY_TIER[tier.id],
@@ -38,9 +36,7 @@ export function HeroPlansFirst() {
             <MapPin className="h-4 w-4 shrink-0 text-gardens-primary" />
             Yorkshire · Leeds, York, Wakefield
           </p>
-          <p className="mt-5 text-sm font-semibold text-gardens-primary">
-            Three plans · {ANNUAL_BILLING_BADGE} — {ANNUAL_BILLING_SAVINGS.toLowerCase()}
-          </p>
+          <p className="mt-5 text-sm font-semibold text-gardens-primary">Three plans · simple monthly pricing</p>
           <h1 className="mt-3 font-display text-3xl font-bold leading-tight text-gardens-dark sm:text-4xl md:text-5xl text-balance">
             Pick a plan. We visit on schedule.
           </h1>
@@ -71,7 +67,7 @@ export function HeroPlansFirst() {
                 <p className="mt-1 text-sm text-stone-600">{tier.tagline}</p>
                 <p className="mt-3 text-sm font-medium text-stone-700">{tier.visits}</p>
                 <p className="mt-4 font-display text-2xl font-bold text-gardens-dark">{tier.priceLabel}</p>
-                <p className="mt-1 text-xs text-stone-500">Small garden · billed annually</p>
+                <p className="mt-1 text-xs text-stone-500">Small garden · billed monthly</p>
                 <span className="mt-4 text-sm font-semibold text-gardens-primary">Choose {tier.label} →</span>
               </Link>
             );
