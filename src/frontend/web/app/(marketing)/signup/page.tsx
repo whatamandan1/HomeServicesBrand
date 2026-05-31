@@ -339,8 +339,8 @@ export default function SignupPage() {
   );
 
   const mobileFooter = (
-    <>
-      <div className="flex gap-2">
+    <div className="flex w-full flex-col">
+      <div className="flex w-full gap-2">
         {step > 0 && (
           <button
             type="button"
@@ -351,22 +351,31 @@ export default function SignupPage() {
           </button>
         )}
         {step < STEPS.length - 1 ? (
-          <button type="button" onClick={tryAdvance} className="btn-primary min-h-[48px] flex-[2]">
+          <button
+            type="button"
+            onClick={tryAdvance}
+            className={`btn-primary min-h-[48px] max-md:!w-full ${step > 0 ? "flex-[2]" : "w-full"}`}
+          >
             {step === 2 && !quoteUnveiled ? "See my quote" : "Continue"}
           </button>
         ) : (
-          <button type="button" disabled={loading} onClick={submit} className="btn-primary min-h-[48px] flex-[2]">
+          <button
+            type="button"
+            disabled={loading}
+            onClick={submit}
+            className={`btn-primary min-h-[48px] max-md:!w-full ${step > 0 ? "flex-[2]" : "w-full"}`}
+          >
             {loading ? "Processing…" : skipPayment ? "Create account" : "Pay securely"}
           </button>
         )}
       </div>
-      <p className="mt-2 text-center text-xs text-stone-500">
+      <p className="mt-2 w-full text-center text-xs text-stone-500">
         Already have an account?{" "}
         <Link href="/login" className="font-medium text-gardens-primary hover:underline">
           Log in
         </Link>
       </p>
-    </>
+    </div>
   );
 
   return (
@@ -746,7 +755,7 @@ export default function SignupPage() {
               aria-hidden
             />
 
-            <div className="mt-8 hidden flex-col gap-3 sm:flex sm:flex-row sm:justify-between">
+            <div className="mt-8 hidden flex-col gap-3 md:flex md:flex-row md:justify-between">
               {step > 0 ? (
                 <button
                   type="button"
@@ -763,7 +772,7 @@ export default function SignupPage() {
                 <button
                   type="button"
                   onClick={tryAdvance}
-                  className="btn-primary gap-1 sm:ml-auto"
+                  className="btn-primary gap-1 md:ml-auto"
                 >
                   {step === 2 && !quoteUnveiled ? "See my quote" : "Continue"}
                   {!(step === 2 && !quoteUnveiled) && <ChevronRight className="h-4 w-4" />}
@@ -773,7 +782,7 @@ export default function SignupPage() {
                   type="button"
                   disabled={loading}
                   onClick={submit}
-                  className="btn-primary sm:ml-auto"
+                  className="btn-primary md:ml-auto"
                 >
                   {loading ? "Continuing to payment…" : skipPayment ? "Create account" : "Continue to secure payment"}
                 </button>
