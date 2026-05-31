@@ -14,8 +14,8 @@ import { Button } from "@/components/marketing/ui";
 
 const VISITS_BY_TIER: Record<PlanTier, string> = {
   essential: "10 visits per year",
-  premium: "Fortnightly visits",
-  elite: "Weekly visits",
+  premium: "20 visits per year",
+  elite: "30 visits per year",
 };
 
 export function HeroPlansFirst() {

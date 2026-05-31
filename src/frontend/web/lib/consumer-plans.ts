@@ -104,7 +104,7 @@ export const ESSENTIAL_FEATURES = [
 
 export const PREMIUM_FEATURES = [
   "Everything in Essential",
-  "Fortnightly visits (about 20 per year)",
+  "20 visits per year",
   "Light hedge trim and shaping (where accessible)",
   "Seasonal tidy — leaf blow/clear in garden, light pruning",
   "Priority scheduling where possible",
@@ -112,7 +112,7 @@ export const PREMIUM_FEATURES = [
 
 export const ELITE_FEATURES = [
   "Everything in Premium",
-  "Weekly visits (about 30 per year)",
+  "30 visits per year",
   "1× thorough patio & path refresh per year (included)",
   "First-choice visit windows when booking",
   "Ideal for fast-growing lawns and high-use gardens",
@@ -191,21 +191,20 @@ export const PLAN_COMPARE_ROWS: PlanCompareRow[] = [
 
 export const PLAN_TIERS: { id: PlanTier; label: string; tagline: string }[] = [
   { id: "essential", label: "Essential", tagline: "Monthly upkeep" },
-  { id: "premium", label: "Premium", tagline: "Fortnightly + hedges" },
-  { id: "elite", label: "Elite", tagline: "Weekly + patio refresh" },
+  { id: "premium", label: "Premium", tagline: "20 visits a year + hedges" },
+  { id: "elite", label: "Elite", tagline: "30 visits a year + patio refresh" },
 ];
 
 export type SignupServiceId =
   | "lawn-borders"
   | "hedges"
-  | "weeding"
   | "seasonal"
   | "monthly"
   | "fortnightly"
   | "weekly"
   | "patio";
 
-export type SignupServiceGroup = "core" | "garden-care" | "visit-frequency" | "extras";
+export type SignupServiceGroup = "core" | "addons" | "visit-frequency";
 
 export type SignupServiceOption = {
   id: SignupServiceId;
@@ -229,40 +228,33 @@ export const SIGNUP_SERVICES: SignupServiceOption[] = [
     label: "Hedge trim & shaping",
     description: "Light shaping where safely reachable from ground level.",
     minTier: "premium",
-    group: "garden-care",
-  },
-  {
-    id: "weeding",
-    label: "Weeding in planted beds",
-    description: "Included on every visit with mowing and edging.",
-    minTier: "essential",
-    group: "garden-care",
+    group: "addons",
   },
   {
     id: "seasonal",
     label: "Seasonal tidy & leaf clearance",
     description: "Autumn leaf blow, light pruning, and general neatening.",
     minTier: "premium",
-    group: "garden-care",
+    group: "addons",
   },
   {
     id: "monthly",
-    label: "10 / year",
-    description: "About 10 visits per year (~every 5–6 weeks) — Essential upkeep.",
+    label: "10 a year",
+    description: "10 visits per year (~every 5–6 weeks) — Essential.",
     minTier: "essential",
     group: "visit-frequency",
   },
   {
     id: "fortnightly",
-    label: "Fortnightly",
-    description: "A visit every two weeks — Premium care.",
+    label: "20 a year",
+    description: "20 visits per year (~fortnightly) — Premium.",
     minTier: "premium",
     group: "visit-frequency",
   },
   {
     id: "weekly",
-    label: "Weekly",
-    description: "A visit every week through the season — Elite care.",
+    label: "30 a year",
+    description: "30 visits per year (~weekly in season) — Elite.",
     minTier: "elite",
     group: "visit-frequency",
   },
@@ -271,16 +263,18 @@ export const SIGNUP_SERVICES: SignupServiceOption[] = [
     label: "Patio & path refresh",
     description: "One thorough clean of garden paving or decking per year.",
     minTier: "elite",
-    group: "extras",
+    group: "addons",
   },
 ];
 
 export const SIGNUP_SERVICE_GROUP_LABELS: Record<SignupServiceGroup, string> = {
-  core: "Core maintenance",
-  "garden-care": "Garden care",
+  core: "Included on every visit",
+  addons: "Add-on services",
   "visit-frequency": "Visit frequency",
-  extras: "Included extras",
 };
+
+/** Optional extras on signup step 2 (core maintenance is always included). */
+export const SIGNUP_ADDON_SERVICE_IDS: SignupServiceId[] = ["hedges", "seasonal", "patio"];
 
 export const SIGNUP_VISIT_FREQUENCY_IDS: SignupServiceId[] = ["monthly", "fortnightly", "weekly"];
 
@@ -295,7 +289,7 @@ export function signupVisitFrequencyOptions(): SignupServiceOption[] {
 }
 
 /** Checkbox groups on signup (visit frequency uses a separate segmented control). */
-export const SIGNUP_CHECKBOX_GROUPS: SignupServiceGroup[] = ["core", "garden-care", "extras"];
+export const SIGNUP_CHECKBOX_GROUPS: SignupServiceGroup[] = ["addons"];
 
 const TIER_RANK: Record<PlanTier, number> = {
   essential: 0,
@@ -373,9 +367,7 @@ export function planVisitsPerYear(plan: SubscriptionPlan): number {
 
 export function planVisitSummary(plan: SubscriptionPlan) {
   const visits = planVisitsPerYear(plan);
-  if (visits === 30) return "Weekly visits";
-  if (visits === 20) return "Fortnightly visits";
-  return "10 visits per year";
+  return `${visits} visits per year`;
 }
 
 function findTierPlan(basePlans: SubscriptionPlan[], tier: PlanTier, billing: BillingChoice) {

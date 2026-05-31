@@ -23,6 +23,7 @@ import {
   planPriceForGarden,
   planVisitSummary,
   PLAN_TIERS,
+  CORE_VISIT_WORK,
   SIGNUP_CHECKBOX_GROUPS,
   SIGNUP_SERVICE_GROUP_LABELS,
   SIGNUP_SERVICES,
@@ -428,12 +429,8 @@ export default function SignupPage() {
                               : "border-stone-200 bg-white hover:border-stone-300"
                           }`}
                         >
-                          <p className="font-semibold text-gardens-dark">
-                            {guide.label}
-                          </p>
-                          <p className="mt-1 text-xs text-stone-600">
-                            ~{guide.visitHours} hr visit · from £{formatGbp(guide.monthlyPrice)}/mo
-                          </p>
+                          <p className="font-semibold text-gardens-dark">{guide.label}</p>
+                          <p className="mt-1 text-xs text-stone-600">{guide.description}</p>
                         </button>
                       );
                     })}
@@ -446,8 +443,21 @@ export default function SignupPage() {
             {step === 1 && (
               <div className="rounded-2xl border border-stone-200 bg-white p-4 shadow-soft sm:p-5">
                 <p className="text-xs text-stone-600 sm:text-sm">
-                  Tick what you need — we&apos;ll match a plan.
+                  Every plan includes regular maintenance — tick any add-ons and choose visit frequency.
                 </p>
+                <div className="mt-3 rounded-lg border border-stone-100 bg-stone-50 px-3 py-2">
+                  <p className="text-xs font-semibold uppercase tracking-wide text-stone-500">
+                    {SIGNUP_SERVICE_GROUP_LABELS.core}
+                  </p>
+                  <ul className="mt-1.5 space-y-0.5 text-sm text-stone-700">
+                    {CORE_VISIT_WORK.map((item) => (
+                      <li key={item} className="flex gap-2">
+                        <Check className="mt-0.5 h-3.5 w-3.5 shrink-0 text-gardens-primary" aria-hidden />
+                        {item}
+                      </li>
+                    ))}
+                  </ul>
+                </div>
                 <div className="mt-3 space-y-3">
                   {SIGNUP_CHECKBOX_GROUPS.map((group) => {
                     const options = SIGNUP_SERVICES.filter((s) => s.group === group);
