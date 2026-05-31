@@ -43,6 +43,8 @@ import { useSignupLeadCapture } from "@/lib/use-signup-lead";
 import { AlertBanner, LoadingSpinner } from "@/components/ui/feedback";
 import { AvailabilityPicker } from "@/components/signup/AvailabilityPicker";
 import { SignupVisitFrequencyPicker } from "@/components/signup/SignupVisitFrequencyPicker";
+import { SIGNUP_MOBILE_BOTTOM_PADDING_CLASS } from "@/lib/mobile-chrome";
+
 const STEPS = ["Garden size", "Add-ons", "Your quote", "Finish signup"] as const;
 
 export default function SignupPage() {
@@ -400,7 +402,7 @@ export default function SignupPage() {
         <div
           ref={mobileScrollRef}
           data-testid="signup-mobile-scroll"
-          className="mt-3 max-md:flex-1 max-md:min-h-0 max-md:overflow-y-auto max-md:overscroll-y-contain max-md:px-4 max-md:pb-12 [-webkit-overflow-scrolling:touch] md:mt-8"
+          className={`mt-3 max-md:flex-1 max-md:min-h-0 max-md:overflow-y-auto max-md:overscroll-y-contain max-md:px-4 ${SIGNUP_MOBILE_BOTTOM_PADDING_CLASS} [-webkit-overflow-scrolling:touch] md:mt-8`}
         >
             {usingFallback && (
               <AlertBanner
@@ -781,7 +783,7 @@ export default function SignupPage() {
 
         <div
           data-testid="signup-mobile-footer"
-          className="shrink-0 border-t border-stone-200 bg-white/95 px-3 pt-3 shadow-[0_-4px_20px_rgba(0,0,0,0.06)] backdrop-blur-md pb-[max(0.75rem,env(safe-area-inset-bottom))] max-md:mx-0 md:hidden"
+          className="shrink-0 border-t border-stone-200 bg-white/95 px-3 pt-3 shadow-[0_-4px_20px_rgba(0,0,0,0.06)] backdrop-blur-md pb-[max(0.75rem,env(safe-area-inset-bottom))] max-md:fixed max-md:inset-x-0 max-md:bottom-0 max-md:z-30 md:hidden"
         >
           {mobileFooter}
         </div>
