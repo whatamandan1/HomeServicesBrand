@@ -387,7 +387,7 @@ export default function SignupPage() {
             onClick={submit}
             className={`btn-primary min-h-[48px] max-md:!w-full ${step > 0 ? "flex-[2]" : "w-full"}`}
           >
-            {loading ? "Processing…" : skipPayment ? "Create account" : "Pay securely"}
+            {loading ? "Processing…" : skipPayment ? "Create account" : "Continue"}
           </button>
         )}
       </div>
@@ -823,7 +823,7 @@ export default function SignupPage() {
                   onClick={submit}
                   className="btn-primary md:ml-auto"
                 >
-                  {loading ? "Continuing to payment…" : skipPayment ? "Create account" : "Continue to secure payment"}
+                  {loading ? "Processing…" : skipPayment ? "Create account" : "Continue"}
                 </button>
               )}
             </div>

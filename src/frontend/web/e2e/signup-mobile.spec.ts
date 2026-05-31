@@ -54,7 +54,7 @@ test.describe("Signup wizard mobile layout", () => {
     await page.getByLabel("Create a password").fill("test-password-12");
 
     await scrollSignupContentToBottom(page);
-    await expect(page.getByRole("button", { name: /Pay securely|Create account/ })).toBeVisible();
+    await expect(page.getByRole("button", { name: /^Continue$/ })).toBeVisible();
     await expectBodyNotPositionFixed(page);
   });
 });
