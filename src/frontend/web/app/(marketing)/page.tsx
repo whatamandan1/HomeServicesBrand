@@ -10,13 +10,15 @@ import { Button, Section } from "@/components/marketing/ui";
 import { FaqAccordion } from "@/components/marketing/FaqAccordion";
 import { HeroProductPreview } from "@/components/marketing/HeroProductPreview";
 import { PricingSection } from "@/components/marketing/PricingSection";
+import { ServicePillarsSection } from "@/components/marketing/ServicePillarsSection";
 import { SocialProofSection } from "@/components/marketing/SocialProofSection";
+import { CUSTOMER_VISIT_RESPONSIBILITIES_SUMMARY } from "@/lib/consumer-plans";
 import { PRIMARY_CTA_HREF, PRIMARY_CTA_LABEL } from "@/lib/marketing-cta";
 
 export const metadata: Metadata = {
   title: "Garden care subscriptions in Yorkshire",
   description:
-    "Regular garden maintenance for Yorkshire homes. Subscribe online, choose your plan, and we schedule trusted local gardeners — from £59.99/month.",
+    "Regular garden maintenance for Yorkshire homes. Pick your garden size, add optional extras, and we schedule trusted local gardeners — from £59.99/month.",
   openGraph: {
     title: "GardensSorted — Garden care subscriptions in Yorkshire",
     description:
@@ -27,7 +29,7 @@ export const metadata: Metadata = {
 const steps = [
   {
     icon: Sparkles,
-    title: "Choose your plan",
+    title: "Pick your garden size",
     body: "Pick your garden size and any add-ons. Sign up in a few minutes with your address and when you're usually home.",
   },
   {
@@ -44,7 +46,7 @@ const steps = [
 
 const included = [
   "10 visits per year — lawn, borders, and tidy on each visit",
-  "Three garden sizes up to 150 m² — from £59.99/month",
+  "Priced by garden size, up to 150 m² maintained, from £59.99/month",
   "Optional add-ons: hedges, seasonal tidy, patio refresh",
   "Online account to view and manage every visit",
 ];
@@ -52,19 +54,19 @@ const included = [
 const faqs = [
   {
     q: "What's included in garden care?",
-    a: "10 visits per year (about every 5–6 weeks): lawn mowing and edging, weeding in borders and beds, general garden tidy, and light watering while we're there (you provide a working outdoor tap; your gardener brings a hose or watering can). You dispose of clippings or provide a garden-waste bin. Manage visits through your online account.",
+    a: "10 visits per year, about every 5–6 weeks: lawn mowing and edging, weeding, general tidy, and light watering on each visit. You need a working outdoor tap; we bring hose or watering can. You dispose of clippings or leave your garden-waste bin out. Manage everything in your online account.",
   },
   {
     q: "How does garden size affect price?",
-    a: "Prices depend on maintained lawn and beds (not your whole plot): up to 50 m² from £59.99/month, up to 100 m² £79.99, up to 150 m² £99.99 for 10 visits per year. Optional add-ons (hedges, seasonal tidy, patio) are priced separately at signup. Above 150 m² we quote separately.",
+    a: "We price by the lawn and beds we maintain, not your whole plot: up to 50 m² from £59.99/month, up to 100 m² £79.99, up to 150 m² £99.99 for 10 visits per year. Hedges, seasonal tidy, and patio are optional add-ons at signup. Above 150 m² we quote separately.",
   },
   {
     q: "What add-ons can I choose?",
-    a: "At signup you can add hedge trim (4× per year), seasonal tidy and leaf clearance (4× per year), or patio and path refresh (2× per year). Add-ons require a 6-month minimum term on monthly billing.",
+    a: "At signup you can add hedge trim 4× per year, seasonal tidy and leaf clearance 4× per year, or patio and path refresh 2× per year. Add-ons require a 6-month minimum term on monthly billing.",
   },
   {
     q: "What do I need to prepare before a visit?",
-    a: "Clear the lawn and garden of obstructions (including pet waste), make sure we can access the garden easily, provide a working outdoor tap for light watering (gardeners bring their own hose or watering can), and outdoor power where electric tools are needed. You must either dispose of grass cuttings yourself or leave out a suitable council garden-waste bin on collection day — we don't routinely haul green waste away.",
+    a: `${CUSTOMER_VISIT_RESPONSIBILITIES_SUMMARY} See our terms for the full list.`,
   },
   {
     q: "Can I hire my gardener directly?",
@@ -76,7 +78,7 @@ const faqs = [
   },
   {
     q: "Do you water the garden?",
-    a: "Yes — light watering of pots, beds, and obvious dry spots is included on each visit while we're on site. You provide access to water (usually an outdoor tap); your gardener brings a hose or watering can. We don't make separate trips just to water between scheduled visits.",
+    a: "Yes — light watering of pots, beds, and dry spots while we're on site. You need a working outdoor tap; we bring hose or watering can. We don't make extra trips just to water between visits.",
   },
   {
     q: "Can you clean the patio, blow leaves, or clear gutters?",
@@ -88,7 +90,7 @@ const faqs = [
   },
   {
     q: "How does billing work?",
-    a: "You subscribe online with a clear monthly price for your garden size and plan. After your minimum term, get in touch if you need to make changes.",
+    a: "You subscribe online with a clear monthly price for your garden size and any add-ons you chose. After your minimum term, get in touch if you need to make changes.",
   },
   {
     q: "Can I reschedule a visit?",
@@ -151,25 +153,12 @@ export default function HomePage() {
         </div>
       </section>
 
-      <section className="border-b border-gardens-primary/10 bg-white py-12">
-        <div className="mx-auto grid max-w-6xl gap-8 px-4 md:grid-cols-3 md:text-center">
-          {[
-            ["Scheduled", "Regular visits through the season"],
-            ["Local", "Approved gardeners in your area"],
-            ["Online", "Manage visits in your account"],
-          ].map(([stat, label]) => (
-            <div key={label}>
-              <p className="font-display text-3xl font-bold text-gardens-primary">{stat}</p>
-              <p className="mt-2 text-sm text-stone-600">{label}</p>
-            </div>
-          ))}
-        </div>
-      </section>
+      <ServicePillarsSection />
 
       <Section
         id="pricing"
         title="Simple, transparent pricing"
-        subtitle="Three plans — simple monthly pricing for your garden size."
+        subtitle="One subscription — monthly price by garden size, with optional add-ons."
         className="bg-stone-50/80"
       >
         <PricingSection />

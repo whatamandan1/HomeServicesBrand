@@ -10,8 +10,9 @@ public static class ProviderEquipmentRequirements
         "Watering can or hose for light watering",
         "Rake",
         "Appropriate brush or broom for tidying paths and edges",
+        "Extension lead — at least 20 metres",
     ];
 
     public const string Summary =
-        "Gardeners must bring their own mower, edging tool or strimmer, watering can or hose, rake, and appropriate brush to every visit.";
+        "Gardeners must bring mower, strimmer or edger, hose or watering can, rake, brush, and a 20 m+ extension lead to every visit.";
 }

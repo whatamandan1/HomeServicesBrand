@@ -17,7 +17,7 @@ export default function TermsPage() {
       <h2>1. About these terms</h2>
       <p>
         These terms apply when you sign up for a GardensSorted subscription at{" "}
-        <Link href="/signup">gardenssorted.co.uk</Link> (or our current website address). By completing signup and
+        <Link href="/signup">gardenssorted.co.uk</Link> or our current website. By completing signup and
         payment, you agree to these terms and our{" "}
         <Link href="/privacy">privacy policy</Link>.
       </p>
@@ -32,10 +32,10 @@ export default function TermsPage() {
         On each scheduled visit, your plan includes routine maintenance within the maintained area you selected at
         signup: <strong>lawn mowing and edging</strong>, <strong>weeding in borders and planted beds</strong>,{" "}
         <strong>general garden clean-up and tidy</strong>, and <strong>light watering</strong> of pots, beds, and obvious
-        dry spots while we are on site (when you provide access to water).
-        Optional add-ons at signup (such as hedge trim, seasonal tidy, or patio refresh) are delivered on a separate
-        schedule shown on our pricing page. We do not guarantee a specific visual outcome each visit — results depend on weather,
-        season, and garden condition — but we aim to deliver consistent maintenance as described in your plan.
+        dry spots while we are on site when you provide water access.
+        Optional add-ons at signup, such as hedge trim, seasonal tidy, or patio refresh, are delivered on a separate
+        schedule shown on our pricing page. We do not guarantee a specific visual outcome each visit. Results depend on weather,
+        season, and garden condition, but we aim to deliver consistent maintenance as described in your plan.
       </p>
 
       <h2>3. Plans, pricing, and minimum terms</h2>
@@ -45,10 +45,10 @@ export default function TermsPage() {
       </p>
       <ul>
         <li>
-          <strong>Monthly billing (core maintenance only):</strong> typically a <strong>3-month</strong> minimum term.
+          <strong>Monthly billing, core maintenance only:</strong> typically a <strong>3-month</strong> minimum term.
         </li>
         <li>
-          <strong>Monthly billing with signup add-ons</strong> (hedge trim, seasonal tidy, patio &amp; path refresh): a{" "}
+          <strong>Monthly billing with signup add-ons</strong> (hedge trim, seasonal tidy, or patio refresh): a{" "}
           <strong>6-month</strong> minimum term applies to that subscription.
         </li>
         <li>
@@ -60,7 +60,7 @@ export default function TermsPage() {
         you selected at signup.
       </p>
       <p>
-        Signup add-ons are delivered on a fixed schedule (not every maintenance visit). Hedge and seasonal work is
+        Signup add-ons are delivered on a fixed schedule, not on every maintenance visit. Hedge and seasonal work is
         typically <strong>four times per year</strong>; patio and path refresh is typically <strong>twice per year</strong>.
         The monthly subscription charge spreads that annual cost evenly over twelve months.
       </p>
@@ -83,32 +83,28 @@ export default function TermsPage() {
       <p>You agree to prepare your property so gardeners can work safely and efficiently:</p>
       <ul>
         <li>
-          <strong>Green waste:</strong> You must either dispose of grass cuttings and green waste yourself, or provide a
-          suitable council garden-waste bin that we may fill on collection day. We do not routinely haul waste off site.
+          <strong>Access:</strong> Unlock gates, keep paths clear, and keep pets away from the garden while we work.
         </li>
         <li>
-          <strong>Clear the work area:</strong> Remove obstructions from the lawn and garden we maintain (furniture, toys,
-          tools, fallen branches, and similar items).
+          <strong>Clear the garden:</strong> Move furniture, toys, tools, and branches off the lawn and beds we maintain.
         </li>
         <li>
-          <strong>Pet waste:</strong> Remove or secure pet waste from maintained areas before the visit.
+          <strong>Pet waste:</strong> Pick it up in maintained areas before we arrive.
         </li>
         <li>
-          <strong>Access:</strong> Provide safe, unobstructed access to the garden (for example unlocked gates, clear
-          paths, and pets secured away from work areas).
+          <strong>Water:</strong> A working outdoor tap. We bring a hose or watering can. No tap? Tell us before signup
+          — we may skip watering that visit.
         </li>
         <li>
-          <strong>Water:</strong> Provide access to water for light watering during the visit — typically a working
-          outdoor tap that reaches the maintained areas. Your gardener brings their own hose or watering can. If you do
-          not have a suitable supply, tell us before signup; we may skip watering on that visit.
+          <strong>Power:</strong> A socket we can plug into from the garden — inside or outside your home is fine. Your
+          gardener brings an extension lead of at least 20 metres.
         </li>
         <li>
-          <strong>Power:</strong> Provide an outdoor electricity supply where electric tools are needed (for example a
-          weatherproof outdoor socket, or an extension lead from your property that reaches the garden safely).
+          <strong>Grass clippings:</strong> You bin them, or leave your council garden-waste bin out on collection day. We
+          do not usually take waste away.
         </li>
         <li>
-          <strong>Accurate details:</strong> Keep your address, garden size band, and access instructions up to date in
-          your account.
+          <strong>Your details:</strong> Keep your address, garden size, and access notes up to date in your account.
         </li>
       </ul>
       <p>
@@ -123,8 +119,7 @@ export default function TermsPage() {
       </p>
       <p>
         Garden maintenance is seasonal in the UK: we typically schedule <strong>more visits in spring and summer</strong>{" "}
-        and <strong>fewer in autumn and winter</strong>, including core maintenance and signup add-on sessions (hedges,
-        seasonal tidy, patio refresh). This keeps your garden cared for when it grows fastest and avoids unnecessary
+        and <strong>fewer in autumn and winter</strong>, including core maintenance and signup add-on sessions. This keeps your garden cared for when it grows fastest and avoids unnecessary
         winter call-outs.
       </p>
 
@@ -141,16 +136,16 @@ export default function TermsPage() {
       <p>
         <strong>Visit equalisation if you cancel early.</strong> Your subscription fee covers a set number of maintenance
         and add-on sessions over the year, spread across the seasons as described above. If you cancel before you have
-        received the visits you have paid for (including add-on sessions still due on the annual schedule), we may{" "}
+        received the visits you have paid for, including add-on sessions still due on the annual schedule, we may{" "}
         <strong>reduce the number of remaining visits</strong> in the notice period after cancellation so that, overall,
         you receive approximately the visits and add-on work you have paid for — no more and no less.
       </p>
       <p>
         <strong>Example:</strong> you subscribe in <strong>April</strong> with add-ons and cancel in <strong>June</strong>.
         Visits already completed in April–May count toward what you have used. Scheduled visits from{" "}
-        <strong>June through September</strong> (or through the end of your minimum term, if later) may be{" "}
+        <strong>June through September</strong>, or through the end of your minimum term if later, may be{" "}
         <strong>reduced or rescheduled</strong> so we do not deliver a full summer-heavy schedule after you have cancelled,
-        while still honouring work you have already paid for. Add-on sessions (e.g. patio refresh) due later in the year
+        while still honouring work you have already paid for. Add-on sessions due later in the year
         may be cancelled if you cancel before those sessions would have taken place.
       </p>
       <p>
@@ -160,7 +155,7 @@ export default function TermsPage() {
 
       <h2>8. Upgrades and plan changes</h2>
       <p>
-        Where available in your account, you may upgrade plans or switch billing interval (e.g. monthly to annual).
+        Where available in your account, you may switch billing interval, such as monthly to annual.
         Changes may be prorated through Stripe. Downgrades are handled by support and may take effect at the next
         eligible billing date.
       </p>
@@ -170,8 +165,9 @@ export default function TermsPage() {
         Gardeners who perform visits are independent contractors approved to use our platform. GardensSorted coordinates
         scheduling, customer billing, and quality standards; the gardener performs the agreed maintenance at your
         property. Before approval, gardeners must provide valid photo ID, pass right-to-work verification in the UK, and
-        pass a basic DBS check. Approved gardeners bring their own equipment to each visit (including mower, edging tool
-        or strimmer, watering can or hose, rake, and appropriate brush). We do not supply tools.
+        pass a basic DBS check, and hold their own relevant insurance (such as public liability for gardening work).
+        Approved gardeners bring their own tools every visit (mower, strimmer or edger, hose,
+        rake, brush, and a 20 m+ extension lead). We do not supply equipment.
       </p>
       <p>
         To protect our service and the gardeners who rely on it, you agree that while you have an active subscription, and

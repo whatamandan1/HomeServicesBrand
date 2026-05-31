@@ -123,7 +123,7 @@ Work through phases in order. Each phase builds on the last.
 - [x] **Automated test suite** — xUnit core + API tests; CI fails on test failure
 - [x] **Auth hardening (core)** — role-based middleware route guards, password reset, session handling *(refresh tokens still open)*
 - [x] **Production security (core)** — startup checks for JWT/webhook/Stripe bypass; Stripe signature verification; dev endpoints gated *(demo seed still on until go-live gate)*
-- [ ] **Google Maps garden size estimation** — satellite/aerial imagery to suggest or calculate garden area at signup or property edit *(deferred; requires Google Maps Platform API)*
+- [ ] **Garden size help when unsure** — see [Possible later improvements](#possible-later-improvements) (AI from photos + optional Maps/aerial)
 
 ### Phase 4 — Multi-Property Solutions
 
@@ -323,6 +323,19 @@ Do not build these until core MVP is production-stable.
 | Dynamic pricing | 🔵 Deferred (consumer) | Multi-property personalised pricing in scope via Multi-Property Solutions phases 2–4 |
 | Route optimization | 🔵 Deferred |
 | Referral systems | 🔵 Deferred |
+
+---
+
+## Possible later improvements
+
+Ideas worth revisiting after core signup and scheduling are stable — not committed to a phase yet.
+
+| Item | Notes |
+|------|--------|
+| **AI garden size from photos** | When a customer is unsure which band (Small / Medium / Large) fits, analyse optional signup or property photos with a vision model to estimate **maintained** lawn and bed area and suggest a band (human can override). Reuse existing photo upload flow; show confidence and “we’ll confirm on first visit” disclaimer. |
+| **Google Maps / aerial garden size** | Satellite or aerial imagery (Maps Platform or similar) to suggest or cross-check maintained area at signup or property edit — complements photo-based AI or replaces it if imagery quality is sufficient. |
+
+Related today: garden size is self-selected in the signup wizard; optional photos are uploaded but not used for sizing ([`signup-needs-map.md`](signup-needs-map.md)).
 
 ---
 

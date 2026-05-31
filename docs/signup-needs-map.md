@@ -211,7 +211,7 @@ See also: [`stripe-local-setup.md`](stripe-local-setup.md), [`deploy-staging.md`
 
 - Phone number at signup (field exists in API but UI sends `""`)
 - Marketing opt-in (lead API supports it; UI always `false`)
-- Google Maps garden size estimation (roadmap deferred)
+- Garden size help when unsure — AI from customer photos and/or aerial/Maps estimation to suggest Small/Medium/Large band ([`development-roadmap.md`](development-roadmap.md) § Possible later improvements)
 - Multi-property customer signup (separate `/multi-property-solutions` enquiry flow)
 - Self-serve subscription cancellation in portal (support/chat only)
 - Resume wizard from lead (admin visibility only; no customer “continue where you left off” link)

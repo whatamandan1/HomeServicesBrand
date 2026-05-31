@@ -368,6 +368,9 @@ public class AdminController(
         if (request.DbsVerified == true) provider.DbsVerifiedAtUtc = now;
         else if (request.DbsVerified == false) provider.DbsVerifiedAtUtc = null;
 
+        if (request.InsuranceVerified == true) provider.InsuranceVerifiedAtUtc = now;
+        else if (request.InsuranceVerified == false) provider.InsuranceVerifiedAtUtc = null;
+
         provider.UpdatedAtUtc = now;
         await db.SaveChangesAsync(ct);
         return Ok(ProviderVettingMapper.ToAdminDetails(provider));
@@ -380,12 +383,16 @@ public class AdminController(
         if (provider is null) return NotFound();
 
         if (provider.VettingSubmittedAtUtc is null || !ProviderVettingMapper.IsSubmissionComplete(provider))
-            return BadRequest(new { error = "Provider must submit vetting details (ID, right to work, DBS) before approval." });
+            return BadRequest(new { error = "Provider must submit vetting details (ID, right to work, DBS, insurance) before approval." });
 
         if (provider.IdVerifiedAtUtc is null
             || provider.RightToWorkVerifiedAtUtc is null
-            || provider.DbsVerifiedAtUtc is null)
-            return BadRequest(new { error = "Mark ID, right to work, and DBS as verified before approval." });
+            || provider.DbsVerifiedAtUtc is null
+            || provider.InsuranceVerifiedAtUtc is null)
+            return BadRequest(new { error = "Mark ID, right to work, DBS, and insurance as verified before approval." });
+
+        if (!provider.HasOwnRelevantInsurance)
+            return BadRequest(new { error = "Provider must confirm they hold relevant insurance before approval." });
 
         provider.IsApproved = true;
         provider.UpdatedAtUtc = DateTime.UtcNow;

@@ -3,13 +3,17 @@ export const PROVIDER_VETTING_REQUIRED = [
   "Valid photo ID (e.g. passport or driving licence)",
   "Right to work in the UK — we will verify before you are approved",
   "Basic DBS check — must pass before taking paid visits",
+  "Your own relevant insurance — e.g. public liability cover for gardening work",
 ] as const;
 
+export const PROVIDER_INSURANCE_DECLARATION =
+  "I hold my own relevant insurance for gardening work (such as public liability) and will keep it in force while taking visits through GardensSorted.";
+
 export const PROVIDER_VETTING_SUMMARY =
-  "Before approval we verify your ID, right to work in the UK, and a basic DBS check.";
+  "Before approval we verify your ID, right to work, a basic DBS check, and that you hold your own relevant insurance.";
 
 export const PROVIDER_APPROVAL_PENDING_NOTE =
-  "Complete the checks & documents form below (ID, right to work, DBS). We verify everything before you can claim jobs.";
+  "Complete the checks & documents form below (ID, right to work, DBS, insurance). We verify everything before you can claim jobs.";
 
 /** Equipment every approved gardener must bring to each visit. */
 export const PROVIDER_EQUIPMENT_REQUIRED = [
@@ -18,14 +22,15 @@ export const PROVIDER_EQUIPMENT_REQUIRED = [
   "Watering can or hose for light watering",
   "Rake",
   "Appropriate brush or broom for tidying paths and edges",
+  "Extension lead — at least 20 metres",
 ] as const;
 
 export const PROVIDER_EQUIPMENT_SUMMARY =
-  "You must have your own equipment on every visit — mower, edging tool or strimmer, watering can or hose, rake, and an appropriate brush.";
+  "Mower, strimmer or edger, hose or watering can, rake, brush, and a 20 m+ extension lead — every visit.";
 
 /** Shown on apply page and provider portal — complements customer prep in consumer-plans. */
 export const PROVIDER_EQUIPMENT_NOTE =
-  "GardensSorted does not supply tools. Customers provide access to water (e.g. outdoor tap) and power at the property where needed; you bring everything required to complete the work.";
+  "We do not supply tools. The customer provides tap and power; you bring your gear and extension lead.";
 
 /** Declared in vetting — enables matching to customer add-on visits. */
 export const PROVIDER_ADDON_EQUIPMENT = [

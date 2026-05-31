@@ -1,5 +1,6 @@
-import { MarketingFooter } from "@/components/marketing/MarketingFooter";
+import { MarketingFooterSignupAware } from "@/components/marketing/MarketingFooterSignupAware";
 import { MarketingHeader } from "@/components/marketing/MarketingHeader";
+import { MarketingMain } from "@/components/marketing/MarketingMain";
 import { MobileCtaBar } from "@/components/marketing/MobileCtaBar";
 import { LazyGuestChat } from "@/components/marketing/LazyGuestChat";
 
@@ -7,8 +8,8 @@ export default function MarketingLayout({ children }: { children: React.ReactNod
   return (
     <>
       <MarketingHeader />
-      <main className="bg-stone-50/80 pb-20 md:pb-0">{children}</main>
-      <MarketingFooter />
+      <MarketingMain>{children}</MarketingMain>
+      <MarketingFooterSignupAware />
       <MobileCtaBar />
       <LazyGuestChat />
     </>

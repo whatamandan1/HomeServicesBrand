@@ -25,8 +25,10 @@ public static class ProviderVettingRules
         string? rightToWorkShareCode,
         string? rightToWorkDocumentDescription,
         string? dbsCertificateNumber,
-        DateOnly? dbsIssueDate)
+        DateOnly? dbsIssueDate,
+        bool hasOwnRelevantInsurance)
     {
+        if (!hasOwnRelevantInsurance) return false;
         if (dateOfBirth is null) return false;
         if (string.IsNullOrWhiteSpace(idDocumentType) || string.IsNullOrWhiteSpace(idDocumentNumber))
             return false;

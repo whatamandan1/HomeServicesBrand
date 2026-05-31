@@ -161,7 +161,7 @@ export function ProviderDetailPanel({
       {!provider.isApproved && (
         <div className="mt-4 space-y-3">
           <p className="text-xs text-stone-500">
-            Approve only after vetting is submitted, all three checks are marked verified, core equipment is suitable,
+            Approve only after vetting is submitted, ID, right to work, DBS, and insurance are verified, core equipment is suitable,
             and add-on tools are noted for visit matching.
           </p>
           <button

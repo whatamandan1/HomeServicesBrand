@@ -7,6 +7,7 @@ import { Menu, X } from "lucide-react";
 import { Logo } from "@/components/marketing/Logo";
 import type { AuthResponse } from "@/lib/api";
 import { loadAuth, syncSessionCookies } from "@/lib/auth-storage";
+import { useBodyScrollLock } from "@/lib/use-body-scroll-lock";
 
 const customerLink = { href: "/portal", label: "Customer portal" } as const;
 const providerLink = { href: "/provider", label: "Provider jobs" } as const;
@@ -39,12 +40,7 @@ export function AppHeader() {
     setOpen(false);
   }, [pathname]);
 
-  useEffect(() => {
-    document.body.style.overflow = open ? "hidden" : "";
-    return () => {
-      document.body.style.overflow = "";
-    };
-  }, [open]);
+  useBodyScrollLock(open);
 
   useEffect(() => {
     const auth = loadAuth();

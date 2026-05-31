@@ -7,6 +7,7 @@ import { api, type SubscriptionPlan } from "@/lib/api";
 import { FALLBACK_PLANS, sortPlans } from "@/lib/plans";
 import {
   formatPriceFrom,
+  CUSTOMER_VISIT_GARDENER_BRINGS,
   CUSTOMER_VISIT_RESPONSIBILITIES,
   GARDEN_CARE_FEATURES,
   GARDEN_SIZE_GUIDE,
@@ -18,8 +19,6 @@ import {
   SHARED_FEATURES,
   findSignupMonthlyPlan,
 } from "@/lib/consumer-plans";
-import { PlanCompareTable } from "@/components/marketing/PlanCompareTable";
-
 export function PricingSection() {
   const [plans, setPlans] = useState<SubscriptionPlan[]>([]);
   const [loaded, setLoaded] = useState(false);
@@ -41,7 +40,6 @@ export function PricingSection() {
   if (!loaded) {
     return (
       <div className="space-y-8">
-        <div className="animate-pulse rounded-2xl border bg-white p-8 shadow-soft h-64" />
         <div className="grid gap-6 md:grid-cols-3">
           {[0, 1, 2].map((i) => (
             <div key={i} className="animate-pulse rounded-2xl border bg-white p-8 shadow-soft">
@@ -60,11 +58,9 @@ export function PricingSection() {
     <div className="space-y-8">
       {offline && (
         <p className="rounded-xl bg-amber-50 px-4 py-3 text-center text-sm text-amber-900">
-          Showing standard pricing — live plan details will load when the API is connected.
+          Showing standard pricing — live prices will load when the API is connected.
         </p>
       )}
-
-      <PlanCompareTable />
 
       <div>
         <p className="text-center text-sm font-medium text-stone-600">
@@ -124,12 +120,13 @@ export function PricingSection() {
       </ul>
 
       <div className="rounded-2xl border border-amber-200/80 bg-amber-50/50 p-5 sm:p-6">
-        <h3 className="font-display text-lg font-semibold text-gardens-dark">Before each visit — your responsibility</h3>
+        <h3 className="font-display text-lg font-semibold text-gardens-dark">Before each visit — your part</h3>
         <ul className="mt-3 space-y-1.5 text-sm text-stone-700">
           {CUSTOMER_VISIT_RESPONSIBILITIES.map((item) => (
             <li key={item}>• {item}</li>
           ))}
         </ul>
+        <p className="mt-3 text-sm text-stone-700">{CUSTOMER_VISIT_GARDENER_BRINGS}</p>
         <p className="mt-3 text-xs text-stone-600">
           Full details in our{" "}
           <Link href="/terms" className="font-medium text-gardens-primary hover:underline">
@@ -143,7 +140,7 @@ export function PricingSection() {
         <h3 className="font-display text-lg font-semibold text-gardens-dark">On visit vs optional add-ons</h3>
         <div className="mt-4 grid gap-6 md:grid-cols-2">
           <div>
-            <p className="text-sm font-medium text-gardens-dark">Also while we&apos;re there (not separate visits)</p>
+            <p className="text-sm font-medium text-gardens-dark">On your regular visit</p>
             <ul className="mt-2 space-y-1.5 text-sm text-stone-600">
               {ON_VISIT_WHEN_POSSIBLE.map((item) => (
                 <li key={item}>• {item}</li>

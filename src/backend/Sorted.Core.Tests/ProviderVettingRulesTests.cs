@@ -18,7 +18,17 @@ public class ProviderVettingRulesTests
     public void HasMinimumSubmission_requires_all_fields()
     {
         Assert.False(ProviderVettingRules.HasMinimumSubmission(
-            new DateOnly(1990, 1, 1), null, "X", null, null, "DBS1", new DateOnly(2024, 6, 1)));
+            new DateOnly(1990, 1, 1), null, "X", null, null, "DBS1", new DateOnly(2024, 6, 1), false));
+
+        Assert.False(ProviderVettingRules.HasMinimumSubmission(
+            new DateOnly(1990, 1, 1),
+            "Passport",
+            "123456",
+            "ABC12DEF3",
+            null,
+            "DBS001",
+            new DateOnly(2024, 6, 1),
+            false));
 
         Assert.True(ProviderVettingRules.HasMinimumSubmission(
             new DateOnly(1990, 1, 1),
@@ -27,6 +37,7 @@ public class ProviderVettingRulesTests
             "ABC12DEF3",
             null,
             "DBS001",
-            new DateOnly(2024, 6, 1)));
+            new DateOnly(2024, 6, 1),
+            true));
     }
 }

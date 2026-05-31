@@ -123,7 +123,7 @@ export default function LandlordPortalPage() {
           </section>
 
           <p className="rounded-lg border border-dashed border-stone-200 bg-stone-50 px-4 py-3 text-sm text-stone-500">
-            Demo account only. Full landlord features — instant quotes, bulk import, and invoicing — arrive in later releases.
+            Demo account only. Full landlord features, including instant quotes, bulk import, and invoicing, arrive in later releases.
           </p>
         </>
       )}

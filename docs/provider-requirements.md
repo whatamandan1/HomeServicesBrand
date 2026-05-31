@@ -13,10 +13,11 @@ Every gardener must pass **vetting before admin approval**. Applying online does
 | **Photo ID** | Valid ID shown to GardensSorted (e.g. passport or driving licence) |
 | **Right to work** | Legal right to work in the UK — **verified by us** before approval |
 | **DBS** | **Basic DBS check passed** — required before paid visits |
+| **Insurance** | **Your own relevant insurance** — e.g. public liability for gardening work; declared at signup and **verified by us** before approval |
 
 After signup, gardeners complete the **Checks & documents** form in the provider portal (`/provider`). Code: `ProviderVettingRequirements.cs`, API `PUT /api/provider/me/vetting`.
 
-**Admin:** review submitted details in the provider panel, mark ID / RTW / DBS verified, then Approve (blocked until submitted and verified).
+**Admin:** review submitted details in the provider panel, mark ID / RTW / DBS / insurance verified, then Approve (blocked until submitted and verified).
 
 ---
 
@@ -31,6 +32,7 @@ Approved gardeners must **bring their own equipment** to every visit. GardensSor
 | Watering can or hose | Yes — for light watering on site |
 | Rake | Yes |
 | Appropriate brush or broom | Yes — paths, edges, tidy-up |
+| Extension lead | Yes — **at least 20 metres** (when using electric tools and the customer provides power access) |
 
 Code: `Sorted.Core/Plans/ProviderEquipmentRequirements.cs`, frontend `src/frontend/web/lib/provider-requirements.ts`.
 
@@ -54,8 +56,8 @@ Admin should only assign matching add-on visits when the provider has declared t
 
 | Provided by | Item |
 |-------------|------|
-| **Customer** | Access to water (working outdoor tap or agreed supply), outdoor power where electric tools are needed, safe garden access, garden-waste bin or self-disposal of clippings |
-| **Gardener** | All tools and equipment listed above |
+| **Customer** | Clear access and lawn, tap, power socket (indoor OK), clippings or garden-waste bin |
+| **Gardener** | All tools and equipment listed above, including extension lead of at least 20 m |
 
 ---
 

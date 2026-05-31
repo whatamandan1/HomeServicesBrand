@@ -135,6 +135,10 @@ public class Provider : AuditableEntity
     public DateTime? RightToWorkVerifiedAtUtc { get; set; }
     public DateTime? DbsVerifiedAtUtc { get; set; }
 
+    /// <summary>Self-declared: holds own public liability (or equivalent) insurance for gardening work.</summary>
+    public bool HasOwnRelevantInsurance { get; set; }
+    public DateTime? InsuranceVerifiedAtUtc { get; set; }
+
     /// <summary>Own leaf blower — seasonal tidy and leaf clearance add-ons.</summary>
     public bool HasLeafBlower { get; set; }
     /// <summary>Own hedge trimmer — hedge trimming add-ons.</summary>

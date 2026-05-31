@@ -11,7 +11,9 @@ import {
   formatPriceFrom,
   GARDEN_SIZE_ABOVE_BAND_NOTE,
   GARDEN_SIZE_GUIDE,
+  CUSTOMER_VISIT_GARDENER_BRINGS,
   CUSTOMER_VISIT_RESPONSIBILITIES,
+  CUSTOMER_VISIT_RESPONSIBILITIES_SUMMARY,
   GARDEN_SIZE_MAINTAINED_AREA_NOTE,
   GARDEN_SIZE_ORDER,
   countSignupAddons,
@@ -20,6 +22,7 @@ import {
   isSignupAddon,
   planPriceForGarden,
   planVisitSummary,
+  DEFAULT_VISIT_FREQUENCY,
   SIGNUP_ADDON_SERVICE_IDS,
   CORE_VISIT_WORK,
   SIGNUP_CHECKBOX_GROUPS,
@@ -39,6 +42,8 @@ import {
 import { useSignupLeadCapture } from "@/lib/use-signup-lead";
 import { AlertBanner, LoadingSpinner } from "@/components/ui/feedback";
 import { AvailabilityPicker } from "@/components/signup/AvailabilityPicker";
+import { SignupVisitFrequencyPicker } from "@/components/signup/SignupVisitFrequencyPicker";
+import { SIGNUP_MOBILE_BOTTOM_PADDING_CLASS } from "@/lib/mobile-chrome";
 const STEPS = ["Garden size", "Add-ons", "Your quote", "Finish signup"] as const;
 
 export default function SignupPage() {
@@ -47,6 +52,7 @@ export default function SignupPage() {
   const [plans, setPlans] = useState<SubscriptionPlan[]>([]);
   const [plansLoading, setPlansLoading] = useState(true);
   const [selectedServices, setSelectedServices] = useState<SignupServiceId[]>([]);
+  const [visitFrequency, setVisitFrequency] = useState<SignupServiceId>(DEFAULT_VISIT_FREQUENCY);
   const [selectedPlanId, setSelectedPlanId] = useState("");
   const [skipPayment, setSkipPayment] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -299,7 +305,7 @@ export default function SignupPage() {
   );
 
   return (
-    <div className="pb-32 pt-8 md:pb-12 md:pt-12">
+    <div className={`${SIGNUP_MOBILE_BOTTOM_PADDING_CLASS} pt-6 md:pb-12 md:pt-12`}>
       <div ref={topRef} className="mx-auto max-w-5xl scroll-mt-8 px-4">
         <div className="text-center">
           <h1 className="font-display text-2xl font-bold text-gardens-dark sm:text-3xl">
@@ -345,7 +351,7 @@ export default function SignupPage() {
           <AlertBanner variant="error" message={error} onDismiss={() => setError(null)} className="mt-6" />
         )}
 
-        <div className="mt-8">
+        <div className="mt-6 md:mt-8">
             {step === 0 && (
               <div className="space-y-4 rounded-2xl border border-stone-200 bg-white p-5 shadow-soft sm:p-6">
                 <p className="text-sm text-stone-600">{GARDEN_SIZE_MAINTAINED_AREA_NOTE}</p>
@@ -379,10 +385,14 @@ export default function SignupPage() {
 
             {step === 1 && (
               <div className="rounded-2xl border border-stone-200 bg-white p-4 shadow-soft sm:p-5">
-                <p className="text-xs text-stone-600 sm:text-sm">
-                  Garden care includes 10 visits per year — tick any optional add-ons below.
-                </p>
-                <div className="mt-3 rounded-lg border border-stone-100 bg-stone-50 px-3 py-2">
+                <SignupVisitFrequencyPicker
+                  value={visitFrequency}
+                  onChange={(id) => {
+                    setVisitFrequency(id);
+                    setStepHint(null);
+                  }}
+                />
+                <div className="mt-4 rounded-lg border border-stone-100 bg-stone-50 px-3 py-2">
                   <p className="text-xs font-semibold uppercase tracking-wide text-stone-500">
                     {SIGNUP_SERVICE_GROUP_LABELS.core}
                   </p>
@@ -450,7 +460,10 @@ export default function SignupPage() {
                     <div className="mt-3 rounded-lg border border-gardens-primary/25 bg-gardens-light/50 px-3 py-2">
                       <p className="text-sm text-gardens-dark">
                         <span className="font-semibold">Garden care</span>
-                        <span className="text-stone-600"> · {planVisitSummary(activePlan)}</span>
+                        <span className="text-stone-600">
+                          {" "}
+                          · {planVisitSummary(activePlan, visitFrequency)}
+                        </span>
                       </p>
                     </div>
                   )
@@ -459,7 +472,7 @@ export default function SignupPage() {
             )}
 
             {step === 2 && (
-              <div className="space-y-6">
+              <div className="space-y-4">
                 <div className="rounded-2xl border border-stone-200 bg-white p-5 shadow-soft sm:p-6">
                   <p className="text-sm text-stone-600">
                     Enter your email and we&apos;ll show your personalised quote for a{" "}
@@ -487,8 +500,7 @@ export default function SignupPage() {
                       Your personalised quote
                     </p>
                     <p className="mt-2 font-display text-xl font-bold text-gardens-dark">Garden care</p>
-                    <p className="text-sm text-stone-600">10 visits per year</p>
-                    <p className="mt-2 text-sm text-stone-600">{planVisitSummary(activePlan)}</p>
+                    <p className="mt-2 text-sm text-stone-600">{planVisitSummary(activePlan, visitFrequency)}</p>
                     <div className="mt-4 flex flex-wrap items-end justify-between gap-4 border-t border-gardens-primary/15 pt-4">
                       <p className="text-xs text-stone-500">Billed monthly</p>
                       <div className="text-right">
@@ -515,7 +527,7 @@ export default function SignupPage() {
             )}
 
             {step === 3 && (
-              <div className="space-y-5 rounded-2xl border border-stone-200 bg-white p-5 shadow-soft sm:p-6">
+              <div className="space-y-4 rounded-2xl border border-stone-200 bg-white p-4 shadow-soft sm:space-y-5 sm:p-6">
                 <p className="text-sm text-stone-600">
                   Last step — tell us who you are and where we&apos;ll maintain your garden.
                 </p>
@@ -544,39 +556,32 @@ export default function SignupPage() {
                   autoComplete="new-password"
                   hint={`At least ${MIN_PASSWORD_LENGTH} characters`}
                 />
-                <div className="rounded-xl border border-stone-200 bg-stone-50 px-4 py-3 text-xs text-stone-600">
-                  <p className="font-medium text-stone-800">Before each visit you agree to:</p>
-                  <ul className="mt-2 list-disc space-y-1 pl-4">
+                <div className="rounded-xl border border-stone-200 bg-stone-50 px-3 py-3 text-xs text-stone-600 sm:px-4">
+                  <p className="font-medium text-stone-800">Before each visit</p>
+                  <p className="mt-2 md:hidden">{CUSTOMER_VISIT_RESPONSIBILITIES_SUMMARY}</p>
+                  <ul className="mt-2 hidden list-disc space-y-1 pl-4 md:block">
                     {CUSTOMER_VISIT_RESPONSIBILITIES.map((item) => (
                       <li key={item}>{item}</li>
                     ))}
                   </ul>
-                  <p className="mt-2">
-                    Visits must stay booked through GardensSorted — not by hiring your gardener directly after
-                    cancelling. See{" "}
+                  <p className="mt-2 hidden md:block">{CUSTOMER_VISIT_GARDENER_BRINGS}</p>
+                  <p className="mt-2 md:hidden">
                     <Link href="/terms" className="font-medium text-gardens-primary hover:underline" target="_blank">
-                      terms of service
+                      Full prep list in terms
                     </Link>
-                    .
                   </p>
                 </div>
                 <p className="text-xs text-stone-500">
-                  By continuing to payment, you agree to our{" "}
+                  By continuing, you agree to our{" "}
                   <Link href="/terms" className="font-medium text-gardens-primary hover:underline" target="_blank">
-                    terms of service
+                    terms
                   </Link>{" "}
                   and{" "}
                   <Link href="/privacy" className="font-medium text-gardens-primary hover:underline" target="_blank">
                     privacy policy
                   </Link>
-                  .
-                </p>
-                <p className="text-xs text-stone-500">
-                  Your subscription has a <strong>{minimumTermMonths}-month minimum term</strong>
-                  {addonCount > 0
-                    ? " because add-on services are included (6 months on monthly billing)"
-                    : ""}
-                  . If you cancel early, remaining visits may be adjusted — see terms §6–7.
+                  . <strong>{minimumTermMonths}-month minimum term</strong>
+                  {addonCount > 0 ? "; 6 months if you chose add-ons." : "."}
                 </p>
                 <div className="space-y-3 border-t border-stone-100 pt-4">
                   <div>
@@ -674,15 +679,8 @@ export default function SignupPage() {
             </div>
         </div>
 
-        <div className="fixed inset-x-0 bottom-0 z-40 border-t border-stone-200 bg-white/95 p-3 backdrop-blur-md pb-[max(0.75rem,env(safe-area-inset-bottom))] sm:hidden">
-          <p className="text-center text-xs text-stone-500">
-            Step {step + 1} of {STEPS.length}
-            {step === 0 && " — pick your garden size"}
-            {step === 1 && " — optional add-ons"}
-            {step === 2 && !quoteUnveiled && " — enter email for your quote"}
-            {step === 3 && " — finish signup"}
-          </p>
-          <div className="mt-3 flex gap-2">
+        <div className="fixed inset-x-0 bottom-0 z-40 border-t border-stone-200 bg-white/95 px-3 pt-3 backdrop-blur-md pb-[max(0.75rem,env(safe-area-inset-bottom))] sm:hidden">
+          <div className="flex gap-2">
             {step > 0 && (
               <button
                 type="button"
@@ -702,9 +700,15 @@ export default function SignupPage() {
               </button>
             )}
           </div>
+          <p className="mt-2 text-center text-xs text-stone-500">
+            Already have an account?{" "}
+            <Link href="/login" className="font-medium text-gardens-primary hover:underline">
+              Log in
+            </Link>
+          </p>
         </div>
 
-        <p className="mt-6 text-center text-sm text-stone-500">
+        <p className="mt-6 hidden text-center text-sm text-stone-500 md:block">
           Already have an account?{" "}
           <Link href="/login" className="font-medium text-gardens-primary hover:underline">
             Log in

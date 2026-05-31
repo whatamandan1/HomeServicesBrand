@@ -816,6 +816,12 @@ namespace Sorted.Infrastructure.Data.Migrations
                     b.Property<DateTime?>("DbsVerifiedAtUtc")
                         .HasColumnType("TEXT");
 
+                    b.Property<bool>("HasOwnRelevantInsurance")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<DateTime?>("InsuranceVerifiedAtUtc")
+                        .HasColumnType("TEXT");
+
                     b.Property<bool>("HasHedgeTrimmer")
                         .HasColumnType("INTEGER");
 

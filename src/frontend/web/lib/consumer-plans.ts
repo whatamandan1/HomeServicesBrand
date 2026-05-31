@@ -88,10 +88,10 @@ export const GARDEN_SIZE_GUIDE: Record<
 
 export function gardenSizeSelectLabel(size: GardenSize): string {
   const g = GARDEN_SIZE_GUIDE[size];
-  return `${g.shortName} (${g.label} maintained)`;
+  return `${g.shortName} — ${g.label} maintained`;
 }
 
-/** Core maintenance on every plan tier (visit frequency differs by tier). */
+/** Core maintenance on every garden care visit. */
 export const CORE_VISIT_WORK = [
   "Lawn mowing and edging",
   "Weeding in borders and planted beds",
@@ -100,9 +100,9 @@ export const CORE_VISIT_WORK = [
 ] as const;
 
 export const GARDEN_CARE_FEATURES = [
-  "10 professional visits per year (~every 5–6 weeks)",
+  "10 visits per year, about every 5–6 weeks",
   ...CORE_VISIT_WORK,
-  "Optional add-ons at signup (hedges, seasonal tidy, patio)",
+  "Optional add-ons at signup: hedges, seasonal tidy, patio",
   "Reschedule or cancel visits in your account",
   "Customer support when you need help",
 ];
@@ -127,28 +127,36 @@ export const ELITE_FEATURES = [
 ];
 
 export const ON_VISIT_WHEN_POSSIBLE = [
-  "Light sweep of garden-adjacent patio or paths (not a deep clean)",
-  "Light leaf blow and clear within the maintained garden when we're on site",
+  "Light sweep of patio or paths beside the garden",
+  "Light leaf work in the maintained area while we're there",
 ];
 
 export const SEASONAL_ADDONS = [
   "Thorough patio and deck cleaning",
-  "Dedicated leaf clearance (large volumes or whole-property)",
-  "Gutter clearing (quoted separately — access and height assessed)",
+  "Large leaf clearances",
+  "Gutter clearing — quoted separately",
 ];
 
 /** Shown at signup, pricing, and linked from terms — customer must prepare the garden. */
 export const CUSTOMER_VISIT_RESPONSIBILITIES = [
-  "Dispose of grass and green waste yourself, or provide a suitable council garden-waste bin on collection day",
-  "Clear the lawn and garden of obstructions before each visit (furniture, toys, tools, branches)",
-  "Remove or secure pet waste from areas we maintain",
-  "Provide safe access to the garden (unlocked gate, clear path, friendly pets secured)",
-  "Provide access to water — working outdoor tap or supply to the garden (gardeners bring their own hose or watering can)",
-  "Provide an outdoor power supply where electric tools are needed (extension lead from your property is fine)",
+  "Easy access — gate unlocked, path clear, pets kept away from the garden",
+  "Lawn and beds clear — no furniture, toys, tools, or branches in the way",
+  "Pet waste picked up in the areas we maintain",
+  "Working outdoor tap",
+  "Power socket we can reach from the garden — indoor or outdoor is fine",
+  "Grass clippings — you bin them, or leave your council garden-waste bin out on collection day",
 ] as const;
 
+/** Shown under the responsibility list on signup and pricing. */
+export const CUSTOMER_VISIT_GARDENER_BRINGS =
+  "We bring a hose or watering can and a 20-metre extension lead.";
+
+/** One-line summary for FAQs and short copy. */
+export const CUSTOMER_VISIT_RESPONSIBILITIES_SUMMARY =
+  "Clear access and the lawn, a working tap and power socket, and deal with clippings or your garden-waste bin. We bring hose and a 20-metre extension lead.";
+
 export const NOT_INCLUDED = [
-  "Hauling green waste off site (unless you provide a garden-waste bin we can fill)",
+  "Hauling green waste away unless you leave a garden-waste bin we can use",
   "Separate watering visits between scheduled maintenance",
   "Tree surgery, tall hedge reduction, or major clearance",
   "Landscaping, irrigation install/repair, or pest treatment",
@@ -172,32 +180,6 @@ export const ANNUAL_BILLING_HINT =
 export function annualEquivalentMonthly(priceGbp: number): number {
   return Math.round((priceGbp / 12) * 100) / 100;
 }
-
-export type PlanCompareRow = {
-  label: string;
-  essential: boolean | string;
-  premium: boolean | string;
-  elite: boolean | string;
-};
-
-/** @deprecated Multi-tier matrix — kept for legacy references. */
-export const PLAN_COMPARE_ROWS: PlanCompareRow[] = [];
-
-export type GardenCareCompareRow = { label: string; value: boolean | string };
-
-/** What's included in the launch garden-care subscription. */
-export const GARDEN_CARE_COMPARE_ROWS: GardenCareCompareRow[] = [
-  { label: "Visits included", value: "10 / year" },
-  { label: "Typical visit spacing", value: "~every 5–6 weeks" },
-  { label: "Lawn mowing & edging", value: true },
-  { label: "Border weeding & general tidy", value: true },
-  { label: "You dispose of clippings or provide a garden-waste bin", value: true },
-  { label: "Light watering (you provide tap; gardener brings hose)", value: true },
-  { label: "Hedge trim & shaping (optional add-on)", value: "4× / year" },
-  { label: "Seasonal tidy & leaf clearance (optional add-on)", value: "4× / year" },
-  { label: "Patio & path refresh (optional add-on)", value: "2× / year" },
-  { label: "Reschedule in your account", value: true },
-];
 
 /** @deprecated Launch offers one plan; tiers may return later. */
 export const PLAN_TIERS: { id: PlanTier; label: string; tagline: string }[] = [
@@ -236,7 +218,7 @@ export const SIGNUP_SERVICES: SignupServiceOption[] = [
   {
     id: "hedges",
     label: "Hedge trim & shaping",
-    description: "Light hedge work on a fixed schedule (not every maintenance visit).",
+    description: "Light hedge work on a fixed schedule, not every maintenance visit.",
     minTier: "essential",
     group: "addons",
   },
@@ -253,6 +235,27 @@ export const SIGNUP_SERVICES: SignupServiceOption[] = [
     description: "Thorough patio and path clean with appropriate equipment.",
     minTier: "essential",
     group: "addons",
+  },
+  {
+    id: "monthly",
+    label: "10 / year",
+    description: "About every 5–6 weeks",
+    minTier: "essential",
+    group: "visit-frequency",
+  },
+  {
+    id: "fortnightly",
+    label: "20 / year",
+    description: "About every 2 weeks",
+    minTier: "premium",
+    group: "visit-frequency",
+  },
+  {
+    id: "weekly",
+    label: "30 / year",
+    description: "Weekly in growing season",
+    minTier: "elite",
+    group: "visit-frequency",
   },
 ];
 
@@ -315,7 +318,7 @@ export function effectiveMinimumTermMonths(
 }
 
 export const SIGNUP_ADDON_COMMITMENT_NOTE =
-  "Add-on services require a 6-month minimum term on monthly billing (annual plans keep a 12-month minimum).";
+  "Add-ons need a 6-month minimum on monthly billing. Annual billing stays 12 months.";
 
 /** Shown on signup add-on checkboxes — frequency only, no line-item price. */
 export function formatSignupAddonOccurrencesLabel(addonId: SignupServiceId): string {
@@ -333,11 +336,29 @@ export const SIGNUP_SERVICE_GROUP_LABELS: Record<SignupServiceGroup, string> = {
 /** Optional extras on signup step 2 (core maintenance is always included). */
 export const SIGNUP_ADDON_SERVICE_IDS: SignupServiceId[] = ["hedges", "seasonal", "patio"];
 
-/** @deprecated Visit frequency tiers removed at launch. */
-export const SIGNUP_VISIT_FREQUENCY_IDS: SignupServiceId[] = [];
+export const SIGNUP_VISIT_FREQUENCY_IDS: SignupServiceId[] = ["monthly", "fortnightly", "weekly"];
 
-export function isVisitFrequencyService(_id: SignupServiceId): boolean {
-  return false;
+export const DEFAULT_VISIT_FREQUENCY: SignupServiceId = "monthly";
+
+export function isVisitFrequencyService(id: SignupServiceId): boolean {
+  return SIGNUP_VISIT_FREQUENCY_IDS.includes(id);
+}
+
+/** Launch signup offers Essential (10 visits/year) only; other frequencies shown as coming soon. */
+export function isVisitFrequencyOfferedAtSignup(id: SignupServiceId): boolean {
+  return id === DEFAULT_VISIT_FREQUENCY;
+}
+
+export function signupVisitFrequencyOptions(): SignupServiceOption[] {
+  return SIGNUP_VISIT_FREQUENCY_IDS.map((id) => SIGNUP_SERVICES.find((s) => s.id === id)).filter(
+    (s): s is SignupServiceOption => s != null
+  );
+}
+
+export function visitsPerYearFromFrequency(id: SignupServiceId): number {
+  if (id === "weekly") return 30;
+  if (id === "fortnightly") return 20;
+  return 10;
 }
 
 /** Checkbox groups on signup step 2. */
@@ -420,12 +441,18 @@ export function planTierLabel(_plan?: SubscriptionPlan) {
   return "Garden care";
 }
 
-export function planVisitsPerYear(_plan?: SubscriptionPlan): number {
+export function planVisitsPerYear(plan?: SubscriptionPlan): number {
+  if (!plan) return 10;
+  const name = plan.name.toLowerCase();
+  if (name.includes("elite")) return 30;
+  if (name.includes("premium")) return 20;
   return 10;
 }
 
-export function planVisitSummary(plan: SubscriptionPlan) {
-  const visits = planVisitsPerYear(plan);
+export function planVisitSummary(plan: SubscriptionPlan, visitFrequency?: SignupServiceId) {
+  const visits = visitFrequency
+    ? visitsPerYearFromFrequency(visitFrequency)
+    : planVisitsPerYear(plan);
   return `${visits} visits per year`;
 }
 

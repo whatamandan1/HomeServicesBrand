@@ -5,6 +5,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { Loader2, MessageCircle, Send, X } from "lucide-react";
 import { api } from "@/lib/api";
+import { guestChatFabPosition } from "@/lib/mobile-chrome";
 
 type ChatMessage = {
   id: string;
@@ -294,10 +295,7 @@ export function GuestChatWidget() {
     setSession((s) => s + 1);
   }
 
-  const fabPosition =
-    pathname === "/"
-      ? "fixed right-4 z-50 bottom-36 md:bottom-6"
-      : "fixed right-4 z-50 bottom-20 md:bottom-6";
+  const fabPosition = guestChatFabPosition(pathname);
 
   return (
     <>

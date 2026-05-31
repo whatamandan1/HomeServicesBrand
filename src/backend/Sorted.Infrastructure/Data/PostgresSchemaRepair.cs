@@ -263,6 +263,8 @@ internal static class PostgresSchemaRepair
         ALTER TABLE "Providers" ADD COLUMN IF NOT EXISTS "IdVerifiedAtUtc" timestamp with time zone NULL;
         ALTER TABLE "Providers" ADD COLUMN IF NOT EXISTS "RightToWorkVerifiedAtUtc" timestamp with time zone NULL;
         ALTER TABLE "Providers" ADD COLUMN IF NOT EXISTS "DbsVerifiedAtUtc" timestamp with time zone NULL;
+        ALTER TABLE "Providers" ADD COLUMN IF NOT EXISTS "HasOwnRelevantInsurance" boolean NOT NULL DEFAULT FALSE;
+        ALTER TABLE "Providers" ADD COLUMN IF NOT EXISTS "InsuranceVerifiedAtUtc" timestamp with time zone NULL;
         """;
 
     private const string ProviderAddonEquipmentSql = """

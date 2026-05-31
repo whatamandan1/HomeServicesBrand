@@ -13,6 +13,7 @@ public static class ProviderVettingMapper
             p.IdVerifiedAtUtc is not null,
             p.RightToWorkVerifiedAtUtc is not null,
             p.DbsVerifiedAtUtc is not null,
+            p.InsuranceVerifiedAtUtc is not null,
             p.VettingSubmittedAtUtc);
 
     public static ProviderVettingDetailsResponse ToDetails(Provider p, bool maskIdNumber) =>
@@ -28,7 +29,8 @@ public static class ProviderVettingMapper
             p.DbsOnUpdateService,
             p.HasLeafBlower,
             p.HasHedgeTrimmer,
-            p.HasPressureWasherForPatio);
+            p.HasPressureWasherForPatio,
+            p.HasOwnRelevantInsurance);
 
     public static AdminProviderVettingResponse ToAdminDetails(Provider p) =>
         new(
@@ -44,7 +46,8 @@ public static class ProviderVettingMapper
             p.DbsOnUpdateService,
             p.HasLeafBlower,
             p.HasHedgeTrimmer,
-            p.HasPressureWasherForPatio);
+            p.HasPressureWasherForPatio,
+            p.HasOwnRelevantInsurance);
 
     private static string? MaskIdNumber(string? number)
     {
@@ -62,7 +65,8 @@ public static class ProviderVettingMapper
             p.RightToWorkShareCode,
             p.RightToWorkDocumentDescription,
             p.DbsCertificateNumber,
-            p.DbsIssueDate);
+            p.DbsIssueDate,
+            p.HasOwnRelevantInsurance);
 
     public static void ApplySubmission(Provider p, SubmitProviderVettingRequest request)
     {
@@ -81,6 +85,7 @@ public static class ProviderVettingMapper
         p.HasLeafBlower = request.HasLeafBlower;
         p.HasHedgeTrimmer = request.HasHedgeTrimmer;
         p.HasPressureWasherForPatio = request.HasPressureWasherForPatio;
+        p.HasOwnRelevantInsurance = request.HasOwnRelevantInsurance;
         p.VettingSubmittedAtUtc = DateTime.UtcNow;
         p.UpdatedAtUtc = DateTime.UtcNow;
     }
@@ -106,6 +111,9 @@ public static class ProviderVettingMapper
 
         if (string.IsNullOrWhiteSpace(request.DbsCertificateNumber) || request.DbsIssueDate is null)
             return "DBS certificate number and issue date are required.";
+
+        if (!request.HasOwnRelevantInsurance)
+            return "You must confirm you hold your own relevant insurance (e.g. public liability for gardening work).";
 
         return null;
     }

@@ -6,6 +6,7 @@ import { usePathname } from "next/navigation";
 import { Menu, X } from "lucide-react";
 import { Logo } from "@/components/marketing/Logo";
 import { PRIMARY_CTA_HREF, PRIMARY_CTA_LABEL } from "@/lib/marketing-cta";
+import { useBodyScrollLock } from "@/lib/use-body-scroll-lock";
 
 const links = [
   { href: "/#how-it-works", label: "How it works" },
@@ -23,14 +24,11 @@ export function MarketingHeader() {
     setOpen(false);
   }, [pathname]);
 
-  useEffect(() => {
-    document.body.style.overflow = open ? "hidden" : "";
-    return () => {
-      document.body.style.overflow = "";
-    };
-  }, [open]);
+  useBodyScrollLock(open);
 
   const onHome = pathname === "/";
+  const onSignup = pathname === "/signup";
+  const showHeaderCta = !onSignup;
 
   return (
     <header
@@ -40,8 +38,9 @@ export function MarketingHeader() {
           : "border-gardens-primary/10 bg-white/95"
       }`}
     >
-      <div className="mx-auto flex max-w-6xl items-center justify-between gap-3 px-4 py-3 md:py-4">
-        <Logo />
+      <div className="mx-auto flex max-w-6xl items-center justify-between gap-2 px-4 py-3 md:gap-3 md:py-4">
+        <Logo variant="icon" className="shrink-0 md:hidden" href="/" />
+        <Logo className="hidden shrink-0 md:inline-flex" href="/" />
 
         <nav className="hidden items-center gap-8 text-sm font-medium text-stone-600 md:flex" aria-label="Main">
           {links.map((l) => (
@@ -51,22 +50,25 @@ export function MarketingHeader() {
           ))}
         </nav>
 
-        <div className="flex items-center gap-2 sm:gap-3">
+        <div className="flex shrink-0 items-center gap-2 sm:gap-3">
           <Link
             href="/login"
             className="hidden min-h-[44px] items-center text-sm font-medium text-stone-600 hover:text-gardens-primary sm:inline-flex"
           >
             Log in
           </Link>
-          <Link
-            href={PRIMARY_CTA_HREF}
-            className="inline-flex min-h-[44px] items-center rounded-full bg-gardens-primary px-4 py-2.5 text-sm font-semibold text-white shadow-soft transition hover:bg-gardens-dark sm:px-5"
-          >
-            {PRIMARY_CTA_LABEL}
-          </Link>
+          {showHeaderCta && (
+            <Link
+              href={PRIMARY_CTA_HREF}
+              className="relative z-10 inline-flex min-h-[44px] shrink-0 items-center rounded-full bg-gardens-primary px-3 py-2.5 text-sm font-semibold text-white shadow-soft transition hover:bg-gardens-dark sm:px-5"
+            >
+              <span className="md:hidden">Get quote</span>
+              <span className="hidden md:inline">{PRIMARY_CTA_LABEL}</span>
+            </Link>
+          )}
           <button
             type="button"
-            className="inline-flex min-h-[44px] min-w-[44px] items-center justify-center rounded-xl border border-stone-200 text-stone-700 md:hidden"
+            className="relative z-10 inline-flex min-h-[44px] min-w-[44px] shrink-0 items-center justify-center rounded-xl border border-stone-200 text-stone-700 md:hidden"
             aria-expanded={open}
             aria-label={open ? "Close menu" : "Open menu"}
             onClick={() => setOpen((v) => !v)}
@@ -82,6 +84,17 @@ export function MarketingHeader() {
           aria-label="Mobile"
         >
           <ul className="space-y-1">
+            {!onSignup && (
+              <li className="pb-2">
+                <Link
+                  href={PRIMARY_CTA_HREF}
+                  className="flex min-h-[48px] items-center justify-center rounded-full bg-gardens-primary px-4 text-base font-semibold text-white shadow-soft hover:bg-gardens-dark"
+                  onClick={() => setOpen(false)}
+                >
+                  {PRIMARY_CTA_LABEL}
+                </Link>
+              </li>
+            )}
             {links.map((l) => (
               <li key={l.href}>
                 <Link

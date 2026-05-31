@@ -106,6 +106,7 @@ public record ProviderVettingStatusResponse(
     bool IdVerified,
     bool RightToWorkVerified,
     bool DbsVerified,
+    bool InsuranceVerified,
     DateTime? SubmittedAtUtc);
 
 public record ProviderVettingDetailsResponse(
@@ -120,7 +121,8 @@ public record ProviderVettingDetailsResponse(
     bool DbsOnUpdateService,
     bool HasLeafBlower,
     bool HasHedgeTrimmer,
-    bool HasPressureWasherForPatio);
+    bool HasPressureWasherForPatio,
+    bool HasOwnRelevantInsurance);
 
 public record SubmitProviderVettingRequest(
     DateOnly? DateOfBirth,
@@ -133,7 +135,8 @@ public record SubmitProviderVettingRequest(
     bool DbsOnUpdateService,
     bool HasLeafBlower = false,
     bool HasHedgeTrimmer = false,
-    bool HasPressureWasherForPatio = false);
+    bool HasPressureWasherForPatio = false,
+    bool HasOwnRelevantInsurance = false);
 
 public record AdminProviderVettingResponse(
     Guid ProviderId,
@@ -148,12 +151,14 @@ public record AdminProviderVettingResponse(
     bool DbsOnUpdateService,
     bool HasLeafBlower,
     bool HasHedgeTrimmer,
-    bool HasPressureWasherForPatio);
+    bool HasPressureWasherForPatio,
+    bool HasOwnRelevantInsurance);
 
 public record AdminUpdateProviderVettingVerificationRequest(
     bool? IdVerified,
     bool? RightToWorkVerified,
-    bool? DbsVerified);
+    bool? DbsVerified,
+    bool? InsuranceVerified);
 
 public record ProviderProfileResponse(
     string Email,

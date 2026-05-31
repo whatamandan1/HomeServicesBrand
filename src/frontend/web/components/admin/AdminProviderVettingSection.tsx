@@ -37,7 +37,7 @@ export function AdminProviderVettingSection({
   }, [token, providerId]);
 
   async function setVerified(
-    field: "idVerified" | "rightToWorkVerified" | "dbsVerified",
+    field: "idVerified" | "rightToWorkVerified" | "dbsVerified" | "insuranceVerified",
     value: boolean
   ) {
     setSaving(true);
@@ -100,6 +100,14 @@ export function AdminProviderVettingSection({
             {vetting.dbsOnUpdateService ? " · Update Service" : ""}
           </dd>
         </div>
+        <div className="sm:col-span-2">
+          <dt className="text-stone-500">Insurance</dt>
+          <dd className="font-medium">
+            {vetting.hasOwnRelevantInsurance
+              ? "Declared — own relevant cover for gardening work"
+              : "Not declared"}
+          </dd>
+        </div>
       </dl>
 
       <div className="border-t border-stone-200 pt-3">
@@ -156,6 +164,15 @@ export function AdminProviderVettingSection({
               onChange={(e) => setVerified("dbsVerified", e.target.checked)}
             />
             DBS verified
+          </label>
+          <label className="flex items-center gap-2">
+            <input
+              type="checkbox"
+              checked={s.insuranceVerified}
+              disabled={saving || !vetting.hasOwnRelevantInsurance}
+              onChange={(e) => setVerified("insuranceVerified", e.target.checked)}
+            />
+            Insurance verified
           </label>
         </div>
       )}

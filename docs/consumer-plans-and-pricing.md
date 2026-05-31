@@ -79,7 +79,7 @@ Within the **maintained area** (lawn, planted beds, edges — not whole plot or 
 | Lawn mowing and edging | Yes |
 | Weeding in borders and planted beds | Yes |
 | General garden clean-up and tidy | Yes |
-| Light watering (pots, beds, obvious dry spots — while on site) | Yes |
+| Light watering — pots, beds, obvious dry spots while on site | Yes |
 
 Paid **signup add-ons** (hedge, seasonal, patio) are optional and billed separately.
 
@@ -117,7 +117,7 @@ Visits are **seasonal** (more in spring/summer, fewer in winter). If a customer 
 
 **Water:** Customer provides **access** (working outdoor tap or agreed supply). **Gardener brings** hose or watering can. No separate watering-only visits.
 
-**Gardeners:** Approved only after **ID**, **UK right-to-work** verification, and **basic DBS** pass; they bring their own equipment — see [`provider-requirements.md`](provider-requirements.md).
+**Gardeners:** Approved only after **ID**, **UK right-to-work** verification, **basic DBS** pass, and **their own relevant insurance**; they bring their own equipment — see [`provider-requirements.md`](provider-requirements.md).
 
 **Green waste:** Customers **dispose of clippings themselves** or **provide a suitable council garden-waste bin** on collection day. We do not routinely haul green waste off site.
 
@@ -125,12 +125,13 @@ Visits are **seasonal** (more in spring/summer, fewer in winter). If a customer 
 
 ## Customer responsibilities (before each visit)
 
-1. Clear lawn and garden of **obstructions** (furniture, toys, tools, branches).
-2. **Remove or secure pet waste** from maintained areas.
-3. **Safe access** to the garden (gates, paths, pets secured).
-4. **Access to water** — outdoor tap or supply (gardener brings hose or watering can).
-5. **Outdoor power** where electric tools are needed.
-6. Accurate address, garden size band, and access notes in the account.
+1. **Access** — gate unlocked, path clear, pets kept away from the garden.
+2. **Clear lawn and beds** — no furniture, toys, tools, or branches in the way.
+3. **Pet waste** picked up in maintained areas.
+4. **Water** — working outdoor tap (gardener brings hose or watering can).
+5. **Power** — socket reachable from the garden; indoor or outdoor is fine. Gardener brings **20 m+ extension lead**.
+6. **Grass clippings** — customer bins them, or council garden-waste bin out on collection day.
+7. **Account details** — address, garden size, and access notes kept up to date.
 
 If these are not met, the visit may be marked incomplete without refund.
 

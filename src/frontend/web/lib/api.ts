@@ -223,6 +223,7 @@ export type ProviderVettingStatus = {
   idVerified: boolean;
   rightToWorkVerified: boolean;
   dbsVerified: boolean;
+  insuranceVerified: boolean;
   submittedAtUtc: string | null;
 };
 
@@ -239,6 +240,7 @@ export type ProviderVettingDetails = {
   hasLeafBlower: boolean;
   hasHedgeTrimmer: boolean;
   hasPressureWasherForPatio: boolean;
+  hasOwnRelevantInsurance: boolean;
 };
 
 export type SubmitProviderVettingPayload = {
@@ -253,6 +255,7 @@ export type SubmitProviderVettingPayload = {
   hasLeafBlower: boolean;
   hasHedgeTrimmer: boolean;
   hasPressureWasherForPatio: boolean;
+  hasOwnRelevantInsurance: boolean;
 };
 
 export type AdminProviderVetting = ProviderVettingDetails & {
@@ -714,7 +717,12 @@ export const api = {
   adminUpdateProviderVettingVerification: (
     token: string,
     providerId: string,
-    body: { idVerified?: boolean; rightToWorkVerified?: boolean; dbsVerified?: boolean }
+    body: {
+      idVerified?: boolean;
+      rightToWorkVerified?: boolean;
+      dbsVerified?: boolean;
+      insuranceVerified?: boolean;
+    }
   ) =>
     request<AdminProviderVetting>(`/api/admin/providers/${providerId}/vetting`, {
       method: "PATCH",

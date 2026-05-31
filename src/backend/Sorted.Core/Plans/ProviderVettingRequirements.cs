@@ -8,10 +8,11 @@ public static class ProviderVettingRequirements
         "Valid photo ID (e.g. passport or driving licence)",
         "Right to work in the UK (verified by GardensSorted before approval)",
         "Basic DBS check passed",
+        "Own relevant insurance (e.g. public liability for gardening work)",
     ];
 
     public const string Summary =
-        "Gardeners must provide ID, pass right-to-work verification, and pass a basic DBS check before approval.";
+        "Gardeners must provide ID, pass right-to-work verification, pass a basic DBS check, and hold their own relevant insurance before approval.";
 
     /// <summary>Admin checklist — confirm before setting <c>Provider.IsApproved</c>.</summary>
     public static readonly IReadOnlyList<string> AdminApprovalChecklist =
@@ -19,6 +20,7 @@ public static class ProviderVettingRequirements
         "Photo ID sighted and recorded",
         "Right to work in the UK verified",
         "Basic DBS check passed (certificate or update service result on file)",
+        "Relevant insurance confirmed (policy or certificate on file)",
         "Equipment requirement understood",
     ];
 }

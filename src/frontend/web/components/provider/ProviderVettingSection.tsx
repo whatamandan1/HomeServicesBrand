@@ -6,6 +6,7 @@ import { ID_DOCUMENT_TYPES } from "@/lib/provider-vetting";
 import {
   PROVIDER_ADDON_EQUIPMENT,
   PROVIDER_ADDON_EQUIPMENT_SUMMARY,
+  PROVIDER_INSURANCE_DECLARATION,
   PROVIDER_VETTING_SUMMARY,
 } from "@/lib/provider-requirements";
 import { LoadingSpinner } from "@/components/ui/feedback";
@@ -33,6 +34,7 @@ export function ProviderVettingSection({ token, isApproved, status, onSubmitted,
   const [hasLeafBlower, setHasLeafBlower] = useState(false);
   const [hasHedgeTrimmer, setHasHedgeTrimmer] = useState(false);
   const [hasPressureWasherForPatio, setHasPressureWasherForPatio] = useState(false);
+  const [hasOwnRelevantInsurance, setHasOwnRelevantInsurance] = useState(false);
   const [localMessage, setLocalMessage] = useState<string | null>(null);
 
   useEffect(() => {
@@ -56,6 +58,7 @@ export function ProviderVettingSection({ token, isApproved, status, onSubmitted,
         setHasLeafBlower(d.hasLeafBlower);
         setHasHedgeTrimmer(d.hasHedgeTrimmer);
         setHasPressureWasherForPatio(d.hasPressureWasherForPatio);
+        setHasOwnRelevantInsurance(d.hasOwnRelevantInsurance);
       })
       .catch(() => {
         /* first visit — empty form */
@@ -84,12 +87,13 @@ export function ProviderVettingSection({ token, isApproved, status, onSubmitted,
       hasLeafBlower,
       hasHedgeTrimmer,
       hasPressureWasherForPatio,
+      hasOwnRelevantInsurance,
     };
 
     try {
       const details = await api.providerSubmitVetting(token, payload);
       onSubmitted(details);
-      setLocalMessage("Details submitted — we'll verify your ID, right to work, and DBS before approval.");
+      setLocalMessage("Details submitted — we'll verify your ID, right to work, DBS, and insurance before approval.");
     } catch (err) {
       onError(err instanceof Error ? err.message : "Could not save vetting details");
     } finally {
@@ -253,6 +257,17 @@ export function ProviderVettingSection({ token, isApproved, status, onSubmitted,
             className="mt-1"
           />
           Registered with the DBS Update Service
+        </label>
+
+        <label className="flex items-start gap-2 rounded-lg border border-stone-200 bg-stone-50 px-3 py-3 text-sm text-stone-700">
+          <input
+            type="checkbox"
+            required
+            checked={hasOwnRelevantInsurance}
+            onChange={(e) => setHasOwnRelevantInsurance(e.target.checked)}
+            className="mt-1 shrink-0"
+          />
+          <span>{PROVIDER_INSURANCE_DECLARATION}</span>
         </label>
 
         <fieldset className="space-y-3 border-t border-stone-100 pt-4">
