@@ -12,6 +12,17 @@ body {
   overscroll-behavior-y: none;
 }
 
+/* Mobile nav drawer - overflow only (avoid body position:fixed; breaks sticky header on Android/iOS). */
+html.mobile-nav-open {
+  overflow: hidden;
+  height: 100%;
+}
+
+html.mobile-nav-open body {
+  overflow: hidden;
+  touch-action: none;
+}
+
 /*
  * Leaflet + Tailwind: preflight sets img { max-width: 100% } which breaks tile
  * rendering (grey map). These rules must stay outside @layer.

@@ -1,39 +1,24 @@
 import { useEffect } from "react";
 
-function releaseBodyScrollLock() {
-  const { style } = document.body;
-  if (style.position !== "fixed") return;
+const LOCK_CLASS = "mobile-nav-open";
 
-  const scrollY = Math.abs(Number.parseInt(style.top || "0", 10)) || window.scrollY;
-  style.position = "";
-  style.top = "";
-  style.left = "";
-  style.right = "";
-  style.width = "";
-  style.overflow = "";
-  window.scrollTo(0, scrollY);
-}
-
-/** Lock document scroll when mobile nav (or similar) is open - avoids iOS overflow:hidden scroll bugs. */
+/** Prevent background scroll while a mobile overlay menu is open (no body position:fixed). */
 export function useBodyScrollLock(locked: boolean) {
   useEffect(() => {
-    if (!locked) {
-      releaseBodyScrollLock();
-      return;
+    const root = document.documentElement;
+    if (locked) {
+      root.classList.add(LOCK_CLASS);
+      return () => {
+        root.classList.remove(LOCK_CLASS);
+      };
     }
-
-    const scrollY = window.scrollY;
-    const { style } = document.body;
-
-    style.position = "fixed";
-    style.top = `-${scrollY}px`;
-    style.left = "0";
-    style.right = "0";
-    style.width = "100%";
-    style.overflow = "hidden";
-
-    return () => {
-      releaseBodyScrollLock();
-    };
+    root.classList.remove(LOCK_CLASS);
   }, [locked]);
+
+  useEffect(
+    () => () => {
+      document.documentElement.classList.remove(LOCK_CLASS);
+    },
+    []
+  );
 }
