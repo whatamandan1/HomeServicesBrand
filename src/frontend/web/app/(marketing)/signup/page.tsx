@@ -18,7 +18,6 @@ import {
   effectiveMinimumTermMonths,
   formatSignupAddonOccurrencesLabel,
   isSignupAddon,
-  SIGNUP_ADDON_COMMITMENT_NOTE,
   isVisitFrequencyService,
   matchPlanTierFromVisitFrequency,
   planFeatures,
@@ -501,9 +500,6 @@ export default function SignupPage() {
                             );
                           })}
                         </ul>
-                        {group === "addons" && addonCount > 0 && (
-                          <p className="mt-2 text-xs text-amber-900">{SIGNUP_ADDON_COMMITMENT_NOTE}</p>
-                        )}
                       </fieldset>
                     );
                   })}
@@ -719,9 +715,14 @@ export default function SignupPage() {
                   <Link href="/privacy" className="font-medium text-gardens-primary hover:underline" target="_blank">
                     privacy policy
                   </Link>
-                  , including a {minimumTermMonths}-month minimum term
-                  {addonCount > 0 ? " with add-on services" : ""}{" "}
-                  and our visit scheduling policy if you cancel early (see terms §6–7).
+                  .
+                </p>
+                <p className="text-xs text-stone-500">
+                  Your subscription has a <strong>{minimumTermMonths}-month minimum term</strong>
+                  {addonCount > 0
+                    ? " because add-on services are included (6 months on monthly billing)"
+                    : ""}
+                  . If you cancel early, remaining visits may be adjusted — see terms §6–7.
                 </p>
                 <div className="space-y-3 border-t border-stone-100 pt-4">
                   <div>
