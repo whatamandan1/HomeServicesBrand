@@ -22,6 +22,17 @@ html.mobile-nav-open body {
   overflow: hidden;
 }
 
+/* Signup wizard: single scroll surface on mobile (avoid iOS body + inner scroll fighting). */
+html.signup-wizard-active {
+  overflow: hidden;
+  height: 100%;
+}
+
+html.signup-wizard-active body {
+  overflow: hidden;
+  overscroll-behavior-y: auto;
+}
+
 /*
  * Leaflet + Tailwind: preflight sets img { max-width: 100% } which breaks tile
  * rendering (grey map). These rules must stay outside @layer.

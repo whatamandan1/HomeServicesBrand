@@ -43,7 +43,6 @@ import { useSignupLeadCapture } from "@/lib/use-signup-lead";
 import { AlertBanner, LoadingSpinner } from "@/components/ui/feedback";
 import { AvailabilityPicker } from "@/components/signup/AvailabilityPicker";
 import { SignupVisitFrequencyPicker } from "@/components/signup/SignupVisitFrequencyPicker";
-import { SIGNUP_MOBILE_BOTTOM_PADDING_CLASS } from "@/lib/mobile-chrome";
 const STEPS = ["Garden size", "Add-ons", "Your quote", "Finish signup"] as const;
 
 export default function SignupPage() {
@@ -75,6 +74,7 @@ export default function SignupPage() {
   const [photoPreviewUrls, setPhotoPreviewUrls] = useState<string[]>([]);
   const [quoteUnveiled, setQuoteUnveiled] = useState(false);
   const topRef = useRef<HTMLDivElement>(null);
+  const mobileScrollRef = useRef<HTMLDivElement>(null);
 
   const addonCount = useMemo(() => countSignupAddons(selectedServices), [selectedServices]);
 
@@ -107,6 +107,20 @@ export default function SignupPage() {
   }, [visitFrequency, plans]);
 
   useEffect(() => {
+    document.documentElement.classList.add("signup-wizard-active");
+    return () => document.documentElement.classList.remove("signup-wizard-active");
+  }, []);
+
+  useEffect(() => {
+    if (step !== 2 || !quoteUnveiled) return;
+    const scrollEl = mobileScrollRef.current;
+    if (!scrollEl) return;
+    requestAnimationFrame(() => {
+      scrollEl.querySelector("[data-signup-quote]")?.scrollIntoView({ block: "end", behavior: "smooth" });
+    });
+  }, [quoteUnveiled, step]);
+
+  useEffect(() => {
     setPlansLoading(true);
     api
       .getPlans()
@@ -125,6 +139,12 @@ export default function SignupPage() {
   }, []);
 
   useLayoutEffect(() => {
+    const scrollEl = mobileScrollRef.current;
+    const isMobileLayout = typeof window !== "undefined" && window.matchMedia("(max-width: 767px)").matches;
+    if (scrollEl && isMobileLayout) {
+      scrollEl.scrollTo({ top: 0, behavior: "instant" });
+      return;
+    }
     topRef.current?.scrollIntoView({ block: "start" });
     window.scrollTo({ top: 0, left: 0, behavior: "instant" });
   }, [step]);
@@ -316,21 +336,54 @@ export default function SignupPage() {
     [activePlan, selectedServices]
   );
 
+  const mobileFooter = (
+    <>
+      <div className="flex gap-2">
+        {step > 0 && (
+          <button
+            type="button"
+            onClick={goBack}
+            className="inline-flex min-h-[48px] flex-1 items-center justify-center rounded-full border border-stone-200 text-sm font-medium text-stone-700"
+          >
+            Back
+          </button>
+        )}
+        {step < STEPS.length - 1 ? (
+          <button type="button" onClick={tryAdvance} className="btn-primary min-h-[48px] flex-[2]">
+            {step === 2 && !quoteUnveiled ? "See my quote" : "Continue"}
+          </button>
+        ) : (
+          <button type="button" disabled={loading} onClick={submit} className="btn-primary min-h-[48px] flex-[2]">
+            {loading ? "Processing…" : skipPayment ? "Create account" : "Pay securely"}
+          </button>
+        )}
+      </div>
+      <p className="mt-2 text-center text-xs text-stone-500">
+        Already have an account?{" "}
+        <Link href="/login" className="font-medium text-gardens-primary hover:underline">
+          Log in
+        </Link>
+      </p>
+    </>
+  );
+
   return (
     <div
-      className={`${SIGNUP_MOBILE_BOTTOM_PADDING_CLASS} max-md:min-h-[100dvh] max-md:touch-pan-y pt-6 md:pb-12 md:pt-12`}
+      data-signup-wizard
+      className="flex min-h-0 flex-1 flex-col overflow-hidden pt-4 max-md:pt-3 md:pb-12 md:pt-12"
     >
-      <div ref={topRef} className="mx-auto max-w-5xl scroll-mt-8 px-4 max-md:overflow-visible">
+      <div ref={topRef} className="mx-auto w-full max-w-5xl shrink-0 scroll-mt-8 px-4">
         <div className="text-center">
-          <h1 className="font-display text-2xl font-bold text-gardens-dark sm:text-3xl">
+          <h1 className="font-display text-xl font-bold text-gardens-dark sm:text-3xl">
             {step === 2 ? "Your quote" : "Get your quote"}
           </h1>
-          <p className="mt-2 text-stone-600">
-            Step {step + 1} of {STEPS.length} - {STEPS[step]}
+          <p className="mt-1.5 text-sm text-stone-600 sm:mt-2">
+            Step {step + 1} of {STEPS.length}
+            <span className="hidden sm:inline"> - {STEPS[step]}</span>
           </p>
         </div>
 
-        <div className="mt-6 flex gap-2" aria-hidden>
+        <div className="mt-4 flex gap-2 sm:mt-6" aria-hidden>
           {STEPS.map((label, i) => (
             <div key={label} className="flex-1">
               <div
@@ -341,31 +394,36 @@ export default function SignupPage() {
           ))}
         </div>
 
-        {usingFallback && (
-          <AlertBanner
-            variant="warning"
-            message={
-              process.env.NODE_ENV === "development"
-                ? "Live plans could not be loaded. Signup will work once the API connection is restored."
-                : "We're having trouble loading the latest plans. Please refresh the page before continuing."
-            }
-            className="mt-6"
-          />
-        )}
+      </div>
 
-        {skipPayment && process.env.NODE_ENV === "development" && (
-          <AlertBanner
-            variant="warning"
-            message="Dev mode: payment skipped - subscription activates immediately."
-            className="mt-6"
-          />
-        )}
+      <div className="mx-auto flex w-full max-w-5xl min-h-0 flex-1 flex-col md:px-4">
+        <div
+          ref={mobileScrollRef}
+          className="mt-3 max-md:flex-1 max-md:min-h-0 max-md:overflow-y-auto max-md:overscroll-y-contain max-md:px-4 max-md:pb-12 [-webkit-overflow-scrolling:touch] md:mt-8"
+        >
+            {usingFallback && (
+              <AlertBanner
+                variant="warning"
+                message={
+                  process.env.NODE_ENV === "development"
+                    ? "Live plans could not be loaded. Signup will work once the API connection is restored."
+                    : "We're having trouble loading the latest plans. Please refresh the page before continuing."
+                }
+                className="mb-4"
+              />
+            )}
 
-        {error && (
-          <AlertBanner variant="error" message={error} onDismiss={() => setError(null)} className="mt-6" />
-        )}
+            {skipPayment && process.env.NODE_ENV === "development" && (
+              <AlertBanner
+                variant="warning"
+                message="Dev mode: payment skipped - subscription activates immediately."
+                className="mb-4"
+              />
+            )}
 
-        <div className="mt-6 md:mt-8">
+            {error && (
+              <AlertBanner variant="error" message={error} onDismiss={() => setError(null)} className="mb-4" />
+            )}
             {step === 0 && (
               <div className="space-y-4 rounded-2xl border border-stone-200 bg-white p-5 shadow-soft sm:p-6">
                 <p className="text-sm text-stone-600">{GARDEN_SIZE_MAINTAINED_AREA_NOTE}</p>
@@ -408,7 +466,7 @@ export default function SignupPage() {
                 />
                 <details className="mt-4 rounded-lg border border-stone-100 bg-stone-50 px-3 py-2 md:hidden">
                   <summary className="cursor-pointer text-xs font-semibold uppercase tracking-wide text-stone-500">
-                    {SIGNUP_SERVICE_GROUP_LABELS.core} (every visit)
+                    {SIGNUP_SERVICE_GROUP_LABELS.core}
                   </summary>
                   <ul className="mt-2 space-y-0.5 text-sm text-stone-700">
                     {CORE_VISIT_WORK.map((item) => (
@@ -510,7 +568,10 @@ export default function SignupPage() {
                 </div>
 
                 {quoteUnveiled && !plansLoading && activePlan && (
-                  <div className="rounded-2xl border border-gardens-primary/30 bg-gardens-light/40 p-5 sm:p-6">
+                  <div
+                    data-signup-quote
+                    className="rounded-2xl border border-gardens-primary/30 bg-gardens-light/40 p-5 sm:p-6"
+                  >
                     <p className="text-xs font-semibold uppercase tracking-wide text-gardens-primary">
                       Your personalised quote
                     </p>
@@ -551,7 +612,10 @@ export default function SignupPage() {
             )}
 
             {step === 3 && (
-              <div className="space-y-4 rounded-2xl border border-stone-200 bg-white p-4 shadow-soft sm:space-y-5 sm:p-6">
+              <div
+                data-signup-finish
+                className="space-y-4 rounded-2xl border border-stone-200 bg-white p-4 shadow-soft sm:space-y-5 sm:p-6"
+              >
                 <p className="text-sm text-stone-600">
                   Last step - tell us who you are and where we&apos;ll maintain your garden.
                 </p>
@@ -580,20 +644,26 @@ export default function SignupPage() {
                   autoComplete="new-password"
                   hint={`At least ${MIN_PASSWORD_LENGTH} characters`}
                 />
-                <div className="rounded-xl border border-stone-200 bg-stone-50 px-3 py-3 text-xs text-stone-600 sm:px-4">
-                  <p className="font-medium text-stone-800">Before each visit</p>
-                  <p className="mt-2 md:hidden">{CUSTOMER_VISIT_RESPONSIBILITIES_SUMMARY}</p>
-                  <ul className="mt-2 hidden list-disc space-y-1 pl-4 md:block">
-                    {CUSTOMER_VISIT_RESPONSIBILITIES.map((item) => (
-                      <li key={item}>{item}</li>
-                    ))}
-                  </ul>
-                  <p className="mt-2 hidden md:block">{CUSTOMER_VISIT_GARDENER_BRINGS}</p>
-                  <p className="mt-2 md:hidden">
+                <details className="rounded-xl border border-stone-200 bg-stone-50 px-3 py-2 md:hidden">
+                  <summary className="cursor-pointer text-sm font-medium text-stone-800">
+                    Before each visit - your part
+                  </summary>
+                  <p className="mt-2 text-xs text-stone-600">{CUSTOMER_VISIT_RESPONSIBILITIES_SUMMARY}</p>
+                  <p className="mt-2 text-xs text-stone-600">{CUSTOMER_VISIT_GARDENER_BRINGS}</p>
+                  <p className="mt-2 text-xs">
                     <Link href="/terms" className="font-medium text-gardens-primary hover:underline" target="_blank">
                       Full prep list in terms
                     </Link>
                   </p>
+                </details>
+                <div className="hidden rounded-xl border border-stone-200 bg-stone-50 px-3 py-3 text-xs text-stone-600 sm:px-4 md:block">
+                  <p className="font-medium text-stone-800">Before each visit</p>
+                  <ul className="mt-2 list-disc space-y-1 pl-4">
+                    {CUSTOMER_VISIT_RESPONSIBILITIES.map((item) => (
+                      <li key={item}>{item}</li>
+                    ))}
+                  </ul>
+                  <p className="mt-2">{CUSTOMER_VISIT_GARDENER_BRINGS}</p>
                 </div>
                 <p className="text-xs text-stone-500">
                   By continuing, you agree to our{" "}
@@ -668,6 +738,11 @@ export default function SignupPage() {
               </p>
             )}
 
+            <div
+              className={`shrink-0 max-md:block md:hidden ${step === 3 ? "h-24" : "h-10"}`}
+              aria-hidden
+            />
+
             <div className="mt-8 hidden flex-col gap-3 sm:flex sm:flex-row sm:justify-between">
               {step > 0 ? (
                 <button
@@ -703,33 +778,8 @@ export default function SignupPage() {
             </div>
         </div>
 
-        <div className="fixed inset-x-0 bottom-0 z-40 border-t border-stone-200 bg-white/95 px-3 pt-3 shadow-[0_-4px_20px_rgba(0,0,0,0.06)] backdrop-blur-md pb-[max(0.75rem,env(safe-area-inset-bottom))] sm:hidden">
-          <div className="flex gap-2">
-            {step > 0 && (
-              <button
-                type="button"
-                onClick={goBack}
-                className="inline-flex min-h-[48px] flex-1 items-center justify-center rounded-full border border-stone-200 text-sm font-medium text-stone-700"
-              >
-                Back
-              </button>
-            )}
-            {step < STEPS.length - 1 ? (
-              <button type="button" onClick={tryAdvance} className="btn-primary min-h-[48px] flex-[2]">
-                {step === 2 && !quoteUnveiled ? "See my quote" : "Continue"}
-              </button>
-            ) : (
-              <button type="button" disabled={loading} onClick={submit} className="btn-primary min-h-[48px] flex-[2]">
-                {loading ? "Processing…" : skipPayment ? "Create account" : "Pay securely"}
-              </button>
-            )}
-          </div>
-          <p className="mt-2 text-center text-xs text-stone-500">
-            Already have an account?{" "}
-            <Link href="/login" className="font-medium text-gardens-primary hover:underline">
-              Log in
-            </Link>
-          </p>
+        <div className="shrink-0 border-t border-stone-200 bg-white/95 px-3 pt-3 shadow-[0_-4px_20px_rgba(0,0,0,0.06)] backdrop-blur-md pb-[max(0.75rem,env(safe-area-inset-bottom))] max-md:mx-0 md:hidden">
+          {mobileFooter}
         </div>
 
         <p className="mt-6 hidden text-center text-sm text-stone-500 md:block">

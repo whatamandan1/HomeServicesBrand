@@ -342,7 +342,7 @@ export function GuestChatWidget() {
         <button
           type="button"
           onClick={() => setOpen(true)}
-          className={`${fabPosition} flex min-h-[48px] items-center gap-2 rounded-full bg-gardens-primary px-4 py-3 text-sm font-semibold text-white shadow-lg transition hover:bg-gardens-dark`}
+          className={`${fabPosition} flex min-h-[48px] items-center gap-2 rounded-full bg-gardens-primary px-4 py-3 text-sm font-semibold text-white shadow-lg transition hover:bg-gardens-dark ${pathname === "/signup" ? "max-md:hidden" : ""}`}
           aria-label="Open live chat"
         >
           <MessageCircle className="h-5 w-5" />
