@@ -399,6 +399,7 @@ export default function SignupPage() {
       <div className="mx-auto flex w-full max-w-5xl min-h-0 flex-1 flex-col md:px-4">
         <div
           ref={mobileScrollRef}
+          data-testid="signup-mobile-scroll"
           className="mt-3 max-md:flex-1 max-md:min-h-0 max-md:overflow-y-auto max-md:overscroll-y-contain max-md:px-4 max-md:pb-12 [-webkit-overflow-scrolling:touch] md:mt-8"
         >
             {usingFallback && (
@@ -778,7 +779,10 @@ export default function SignupPage() {
             </div>
         </div>
 
-        <div className="shrink-0 border-t border-stone-200 bg-white/95 px-3 pt-3 shadow-[0_-4px_20px_rgba(0,0,0,0.06)] backdrop-blur-md pb-[max(0.75rem,env(safe-area-inset-bottom))] max-md:mx-0 md:hidden">
+        <div
+          data-testid="signup-mobile-footer"
+          className="shrink-0 border-t border-stone-200 bg-white/95 px-3 pt-3 shadow-[0_-4px_20px_rgba(0,0,0,0.06)] backdrop-blur-md pb-[max(0.75rem,env(safe-area-inset-bottom))] max-md:mx-0 md:hidden"
+        >
           {mobileFooter}
         </div>
 

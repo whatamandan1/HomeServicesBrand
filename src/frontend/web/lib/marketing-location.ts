@@ -146,7 +146,7 @@ export function resolveVisitorLocationDisplay(
 
   if (isUkCountry(coords.country)) {
     return {
-      badge: "Serving Yorkshire · Leeds, York, Wakefield",
+      badge: "Sorting Yorkshire · Leeds, York, Wakefield",
       hub: fallbackHub,
       inServiceArea: false,
     };

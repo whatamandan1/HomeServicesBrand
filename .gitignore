@@ -26,6 +26,11 @@ out/
 *.log
 .vercel
 
+# Playwright
+playwright-report/
+test-results/
+blob-report/
+
 # Local temp / build artifacts
 .tmp_pylibs/
 *.tsbuildinfo

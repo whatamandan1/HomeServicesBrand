@@ -22,15 +22,10 @@ function isLegacyPricingHash() {
 
 export function MarketingHeader() {
   const [open, setOpen] = useState(false);
-  const [mounted, setMounted] = useState(false);
   const pathname = usePathname();
   const router = useRouter();
 
   const closeMenu = useCallback(() => setOpen(false), []);
-
-  useEffect(() => {
-    setMounted(true);
-  }, []);
 
   useEffect(() => {
     closeMenu();
@@ -71,8 +66,7 @@ export function MarketingHeader() {
     [closeMenu, pathname]
   );
 
-  const mobileMenu =
-    mounted && open ? (
+  const mobileMenu = open ? (
       <div
         className="fixed inset-0 z-[100] flex flex-col bg-white md:hidden"
         role="dialog"
@@ -186,7 +180,7 @@ export function MarketingHeader() {
         </div>
       </header>
 
-      {mounted && mobileMenu ? createPortal(mobileMenu, document.body) : null}
+      {mobileMenu ? createPortal(mobileMenu, document.body) : null}
     </>
   );
 }

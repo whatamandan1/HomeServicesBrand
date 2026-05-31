@@ -8,5 +8,6 @@ const GuestChatWidget = dynamic(
 );
 
 export function LazyGuestChat() {
+  if (process.env.NEXT_PUBLIC_E2E === "true") return null;
   return <GuestChatWidget />;
 }
