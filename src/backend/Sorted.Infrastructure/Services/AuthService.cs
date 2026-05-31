@@ -78,9 +78,8 @@ public class AuthService(
         };
         db.CustomerProperties.Add(property);
 
-        var signupAddons = (request.SelectedSignupAddons ?? [])
-            .Where(id => SignupAddonPricing.AddonServiceIds.Contains(id))
-            .Distinct(StringComparer.OrdinalIgnoreCase)
+        var signupAddons = TierIncludedAddons
+            .MergeAddonsForStorage(plan.Name, request.SelectedSignupAddons)
             .ToArray();
 
         var subscription = new CustomerSubscription

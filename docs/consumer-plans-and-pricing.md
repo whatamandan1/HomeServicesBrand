@@ -88,11 +88,19 @@ Within the **maintained area** (lawn, planted beds, edges — not whole plot or 
 | General garden clean-up and tidy | Yes |
 | Light watering (pots, beds, obvious dry spots — while on site) | Yes |
 
-**Premium** adds 20 visits/year, light hedge trim, and seasonal tidy. **Elite** adds 30 visits/year and patio/path refresh.
+**Premium** (20 visits/year) includes **one add-on of your choice — 1× per year** (hedge trim, seasonal tidy, or patio refresh). **Elite** (30 visits/year) includes **all three add-ons — 1× each per year**.
 
-### Signup add-ons (extra cost, same plan tier)
+### Signup add-ons (Essential and extra sessions)
 
-Add-ons do **not** change Essential / Premium / Elite — only **visit frequency** sets the tier. Each add-on is delivered on a **fixed schedule** (not every maintenance visit). The **monthly subscription charge** spreads the annual cost over 12 months.
+Visit frequency sets Essential / Premium / Elite. Add-on **sessions** are scheduled separately from core maintenance visits.
+
+| Tier | Included add-ons |
+|------|------------------|
+| Essential | None — pay for each add-on you select |
+| Premium | **1× per year** for your first selected add-on; further sessions or extra add-ons billed |
+| Elite | **1× per year each** for hedge trim, seasonal tidy, and patio refresh (no signup surcharge) |
+
+Full add-on schedule when billed (Essential or extra sessions on Premium):
 
 | Add-on | Sessions / year |
 |--------|-----------------|
@@ -107,7 +115,7 @@ Per session (by garden band): provider **£20/hr**, platform **£5/hr**, custome
 | ≤100 m² | £37.50 | £12.50 | £6.25 |
 | ≤150 m² | £50 | £16.67 | £8.33 |
 
-Provider is paid per add-on **session** when it is carried out (not on every core visit). Code: `SignupAddonPricing.cs`.
+Provider is paid per add-on **session** when it is carried out (not on every core visit). Code: `SignupAddonPricing.cs`, `TierIncludedAddons.cs`.
 
 ### Minimum term with add-ons
 

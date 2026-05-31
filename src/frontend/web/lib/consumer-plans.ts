@@ -105,18 +105,16 @@ export const ESSENTIAL_FEATURES = [
 export const PREMIUM_FEATURES = [
   "Everything in Essential",
   "20 visits per year",
-  "Light hedge trim and shaping (where accessible)",
-  "Seasonal tidy — leaf blow/clear in garden, light pruning",
+  "Your choice of one add-on service — 1× per year included",
   "Priority scheduling where possible",
 ];
 
 export const ELITE_FEATURES = [
   "Everything in Premium",
   "30 visits per year",
-  "1× thorough patio & path refresh per year (included)",
+  "All three add-ons included — hedge trim, seasonal tidy, and patio refresh (1× each per year)",
   "First-choice visit windows when booking",
   "Ideal for fast-growing lawns and high-use gardens",
-  "Consistent upkeep through peak growing season",
 ];
 
 export const ON_VISIT_WHEN_POSSIBLE = [
@@ -181,18 +179,19 @@ export const PLAN_COMPARE_ROWS: PlanCompareRow[] = [
   { label: "Border weeding & general tidy", essential: true, premium: true, elite: true },
   { label: "You dispose of clippings or provide a garden-waste bin", essential: true, premium: true, elite: true },
   { label: "Light watering (you provide tap; gardener brings hose)", essential: true, premium: true, elite: true },
-  { label: "Hedge trim & shaping", essential: false, premium: true, elite: true },
-  { label: "Seasonal tidy & leaf blow", essential: false, premium: true, elite: true },
+  { label: "Add-on included in plan", essential: false, premium: "1× / year (your choice)", elite: "1× each / year (all 3)" },
+  { label: "Hedge trim & shaping", essential: "Add-on", premium: "1× included", elite: "1× included" },
+  { label: "Seasonal tidy & leaf clearance", essential: "Add-on", premium: "1× included", elite: "1× included" },
+  { label: "Patio & path refresh", essential: "Add-on", premium: "Add-on", elite: "1× included" },
   { label: "Priority scheduling", essential: false, premium: true, elite: false },
   { label: "First-choice visit windows", essential: false, premium: false, elite: true },
-  { label: "Patio & path refresh", essential: false, premium: false, elite: "1× per year" },
   { label: "Reschedule in your account", essential: true, premium: true, elite: true },
 ];
 
 export const PLAN_TIERS: { id: PlanTier; label: string; tagline: string }[] = [
-  { id: "essential", label: "Essential", tagline: "Monthly upkeep" },
-  { id: "premium", label: "Premium", tagline: "20 visits a year + hedges" },
-  { id: "elite", label: "Elite", tagline: "30 visits a year + patio refresh" },
+  { id: "essential", label: "Essential", tagline: "10 visits a year" },
+  { id: "premium", label: "Premium", tagline: "20 visits a year + 1 add-on included" },
+  { id: "elite", label: "Elite", tagline: "30 visits a year + all add-ons included" },
 ];
 
 export type SignupServiceId =
@@ -297,19 +296,71 @@ export function signupAddonCustomerPerOccurrenceGbp(gardenSize: GardenSize): num
   return SIGNUP_ADDON_CUSTOMER_PER_HOUR_GBP[gardenSize] * hours;
 }
 
-/** Monthly subscription uplift for one add-on (annual cost ÷ 12). */
-export function signupAddonMonthlyCustomerGbp(gardenSize: GardenSize, addonId: SignupServiceId): number {
-  const annual = signupAddonCustomerPerOccurrenceGbp(gardenSize) * signupAddonOccurrencesPerYear(addonId);
+export function isElitePlanName(planName: string): boolean {
+  return planName.toLowerCase().includes("elite");
+}
+
+export function isPremiumPlanName(planName: string): boolean {
+  return planName.toLowerCase().includes("premium");
+}
+
+export function resolveSignupAddonIdsForPlan(
+  planName: string,
+  selected: SignupServiceId[]
+): SignupServiceId[] {
+  const addons = selected.filter(isSignupAddon);
+  if (isElitePlanName(planName)) {
+    return [...new Set([...addons, ...SIGNUP_ADDON_SERVICE_IDS])];
+  }
+  return addons;
+}
+
+export function tierIncludedOccurrencesForAddon(
+  planName: string,
+  addonId: SignupServiceId,
+  selected: SignupServiceId[]
+): number {
+  if (!isSignupAddon(addonId)) return 0;
+  if (isElitePlanName(planName)) return 1;
+  const addons = selected.filter(isSignupAddon);
+  if (isPremiumPlanName(planName) && addons.length > 0 && addons[0] === addonId) return 1;
+  return 0;
+}
+
+export function billableAddonOccurrencesPerYear(
+  planName: string,
+  addonId: SignupServiceId,
+  selected: SignupServiceId[]
+): number {
+  if (!isSignupAddon(addonId)) return 0;
+  if (isElitePlanName(planName)) return 0;
+  const addons = selected.filter(isSignupAddon);
+  if (!addons.includes(addonId)) return 0;
+  const total = signupAddonOccurrencesPerYear(addonId);
+  if (isPremiumPlanName(planName) && addons[0] === addonId) return Math.max(0, total - 1);
+  return total;
+}
+
+/** Monthly subscription uplift for one add-on after tier inclusions. */
+export function signupAddonMonthlyCustomerGbp(
+  gardenSize: GardenSize,
+  planName: string,
+  addonId: SignupServiceId,
+  selected: SignupServiceId[]
+): number {
+  const billable = billableAddonOccurrencesPerYear(planName, addonId, selected);
+  if (billable <= 0) return 0;
+  const annual = signupAddonCustomerPerOccurrenceGbp(gardenSize) * billable;
   return Math.round((annual / 12) * 100) / 100;
 }
 
 export function signupAddonsMonthlyTotalGbp(
   gardenSize: GardenSize,
+  planName: string,
   selected: SignupServiceId[]
 ): number {
-  const total = selected
-    .filter(isSignupAddon)
-    .reduce((sum, id) => sum + signupAddonMonthlyCustomerGbp(gardenSize, id), 0);
+  const total = resolveSignupAddonIdsForPlan(planName, selected)
+    .reduce((sum, id) => sum + signupAddonMonthlyCustomerGbp(gardenSize, planName, id, selected), 0);
   return Math.round(total * 100) / 100;
 }
 
@@ -321,11 +372,12 @@ export const MONTHLY_MINIMUM_TERM_WITH_ADDONS_MONTHS = 6;
 
 /** Minimum commitment months shown at signup (6 for monthly + add-ons, else plan default). */
 export function effectiveMinimumTermMonths(
-  plan: { billingInterval: string; minimumTermMonths: number },
+  plan: { billingInterval: string; minimumTermMonths: number; name: string },
   selectedAddons: SignupServiceId[]
 ): number {
   if (plan.billingInterval === "Annual") return plan.minimumTermMonths;
-  if (countSignupAddons(selectedAddons) > 0) return MONTHLY_MINIMUM_TERM_WITH_ADDONS_MONTHS;
+  if (resolveSignupAddonIdsForPlan(plan.name, selectedAddons).length > 0)
+    return MONTHLY_MINIMUM_TERM_WITH_ADDONS_MONTHS;
   return plan.minimumTermMonths;
 }
 
@@ -333,10 +385,27 @@ export const SIGNUP_ADDON_COMMITMENT_NOTE =
   "Add-on services require a 6-month minimum term on monthly billing (annual plans keep a 12-month minimum).";
 
 /** Shown on signup add-on checkboxes — frequency only, no line-item price. */
-export function formatSignupAddonOccurrencesLabel(addonId: SignupServiceId): string {
-  const occ = signupAddonOccurrencesPerYear(addonId);
-  if (occ <= 0) return "";
-  return occ === 1 ? "1× per year" : `${occ}× per year`;
+export function formatSignupAddonOccurrencesLabel(
+  addonId: SignupServiceId,
+  planName: string,
+  selected: SignupServiceId[]
+): string {
+  const total = signupAddonOccurrencesPerYear(addonId);
+  if (total <= 0) return "";
+
+  const included = tierIncludedOccurrencesForAddon(planName, addonId, selected);
+  const billable = billableAddonOccurrencesPerYear(planName, addonId, selected);
+
+  if (isElitePlanName(planName)) {
+    return "1× per year included with Elite";
+  }
+  if (included > 0 && billable === 0) {
+    return "1× per year included with Premium";
+  }
+  if (included > 0 && billable > 0) {
+    return `${total}× per year · 1× included, extra sessions billed`;
+  }
+  return total === 1 ? "1× per year" : `${total}× per year`;
 }
 
 export const SIGNUP_SERVICE_GROUP_LABELS: Record<SignupServiceGroup, string> = {
@@ -414,7 +483,7 @@ export function planPriceForGarden(
   const monthly =
     GARDEN_SIZE_MONTHLY_PRICE_GBP[gardenSize] +
     tierMonthlyAddon(plan) +
-    signupAddonsMonthlyTotalGbp(gardenSize, selectedAddons);
+    signupAddonsMonthlyTotalGbp(gardenSize, plan.name, selectedAddons);
   return isAnnualPlan(plan) ? monthly * ANNUAL_MONTHS_CHARGED : monthly;
 }
 
