@@ -5,7 +5,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { Loader2, MessageCircle, Send, X } from "lucide-react";
 import { api } from "@/lib/api";
-import { guestChatFabPosition } from "@/lib/mobile-chrome";
+import { guestChatFabClosedClass, guestChatPanelClass } from "@/lib/mobile-chrome";
 
 type ChatMessage = {
   id: string;
@@ -295,13 +295,14 @@ export function GuestChatWidget() {
     setSession((s) => s + 1);
   }
 
-  const fabPosition = guestChatFabPosition(pathname);
+  const fabClosedClass = guestChatFabClosedClass(pathname);
+  const panelClass = guestChatPanelClass();
 
   return (
     <>
       {open && (
         <div
-          className={`${fabPosition} flex w-[min(calc(100vw-2rem),380px)] flex-col overflow-hidden rounded-2xl border border-stone-200 bg-white shadow-2xl`}
+          className={`${panelClass} flex w-[min(calc(100vw-2rem),380px)] max-md:w-auto flex-col overflow-hidden rounded-2xl border border-stone-200 bg-white shadow-2xl max-md:max-h-[min(70dvh,32rem)]`}
           role="dialog"
           aria-label="Live chat"
         >
@@ -342,7 +343,7 @@ export function GuestChatWidget() {
         <button
           type="button"
           onClick={() => setOpen(true)}
-          className={`${fabPosition} flex min-h-[48px] items-center gap-2 rounded-full bg-gardens-primary px-4 py-3 text-sm font-semibold text-white shadow-lg transition hover:bg-gardens-dark ${pathname === "/signup" ? "max-md:hidden" : ""}`}
+          className={`${fabClosedClass} flex min-h-[48px] items-center gap-2 rounded-full bg-gardens-primary px-4 py-3 text-sm font-semibold text-white shadow-lg transition hover:bg-gardens-dark ${pathname === "/signup" ? "max-md:hidden" : ""}`}
           aria-label="Open live chat"
         >
           <MessageCircle className="h-5 w-5" />
