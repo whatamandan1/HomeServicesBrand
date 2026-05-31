@@ -47,6 +47,25 @@ import { SIGNUP_MOBILE_BOTTOM_PADDING_CLASS } from "@/lib/mobile-chrome";
 
 const STEPS = ["Garden size", "Add-ons", "Your quote", "Finish signup"] as const;
 
+const SIGNUP_MOBILE_FOOTER_CLEARANCE_PX = 148;
+
+function ensureVisibleInSignupScroll(
+  scrollEl: HTMLDivElement | null,
+  target: HTMLElement | null,
+  gapPx = SIGNUP_MOBILE_FOOTER_CLEARANCE_PX
+) {
+  if (!scrollEl || !target) return;
+  if (typeof window === "undefined" || !window.matchMedia("(max-width: 767px)").matches) return;
+  requestAnimationFrame(() => {
+    const scrollRect = scrollEl.getBoundingClientRect();
+    const targetRect = target.getBoundingClientRect();
+    const overflow = targetRect.bottom - (scrollRect.bottom - gapPx);
+    if (overflow > 0) {
+      scrollEl.scrollBy({ top: overflow, behavior: "smooth" });
+    }
+  });
+}
+
 export default function SignupPage() {
   const router = useRouter();
   const [step, setStep] = useState(0);
@@ -118,7 +137,10 @@ export default function SignupPage() {
     const scrollEl = mobileScrollRef.current;
     if (!scrollEl) return;
     requestAnimationFrame(() => {
-      scrollEl.querySelector("[data-signup-quote]")?.scrollIntoView({ block: "end", behavior: "smooth" });
+      const quote = scrollEl.querySelector("[data-signup-quote]");
+      const included = scrollEl.querySelector("[data-signup-quote-included]");
+      quote?.scrollIntoView({ block: "start", behavior: "smooth" });
+      ensureVisibleInSignupScroll(scrollEl, (included ?? quote) as HTMLElement | null);
     });
   }, [quoteUnveiled, step]);
 
@@ -411,7 +433,7 @@ export default function SignupPage() {
         <div
           ref={mobileScrollRef}
           data-testid="signup-mobile-scroll"
-          className={`mt-3 max-md:flex-1 max-md:min-h-0 max-md:overflow-y-auto max-md:overscroll-y-contain max-md:px-4 ${SIGNUP_MOBILE_BOTTOM_PADDING_CLASS} [-webkit-overflow-scrolling:touch] md:mt-8`}
+          className={`signup-mobile-scroll mt-3 max-md:flex-1 max-md:min-h-0 max-md:overflow-y-auto max-md:overscroll-y-contain max-md:px-4 ${SIGNUP_MOBILE_BOTTOM_PADDING_CLASS} md:mt-8`}
         >
             {usingFallback && (
               <AlertBanner
@@ -476,7 +498,18 @@ export default function SignupPage() {
                     setStepHint(null);
                   }}
                 />
-                <details className="mt-4 rounded-lg border border-stone-100 bg-stone-50 px-3 py-2 md:hidden">
+                <details
+                  className="mt-4 rounded-lg border border-stone-100 bg-stone-50 px-3 py-2 md:hidden"
+                  onToggle={(e) => {
+                    if (!e.currentTarget.open) return;
+                    const scrollEl = mobileScrollRef.current;
+                    ensureVisibleInSignupScroll(scrollEl, e.currentTarget);
+                    const addons = e.currentTarget.parentElement?.querySelector("[data-signup-addons]");
+                    if (addons instanceof HTMLElement) {
+                      requestAnimationFrame(() => ensureVisibleInSignupScroll(scrollEl, addons));
+                    }
+                  }}
+                >
                   <summary className="cursor-pointer text-xs font-semibold uppercase tracking-wide text-stone-500">
                     {SIGNUP_SERVICE_GROUP_LABELS.core}
                   </summary>
@@ -502,7 +535,7 @@ export default function SignupPage() {
                     ))}
                   </ul>
                 </div>
-                <div className="mt-3 space-y-3 max-md:pb-2">
+                <div data-signup-addons className="mt-3 space-y-3 max-md:pb-2">
                   {SIGNUP_CHECKBOX_GROUPS.map((group) => {
                     const options = SIGNUP_SERVICES.filter((s) => s.group === group);
                     if (options.length === 0) return null;
@@ -602,11 +635,14 @@ export default function SignupPage() {
                         </p>
                       </div>
                     </div>
-                    <div className="mt-4 border-t border-gardens-primary/15 pt-4">
+                    <div
+                      data-signup-quote-included
+                      className="mt-4 border-t border-gardens-primary/15 pt-4"
+                    >
                       <p className="text-xs font-semibold uppercase tracking-wide text-stone-500">
                         What&apos;s included
                       </p>
-                      <ul className="mt-2 space-y-1.5 text-sm text-stone-700">
+                      <ul className="mt-2 space-y-1.5 pb-1 text-sm text-stone-700">
                         {quoteIncludedLines.map((item) => (
                           <li key={item} className="flex gap-2">
                             <Check
@@ -656,7 +692,13 @@ export default function SignupPage() {
                   autoComplete="new-password"
                   hint={`At least ${MIN_PASSWORD_LENGTH} characters`}
                 />
-                <details className="rounded-xl border border-stone-200 bg-stone-50 px-3 py-2 md:hidden">
+                <details
+                  className="rounded-xl border border-stone-200 bg-stone-50 px-3 py-2 md:hidden"
+                  onToggle={(e) => {
+                    if (!e.currentTarget.open) return;
+                    ensureVisibleInSignupScroll(mobileScrollRef.current, e.currentTarget);
+                  }}
+                >
                   <summary className="cursor-pointer text-sm font-medium text-stone-800">
                     Before each visit - your part
                   </summary>
@@ -750,10 +792,7 @@ export default function SignupPage() {
               </p>
             )}
 
-            <div
-              className={`shrink-0 max-md:block md:hidden ${step === 3 ? "h-24" : "h-10"}`}
-              aria-hidden
-            />
+            <div className="shrink-0 max-md:min-h-[4rem] md:hidden" aria-hidden />
 
             <div className="mt-8 hidden flex-col gap-3 md:flex md:flex-row md:justify-between">
               {step > 0 ? (

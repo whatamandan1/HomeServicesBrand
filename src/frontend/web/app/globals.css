@@ -139,6 +139,19 @@ html.mobile-nav-open body {
   }
 }
 
+/* Signup wizard inner scroll (mobile) - reliable touch scroll above fixed footer */
+@media (max-width: 767px) {
+  .signup-mobile-scroll {
+    overflow-y: scroll;
+    -webkit-overflow-scrolling: touch;
+    overscroll-behavior-y: contain;
+    touch-action: pan-y;
+    scroll-padding-bottom: calc(
+      0.75rem + 3rem + 0.75rem + 1.25rem + 1rem + 2rem + max(0.75rem, env(safe-area-inset-bottom))
+    );
+  }
+}
+
 @media (min-width: 768px) {
   .guest-chat-fab {
     left: auto;
