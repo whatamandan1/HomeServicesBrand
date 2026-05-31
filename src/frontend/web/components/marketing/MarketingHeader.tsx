@@ -94,7 +94,11 @@ export function MarketingHeader() {
             <X className="h-5 w-5" />
           </button>
         </div>
-        <nav className="flex-1 overflow-y-auto overscroll-contain px-4 py-4" aria-label="Mobile">
+        <nav
+          className="flex-1 overflow-y-auto overscroll-contain px-4 py-4 [-webkit-overflow-scrolling:touch]"
+          aria-label="Mobile"
+          style={{ touchAction: "pan-y" }}
+        >
           <ul className="space-y-1">
             {!onSignup && (
               <li className="pb-2">

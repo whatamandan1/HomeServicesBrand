@@ -317,8 +317,10 @@ export default function SignupPage() {
   );
 
   return (
-    <div className={`${SIGNUP_MOBILE_BOTTOM_PADDING_CLASS} pt-6 md:pb-12 md:pt-12`}>
-      <div ref={topRef} className="mx-auto max-w-5xl scroll-mt-8 px-4">
+    <div
+      className={`${SIGNUP_MOBILE_BOTTOM_PADDING_CLASS} max-md:min-h-[100dvh] max-md:touch-pan-y pt-6 md:pb-12 md:pt-12`}
+    >
+      <div ref={topRef} className="mx-auto max-w-5xl scroll-mt-8 px-4 max-md:overflow-visible">
         <div className="text-center">
           <h1 className="font-display text-2xl font-bold text-gardens-dark sm:text-3xl">
             {step === 2 ? "Your quote" : "Get your quote"}
@@ -404,7 +406,20 @@ export default function SignupPage() {
                     setStepHint(null);
                   }}
                 />
-                <div className="mt-4 rounded-lg border border-stone-100 bg-stone-50 px-3 py-2">
+                <details className="mt-4 rounded-lg border border-stone-100 bg-stone-50 px-3 py-2 md:hidden">
+                  <summary className="cursor-pointer text-xs font-semibold uppercase tracking-wide text-stone-500">
+                    {SIGNUP_SERVICE_GROUP_LABELS.core} (every visit)
+                  </summary>
+                  <ul className="mt-2 space-y-0.5 text-sm text-stone-700">
+                    {CORE_VISIT_WORK.map((item) => (
+                      <li key={item} className="flex gap-2">
+                        <Check className="mt-0.5 h-3.5 w-3.5 shrink-0 text-gardens-primary" aria-hidden />
+                        {item}
+                      </li>
+                    ))}
+                  </ul>
+                </details>
+                <div className="mt-4 hidden rounded-lg border border-stone-100 bg-stone-50 px-3 py-2 md:block">
                   <p className="text-xs font-semibold uppercase tracking-wide text-stone-500">
                     {SIGNUP_SERVICE_GROUP_LABELS.core}
                   </p>
@@ -417,7 +432,7 @@ export default function SignupPage() {
                     ))}
                   </ul>
                 </div>
-                <div className="mt-3 space-y-3">
+                <div className="mt-3 space-y-3 max-md:pb-2">
                   {SIGNUP_CHECKBOX_GROUPS.map((group) => {
                     const options = SIGNUP_SERVICES.filter((s) => s.group === group);
                     if (options.length === 0) return null;
@@ -426,14 +441,17 @@ export default function SignupPage() {
                         <legend className="text-xs font-semibold uppercase tracking-wide text-stone-500">
                           {SIGNUP_SERVICE_GROUP_LABELS[group]}
                         </legend>
-                        <ul className="mt-1.5 grid gap-1 sm:grid-cols-2">
+                        <ul className="mt-1.5 flex flex-col gap-2 sm:grid sm:grid-cols-2 sm:gap-1">
                           {options.map((service) => {
                             const checked = selectedServices.includes(service.id);
+                            const occLabel = isSignupAddon(service.id)
+                              ? formatSignupAddonOccurrencesLabel(service.id)
+                              : "";
                             return (
                               <li key={service.id}>
                                 <label
                                   title={service.description}
-                                  className={`flex cursor-pointer items-center gap-2 rounded-lg border px-2.5 py-2 text-sm transition ${
+                                  className={`flex min-h-[48px] cursor-pointer items-start gap-2 rounded-lg border px-2.5 py-2.5 text-sm transition sm:min-h-0 sm:py-2 ${
                                     checked
                                       ? "border-gardens-primary bg-gardens-light/50 text-gardens-dark"
                                       : "border-stone-200 bg-white text-stone-700 hover:border-stone-300"
@@ -441,17 +459,19 @@ export default function SignupPage() {
                                 >
                                   <input
                                     type="checkbox"
-                                    className="h-3.5 w-3.5 shrink-0 rounded border-stone-300 text-gardens-primary focus:ring-gardens-primary"
+                                    className="mt-0.5 h-4 w-4 shrink-0 rounded border-stone-300 text-gardens-primary focus:ring-gardens-primary"
                                     checked={checked}
                                     onChange={() => toggleService(service.id)}
                                   />
-                                  <span className="leading-tight">
-                                    {service.label}
-                                    <span className="block text-xs font-normal text-stone-500">
+                                  <span className="min-w-0 leading-snug">
+                                    <span className="font-medium text-stone-800">{service.label}</span>
+                                    {occLabel ? (
+                                      <span className="ml-1 text-xs font-normal text-gardens-primary">
+                                        {occLabel}
+                                      </span>
+                                    ) : null}
+                                    <span className="mt-0.5 block text-xs font-normal text-stone-500 sm:mt-0 sm:inline sm:before:content-['·_']">
                                       {service.description}
-                                      {isSignupAddon(service.id) && (
-                                        <> · {formatSignupAddonOccurrencesLabel(service.id)}</>
-                                      )}
                                     </span>
                                   </span>
                                 </label>
@@ -462,7 +482,6 @@ export default function SignupPage() {
                       </fieldset>
                     );
                   })}
-
                 </div>
               </div>
             )}
@@ -684,7 +703,7 @@ export default function SignupPage() {
             </div>
         </div>
 
-        <div className="fixed inset-x-0 bottom-0 z-40 border-t border-stone-200 bg-white/95 px-3 pt-3 backdrop-blur-md pb-[max(0.75rem,env(safe-area-inset-bottom))] sm:hidden">
+        <div className="fixed inset-x-0 bottom-0 z-40 border-t border-stone-200 bg-white/95 px-3 pt-3 shadow-[0_-4px_20px_rgba(0,0,0,0.06)] backdrop-blur-md pb-[max(0.75rem,env(safe-area-inset-bottom))] sm:hidden">
           <div className="flex gap-2">
             {step > 0 && (
               <button

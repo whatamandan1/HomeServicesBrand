@@ -20,7 +20,6 @@ html.mobile-nav-open {
 
 html.mobile-nav-open body {
   overflow: hidden;
-  touch-action: none;
 }
 
 /*
