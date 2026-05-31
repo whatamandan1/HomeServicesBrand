@@ -3,6 +3,7 @@ import type { Metadata } from "next";
 import { Banknote, Calendar, MapPin, Shield } from "lucide-react";
 import { Button, Section } from "@/components/marketing/ui";
 import { ProviderSignupForm } from "@/components/providers/ProviderSignupForm";
+import { PROVIDER_EQUIPMENT_REQUIRED, PROVIDER_VETTING_REQUIRED } from "@/lib/provider-requirements";
 
 export const metadata: Metadata = {
   title: "Work with GardensSorted",
@@ -29,7 +30,7 @@ const benefits = [
   {
     icon: Shield,
     title: "Approved network",
-    body: "Join a vetted team of gardeners with support when you need it.",
+    body: "ID, right-to-work, and basic DBS checks before approval — plus support when you need it.",
   },
 ];
 
@@ -71,6 +72,42 @@ export default function ProvidersPage() {
             </div>
           ))}
         </div>
+      </Section>
+
+      <Section
+        title="Before you're approved"
+        subtitle="We verify every gardener before they join the network."
+      >
+        <ul className="mx-auto max-w-2xl space-y-2 text-sm text-stone-700">
+          {PROVIDER_VETTING_REQUIRED.map((item) => (
+            <li key={item} className="flex gap-2">
+              <span className="text-gardens-primary" aria-hidden>
+                •
+              </span>
+              {item}
+            </li>
+          ))}
+        </ul>
+        <p className="mx-auto mt-4 max-w-2xl text-sm text-stone-600">
+          Sign up first, then complete the checks &amp; documents form in your provider portal — approval only after we
+          verify ID, right to work, and DBS.
+        </p>
+      </Section>
+
+      <Section
+        title="Equipment you must bring"
+        subtitle="Every visit — we don't supply tools. Customers provide water access and power at the property."
+      >
+        <ul className="mx-auto max-w-2xl space-y-2 text-sm text-stone-700">
+          {PROVIDER_EQUIPMENT_REQUIRED.map((item) => (
+            <li key={item} className="flex gap-2">
+              <span className="text-gardens-primary" aria-hidden>
+                •
+              </span>
+              {item}
+            </li>
+          ))}
+        </ul>
       </Section>
 
       <ProviderSignupForm />

@@ -100,12 +100,59 @@ public record TestNotificationsRequest(
 
 public record RescheduleVisitRequest(DateTime ScheduledDate);
 
+public record ProviderVettingStatusResponse(
+    bool IsSubmitted,
+    bool IsComplete,
+    bool IdVerified,
+    bool RightToWorkVerified,
+    bool DbsVerified,
+    DateTime? SubmittedAtUtc);
+
+public record ProviderVettingDetailsResponse(
+    ProviderVettingStatusResponse Status,
+    DateOnly? DateOfBirth,
+    string? IdDocumentType,
+    string? IdDocumentNumber,
+    string? RightToWorkShareCode,
+    string? RightToWorkDocumentDescription,
+    string? DbsCertificateNumber,
+    DateOnly? DbsIssueDate,
+    bool DbsOnUpdateService);
+
+public record SubmitProviderVettingRequest(
+    DateOnly? DateOfBirth,
+    string? IdDocumentType,
+    string? IdDocumentNumber,
+    string? RightToWorkShareCode,
+    string? RightToWorkDocumentDescription,
+    string? DbsCertificateNumber,
+    DateOnly? DbsIssueDate,
+    bool DbsOnUpdateService);
+
+public record AdminProviderVettingResponse(
+    Guid ProviderId,
+    ProviderVettingStatusResponse Status,
+    DateOnly? DateOfBirth,
+    string? IdDocumentType,
+    string? IdDocumentNumber,
+    string? RightToWorkShareCode,
+    string? RightToWorkDocumentDescription,
+    string? DbsCertificateNumber,
+    DateOnly? DbsIssueDate,
+    bool DbsOnUpdateService);
+
+public record AdminUpdateProviderVettingVerificationRequest(
+    bool? IdVerified,
+    bool? RightToWorkVerified,
+    bool? DbsVerified);
+
 public record ProviderProfileResponse(
     string Email,
     bool IsApproved,
     string? CoveragePostcode,
     double CoverageRadiusMiles,
     IReadOnlyList<string> CoveredOutcodes,
+    ProviderVettingStatusResponse Vetting,
     double? CoverageLatitude = null,
     double? CoverageLongitude = null);
 
@@ -161,7 +208,8 @@ public record AdminProviderResponse(
     double CoverageRadiusMiles,
     double? CoverageLatitude,
     double? CoverageLongitude,
-    IReadOnlyList<string> CoveredOutcodes);
+    IReadOnlyList<string> CoveredOutcodes,
+    ProviderVettingStatusResponse Vetting);
 
 public record SupportChatRequest(string Message, Guid? ThreadId);
 

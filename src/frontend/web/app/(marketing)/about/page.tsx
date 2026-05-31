@@ -18,7 +18,7 @@ const values = [
   {
     icon: ShieldCheck,
     title: "Trusted gardeners",
-    body: "Every gardener on our platform is approved before they take on visits in your area.",
+    body: "Every gardener is approved only after ID, right-to-work, and basic DBS checks — before they take visits in your area.",
   },
   {
     icon: MapPin,
@@ -103,7 +103,7 @@ export default function AboutPage() {
           <CalendarCheck className="mx-auto h-10 w-10 text-gardens-accent" aria-hidden />
           <h2 className="mt-4 font-display text-3xl font-bold">See if we cover your area</h2>
           <p className="mt-4 text-gardens-accent">
-            Enter your postcode at signup and we&apos;ll confirm availability. Plans start from £39.95/month.
+            Enter your postcode at signup and we&apos;ll confirm availability. Plans start from £59.99/month.
           </p>
           <div className="mt-8 flex flex-wrap justify-center gap-4">
             <Button href="/signup" className="!bg-white !text-gardens-dark hover:!bg-gardens-light">

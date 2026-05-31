@@ -179,7 +179,7 @@ public class OpenAiSupportService(
         var planLines = plans.Count > 0
             ? string.Join("\n", plans.Select(p =>
                 $"- {p.Name}: £{p.PriceGbp}/{(p.BillingInterval == SubscriptionBillingInterval.Monthly ? "month" : "year")}, {p.MinimumTermMonths}-month minimum. {p.Description}"))
-            : "- Essential Monthly: £39.95/month (small garden up to 50 m²), 3-month minimum\n- Essential Annual: £399.95/year, 12-month minimum\n- Premium Monthly: £64.95/month, 3-month minimum\n- Premium Annual: £559.95/year, 12-month minimum\n- Elite Monthly: £99.95/month (3 visits/month), 3-month minimum\n- Elite Annual: £909.95/year, 12-month minimum\n- Garden sizes: Small (50 m²), Medium (75), Large (100), X Large (125), XX Large (150) — each step adds £10/month or £100/year";
+            : "- Essential Monthly: from £59.99/month (garden-size band), 10 visits per year, 3-month minimum\n- Each visit includes: mow & edge, border/bed weeding, general tidy, light watering while on site\n- Customer provides water access (tap); gardener brings own tools (mower, edger/strimmer, hose, rake, brush) and outdoor power is at property where needed\n- Do not hire platform-introduced gardeners off-platform during subscription or for 12 months after last visit (see terms)\n- Garden sizes: ≤50 m² (£59.99), ≤100 m² (£79.99), ≤150 m² (£99.99); above 150 m² quoted";
 
         return $"""
             Visitor status: Not signed in (pre-sales / general questions)

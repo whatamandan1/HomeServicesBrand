@@ -9,7 +9,10 @@ import { ListMapToggle, type ViewMode } from "@/components/map/ListMapToggle";
 import { VisitMap } from "@/components/map/VisitMap";
 import { ProviderAvailabilitySection } from "@/components/provider/ProviderAvailabilitySection";
 import { ProviderEarningsSection } from "@/components/provider/ProviderEarningsSection";
+import { ProviderVettingSection } from "@/components/provider/ProviderVettingSection";
+import type { ProviderVettingDetails } from "@/lib/api";
 import { AlertBanner, LoadingSpinner, PageLoading } from "@/components/ui/feedback";
+import { PROVIDER_APPROVAL_PENDING_NOTE, PROVIDER_EQUIPMENT_SUMMARY } from "@/lib/provider-requirements";
 
 export default function ProviderPage() {
   const { auth, ready } = useAuth();
@@ -190,10 +193,27 @@ export default function ProviderPage() {
           {refreshing ? "Refreshing…" : "Refresh"}
         </button>
       </div>
+      <p className="rounded-xl border border-stone-200 bg-stone-50 px-4 py-3 text-xs text-stone-600">
+        <span className="font-medium text-stone-800">Bring to every visit:</span> {PROVIDER_EQUIPMENT_SUMMARY}
+      </p>
       {profile && !profile.isApproved && (
         <p className="rounded-lg border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-900">
-          Your account is pending admin approval — open jobs will appear here once approved.
+          {profile.vetting.isSubmitted
+            ? "Thanks — we're verifying your details. You'll be able to claim jobs once approved."
+            : PROVIDER_APPROVAL_PENDING_NOTE}
         </p>
+      )}
+      {auth?.token && profile && (
+        <ProviderVettingSection
+          token={auth.token}
+          isApproved={profile.isApproved}
+          status={profile.vetting}
+          onSubmitted={(details: ProviderVettingDetails) => {
+            setProfile((p) => (p ? { ...p, vetting: details.status } : p));
+            setNotice("Vetting details saved.");
+          }}
+          onError={setError}
+        />
       )}
       {coveragePostcode && (
         <div className="rounded-lg border bg-white p-4 text-sm shadow-sm">

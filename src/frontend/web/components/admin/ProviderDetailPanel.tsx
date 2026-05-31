@@ -6,6 +6,7 @@ import { ActAsUserButton } from "@/components/admin/ActAsUserButton";
 import { api, type AdminProvider, type AuthResponse, type ProviderEarningsSummary } from "@/lib/api";
 import { formatMoneyGbp } from "@/lib/provider-availability";
 import { StatusBadge } from "@/components/ui";
+import { AdminProviderVettingSection } from "@/components/admin/AdminProviderVettingSection";
 
 export function ProviderDetailPanel({
   provider,
@@ -143,14 +144,34 @@ export function ProviderDetailPanel({
         </div>
       </div>
 
+      <div className="mt-6">
+        <AdminProviderVettingSection
+          token={token}
+          providerId={provider.id}
+          isApproved={provider.isApproved}
+          onVettingUpdated={() => {
+            api.adminProviders(token).then((list) => {
+              const refreshed = list.find((p) => p.id === provider.id);
+              if (refreshed) onUpdated(refreshed);
+            });
+          }}
+        />
+      </div>
+
       {!provider.isApproved && (
-        <button
-          type="button"
-          onClick={approve}
-          className="mt-4 rounded-lg bg-gardens-primary px-4 py-2 text-sm font-semibold text-white"
-        >
-          Approve provider
-        </button>
+        <div className="mt-4 space-y-3">
+          <p className="text-xs text-stone-500">
+            Approve only after vetting is submitted, all three checks are marked verified above, and equipment is
+            confirmed.
+          </p>
+          <button
+            type="button"
+            onClick={approve}
+            className="rounded-lg bg-gardens-primary px-4 py-2 text-sm font-semibold text-white"
+          >
+            Approve provider
+          </button>
+        </div>
       )}
 
       <div className="mt-6 space-y-4">

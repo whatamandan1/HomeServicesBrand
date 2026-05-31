@@ -1,176 +1,133 @@
 # Consumer plans & garden-size pricing
 
-Product reference for GardensSorted homeowner subscriptions (Essential, Premium, and Elite).
+**Source of truth** for GardensSorted homeowner subscriptions.
 
-**Last updated:** 2026-05-24 (visit-based provider pay, Elite 3 visits/mo)
-
----
-
-## Plans overview
-
-| | Essential | Premium | Elite |
-|--|-----------|---------|-------|
-| **Visits** | 1 per month (~every 30 days) | 2 per month (~every 15 days) | 3 per month (~every 10 days) |
-| **Best for** | Keeping a tidy garden with regular upkeep | Faster-growing gardens or owners who want more frequent care | Owners who want near-weekly upkeep through the season |
-| **Minimum term** | 3 months (monthly) / 12 months (annual) | Same | Same |
-
-Listed prices are for a **small** garden. Medium and large gardens add a fixed uplift (see below).
-
-Pricing is built **from provider visit economics upward** — not from revenue-share leftovers.
+**Last updated:** 2026-05-30 — visit scope, customer prep, off-platform terms
 
 ---
 
-## What's included
+## Garden size bands (Essential)
 
-### Essential (every visit)
+Maintained **lawn, beds, and edges** — not whole plot or large paved areas.
 
-- Lawn mowing and edging
-- Light border and bed tidy
-- Grass clippings removed from site
-- Work scoped to the garden size selected at signup
+| Garden size | Provider time (on site) | Price / month | Provider pay / visit |
+|-------------|-------------------------|---------------|----------------------|
+| **≤50 m²** | **1 hour** | **£59.99** | **£20** |
+| **≤100 m²** | **1.5 hours** | **£79.99** | **£30** |
+| **≤150 m²** | **2 hours** | **£99.99** | **£40** |
 
-### Premium (every visit)
+Above **150 m²** → personalised quote.
 
-Everything in Essential, plus:
+**Essential cadence:** **10 visits per year** (~every 5–6 weeks). Provider monthly equivalent ≈ `(10 ÷ 12) × pay per visit`.
 
-- Light hedge trim and shaping (where safely accessible from ground level)
-- Weeding in planted beds
-- Seasonal tidy — leaves, light pruning, general neatening
-
-### Elite (every visit)
-
-Everything in Premium, with **3 visits per month** (~every 10 days):
-
-- Ideal for fast-growing lawns and high-use gardens
-- Consistent upkeep through peak growing season
-- First choice for scheduling windows where possible
-
-**Elite-only included extra (once per subscription year):**
-
-- **Patio & path refresh** — a thorough clean of garden-adjacent paving, decking, or paths on a scheduled visit (brush, wash down, and clear weeds from joints where safely done from ground level). Not a specialist pressure-wash or whole-property clean — extra refreshes can be quoted as add-ons.
-
-### All plans — while we're on site
-
-When time and access allow during a **scheduled visit** (not as separate call-outs):
-
-- **Watering** — pots, containers, and obvious dry spots if you have an outdoor tap and hose
-- **Paths & patio** — light sweep of garden-adjacent paving (not a full deep clean)
-
-We do **not** make extra trips between visits just for watering or patio work.
-
-### Premium & Elite — seasonal (in season, on visit days)
-
-- Leaf blow and clear within the maintained garden area (especially autumn)
-- Light pruning and general seasonal neatening (already part of Premium tidy)
-
-### Optional seasonal add-ons (quoted / booked separately)
-
-These are **not** in the standard subscription price — customers can ask us to arrange them:
-
-| Add-on | Notes |
-|--------|--------|
-| **Patio & deck cleaning** | Thorough clean beyond a light on-visit sweep — **1× per year included on Elite**; quoted add-on for Essential & Premium |
-| **Leaf clearance** | Large volumes, whole-property, or extra visits in peak autumn |
-| **Gutter clearing** | Separate job — height, access, and insurance assessed; often a different specialist |
-
-Future: optional seasonal packs or landlord bundles (see multi-property track).
-
-### Not included (quote separately)
-
-- Tree surgery or large branch removal
-- Tall hedge reduction requiring ladders/platforms
-- Major clearance, landscaping, or hard landscaping
-- Pest/disease treatment or specialist horticulture
-- Waste beyond normal visit clippings (e.g. full garden clearances)
-- **Dedicated** watering, patio, leaf, or gutter visits outside scheduled maintenance
-- Irrigation system install, repair, or programming
-
-### All plans — account & support
-
-- Vetted local gardeners matched to your postcode
-- Visits scheduled in your preferred time window (weekday mornings/afternoons/evenings where possible)
-- Online account — view visits, reschedule, billing, and support chat
-- Email support and in-account customer service
+Implementation: `Sorted.Core/Plans/GardenSizePricing.cs`, `ProviderVisitPay.cs`, frontend `src/frontend/web/lib/consumer-plans.ts`.
 
 ---
 
-## Garden size definitions
+## Plan tiers (monthly price = garden band + addon)
 
-Customers choose a garden size band at signup. We use this to price fairly and allocate enough time on site.
+Premium and Elite add a fixed amount on top of the **same garden band** price:
 
-| Size | Maintained area (guide) | Typical examples |
-|------|-------------------------|------------------|
-| **Small** | Up to 50 m² | Courtyard, terrace, compact town garden |
-| **Medium** | Up to 75 m² | Small suburban rear garden |
-| **Large** | Up to 100 m² | Typical family garden |
-| **X Large** | Up to 125 m² | Generous lawn with multiple beds |
-| **XX Large** | Up to 150 m² | Large plot with extensive lawn and planting |
+| Addon | £/month |
+|-------|---------|
+| Premium | **+£25** |
+| Elite | **+£60** |
 
-If your garden is between sizes, choose the closest fit — we can adjust after the first visit if needed.
+### Example monthly prices (Essential band)
+
+| Garden | Essential | Premium | Elite |
+|--------|-----------|---------|-------|
+| ≤50 m² | £59.99 | £84.99 | £119.99 |
+| ≤100 m² | £79.99 | £104.99 | £139.99 |
+| ≤150 m² | £99.99 | £124.99 | £159.99 |
+
+### Annual billing
+
+Annual checkout ≈ **10× monthly** (~two months free vs paying every month).
+
+| Garden | Essential annual |
+|--------|------------------|
+| ≤50 m² | £599.90 |
+| ≤100 m² | £799.90 |
+| ≤150 m² | £999.90 |
 
 ---
 
-## Price matrix (GBP)
+## Visits per year
 
-Base prices are configured in `Plans__*` env vars and seeded plans. Garden-size uplifts are applied at checkout and for provider earnings display.
-
-### Monthly billing
-
-| Garden size | Essential | Premium | Elite |
-|-------------|-----------|---------|-------|
-| Small | £39.95 | £64.95 | £99.95 |
-| Medium | £49.95 | £74.95 | £109.95 |
-| Large | £59.95 | £84.95 | £119.95 |
-| X Large | £69.95 | £94.95 | £129.95 |
-| XX Large | £79.95 | £104.95 | £139.95 |
-
-### Annual billing (~2 months free vs paying monthly)
-
-| Garden size | Essential | Premium | Elite |
-|-------------|-----------|---------|-------|
-| Small | £399.95 | £559.95 | £909.95 |
-| Medium | £499.95 | £659.95 | £1,009.95 |
-| Large | £599.95 | £759.95 | £1,109.95 |
-| X Large | £699.95 | £859.95 | £1,209.95 |
-| XX Large | £799.95 | £959.95 | £1,309.95 |
-
-### Uplift rules (code)
-
-- Each size band above Small adds **+£10/month** or **+£100/year** (five bands: Small → XX Large)
-
-Implementation: `Sorted.Core/Plans/ConsumerPlanPricing.cs`, frontend mirror in `src/frontend/web/lib/consumer-plans.ts`.
-
-When a fixed Stripe Price ID is configured, it applies to **small gardens only**; medium/large checkout uses dynamic Stripe `price_data` with the uplifted amount.
-
-**Pre-deploy:** configure all six Stripe Price IDs — [`stripe-price-ids-checklist.md`](stripe-price-ids-checklist.md).
+| Tier | Visits / year |
+|------|----------------|
+| Essential | **10** |
+| Premium | **20** |
+| Elite | **30** |
 
 ---
 
 ## Provider pay (internal)
 
-**Fixed per visit by garden size** — the same rate whether the customer is on Essential, Premium, or Elite. Higher tiers mean **more visits**, so more total monthly pay.
+Fixed **per completed visit** by garden band (same for Essential, Premium, Elite).
 
-| Garden size | Per visit |
-|-------------|-----------|
-| Small | **£15.00** |
-| Medium | **£18.00** (+£3) |
-| Large | **£21.00** (+£6) |
+| Garden | £/visit | Essential £/mo equiv. (10 visits/yr) |
+|--------|---------|--------------------------------------|
+| ≤50 m² | £20 | ~£16.67 |
+| ≤100 m² | £30 | ~£25.00 |
+| ≤150 m² | £40 | ~£33.33 |
 
-### Provider monthly total (small garden)
+Configurable via `ProviderPayout` (`SmallVisitGbp`, `MediumVisitGbp`, `LargeVisitGbp`).
 
-| Plan | Visits/mo | Per visit | Provider monthly | Customer pays | Platform margin |
-|------|-----------|-----------|------------------|---------------|-----------------|
-| Essential | 1 | £15.00 | £15.00 | £29.95 | ~50% |
-| Premium | 2 | £15.00 | £30.00 | £54.95 | ~45% |
-| Elite | 3 | £15.00 | £45.00 | £89.95 | ~50% |
+---
 
-Customer prices are set so provider visit costs are covered at **£15/visit minimum**, with platform margin on top.
+## What's included on every visit (all tiers)
 
-Implementation: `ProviderVisitPay`, `ProviderEarningsCalculator`, configurable via `ProviderPayout` (`SmallVisitGbp`, `MediumVisitGbp`, `LargeVisitGbp`).
+Within the **maintained area** (lawn, planted beds, edges — not whole plot or large paving):
+
+| Work | Included |
+|------|----------|
+| Lawn mowing and edging | Yes |
+| Weeding in borders and planted beds | Yes |
+| General garden clean-up and tidy | Yes |
+| Light watering (pots, beds, obvious dry spots — while on site) | Yes |
+
+**Premium** adds fortnightly visits, light hedge trim, and seasonal tidy. **Elite** adds weekly visits and patio/path refresh.
+
+**Water:** Customer provides **access** (working outdoor tap or agreed supply). **Gardener brings** hose or watering can. No separate watering-only visits.
+
+**Gardeners:** Approved only after **ID**, **UK right-to-work** verification, and **basic DBS** pass; they bring their own equipment — see [`provider-requirements.md`](provider-requirements.md).
+
+**Green waste:** Customers **dispose of clippings themselves** or **provide a suitable council garden-waste bin** on collection day. We do not routinely haul green waste off site.
+
+---
+
+## Customer responsibilities (before each visit)
+
+1. Clear lawn and garden of **obstructions** (furniture, toys, tools, branches).
+2. **Remove or secure pet waste** from maintained areas.
+3. **Safe access** to the garden (gates, paths, pets secured).
+4. **Access to water** — outdoor tap or supply (gardener brings hose or watering can).
+5. **Outdoor power** where electric tools are needed.
+6. Accurate address, garden size band, and access notes in the account.
+
+If these are not met, the visit may be marked incomplete without refund.
+
+---
+
+## Off-platform work (anti-circumvention)
+
+While subscribed, and for **12 months** after the last visit arranged through GardensSorted, customers must **not** hire or pay gardeners **introduced through the platform** for the same maintenance work **outside** GardensSorted without written consent.
+
+Documented in [`/terms`](/terms) (section 9). Signup acceptance records `TermsAcceptedAtUtc`.
+
+---
+
+## Operations
+
+1. **Pre-deploy:** migration `20260529120000_ThreeGardenSizeBands`; update Stripe Price IDs for new small-garden amounts.
+2. Legacy API values `XLarge` / `XXLarge` map to **Large** (`GardenSizeJsonConverter`).
 
 ---
 
 ## Related docs
 
-- [`development-roadmap.md`](development-roadmap.md) — build status
-- [`multi-property-solutions-requirements.md`](multi-property-solutions-requirements.md) — landlord track (separate pricing model)
+- [`sorted_saas_forecast_garden_bands.xlsx`](../sorted_saas_forecast_garden_bands.xlsx) — regenerate: `python3 scripts/build_forecast_garden_bands.py`
+- [`provider-requirements.md`](provider-requirements.md)
+- [`first-month-marketing-plan.md`](first-month-marketing-plan.md)

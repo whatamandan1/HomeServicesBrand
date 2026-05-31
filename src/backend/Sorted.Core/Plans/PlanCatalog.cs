@@ -6,6 +6,10 @@ public static class PlanCatalog
     public const string PremiumToken = "Premium";
     public const string EssentialToken = "Essential";
 
+    public const int EssentialVisitsPerYear = 10;
+    public const int PremiumVisitsPerYear = 20;
+    public const int EliteVisitsPerYear = 30;
+
     public static bool IsElite(string planName) =>
         planName.Contains(EliteToken, StringComparison.OrdinalIgnoreCase);
 
@@ -36,11 +40,17 @@ public static class PlanCatalog
         return null;
     }
 
-    /// <summary>Included garden visits per calendar month of an active subscription.</summary>
-    public static int VisitsPerMonth(string planName) =>
-        IsElite(planName) ? 3 : IsPremium(planName) ? 2 : 1;
+    /// <summary>Included garden visits per year on an active subscription.</summary>
+    public static int VisitsPerYear(string planName) =>
+        IsElite(planName) ? EliteVisitsPerYear
+        : IsPremium(planName) ? PremiumVisitsPerYear
+        : EssentialVisitsPerYear;
 
-    /// <summary>Days between scheduled visits for a plan (30-day month basis).</summary>
+    /// <summary>Rounded average visits per calendar month (for display / legacy helpers).</summary>
+    public static int VisitsPerMonth(string planName) =>
+        (int)Math.Ceiling(VisitsPerYear(planName) / 12.0);
+
+    /// <summary>Days between scheduled visits (365-day year ÷ visits per year).</summary>
     public static int VisitIntervalDays(string planName) =>
-        30 / VisitsPerMonth(planName);
+        (int)Math.Round(365.0 / VisitsPerYear(planName));
 }

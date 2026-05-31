@@ -1,62 +1,103 @@
 import type { GardenSize, SubscriptionPlan } from "@/lib/api";
 import { formatGbp } from "@/lib/format";
 
-/** Added to the small-garden base price per size band (monthly; annual uses 10×). */
-export const GARDEN_SIZE_STEP_UPLIFT = { monthly: 10, annual: 100 } as const;
+/** Annual checkout ≈ 10× monthly (~two months free). Mirrors `GardenSizePricing` in the API. */
+export const ANNUAL_MONTHS_CHARGED = 10;
 
-export const GARDEN_SIZE_ORDER: GardenSize[] = [
-  "Small",
-  "Medium",
-  "Large",
-  "XLarge",
-  "XXLarge",
-];
+export const PREMIUM_MONTHLY_ADDON_GBP = 25;
+export const ELITE_MONTHLY_ADDON_GBP = 60;
 
-const GARDEN_SIZE_RANK: Record<GardenSize, number> = {
-  Small: 0,
-  Medium: 1,
+/** Lawn, beds, and edges we maintain — not whole-plot area or large paved zones. */
+export const GARDEN_SIZE_MAINTAINED_AREA_NOTE =
+  "Lawn, planted beds, and edges we cut and tidy on each visit — not your whole plot, large paving, or areas out of scope.";
+
+export const GARDEN_SIZE_ABOVE_BAND_NOTE =
+  "More than 150 m² maintained? Contact us for a personalised quote.";
+
+export const GARDEN_SIZE_ORDER: GardenSize[] = ["Small", "Medium", "Large"];
+
+/** Essential monthly price by garden band (GBP). */
+export const GARDEN_SIZE_MONTHLY_PRICE_GBP: Record<GardenSize, number> = {
+  Small: 59.99,
+  Medium: 79.99,
+  Large: 99.99,
+};
+
+/** Provider pay per visit (GBP). */
+export const PROVIDER_VISIT_PAY_GBP: Record<GardenSize, number> = {
+  Small: 20,
+  Medium: 30,
+  Large: 40,
+};
+
+/** Target provider time on site (hours). */
+export const GARDEN_SIZE_VISIT_HOURS: Record<GardenSize, number> = {
+  Small: 1,
+  Medium: 1.5,
   Large: 2,
-  XLarge: 3,
-  XXLarge: 4,
 };
 
 export const GARDEN_SIZE_GUIDE: Record<
   GardenSize,
-  { label: string; description: string; examples: string }
+  {
+    label: string;
+    shortName: string;
+    description: string;
+    examples: string;
+    maxSqm: number;
+    visitHours: number;
+    monthlyPrice: number;
+    providerPerVisit: number;
+  }
 > = {
   Small: {
+    shortName: "Small",
     label: "Up to 50 m²",
+    maxSqm: 50,
+    visitHours: 1,
+    monthlyPrice: 59.99,
+    providerPerVisit: 20,
     description: "Courtyard, terrace, or compact town garden.",
-    examples: "Typical courtyard, terrace, or compact town garden.",
+    examples: "Up to 50 m² maintained — about 1 hour per visit.",
   },
   Medium: {
-    label: "Up to 75 m²",
-    description: "Small suburban rear garden with lawn and beds.",
-    examples: "Small suburban rear garden with lawn and planting beds.",
+    shortName: "Medium",
+    label: "Up to 100 m²",
+    maxSqm: 100,
+    visitHours: 1.5,
+    monthlyPrice: 79.99,
+    providerPerVisit: 30,
+    description: "Typical suburban rear garden.",
+    examples: "Up to 100 m² maintained — about 1.5 hours per visit.",
   },
   Large: {
-    label: "Up to 100 m²",
-    description: "Typical family garden with lawn and borders.",
-    examples: "Typical family garden with lawn and borders.",
-  },
-  XLarge: {
-    label: "Up to 125 m²",
-    description: "Generous lawn with multiple beds or zones.",
-    examples: "Generous lawn with multiple beds or garden zones.",
-  },
-  XXLarge: {
+    shortName: "Large",
     label: "Up to 150 m²",
-    description: "Large plot with extensive lawn and planting.",
-    examples: "Large plot with extensive lawn and planting.",
+    maxSqm: 150,
+    visitHours: 2,
+    monthlyPrice: 99.99,
+    providerPerVisit: 40,
+    description: "Larger family garden or generous plot.",
+    examples: "Up to 150 m² maintained — about 2 hours per visit.",
   },
 };
 
-export const ESSENTIAL_FEATURES = [
-  "Monthly professional visits",
+export function gardenSizeSelectLabel(size: GardenSize): string {
+  const g = GARDEN_SIZE_GUIDE[size];
+  return `${g.shortName} (${g.label} maintained)`;
+}
+
+/** Core maintenance on every plan tier (visit frequency differs by tier). */
+export const CORE_VISIT_WORK = [
   "Lawn mowing and edging",
-  "Light border and bed tidy",
-  "Grass clippings removed from site",
-  "Light watering of pots & beds while on site (tap/hose permitting)",
+  "Weeding in borders and planted beds",
+  "General garden clean-up and tidy",
+  "Light watering of pots, beds & obvious dry spots while on site",
+] as const;
+
+export const ESSENTIAL_FEATURES = [
+  "10 professional visits per year",
+  ...CORE_VISIT_WORK,
   "Reschedule or cancel visits in your account",
   "Customer support when you need help",
 ];
@@ -65,7 +106,6 @@ export const PREMIUM_FEATURES = [
   "Everything in Essential",
   "Fortnightly visits (about 20 per year)",
   "Light hedge trim and shaping (where accessible)",
-  "Weeding in planted beds",
   "Seasonal tidy — leaf blow/clear in garden, light pruning",
   "Priority scheduling where possible",
 ];
@@ -80,7 +120,6 @@ export const ELITE_FEATURES = [
 ];
 
 export const ON_VISIT_WHEN_POSSIBLE = [
-  "Watering pots, containers, and obvious dry spots (outdoor tap and hose needed)",
   "Light sweep of garden-adjacent patio or paths (not a deep clean)",
   "Autumn leaf blow and clear within the maintained garden area (Premium & Elite visits)",
 ];
@@ -91,7 +130,18 @@ export const SEASONAL_ADDONS = [
   "Gutter clearing (quoted separately — access and height assessed)",
 ];
 
+/** Shown at signup, pricing, and linked from terms — customer must prepare the garden. */
+export const CUSTOMER_VISIT_RESPONSIBILITIES = [
+  "Dispose of grass and green waste yourself, or provide a suitable council garden-waste bin on collection day",
+  "Clear the lawn and garden of obstructions before each visit (furniture, toys, tools, branches)",
+  "Remove or secure pet waste from areas we maintain",
+  "Provide safe access to the garden (unlocked gate, clear path, friendly pets secured)",
+  "Provide access to water — working outdoor tap or supply to the garden (gardeners bring their own hose or watering can)",
+  "Provide an outdoor power supply where electric tools are needed (extension lead from your property is fine)",
+] as const;
+
 export const NOT_INCLUDED = [
+  "Hauling green waste off site (unless you provide a garden-waste bin we can fill)",
   "Separate watering visits between scheduled maintenance",
   "Tree surgery, tall hedge reduction, or major clearance",
   "Landscaping, irrigation install/repair, or pest treatment",
@@ -126,13 +176,12 @@ export type PlanCompareRow = {
 /** Side-by-side feature matrix for Essential / Premium / Elite. */
 export const PLAN_COMPARE_ROWS: PlanCompareRow[] = [
   { label: "Visits included", essential: "10 / year", premium: "20 / year", elite: "30 / year" },
-  { label: "Typical visit spacing", essential: "Monthly", premium: "Fortnightly", elite: "Weekly" },
+  { label: "Typical visit spacing", essential: "~every 5–6 weeks", premium: "Fortnightly", elite: "Weekly" },
   { label: "Lawn mowing & edging", essential: true, premium: true, elite: true },
-  { label: "Border & bed tidy", essential: true, premium: true, elite: true },
-  { label: "Clippings removed", essential: true, premium: true, elite: true },
-  { label: "Light watering while on site", essential: true, premium: true, elite: true },
+  { label: "Border weeding & general tidy", essential: true, premium: true, elite: true },
+  { label: "You dispose of clippings or provide a garden-waste bin", essential: true, premium: true, elite: true },
+  { label: "Light watering (you provide tap; gardener brings hose)", essential: true, premium: true, elite: true },
   { label: "Hedge trim & shaping", essential: false, premium: true, elite: true },
-  { label: "Bed weeding", essential: false, premium: true, elite: true },
   { label: "Seasonal tidy & leaf blow", essential: false, premium: true, elite: true },
   { label: "Priority scheduling", essential: false, premium: true, elite: false },
   { label: "First-choice visit windows", essential: false, premium: false, elite: true },
@@ -170,8 +219,8 @@ export type SignupServiceOption = {
 export const SIGNUP_SERVICES: SignupServiceOption[] = [
   {
     id: "lawn-borders",
-    label: "Lawn mowing, edging & border tidy",
-    description: "Regular cut, neat edges, and light bed maintenance.",
+    label: "Lawn mowing, edging, weeding & tidy",
+    description: "Mow and edge the lawn, weed borders and beds, and general clean-up each visit.",
     minTier: "essential",
     group: "core",
   },
@@ -185,8 +234,8 @@ export const SIGNUP_SERVICES: SignupServiceOption[] = [
   {
     id: "weeding",
     label: "Weeding in planted beds",
-    description: "Keep beds clear of weeds during each visit.",
-    minTier: "premium",
+    description: "Included on every visit with mowing and edging.",
+    minTier: "essential",
     group: "garden-care",
   },
   {
@@ -198,8 +247,8 @@ export const SIGNUP_SERVICES: SignupServiceOption[] = [
   },
   {
     id: "monthly",
-    label: "Monthly",
-    description: "About one visit per month — Essential upkeep.",
+    label: "10 / year",
+    description: "About 10 visits per year (~every 5–6 weeks) — Essential upkeep.",
     minTier: "essential",
     group: "visit-frequency",
   },
@@ -232,6 +281,21 @@ export const SIGNUP_SERVICE_GROUP_LABELS: Record<SignupServiceGroup, string> = {
   "visit-frequency": "Visit frequency",
   extras: "Included extras",
 };
+
+export const SIGNUP_VISIT_FREQUENCY_IDS: SignupServiceId[] = ["monthly", "fortnightly", "weekly"];
+
+export function isVisitFrequencyService(id: SignupServiceId): boolean {
+  return SIGNUP_VISIT_FREQUENCY_IDS.includes(id);
+}
+
+export function signupVisitFrequencyOptions(): SignupServiceOption[] {
+  return SIGNUP_VISIT_FREQUENCY_IDS.map((id) => SIGNUP_SERVICES.find((s) => s.id === id)).filter(
+    (s): s is SignupServiceOption => s !== undefined
+  );
+}
+
+/** Checkbox groups on signup (visit frequency uses a separate segmented control). */
+export const SIGNUP_CHECKBOX_GROUPS: SignupServiceGroup[] = ["core", "garden-care", "extras"];
 
 const TIER_RANK: Record<PlanTier, number> = {
   essential: 0,
@@ -268,18 +332,15 @@ function isAnnualPlan(plan: SubscriptionPlan) {
   return plan.billingInterval !== "Monthly";
 }
 
-export function gardenSizeRank(gardenSize: GardenSize): number {
-  return GARDEN_SIZE_RANK[gardenSize] ?? 0;
-}
-
-export function gardenSizeUplift(gardenSize: GardenSize, annual: boolean): number {
-  const steps = gardenSizeRank(gardenSize);
-  const perStep = annual ? GARDEN_SIZE_STEP_UPLIFT.annual : GARDEN_SIZE_STEP_UPLIFT.monthly;
-  return steps * perStep;
+function tierMonthlyAddon(plan: SubscriptionPlan): number {
+  if (isElitePlan(plan.name)) return ELITE_MONTHLY_ADDON_GBP;
+  if (isPremiumPlan(plan.name)) return PREMIUM_MONTHLY_ADDON_GBP;
+  return 0;
 }
 
 export function planPriceForGarden(plan: SubscriptionPlan, gardenSize: GardenSize): number {
-  return plan.priceGbp + gardenSizeUplift(gardenSize, isAnnualPlan(plan));
+  const monthly = GARDEN_SIZE_MONTHLY_PRICE_GBP[gardenSize] + tierMonthlyAddon(plan);
+  return isAnnualPlan(plan) ? monthly * ANNUAL_MONTHS_CHARGED : monthly;
 }
 
 export function formatPlanPrice(plan: SubscriptionPlan, gardenSize: GardenSize = "Small") {
@@ -314,7 +375,7 @@ export function planVisitSummary(plan: SubscriptionPlan) {
   const visits = planVisitsPerYear(plan);
   if (visits === 30) return "Weekly visits";
   if (visits === 20) return "Fortnightly visits";
-  return "Monthly visits";
+  return "10 visits per year";
 }
 
 function findTierPlan(basePlans: SubscriptionPlan[], tier: PlanTier, billing: BillingChoice) {
@@ -355,7 +416,7 @@ export function nextUpgradePlanLabel(planName: string, billingInterval: string):
   const name = planName.toLowerCase();
   if (name.includes("elite")) return null;
   if (name.includes("premium")) {
-    return annual ? "Elite Annual (£909.95/year)" : "Elite Monthly (£99.95/month)";
+    return annual ? "Elite Annual (£1,199.90/year)" : "Elite Monthly (£119.99/month)";
   }
-  return annual ? "Premium Annual (£559.95/year)" : "Premium Monthly (£64.95/month)";
+  return annual ? "Premium Annual (£849.90/year)" : "Premium Monthly (£84.99/month)";
 }

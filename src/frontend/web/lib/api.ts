@@ -42,7 +42,7 @@ export type CustomerPayment = {
   stripeInvoiceId: string | null;
 };
 
-export type GardenSize = "Small" | "Medium" | "Large" | "XLarge" | "XXLarge";
+export type GardenSize = "Small" | "Medium" | "Large";
 
 export type PortfolioEnquiryStatus =
   | "New"
@@ -217,6 +217,42 @@ export type AdminCustomerDetail = {
   recentVisits: JobVisit[];
 };
 
+export type ProviderVettingStatus = {
+  isSubmitted: boolean;
+  isComplete: boolean;
+  idVerified: boolean;
+  rightToWorkVerified: boolean;
+  dbsVerified: boolean;
+  submittedAtUtc: string | null;
+};
+
+export type ProviderVettingDetails = {
+  status: ProviderVettingStatus;
+  dateOfBirth: string | null;
+  idDocumentType: string | null;
+  idDocumentNumber: string | null;
+  rightToWorkShareCode: string | null;
+  rightToWorkDocumentDescription: string | null;
+  dbsCertificateNumber: string | null;
+  dbsIssueDate: string | null;
+  dbsOnUpdateService: boolean;
+};
+
+export type SubmitProviderVettingPayload = {
+  dateOfBirth: string;
+  idDocumentType: string;
+  idDocumentNumber: string;
+  rightToWorkShareCode: string | null;
+  rightToWorkDocumentDescription: string | null;
+  dbsCertificateNumber: string;
+  dbsIssueDate: string;
+  dbsOnUpdateService: boolean;
+};
+
+export type AdminProviderVetting = ProviderVettingDetails & {
+  providerId: string;
+};
+
 export type AdminProvider = {
   id: string;
   userId: string;
@@ -228,6 +264,7 @@ export type AdminProvider = {
   coverageLatitude: number | null;
   coverageLongitude: number | null;
   coveredOutcodes: string[];
+  vetting: ProviderVettingStatus;
 };
 
 export type ProviderProfile = {
@@ -238,6 +275,7 @@ export type ProviderProfile = {
   coverageLatitude: number | null;
   coverageLongitude: number | null;
   coveredOutcodes: string[];
+  vetting: ProviderVettingStatus;
 };
 
 export type ProviderBlockedDate = {
@@ -580,6 +618,13 @@ export const api = {
     request<JobVisit[]>("/api/provider/visits/open", {}, token),
   providerProfile: (token: string) =>
     request<ProviderProfile>("/api/provider/me", {}, token),
+  providerVetting: (token: string) =>
+    request<ProviderVettingDetails>("/api/provider/me/vetting", {}, token),
+  providerSubmitVetting: (token: string, body: SubmitProviderVettingPayload) =>
+    request<ProviderVettingDetails>("/api/provider/me/vetting", {
+      method: "PUT",
+      body: JSON.stringify(body),
+    }, token),
   providerUpdateCoverage: (
     token: string,
     coveragePostcode: string,
@@ -658,6 +703,17 @@ export const api = {
     }, token),
   approveProvider: (token: string, id: string) =>
     request<void>(`/api/admin/providers/${id}/approve`, { method: "POST" }, token),
+  adminProviderVetting: (token: string, providerId: string) =>
+    request<AdminProviderVetting>(`/api/admin/providers/${providerId}/vetting`, {}, token),
+  adminUpdateProviderVettingVerification: (
+    token: string,
+    providerId: string,
+    body: { idVerified?: boolean; rightToWorkVerified?: boolean; dbsVerified?: boolean }
+  ) =>
+    request<AdminProviderVetting>(`/api/admin/providers/${providerId}/vetting`, {
+      method: "PATCH",
+      body: JSON.stringify(body),
+    }, token),
   adminUpdateProviderCoverage: (
     token: string,
     providerId: string,

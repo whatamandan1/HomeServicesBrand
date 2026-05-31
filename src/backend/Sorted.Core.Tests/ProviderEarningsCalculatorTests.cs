@@ -13,15 +13,13 @@ public class ProviderEarningsCalculatorTests
     {
         _ = planName;
         var amount = ProviderEarningsCalculator.CalculateVisitEarningGbp(GardenSize.Small);
-        Assert.Equal(15.00m, amount);
+        Assert.Equal(20.00m, amount);
     }
 
     [Theory]
-    [InlineData(GardenSize.Small, 15.00)]
-    [InlineData(GardenSize.Medium, 18.00)]
-    [InlineData(GardenSize.Large, 21.00)]
-    [InlineData(GardenSize.XLarge, 24.00)]
-    [InlineData(GardenSize.XXLarge, 27.00)]
+    [InlineData(GardenSize.Small, 20.00)]
+    [InlineData(GardenSize.Medium, 30.00)]
+    [InlineData(GardenSize.Large, 40.00)]
     public void Visit_pay_scales_with_garden_size_not_tier(GardenSize gardenSize, decimal expected)
     {
         Assert.Equal(expected, ProviderEarningsCalculator.CalculateVisitEarningGbp(gardenSize));

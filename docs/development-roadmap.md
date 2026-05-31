@@ -179,6 +179,8 @@ Requirements: [`multi-property-solutions-requirements.md`](multi-property-soluti
 | Requirement | Status | Next step |
 |-------------|--------|-----------|
 | Onboard | ✅ Done | Apply at `/providers#apply` (postcode + radius); admin approves on `/admin` |
+| Own equipment | ✅ Documented | Mower, edger/strimmer, hose or watering can, rake, brush — [`provider-requirements.md`](provider-requirements.md) |
+| ID, RTW, DBS | ✅ Portal form | Post-signup `PUT /api/provider/me/vetting`; admin verify + approve gate — [`provider-requirements.md`](provider-requirements.md) |
 | Claim jobs | ✅ Done | Matched by derived outcodes / distance within radius |
 | Manage availability | ✅ Done | Provider self-service + admin edit; v2 time-window matching on dispatch |
 | View earnings | 🟡 Partial | Accrued/paid ledger on `/provider`; plan-based per-visit amounts; admin mark paid; Stripe Connect 🔵 deferred |

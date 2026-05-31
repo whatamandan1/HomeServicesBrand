@@ -9,6 +9,7 @@ using Sorted.Core.Enums;
 using Sorted.Core.Geo;
 using Sorted.Infrastructure.Data;
 using Sorted.Infrastructure.Mapping;
+using Sorted.Infrastructure.Services;
 
 namespace Sorted.Api.Controllers;
 
@@ -56,7 +57,11 @@ public class ProviderController(
             }
         }
 
-        return Ok(new ProviderProfileResponse(
+        return Ok(ToProfile(provider));
+    }
+
+    private static ProviderProfileResponse ToProfile(Provider provider) =>
+        new(
             provider.User.Email,
             provider.IsApproved,
             provider.CoveragePostcode,
@@ -66,8 +71,45 @@ public class ProviderController(
                 .Select(t => t.PostcodeSector)
                 .OrderBy(s => s, StringComparer.OrdinalIgnoreCase)
                 .ToList(),
+            ProviderVettingMapper.ToStatus(provider),
             provider.CoverageLatitude,
-            provider.CoverageLongitude));
+            provider.CoverageLongitude);
+
+    [HttpGet("me/vetting")]
+    public async Task<ActionResult<ProviderVettingDetailsResponse>> GetVetting(CancellationToken ct)
+    {
+        var provider = await GetProviderAsync(ct);
+        if (provider is null) return NotFound();
+        return Ok(ProviderVettingMapper.ToDetails(provider, maskIdNumber: false));
+    }
+
+    [HttpPut("me/vetting")]
+    public async Task<ActionResult<ProviderVettingDetailsResponse>> SubmitVetting(
+        [FromBody] SubmitProviderVettingRequest request,
+        CancellationToken ct)
+    {
+        var provider = await GetProviderAsync(ct);
+        if (provider is null) return NotFound();
+
+        if (provider.IsApproved)
+            return BadRequest(new { error = "Vetting details cannot be changed after approval. Contact support." });
+
+        var validationError = ProviderVettingMapper.ValidateSubmission(request);
+        if (validationError is not null)
+            return BadRequest(new { error = validationError });
+
+        ProviderVettingMapper.ApplySubmission(provider, request);
+        await db.SaveChangesAsync(ct);
+
+        await workflow.LogAsync(
+            "provider_onboarding",
+            "vetting_submitted",
+            nameof(Provider),
+            provider.Id,
+            new { provider.User.Email },
+            ct);
+
+        return Ok(ProviderVettingMapper.ToDetails(provider, maskIdNumber: false));
     }
 
     [HttpPatch("me/coverage")]
@@ -103,18 +145,7 @@ public class ProviderController(
             new { geo.Postcode, radius, updatedBy = "provider" },
             ct);
 
-        return Ok(new ProviderProfileResponse(
-            provider.User.Email,
-            provider.IsApproved,
-            provider.CoveragePostcode,
-            provider.CoverageRadiusMiles,
-            provider.Territories
-                .Where(t => !t.IsDeleted)
-                .Select(t => t.PostcodeSector)
-                .OrderBy(s => s, StringComparer.OrdinalIgnoreCase)
-                .ToList(),
-            provider.CoverageLatitude,
-            provider.CoverageLongitude));
+        return Ok(ToProfile(provider));
     }
 
     [HttpGet("me/availability")]

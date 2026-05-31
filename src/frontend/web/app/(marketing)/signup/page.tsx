@@ -12,18 +12,23 @@ import {
   annualEquivalentMonthly,
   findTierPlanForBilling,
   formatPriceFrom,
+  GARDEN_SIZE_ABOVE_BAND_NOTE,
   GARDEN_SIZE_GUIDE,
+  CUSTOMER_VISIT_RESPONSIBILITIES,
+  GARDEN_SIZE_MAINTAINED_AREA_NOTE,
   GARDEN_SIZE_ORDER,
+  isVisitFrequencyService,
   matchPlanTierFromServices,
   planFeatures,
   planPriceForGarden,
   planVisitSummary,
   PLAN_TIERS,
+  SIGNUP_CHECKBOX_GROUPS,
   SIGNUP_SERVICE_GROUP_LABELS,
   SIGNUP_SERVICES,
+  signupVisitFrequencyOptions,
   type BillingChoice,
   type PlanTier,
-  type SignupServiceGroup,
   type SignupServiceId,
 } from "@/lib/consumer-plans";
 import { BillingIntervalToggle } from "@/components/marketing/BillingIntervalToggle";
@@ -45,9 +50,8 @@ import { SignupSummary } from "@/components/signup/SignupSummary";
 
 const STEPS = ["Garden size", "Find your plan", "Your quote", "Finish signup"] as const;
 
-const SERVICE_GROUPS: SignupServiceGroup[] = ["core", "garden-care", "visit-frequency", "extras"];
-
-const DEFAULT_SERVICES: SignupServiceId[] = ["lawn-borders", "monthly"];
+const DEFAULT_SERVICES: SignupServiceId[] = ["lawn-borders"];
+const DEFAULT_VISIT_FREQUENCY: SignupServiceId = "monthly";
 
 export default function SignupPage() {
   const router = useRouter();
@@ -57,6 +61,7 @@ export default function SignupPage() {
   const [billing, setBilling] = useState<BillingChoice>("Annual");
   const [selectedTier, setSelectedTier] = useState<PlanTier>("essential");
   const [selectedServices, setSelectedServices] = useState<SignupServiceId[]>(DEFAULT_SERVICES);
+  const [visitFrequency, setVisitFrequency] = useState<SignupServiceId>(DEFAULT_VISIT_FREQUENCY);
   const [showPlanAlternatives, setShowPlanAlternatives] = useState(false);
   const [planOverridden, setPlanOverridden] = useState(false);
   const [selectedPlanId, setSelectedPlanId] = useState("");
@@ -82,9 +87,14 @@ export default function SignupPage() {
   const [quoteUnveiled, setQuoteUnveiled] = useState(false);
   const topRef = useRef<HTMLDivElement>(null);
 
+  const servicesForMatching = useMemo(
+    () => [...selectedServices.filter((id) => !isVisitFrequencyService(id)), visitFrequency],
+    [selectedServices, visitFrequency]
+  );
+
   const matchedTier = useMemo(
-    () => matchPlanTierFromServices(selectedServices),
-    [selectedServices]
+    () => matchPlanTierFromServices(servicesForMatching),
+    [servicesForMatching]
   );
 
   useEffect(() => {
@@ -157,6 +167,12 @@ export default function SignupPage() {
       }
       return [...current, id];
     });
+    setPlanOverridden(false);
+    setStepHint(null);
+  }
+
+  function selectVisitFrequency(id: SignupServiceId) {
+    setVisitFrequency(id);
     setPlanOverridden(false);
     setStepHint(null);
   }
@@ -394,13 +410,10 @@ export default function SignupPage() {
           <div>
             {step === 0 && (
               <div className="space-y-4 rounded-2xl border border-stone-200 bg-white p-5 shadow-soft sm:p-6">
-                <p className="text-sm text-stone-600">
-                  How much garden will we maintain? This helps us match the right visit scope — pricing
-                  comes after we recommend a plan.
-                </p>
+                <p className="text-sm text-stone-600">{GARDEN_SIZE_MAINTAINED_AREA_NOTE}</p>
                 <fieldset>
                   <legend className="sr-only">Garden size</legend>
-                  <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5">
+                  <div className="grid gap-3 sm:grid-cols-3">
                     {GARDEN_SIZE_ORDER.map((size) => {
                       const selected = form.gardenSize === size;
                       const guide = GARDEN_SIZE_GUIDE[size];
@@ -415,23 +428,28 @@ export default function SignupPage() {
                               : "border-stone-200 bg-white hover:border-stone-300"
                           }`}
                         >
-                          <p className="font-semibold text-gardens-dark">{guide.label}</p>
-                          <p className="mt-1 text-xs text-stone-600">{guide.description}</p>
+                          <p className="font-semibold text-gardens-dark">
+                            {guide.label}
+                          </p>
+                          <p className="mt-1 text-xs text-stone-600">
+                            ~{guide.visitHours} hr visit · from £{formatGbp(guide.monthlyPrice)}/mo
+                          </p>
                         </button>
                       );
                     })}
                   </div>
                 </fieldset>
+                <p className="text-xs text-stone-500">{GARDEN_SIZE_ABOVE_BAND_NOTE}</p>
               </div>
             )}
 
             {step === 1 && (
               <div className="rounded-2xl border border-stone-200 bg-white p-4 shadow-soft sm:p-5">
                 <p className="text-xs text-stone-600 sm:text-sm">
-                  Tick what you need — we&apos;ll match a plan. Price on the next step.
+                  Tick what you need — we&apos;ll match a plan.
                 </p>
                 <div className="mt-3 space-y-3">
-                  {SERVICE_GROUPS.map((group) => {
+                  {SIGNUP_CHECKBOX_GROUPS.map((group) => {
                     const options = SIGNUP_SERVICES.filter((s) => s.group === group);
                     if (options.length === 0) return null;
                     return (
@@ -467,6 +485,38 @@ export default function SignupPage() {
                       </fieldset>
                     );
                   })}
+
+                  <fieldset>
+                    <legend className="text-xs font-semibold uppercase tracking-wide text-stone-500">
+                      {SIGNUP_SERVICE_GROUP_LABELS["visit-frequency"]}
+                    </legend>
+                    <div
+                      className="mt-1.5 grid grid-cols-3 overflow-hidden rounded-xl border border-stone-200 bg-stone-100/80 p-1"
+                      role="radiogroup"
+                      aria-label="Visit frequency"
+                    >
+                      {signupVisitFrequencyOptions().map((option) => {
+                        const selected = visitFrequency === option.id;
+                        return (
+                          <button
+                            key={option.id}
+                            type="button"
+                            role="radio"
+                            aria-checked={selected}
+                            title={option.description}
+                            onClick={() => selectVisitFrequency(option.id)}
+                            className={`min-h-[48px] rounded-lg px-2 py-2.5 text-sm font-semibold transition ${
+                              selected
+                                ? "bg-white text-gardens-dark shadow-sm ring-1 ring-gardens-primary/40"
+                                : "text-stone-600 hover:bg-white/60 hover:text-gardens-dark"
+                            }`}
+                          >
+                            {option.label}
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </fieldset>
                 </div>
 
                 {plansLoading ? (
@@ -474,12 +524,11 @@ export default function SignupPage() {
                 ) : (
                   activeTierMeta &&
                   activePlan && (
-                    <div className="mt-3 flex flex-wrap items-center justify-between gap-2 rounded-lg border border-gardens-primary/25 bg-gardens-light/50 px-3 py-2">
+                    <div className="mt-3 rounded-lg border border-gardens-primary/25 bg-gardens-light/50 px-3 py-2">
                       <p className="text-sm text-gardens-dark">
                         <span className="font-semibold">{activeTierMeta.label}</span>
                         <span className="text-stone-600"> · {planVisitSummary(activePlan)}</span>
                       </p>
-                      <p className="text-xs font-medium text-gardens-primary">Email next for price →</p>
                     </div>
                   )
                 )}
@@ -635,6 +684,22 @@ export default function SignupPage() {
                   autoComplete="new-password"
                   hint={`At least ${MIN_PASSWORD_LENGTH} characters`}
                 />
+                <div className="rounded-xl border border-stone-200 bg-stone-50 px-4 py-3 text-xs text-stone-600">
+                  <p className="font-medium text-stone-800">Before each visit you agree to:</p>
+                  <ul className="mt-2 list-disc space-y-1 pl-4">
+                    {CUSTOMER_VISIT_RESPONSIBILITIES.map((item) => (
+                      <li key={item}>{item}</li>
+                    ))}
+                  </ul>
+                  <p className="mt-2">
+                    Visits must stay booked through GardensSorted — not by hiring your gardener directly after
+                    cancelling. See{" "}
+                    <Link href="/terms" className="font-medium text-gardens-primary hover:underline" target="_blank">
+                      terms of service
+                    </Link>
+                    .
+                  </p>
+                </div>
                 <p className="text-xs text-stone-500">
                   By continuing to payment, you agree to our{" "}
                   <Link href="/terms" className="font-medium text-gardens-primary hover:underline" target="_blank">

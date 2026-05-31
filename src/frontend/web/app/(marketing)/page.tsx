@@ -16,7 +16,7 @@ import { PRIMARY_CTA_HREF, PRIMARY_CTA_LABEL } from "@/lib/marketing-cta";
 export const metadata: Metadata = {
   title: "Garden care subscriptions in Yorkshire",
   description:
-    "Regular garden maintenance for Yorkshire homes. Subscribe online, choose your plan, and we schedule trusted local gardeners — from £39.95/month.",
+    "Regular garden maintenance for Yorkshire homes. Subscribe online, choose your plan, and we schedule trusted local gardeners — from £59.99/month.",
   openGraph: {
     title: "GardensSorted — Garden care subscriptions in Yorkshire",
     description:
@@ -46,18 +46,18 @@ const included = [
   "Essential: 10 visits per year — lawn, borders, and tidy",
   "Premium: 20 visits per year plus hedges & beds",
   "Elite: 30 visits per year (~every 10 days) with patio refresh included",
-  "Pricing scales across five garden sizes (up to 150 m²)",
+  "Three garden sizes up to 150 m² — priced by time on site",
   "Online account to view and manage every visit",
 ];
 
 const faqs = [
   {
     q: "What's included in Essential?",
-    a: "10 visits per year (about monthly): lawn mowing and edging, light border and bed tidy, and clippings removed. Manage visits and get support through your online account.",
+    a: "10 visits per year (about monthly): lawn mowing and edging, weeding in borders and beds, general garden tidy, and light watering while we're there (you provide a working outdoor tap; your gardener brings a hose or watering can). You dispose of clippings or provide a garden-waste bin. Manage visits through your online account.",
   },
   {
     q: "What's included in Premium?",
-    a: "20 visits per year (about every two weeks), plus everything in Essential — light hedge trim, bed weeding, and seasonal tidy work like leaves and light pruning.",
+    a: "20 visits per year (about every two weeks), plus everything in Essential — light hedge trim and seasonal tidy work like leaves and light pruning.",
   },
   {
     q: "What's included in Elite?",
@@ -65,7 +65,15 @@ const faqs = [
   },
   {
     q: "How does garden size affect price?",
-    a: "Small gardens (up to 50 m²) are our base price — from £39.95/month Essential, or from about £33/month on annual billing. Each larger size band adds £10/month (£100/year on annual plans): Medium up to 75 m², Large up to 100 m², X Large up to 125 m², XX Large up to 150 m². Premium and Elite use the same uplifts.",
+    a: "Prices depend on maintained lawn and beds (not your whole plot): up to 50 m² from £59.99/month, up to 100 m² £79.99, up to 150 m² £99.99 (Essential, 10 visits/year). Premium and Elite add £25 or £60/month on the same garden size. Above 150 m² we quote separately.",
+  },
+  {
+    q: "What do I need to prepare before a visit?",
+    a: "Clear the lawn and garden of obstructions (including pet waste), make sure we can access the garden easily, provide a working outdoor tap for light watering (gardeners bring their own hose or watering can), and outdoor power where electric tools are needed. You must either dispose of grass cuttings yourself or leave out a suitable council garden-waste bin on collection day — we don't routinely haul green waste away.",
+  },
+  {
+    q: "Can I hire my gardener directly?",
+    a: "Your subscription covers visits arranged through GardensSorted. While you're subscribed, and for 12 months after your last platform visit, you agree not to hire gardeners we introduced to you for the same work off-platform without our consent — that protects scheduling and fair pay. Other local gardeners you've never booked through us are fine.",
   },
   {
     q: "What's not included?",
@@ -73,7 +81,7 @@ const faqs = [
   },
   {
     q: "Do you water the garden?",
-    a: "While we're on a scheduled visit, we'll water pots, containers, and obvious dry spots if you have an outdoor tap and hose. We don't run separate watering visits between maintenance — ask us about seasonal options if you need more.",
+    a: "Yes — light watering of pots, beds, and obvious dry spots is included on each visit while we're on site. You provide access to water (usually an outdoor tap); your gardener brings a hose or watering can. We don't make separate trips just to water between scheduled visits.",
   },
   {
     q: "Can you clean the patio, blow leaves, or clear gutters?",

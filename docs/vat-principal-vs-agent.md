@@ -79,7 +79,7 @@ Per visit / month (1 visit on Essential):
 | **VAT base (if registered, VAT-inclusive prices)** | ~£29.95 | ~£14.95 |
 | **VAT element at 20% (approx.)** | ~£4.99 | ~£2.49 |
 
-Premium and Elite scale similarly: provider pay is **visits × per-visit rate** (£15 / £18 / £21 by garden size); platform margin is customer price minus blended provider cost. See [`consumer-plans-and-pricing.md`](consumer-plans-and-pricing.md).
+Premium and Elite scale similarly: provider pay is **visits × per-visit rate** (£18 / £20 / £25 / £30 by garden band); platform margin is customer price minus blended provider cost. See [`consumer-plans-and-pricing.md`](consumer-plans-and-pricing.md).
 
 ---
 

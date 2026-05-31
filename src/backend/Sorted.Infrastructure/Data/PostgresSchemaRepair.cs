@@ -250,6 +250,21 @@ internal static class PostgresSchemaRepair
             ON "SignupLeads" ("BrandId", "Email");
         """;
 
+    private const string ProviderVettingSql = """
+        ALTER TABLE "Providers" ADD COLUMN IF NOT EXISTS "DateOfBirth" TEXT NULL;
+        ALTER TABLE "Providers" ADD COLUMN IF NOT EXISTS "IdDocumentType" TEXT NULL;
+        ALTER TABLE "Providers" ADD COLUMN IF NOT EXISTS "IdDocumentNumber" TEXT NULL;
+        ALTER TABLE "Providers" ADD COLUMN IF NOT EXISTS "RightToWorkShareCode" TEXT NULL;
+        ALTER TABLE "Providers" ADD COLUMN IF NOT EXISTS "RightToWorkDocumentDescription" TEXT NULL;
+        ALTER TABLE "Providers" ADD COLUMN IF NOT EXISTS "DbsCertificateNumber" TEXT NULL;
+        ALTER TABLE "Providers" ADD COLUMN IF NOT EXISTS "DbsIssueDate" TEXT NULL;
+        ALTER TABLE "Providers" ADD COLUMN IF NOT EXISTS "DbsOnUpdateService" boolean NOT NULL DEFAULT FALSE;
+        ALTER TABLE "Providers" ADD COLUMN IF NOT EXISTS "VettingSubmittedAtUtc" timestamp with time zone NULL;
+        ALTER TABLE "Providers" ADD COLUMN IF NOT EXISTS "IdVerifiedAtUtc" timestamp with time zone NULL;
+        ALTER TABLE "Providers" ADD COLUMN IF NOT EXISTS "RightToWorkVerifiedAtUtc" timestamp with time zone NULL;
+        ALTER TABLE "Providers" ADD COLUMN IF NOT EXISTS "DbsVerifiedAtUtc" timestamp with time zone NULL;
+        """;
+
     public static async Task ApplyAsync(SortedDbContext db, ILogger logger, CancellationToken ct = default)
     {
         if (!(db.Database.ProviderName ?? "").Contains("Npgsql", StringComparison.OrdinalIgnoreCase))
@@ -265,6 +280,7 @@ internal static class PostgresSchemaRepair
             await db.Database.ExecuteSqlRawAsync(PortfolioEnquiriesSql, ct);
             await db.Database.ExecuteSqlRawAsync(MultiPropertyAccountsSql, ct);
             await db.Database.ExecuteSqlRawAsync(SignupLeadsSql, ct);
+            await db.Database.ExecuteSqlRawAsync(ProviderVettingSql, ct);
             logger.LogInformation("PostgreSQL schema repair completed");
         }
         catch (Exception ex)

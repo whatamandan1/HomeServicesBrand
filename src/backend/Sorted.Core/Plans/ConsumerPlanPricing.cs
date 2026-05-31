@@ -3,36 +3,28 @@ using Sorted.Core.Enums;
 namespace Sorted.Core.Plans;
 
 /// <summary>
-/// Consumer Essential/Premium pricing. Base prices are for a <see cref="GardenSize.Small"/> garden;
-/// each larger size band adds a fixed uplift (monthly or annual equivalent).
+/// Resolves consumer checkout price by garden size and plan. See <see cref="GardenSizePricing"/>.
 /// </summary>
 public static class ConsumerPlanPricing
 {
-    public const decimal MonthlyUpliftPerSizeStepGbp = 10m;
-    public const decimal AnnualUpliftPerSizeStepGbp = 100m;
+    public static decimal ApplyGardenSizeUplift(
+        decimal basePriceGbp,
+        GardenSize gardenSize,
+        SubscriptionBillingInterval billingInterval)
+    {
+        _ = basePriceGbp;
+        return GardenSizePricing.EssentialMonthlyPriceGbp(gardenSize)
+            * (billingInterval == SubscriptionBillingInterval.Annual
+                ? GardenSizePricing.AnnualMonthsCharged
+                : 1);
+    }
 
+    /// <summary>Legacy rank helper — prefer <see cref="GardenSizePricing"/>.</summary>
     public static int GardenSizeRank(GardenSize gardenSize) =>
         gardenSize switch
         {
             GardenSize.Medium => 1,
             GardenSize.Large => 2,
-            GardenSize.XLarge => 3,
-            GardenSize.XXLarge => 4,
             _ => 0
         };
-
-    public static decimal GardenSizeUplift(GardenSize gardenSize, SubscriptionBillingInterval billingInterval)
-    {
-        var steps = GardenSizeRank(gardenSize);
-        var perStep = billingInterval == SubscriptionBillingInterval.Annual
-            ? AnnualUpliftPerSizeStepGbp
-            : MonthlyUpliftPerSizeStepGbp;
-        return steps * perStep;
-    }
-
-    public static decimal ApplyGardenSizeUplift(
-        decimal basePriceGbp,
-        GardenSize gardenSize,
-        SubscriptionBillingInterval billingInterval)
-        => basePriceGbp + GardenSizeUplift(gardenSize, billingInterval);
 }

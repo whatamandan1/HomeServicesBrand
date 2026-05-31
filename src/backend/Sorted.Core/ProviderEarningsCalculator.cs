@@ -15,8 +15,6 @@ public static class ProviderEarningsCalculator
         {
             GardenSize.Medium => options.MediumVisitGbp,
             GardenSize.Large => options.LargeVisitGbp,
-            GardenSize.XLarge => options.XLargeVisitGbp,
-            GardenSize.XXLarge => options.XXLargeVisitGbp,
             _ => options.SmallVisitGbp
         };
     }

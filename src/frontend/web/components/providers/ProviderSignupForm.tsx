@@ -5,6 +5,11 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { api } from "@/lib/api";
 import { saveAuth } from "@/lib/auth-storage";
+import {
+  PROVIDER_EQUIPMENT_NOTE,
+  PROVIDER_EQUIPMENT_SUMMARY,
+  PROVIDER_VETTING_SUMMARY,
+} from "@/lib/provider-requirements";
 
 export function ProviderSignupForm() {
   const router = useRouter();
@@ -57,6 +62,14 @@ export function ProviderSignupForm() {
         <h2 className="font-display text-2xl font-semibold text-gardens-dark">Apply to join</h2>
         <p className="mt-2 text-sm text-stone-600">
           Create your provider account. An admin will review and approve you before you can claim jobs.
+        </p>
+        <p className="mt-3 rounded-xl border border-amber-200/80 bg-amber-50/60 px-4 py-3 text-xs text-stone-600">
+          <span className="font-medium text-stone-800">After signup:</span> {PROVIDER_VETTING_SUMMARY} Complete the form in
+          your provider portal.
+        </p>
+        <p className="mt-3 rounded-xl border border-stone-200 bg-stone-50 px-4 py-3 text-xs text-stone-600">
+          <span className="font-medium text-stone-800">Equipment:</span> {PROVIDER_EQUIPMENT_SUMMARY}{" "}
+          {PROVIDER_EQUIPMENT_NOTE}
         </p>
 
         <form onSubmit={onSubmit} className="mt-6 space-y-4">

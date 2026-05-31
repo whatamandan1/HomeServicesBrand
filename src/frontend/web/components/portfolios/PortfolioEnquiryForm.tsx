@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Plus, Trash2 } from "lucide-react";
 import { api, type GardenSize } from "@/lib/api";
+import { GARDEN_SIZE_ORDER, gardenSizeSelectLabel } from "@/lib/consumer-plans";
 
 type PropertyRow = {
   line1: string;
@@ -176,11 +177,11 @@ export function PortfolioEnquiryForm() {
                       onChange={(e) => updateProperty(index, "gardenSize", e.target.value)}
                       className="field-input"
                     >
-                      <option value="Small">Small (up to 50 m²)</option>
-                      <option value="Medium">Medium (up to 75 m²)</option>
-                      <option value="Large">Large (up to 100 m²)</option>
-                      <option value="XLarge">X Large (up to 125 m²)</option>
-                      <option value="XXLarge">XX Large (up to 150 m²)</option>
+                      {GARDEN_SIZE_ORDER.map((size) => (
+                        <option key={size} value={size}>
+                          {gardenSizeSelectLabel(size)}
+                        </option>
+                      ))}
                     </select>
                   </label>
                 </div>

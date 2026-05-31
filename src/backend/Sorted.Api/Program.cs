@@ -5,6 +5,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using Serilog;
+using Sorted.Core.Enums;
 using Sorted.Core.Options;
 using CorsOptions = Sorted.Core.Options.CorsOptions;
 using Sorted.Infrastructure;
@@ -26,6 +27,7 @@ builder.Host.UseSerilog((ctx, cfg) => cfg
 
 builder.Services.AddControllers().AddJsonOptions(o =>
 {
+    o.JsonSerializerOptions.Converters.Add(new GardenSizeJsonConverter());
     o.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter());
 });
 builder.Services.AddEndpointsApiExplorer();

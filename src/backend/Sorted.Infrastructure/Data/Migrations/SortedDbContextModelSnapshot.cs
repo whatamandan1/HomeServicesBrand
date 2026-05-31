@@ -798,6 +798,30 @@ namespace Sorted.Infrastructure.Data.Migrations
                     b.Property<DateTime>("CreatedAtUtc")
                         .HasColumnType("TEXT");
 
+                    b.Property<DateOnly?>("DateOfBirth")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("DbsCertificateNumber")
+                        .HasColumnType("TEXT");
+
+                    b.Property<DateOnly?>("DbsIssueDate")
+                        .HasColumnType("TEXT");
+
+                    b.Property<bool>("DbsOnUpdateService")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<DateTime?>("DbsVerifiedAtUtc")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("IdDocumentNumber")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("IdDocumentType")
+                        .HasColumnType("TEXT");
+
+                    b.Property<DateTime?>("IdVerifiedAtUtc")
+                        .HasColumnType("TEXT");
+
                     b.Property<bool>("IsApproved")
                         .HasColumnType("INTEGER");
 
@@ -806,10 +830,22 @@ namespace Sorted.Infrastructure.Data.Migrations
                         .HasColumnType("INTEGER")
                         .HasDefaultValue(false);
 
+                    b.Property<string>("RightToWorkDocumentDescription")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("RightToWorkShareCode")
+                        .HasColumnType("TEXT");
+
+                    b.Property<DateTime?>("RightToWorkVerifiedAtUtc")
+                        .HasColumnType("TEXT");
+
                     b.Property<DateTime?>("UpdatedAtUtc")
                         .HasColumnType("TEXT");
 
                     b.Property<Guid>("UserId")
+                        .HasColumnType("TEXT");
+
+                    b.Property<DateTime?>("VettingSubmittedAtUtc")
                         .HasColumnType("TEXT");
 
                     b.Property<int>("WorkDayEndMinutes")

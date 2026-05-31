@@ -13,30 +13,28 @@ public class PlanPricingTests
     {
         Name = "Essential Monthly",
         BillingInterval = SubscriptionBillingInterval.Monthly,
-        PriceGbp = 39.95m,
+        PriceGbp = 59.99m,
     };
 
     private static SubscriptionPlan PremiumMonthlyPlan() => new()
     {
         Name = "Premium Monthly",
         BillingInterval = SubscriptionBillingInterval.Monthly,
-        PriceGbp = 64.95m,
+        PriceGbp = 84.99m,
     };
 
     private static SubscriptionPlan EliteMonthlyPlan() => new()
     {
         Name = "Elite Monthly",
         BillingInterval = SubscriptionBillingInterval.Monthly,
-        PriceGbp = 99.95m,
+        PriceGbp = 119.95m,
     };
 
     [Theory]
-    [InlineData(GardenSize.Small, 39.95)]
-    [InlineData(GardenSize.Medium, 49.95)]
-    [InlineData(GardenSize.Large, 59.95)]
-    [InlineData(GardenSize.XLarge, 69.95)]
-    [InlineData(GardenSize.XXLarge, 79.95)]
-    public void ResolvePrice_essential_monthly_includes_garden_size_uplift(GardenSize size, decimal expected)
+    [InlineData(GardenSize.Small, 59.99)]
+    [InlineData(GardenSize.Medium, 79.99)]
+    [InlineData(GardenSize.Large, 99.99)]
+    public void ResolvePrice_essential_monthly(GardenSize size, decimal expected)
     {
         var plan = EssentialMonthlyPlan();
         var price = PlanPricing.ResolvePrice(plan, DefaultOptions, size);
@@ -44,12 +42,10 @@ public class PlanPricingTests
     }
 
     [Theory]
-    [InlineData(GardenSize.Small, 64.95)]
-    [InlineData(GardenSize.Medium, 74.95)]
-    [InlineData(GardenSize.Large, 84.95)]
-    [InlineData(GardenSize.XLarge, 94.95)]
-    [InlineData(GardenSize.XXLarge, 104.95)]
-    public void ResolvePrice_premium_monthly_includes_garden_size_uplift(GardenSize size, decimal expected)
+    [InlineData(GardenSize.Small, 84.99)]
+    [InlineData(GardenSize.Medium, 104.99)]
+    [InlineData(GardenSize.Large, 124.99)]
+    public void ResolvePrice_premium_monthly(GardenSize size, decimal expected)
     {
         var plan = PremiumMonthlyPlan();
         var price = PlanPricing.ResolvePrice(plan, DefaultOptions, size);
@@ -57,26 +53,24 @@ public class PlanPricingTests
     }
 
     [Fact]
-    public void ResolvePrice_essential_annual_xxlarge_garden()
+    public void ResolvePrice_essential_annual_large_garden()
     {
         var plan = new SubscriptionPlan
         {
             Name = "Essential Annual",
             BillingInterval = SubscriptionBillingInterval.Annual,
-            PriceGbp = 399.95m,
+            PriceGbp = 599.95m,
         };
 
-        var price = PlanPricing.ResolvePrice(plan, DefaultOptions, GardenSize.XXLarge);
-        Assert.Equal(799.95m, price);
+        var price = PlanPricing.ResolvePrice(plan, DefaultOptions, GardenSize.Large);
+        Assert.Equal(999.90m, price);
     }
 
     [Theory]
-    [InlineData(GardenSize.Small, 99.95)]
-    [InlineData(GardenSize.Medium, 109.95)]
-    [InlineData(GardenSize.Large, 119.95)]
-    [InlineData(GardenSize.XLarge, 129.95)]
-    [InlineData(GardenSize.XXLarge, 139.95)]
-    public void ResolvePrice_elite_monthly_includes_garden_size_uplift(GardenSize size, decimal expected)
+    [InlineData(GardenSize.Small, 119.99)]
+    [InlineData(GardenSize.Medium, 139.99)]
+    [InlineData(GardenSize.Large, 159.99)]
+    public void ResolvePrice_elite_monthly(GardenSize size, decimal expected)
     {
         var plan = EliteMonthlyPlan();
         var price = PlanPricing.ResolvePrice(plan, DefaultOptions, size);
@@ -84,17 +78,17 @@ public class PlanPricingTests
     }
 
     [Fact]
-    public void ResolvePrice_elite_annual_xxlarge_garden()
+    public void ResolvePrice_elite_annual_large_garden()
     {
         var plan = new SubscriptionPlan
         {
             Name = "Elite Annual",
             BillingInterval = SubscriptionBillingInterval.Annual,
-            PriceGbp = 909.95m,
+            PriceGbp = 1199.95m,
         };
 
-        var price = PlanPricing.ResolvePrice(plan, DefaultOptions, GardenSize.XXLarge);
-        Assert.Equal(1309.95m, price);
+        var price = PlanPricing.ResolvePrice(plan, DefaultOptions, GardenSize.Large);
+        Assert.Equal(1599.90m, price);
     }
 
     [Fact]
@@ -102,6 +96,6 @@ public class PlanPricingTests
     {
         var plan = EssentialMonthlyPlan();
         var price = PlanPricing.ResolvePrice(plan, DefaultOptions);
-        Assert.Equal(39.95m, price);
+        Assert.Equal(59.99m, price);
     }
 }

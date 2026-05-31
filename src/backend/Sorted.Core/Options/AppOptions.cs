@@ -39,12 +39,12 @@ public class StripePriceOptions
 public class PlanPricingOptions
 {
     public const string Section = "Plans";
-    public decimal EssentialMonthly { get; set; } = 39.95m;
-    public decimal EssentialAnnual { get; set; } = 399.95m;
-    public decimal PremiumMonthly { get; set; } = 64.95m;
-    public decimal PremiumAnnual { get; set; } = 559.95m;
-    public decimal EliteMonthly { get; set; } = 99.95m;
-    public decimal EliteAnnual { get; set; } = 909.95m;
+    public decimal EssentialMonthly { get; set; } = GardenSizePricing.EssentialMonthlyPriceGbp(GardenSize.Small);
+    public decimal EssentialAnnual { get; set; } = GardenSizePricing.AnnualPriceGbp("Essential Annual", GardenSize.Small);
+    public decimal PremiumMonthly { get; set; } = GardenSizePricing.MonthlyPriceGbp("Premium Monthly", GardenSize.Small);
+    public decimal PremiumAnnual { get; set; } = GardenSizePricing.AnnualPriceGbp("Premium Annual", GardenSize.Small);
+    public decimal EliteMonthly { get; set; } = GardenSizePricing.MonthlyPriceGbp("Elite Monthly", GardenSize.Small);
+    public decimal EliteAnnual { get; set; } = GardenSizePricing.AnnualPriceGbp("Elite Annual", GardenSize.Small);
 }
 
 public class SendGridOptions
@@ -105,9 +105,7 @@ public class ProviderPayoutOptions
 {
     public const string Section = "ProviderPayout";
     /// <summary>Fixed pay per completed visit (small garden) — same for Essential, Premium, and Elite.</summary>
-    public decimal SmallVisitGbp { get; set; } = ProviderVisitPay.SmallVisitGbp;
+    public decimal SmallVisitGbp { get; set; } = ProviderVisitPay.ForGardenSize(GardenSize.Small);
     public decimal MediumVisitGbp { get; set; } = ProviderVisitPay.ForGardenSize(GardenSize.Medium);
     public decimal LargeVisitGbp { get; set; } = ProviderVisitPay.ForGardenSize(GardenSize.Large);
-    public decimal XLargeVisitGbp { get; set; } = ProviderVisitPay.ForGardenSize(GardenSize.XLarge);
-    public decimal XXLargeVisitGbp { get; set; } = ProviderVisitPay.ForGardenSize(GardenSize.XXLarge);
 }

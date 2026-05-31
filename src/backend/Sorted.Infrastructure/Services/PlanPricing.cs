@@ -23,8 +23,8 @@ public static class PlanPricing
         PlanPricingOptions options,
         GardenSize gardenSize = GardenSize.Small)
     {
-        var basePrice = ResolveBasePrice(billingInterval, planName, storedPrice, options);
-        return ConsumerPlanPricing.ApplyGardenSizeUplift(basePrice, gardenSize, billingInterval);
+        _ = ResolveBasePrice(billingInterval, planName, storedPrice, options);
+        return GardenSizePricing.ResolvePrice(planName, gardenSize, billingInterval);
     }
 
     private static decimal ResolveBasePrice(

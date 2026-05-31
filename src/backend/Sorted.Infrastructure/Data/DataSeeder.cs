@@ -71,19 +71,19 @@ public static class DataSeeder
             {
                 BrandId = brand.Id,
                 Name = "Essential Monthly",
-                Description = "One visit per month for a small garden — lawn, borders, and tidy. 3-month minimum.",
+                Description = "Up to 50 m² — mow, edge, weed borders, tidy. 10 visits/year. From £59.99/mo. 3-month minimum.",
                 BillingInterval = SubscriptionBillingInterval.Monthly,
                 MinimumTermMonths = 3,
-                PriceGbp = 39.95m
+                PriceGbp = 59.99m
             },
             new SubscriptionPlan
             {
                 BrandId = brand.Id,
                 Name = "Essential Annual",
-                Description = "One visit per month for a small garden, 12-month commitment — discounted vs monthly.",
+                Description = "Up to 50 m² — 10 visits/year. Annual plan (~10 months price).",
                 BillingInterval = SubscriptionBillingInterval.Annual,
                 MinimumTermMonths = 12,
-                PriceGbp = 399.95m
+                PriceGbp = 599.90m
             },
             new SubscriptionPlan
             {
@@ -92,7 +92,7 @@ public static class DataSeeder
                 Description = "Two visits per month for a small garden — hedges, beds, and seasonal tidy. 3-month minimum.",
                 BillingInterval = SubscriptionBillingInterval.Monthly,
                 MinimumTermMonths = 3,
-                PriceGbp = 64.95m
+                PriceGbp = 84.99m
             },
             new SubscriptionPlan
             {
@@ -101,7 +101,7 @@ public static class DataSeeder
                 Description = "Two visits per month for a small garden, 12-month commitment — discounted vs monthly.",
                 BillingInterval = SubscriptionBillingInterval.Annual,
                 MinimumTermMonths = 12,
-                PriceGbp = 559.95m
+                PriceGbp = 849.90m
             },
             new SubscriptionPlan
             {
@@ -110,7 +110,7 @@ public static class DataSeeder
                 Description = "Three visits per month (~every 10 days) for a small garden — everything in Premium. 3-month minimum.",
                 BillingInterval = SubscriptionBillingInterval.Monthly,
                 MinimumTermMonths = 3,
-                PriceGbp = 99.95m
+                PriceGbp = 119.99m
             },
             new SubscriptionPlan
             {
@@ -119,7 +119,7 @@ public static class DataSeeder
                 Description = "Three visits per month (~every 10 days) for a small garden, 12-month commitment — discounted vs monthly.",
                 BillingInterval = SubscriptionBillingInterval.Annual,
                 MinimumTermMonths = 12,
-                PriceGbp = 909.95m
+                PriceGbp = 1199.90m
             });
 
         await db.SaveChangesAsync(ct);
@@ -257,8 +257,8 @@ public static class DataSeeder
         var nextMonth = DateTime.UtcNow.Date.AddDays(14);
         var demoProperties = new[]
         {
-            ("12 Oak Avenue", (string?)null, "Leeds", "LS6 2AB", GardenSize.Medium, "1 visit per month", "Essential tidy", nextMonth),
-            ("4 Chapel Row", "Flat 2", "Leeds", "LS1 3AA", GardenSize.Small, "1 visit per month", "Essential tidy", nextMonth.AddDays(7)),
+            ("12 Oak Avenue", (string?)null, "Leeds", "LS6 2AB", GardenSize.Medium, "10 visits per year", "Essential tidy", nextMonth),
+            ("4 Chapel Row", "Flat 2", "Leeds", "LS1 3AA", GardenSize.Small, "10 visits per year", "Essential tidy", nextMonth.AddDays(7)),
             ("88 Valley View", (string?)null, "Wakefield", "WF1 2EQ", GardenSize.Large, "2 visits per month", "Premium maintenance", nextMonth.AddDays(3))
         };
 
@@ -556,7 +556,7 @@ public static class DataSeeder
                 Description = "Two garden visits per month with enhanced service, 3-month minimum.",
                 BillingInterval = SubscriptionBillingInterval.Monthly,
                 MinimumTermMonths = 3,
-                PriceGbp = 64.95m,
+                PriceGbp = 84.99m,
             });
         }
 
@@ -569,7 +569,7 @@ public static class DataSeeder
                 Description = "Two garden visits per month, 12-month commitment, discounted.",
                 BillingInterval = SubscriptionBillingInterval.Annual,
                 MinimumTermMonths = 12,
-                PriceGbp = 559.95m,
+                PriceGbp = 849.90m,
             });
         }
 
@@ -605,7 +605,7 @@ public static class DataSeeder
                 Description = "Three garden visits per month (~every 10 days) with Premium inclusions, 3-month minimum.",
                 BillingInterval = SubscriptionBillingInterval.Monthly,
                 MinimumTermMonths = 3,
-                PriceGbp = 99.95m,
+                PriceGbp = 119.99m,
             });
         }
 
@@ -618,7 +618,7 @@ public static class DataSeeder
                 Description = "Three garden visits per month (~every 10 days), 12-month commitment, discounted.",
                 BillingInterval = SubscriptionBillingInterval.Annual,
                 MinimumTermMonths = 12,
-                PriceGbp = 909.95m,
+                PriceGbp = 1199.90m,
             });
         }
 

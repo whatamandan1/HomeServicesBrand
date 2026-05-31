@@ -13,7 +13,7 @@ import { FALLBACK_PLANS, planSignupHref } from "@/lib/plans";
 import { Button } from "@/components/marketing/ui";
 
 const VISITS_BY_TIER: Record<PlanTier, string> = {
-  essential: "Monthly visits",
+  essential: "10 visits per year",
   premium: "Fortnightly visits",
   elite: "Weekly visits",
 };

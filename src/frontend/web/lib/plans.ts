@@ -6,10 +6,10 @@ export const FALLBACK_PLANS: SubscriptionPlan[] = [
   {
     id: "fallback-essential-monthly",
     name: "Essential Monthly",
-    description: "One visit per month (small garden) — lawn, borders, and tidy. 3-month minimum.",
+    description: "Up to 50 m² — mow, edge, weed & tidy. 10 visits/year. From £59.99/mo. 3-month minimum.",
     billingInterval: "Monthly",
     minimumTermMonths: 3,
-    priceGbp: 39.95,
+    priceGbp: 59.99,
   },
   {
     id: "fallback-premium-monthly",
@@ -17,7 +17,7 @@ export const FALLBACK_PLANS: SubscriptionPlan[] = [
     description: "Two visits per month (small garden) — hedges, beds, seasonal tidy. 3-month minimum.",
     billingInterval: "Monthly",
     minimumTermMonths: 3,
-    priceGbp: 64.95,
+    priceGbp: 84.99,
   },
   {
     id: "fallback-elite-monthly",
@@ -25,15 +25,15 @@ export const FALLBACK_PLANS: SubscriptionPlan[] = [
     description: "Three visits per month (~every 10 days, small garden) — everything in Premium. 3-month minimum.",
     billingInterval: "Monthly",
     minimumTermMonths: 3,
-    priceGbp: 99.95,
+    priceGbp: 119.99,
   },
   {
     id: "fallback-essential-annual",
     name: "Essential Annual",
-    description: "One visit per month (small garden), 12-month commitment — discounted.",
+    description: "10 visits per year (small garden), 12-month commitment — discounted.",
     billingInterval: "Annual",
     minimumTermMonths: 12,
-    priceGbp: 399.95,
+    priceGbp: 599.90,
   },
   {
     id: "fallback-premium-annual",
@@ -41,7 +41,7 @@ export const FALLBACK_PLANS: SubscriptionPlan[] = [
     description: "Two visits per month (small garden), 12-month commitment — discounted.",
     billingInterval: "Annual",
     minimumTermMonths: 12,
-    priceGbp: 559.95,
+    priceGbp: 849.90,
   },
   {
     id: "fallback-elite-annual",
@@ -49,7 +49,7 @@ export const FALLBACK_PLANS: SubscriptionPlan[] = [
     description: "Three visits per month (~every 10 days, small garden), 12-month commitment — discounted.",
     billingInterval: "Annual",
     minimumTermMonths: 12,
-    priceGbp: 909.95,
+    priceGbp: 1199.90,
   },
 ];
 

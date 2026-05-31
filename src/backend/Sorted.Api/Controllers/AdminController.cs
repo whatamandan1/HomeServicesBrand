@@ -8,6 +8,7 @@ using Sorted.Core.Enums;
 using Sorted.Core.Geo;
 using Sorted.Core.Interfaces;
 using Sorted.Infrastructure.Data;
+using Sorted.Infrastructure.Services;
 
 namespace Sorted.Api.Controllers;
 
@@ -336,14 +337,58 @@ public class AdminController(
                 .Where(t => !t.IsDeleted)
                 .Select(t => t.PostcodeSector)
                 .OrderBy(s => s, StringComparer.OrdinalIgnoreCase)
-                .ToList());
+                .ToList(),
+            ProviderVettingMapper.ToStatus(p));
+
+    [HttpGet("providers/{id:guid}/vetting")]
+    public async Task<ActionResult<AdminProviderVettingResponse>> ProviderVetting(Guid id, CancellationToken ct)
+    {
+        var provider = await db.Providers
+            .FirstOrDefaultAsync(p => p.Id == id && !p.IsDeleted, ct);
+        if (provider is null) return NotFound();
+        return Ok(ProviderVettingMapper.ToAdminDetails(provider));
+    }
+
+    [HttpPatch("providers/{id:guid}/vetting")]
+    public async Task<ActionResult<AdminProviderVettingResponse>> UpdateProviderVettingVerification(
+        Guid id,
+        [FromBody] AdminUpdateProviderVettingVerificationRequest request,
+        CancellationToken ct)
+    {
+        var provider = await db.Providers.FirstOrDefaultAsync(p => p.Id == id && !p.IsDeleted, ct);
+        if (provider is null) return NotFound();
+
+        var now = DateTime.UtcNow;
+        if (request.IdVerified == true) provider.IdVerifiedAtUtc = now;
+        else if (request.IdVerified == false) provider.IdVerifiedAtUtc = null;
+
+        if (request.RightToWorkVerified == true) provider.RightToWorkVerifiedAtUtc = now;
+        else if (request.RightToWorkVerified == false) provider.RightToWorkVerifiedAtUtc = null;
+
+        if (request.DbsVerified == true) provider.DbsVerifiedAtUtc = now;
+        else if (request.DbsVerified == false) provider.DbsVerifiedAtUtc = null;
+
+        provider.UpdatedAtUtc = now;
+        await db.SaveChangesAsync(ct);
+        return Ok(ProviderVettingMapper.ToAdminDetails(provider));
+    }
 
     [HttpPost("providers/{id:guid}/approve")]
     public async Task<IActionResult> ApproveProvider(Guid id, CancellationToken ct)
     {
         var provider = await db.Providers.FirstOrDefaultAsync(p => p.Id == id, ct);
         if (provider is null) return NotFound();
+
+        if (provider.VettingSubmittedAtUtc is null || !ProviderVettingMapper.IsSubmissionComplete(provider))
+            return BadRequest(new { error = "Provider must submit vetting details (ID, right to work, DBS) before approval." });
+
+        if (provider.IdVerifiedAtUtc is null
+            || provider.RightToWorkVerifiedAtUtc is null
+            || provider.DbsVerifiedAtUtc is null)
+            return BadRequest(new { error = "Mark ID, right to work, and DBS as verified before approval." });
+
         provider.IsApproved = true;
+        provider.UpdatedAtUtc = DateTime.UtcNow;
         await db.SaveChangesAsync(ct);
         return NoContent();
     }

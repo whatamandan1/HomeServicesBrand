@@ -12,6 +12,7 @@ import {
   annualEquivalentMonthly,
   findTierPlanForBilling,
   formatPriceFrom,
+  CUSTOMER_VISIT_RESPONSIBILITIES,
   NOT_INCLUDED,
   ON_VISIT_WHEN_POSSIBLE,
   PLAN_TIERS,
@@ -158,11 +159,27 @@ export function PricingSection() {
         ))}
       </ul>
 
+      <div className="rounded-2xl border border-amber-200/80 bg-amber-50/50 p-5 sm:p-6">
+        <h3 className="font-display text-lg font-semibold text-gardens-dark">Before each visit — your responsibility</h3>
+        <ul className="mt-3 space-y-1.5 text-sm text-stone-700">
+          {CUSTOMER_VISIT_RESPONSIBILITIES.map((item) => (
+            <li key={item}>• {item}</li>
+          ))}
+        </ul>
+        <p className="mt-3 text-xs text-stone-600">
+          Full details in our{" "}
+          <Link href="/terms" className="font-medium text-gardens-primary hover:underline">
+            terms of service
+          </Link>
+          , including how visits must be booked through GardensSorted.
+        </p>
+      </div>
+
       <div className="rounded-2xl border border-stone-200 bg-stone-50 p-5 sm:p-6">
         <h3 className="font-display text-lg font-semibold text-gardens-dark">On visit vs seasonal add-ons</h3>
         <div className="mt-4 grid gap-6 md:grid-cols-2">
           <div>
-            <p className="text-sm font-medium text-gardens-dark">Included while we&apos;re there (tap/hose for watering)</p>
+            <p className="text-sm font-medium text-gardens-dark">Also while we&apos;re there (not separate visits)</p>
             <ul className="mt-2 space-y-1.5 text-sm text-stone-600">
               {ON_VISIT_WHEN_POSSIBLE.map((item) => (
                 <li key={item}>• {item}</li>

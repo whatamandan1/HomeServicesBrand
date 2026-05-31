@@ -118,6 +118,21 @@ public class Provider : AuditableEntity
     public int WorkingDaysMask { get; set; } = ProviderWorkingDays.DefaultWeekdays;
     public int WorkDayStartMinutes { get; set; } = ProviderWorkHours.DefaultStartMinutes;
     public int WorkDayEndMinutes { get; set; } = ProviderWorkHours.DefaultEndMinutes;
+
+    // Post-signup vetting (collected in provider portal before admin approval)
+    public DateOnly? DateOfBirth { get; set; }
+    public string? IdDocumentType { get; set; }
+    public string? IdDocumentNumber { get; set; }
+    public string? RightToWorkShareCode { get; set; }
+    public string? RightToWorkDocumentDescription { get; set; }
+    public string? DbsCertificateNumber { get; set; }
+    public DateOnly? DbsIssueDate { get; set; }
+    public bool DbsOnUpdateService { get; set; }
+    public DateTime? VettingSubmittedAtUtc { get; set; }
+    public DateTime? IdVerifiedAtUtc { get; set; }
+    public DateTime? RightToWorkVerifiedAtUtc { get; set; }
+    public DateTime? DbsVerifiedAtUtc { get; set; }
+
     public ICollection<ProviderTerritory> Territories { get; set; } = [];
     public ICollection<ProviderBlockedDate> BlockedDates { get; set; } = [];
 }
