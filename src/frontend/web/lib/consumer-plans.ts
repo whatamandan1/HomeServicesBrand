@@ -227,14 +227,14 @@ export const SIGNUP_SERVICES: SignupServiceOption[] = [
   {
     id: "hedges",
     label: "Hedge trim & shaping",
-    description: "4 sessions per year — monthly price spreads the annual cost.",
+    description: "Light hedge work on a fixed schedule (not every maintenance visit).",
     minTier: "essential",
     group: "addons",
   },
   {
     id: "seasonal",
     label: "Seasonal tidy & leaf clearance",
-    description: "4 sessions per year — monthly price spreads the annual cost.",
+    description: "Garden tidy and leaf clearance when the season needs it.",
     minTier: "essential",
     group: "addons",
   },
@@ -262,7 +262,7 @@ export const SIGNUP_SERVICES: SignupServiceOption[] = [
   {
     id: "patio",
     label: "Patio & path refresh",
-    description: "2 thorough cleans per year — monthly price spreads the annual cost.",
+    description: "Thorough patio and path clean with appropriate equipment.",
     minTier: "essential",
     group: "addons",
   },
@@ -332,10 +332,11 @@ export function effectiveMinimumTermMonths(
 export const SIGNUP_ADDON_COMMITMENT_NOTE =
   "Add-on services require a 6-month minimum term on monthly billing (annual plans keep a 12-month minimum).";
 
-export function formatSignupAddonSurcharge(gardenSize: GardenSize, addonId: SignupServiceId): string {
+/** Shown on signup add-on checkboxes — frequency only, no line-item price. */
+export function formatSignupAddonOccurrencesLabel(addonId: SignupServiceId): string {
   const occ = signupAddonOccurrencesPerYear(addonId);
-  const monthly = signupAddonMonthlyCustomerGbp(gardenSize, addonId);
-  return `+£${formatGbp(monthly)}/mo (${occ}×/yr)`;
+  if (occ <= 0) return "";
+  return occ === 1 ? "1× per year" : `${occ}× per year`;
 }
 
 export const SIGNUP_SERVICE_GROUP_LABELS: Record<SignupServiceGroup, string> = {

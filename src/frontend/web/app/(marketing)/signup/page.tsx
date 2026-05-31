@@ -16,7 +16,8 @@ import {
   GARDEN_SIZE_ORDER,
   countSignupAddons,
   effectiveMinimumTermMonths,
-  formatSignupAddonSurcharge,
+  formatSignupAddonOccurrencesLabel,
+  isSignupAddon,
   SIGNUP_ADDON_COMMITMENT_NOTE,
   isVisitFrequencyService,
   matchPlanTierFromVisitFrequency,
@@ -489,7 +490,10 @@ export default function SignupPage() {
                                   <span className="leading-tight">
                                     {service.label}
                                     <span className="block text-xs font-normal text-stone-500">
-                                      {formatSignupAddonSurcharge(form.gardenSize, service.id)}
+                                      {service.description}
+                                      {isSignupAddon(service.id) && (
+                                        <> · {formatSignupAddonOccurrencesLabel(service.id)}</>
+                                      )}
                                     </span>
                                   </span>
                                 </label>
