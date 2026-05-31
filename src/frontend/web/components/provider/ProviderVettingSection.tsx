@@ -61,7 +61,7 @@ export function ProviderVettingSection({ token, isApproved, status, onSubmitted,
         setHasOwnRelevantInsurance(d.hasOwnRelevantInsurance);
       })
       .catch(() => {
-        /* first visit — empty form */
+        /* first visit - empty form */
       })
       .finally(() => setLoading(false));
   }, [token]);
@@ -93,7 +93,7 @@ export function ProviderVettingSection({ token, isApproved, status, onSubmitted,
     try {
       const details = await api.providerSubmitVetting(token, payload);
       onSubmitted(details);
-      setLocalMessage("Details submitted — we'll verify your ID, right to work, DBS, and insurance before approval.");
+      setLocalMessage("Details submitted - we'll verify your ID, right to work, DBS, and insurance before approval.");
     } catch (err) {
       onError(err instanceof Error ? err.message : "Could not save vetting details");
     } finally {
@@ -107,7 +107,7 @@ export function ProviderVettingSection({ token, isApproved, status, onSubmitted,
         <h2 className="font-display text-lg font-semibold text-gardens-dark">Vetting</h2>
         <p className="mt-2 text-sm text-stone-600">Your checks are complete and your account is approved.</p>
         <p className="mt-3 text-sm text-stone-600">
-          To change add-on equipment, contact support — we need to keep visit matching accurate.
+          To change add-on equipment, contact support - we need to keep visit matching accurate.
         </p>
       </div>
     );
@@ -129,7 +129,7 @@ export function ProviderVettingSection({ token, isApproved, status, onSubmitted,
       <p className="mt-2 text-sm text-stone-600">{PROVIDER_VETTING_SUMMARY}</p>
       {submitted && (
         <p className="mt-3 rounded-lg bg-gardens-light/80 px-3 py-2 text-sm text-gardens-dark">
-          Submitted — waiting for verification. You can update details below until you are approved.
+          Submitted - waiting for verification. You can update details below until you are approved.
         </p>
       )}
 

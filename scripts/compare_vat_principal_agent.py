@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Compare principal vs agent VAT impact — mirrors v4 model base case (10/20/30 visits per year)."""
+"""Compare principal vs agent VAT impact - mirrors v4 model base case (10/20/30 visits per year)."""
 import openpyxl
 
 XLSX = "/Users/dan/Documents/HomeServicesBrand/sorted_saas_recurring_revenue_forecast_v3_elite.xlsx"
@@ -286,7 +286,7 @@ def year_totals(rows, year):
 def main():
     cfg = load_inputs(XLSX)
     rows = simulate(cfg)
-    print("VAT comparison — base case simulation (v4 inputs, 10/20/30 visits/yr)")
+    print("VAT comparison - base case simulation (v4 inputs, 10/20/30 visits/yr)")
     print(f"Blended Essential monthly £{cfg['ess_m']:.2f}, provider Essential £{cfg['pay_ess']:.2f}/mo")
     print()
     for y in (1, 2, 5):
@@ -298,8 +298,8 @@ def main():
         print(f"  End customers (approx): {t['cust']:.0f}")
         print(f"  Gross customer revenue: £{t['gross']:,.0f}")
         print(f"  Provider pay:           £{t['prov']:,.0f}")
-        print(f"  VAT registered — principal: {t['vat_reg_p']} | agent threshold: {t['vat_reg_a']}")
-        print(f"  VAT accrued — principal: £{t['vat_p']:,.0f} | agent: £{t['vat_a']:,.0f}")
+        print(f"  VAT registered - principal: {t['vat_reg_p']} | agent threshold: {t['vat_reg_a']}")
+        print(f"  VAT accrued - principal: £{t['vat_p']:,.0f} | agent: £{t['vat_a']:,.0f}")
         print(f"  Gross profit (NetRev − Prov):")
         print(f"    Principal: £{t['gp_p']:,.0f}")
         print(f"    Agent:     £{t['gp_a']:,.0f}")
@@ -312,8 +312,8 @@ def main():
 
     reg_p = next(r["m"] for r in rows if r["vat_reg_p"])
     reg_a = next((r["m"] for r in rows if r["vat_reg_a"]), None)
-    print(f"First month VAT registered — principal: month {reg_p}")
-    print(f"First month VAT registered — agent (margin threshold): month {reg_a or 'never in 60 mo'}")
+    print(f"First month VAT registered - principal: month {reg_p}")
+    print(f"First month VAT registered - agent (margin threshold): month {reg_a or 'never in 60 mo'}")
 
 
 if __name__ == "__main__":

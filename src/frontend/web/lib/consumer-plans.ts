@@ -4,16 +4,16 @@ import { formatGbp } from "@/lib/format";
 /** Annual checkout ≈ 10× monthly (~two months free). Mirrors `GardenSizePricing` in the API. */
 export const ANNUAL_MONTHS_CHARGED = 10;
 
-/** @deprecated Launch uses garden-band pricing only; tiers may return later. */
-export const PREMIUM_MONTHLY_ADDON_GBP = 0;
-export const ELITE_MONTHLY_ADDON_GBP = 0;
+/** Monthly uplift on garden-band base price (matches GardenSizePricing). */
+export const PREMIUM_MONTHLY_ADDON_GBP = 25;
+export const ELITE_MONTHLY_ADDON_GBP = 60;
 
 /** DB plan name for new signups (marketing: "Garden care"). */
 export const SIGNUP_MONTHLY_PLAN_NAME = "Essential Monthly";
 
-/** Lawn, beds, and edges we maintain — not whole-plot area or large paved zones. */
+/** Lawn, beds, and edges we maintain - not whole-plot area or large paved zones. */
 export const GARDEN_SIZE_MAINTAINED_AREA_NOTE =
-  "Lawn, planted beds, and edges we cut and tidy on each visit — not your whole plot, large paving, or areas out of scope.";
+  "Lawn, planted beds, and edges we cut and tidy on each visit - not your whole plot, large paving, or areas out of scope.";
 
 export const GARDEN_SIZE_ABOVE_BAND_NOTE =
   "More than 150 m² maintained? Contact us for a personalised quote.";
@@ -62,7 +62,7 @@ export const GARDEN_SIZE_GUIDE: Record<
     monthlyPrice: 59.99,
     providerPerVisit: 20,
     description: "Courtyard, terrace, or compact town garden.",
-    examples: "Up to 50 m² maintained — about 1 hour per visit.",
+    examples: "Up to 50 m² maintained - about 1 hour per visit.",
   },
   Medium: {
     shortName: "Medium",
@@ -72,7 +72,7 @@ export const GARDEN_SIZE_GUIDE: Record<
     monthlyPrice: 79.99,
     providerPerVisit: 30,
     description: "Typical suburban rear garden.",
-    examples: "Up to 100 m² maintained — about 1.5 hours per visit.",
+    examples: "Up to 100 m² maintained - about 1.5 hours per visit.",
   },
   Large: {
     shortName: "Large",
@@ -82,13 +82,13 @@ export const GARDEN_SIZE_GUIDE: Record<
     monthlyPrice: 99.99,
     providerPerVisit: 40,
     description: "Larger family garden or generous plot.",
-    examples: "Up to 150 m² maintained — about 2 hours per visit.",
+    examples: "Up to 150 m² maintained - about 2 hours per visit.",
   },
 };
 
 export function gardenSizeSelectLabel(size: GardenSize): string {
   const g = GARDEN_SIZE_GUIDE[size];
-  return `${g.shortName} — ${g.label} maintained`;
+  return `${g.shortName} - ${g.label} maintained`;
 }
 
 /** Core maintenance on every garden care visit. */
@@ -114,7 +114,7 @@ export const PREMIUM_FEATURES = [
   "Everything in Essential",
   "20 visits per year",
   "Light hedge trim and shaping (where accessible)",
-  "Seasonal tidy — leaf blow/clear in garden, light pruning",
+  "Seasonal tidy - leaf blow/clear in garden, light pruning",
   "Priority scheduling where possible",
 ];
 
@@ -134,17 +134,17 @@ export const ON_VISIT_WHEN_POSSIBLE = [
 export const SEASONAL_ADDONS = [
   "Thorough patio and deck cleaning",
   "Large leaf clearances",
-  "Gutter clearing — quoted separately",
+  "Gutter clearing - quoted separately",
 ];
 
-/** Shown at signup, pricing, and linked from terms — customer must prepare the garden. */
+/** Shown at signup, pricing, and linked from terms - customer must prepare the garden. */
 export const CUSTOMER_VISIT_RESPONSIBILITIES = [
-  "Easy access — gate unlocked, path clear, pets kept away from the garden",
-  "Lawn and beds clear — no furniture, toys, tools, or branches in the way",
+  "Easy access - gate unlocked, path clear, pets kept away from the garden",
+  "Lawn and beds clear - no furniture, toys, tools, or branches in the way",
   "Pet waste picked up in the areas we maintain",
   "Working outdoor tap",
-  "Power socket we can reach from the garden — indoor or outdoor is fine",
-  "Grass clippings — you bin them, or leave your council garden-waste bin out on collection day",
+  "Power socket we can reach from the garden - indoor or outdoor is fine",
+  "Grass clippings - you bin them, or leave your council garden-waste bin out on collection day",
 ] as const;
 
 /** Shown under the responsibility list on signup and pricing. */
@@ -206,7 +206,7 @@ export type SignupServiceOption = {
   group: SignupServiceGroup;
 };
 
-/** Services shown during signup — selections drive automatic plan matching. */
+/** Services shown during signup - selections drive automatic plan matching. */
 export const SIGNUP_SERVICES: SignupServiceOption[] = [
   {
     id: "lawn-borders",
@@ -320,7 +320,7 @@ export function effectiveMinimumTermMonths(
 export const SIGNUP_ADDON_COMMITMENT_NOTE =
   "Add-ons need a 6-month minimum on monthly billing. Annual billing stays 12 months.";
 
-/** Shown on signup add-on checkboxes — frequency only, no line-item price. */
+/** Shown on signup add-on checkboxes - frequency only, no line-item price. */
 export function formatSignupAddonOccurrencesLabel(addonId: SignupServiceId): string {
   const occ = signupAddonOccurrencesPerYear(addonId);
   if (occ <= 0) return "";
@@ -344,9 +344,8 @@ export function isVisitFrequencyService(id: SignupServiceId): boolean {
   return SIGNUP_VISIT_FREQUENCY_IDS.includes(id);
 }
 
-/** Launch signup offers Essential (10 visits/year) only; other frequencies shown as coming soon. */
 export function isVisitFrequencyOfferedAtSignup(id: SignupServiceId): boolean {
-  return id === DEFAULT_VISIT_FREQUENCY;
+  return isVisitFrequencyService(id);
 }
 
 export function signupVisitFrequencyOptions(): SignupServiceOption[] {
@@ -376,7 +375,7 @@ export function tierFromRank(rank: number): PlanTier {
   return "essential";
 }
 
-/** Plan tier is driven only by visit frequency — add-ons add cost, not tier. */
+/** Plan tier is driven only by visit frequency - add-ons add cost, not tier. */
 export function matchPlanTierFromVisitFrequency(visitFrequency: SignupServiceId): PlanTier {
   if (visitFrequency === "weekly") return "elite";
   if (visitFrequency === "fortnightly") return "premium";
@@ -401,26 +400,34 @@ function isAnnualPlan(plan: SubscriptionPlan) {
   return plan.billingInterval !== "Monthly";
 }
 
+function planTierMonthlyAddonGbp(plan: SubscriptionPlan): number {
+  const name = plan.name.toLowerCase();
+  if (name.includes("elite")) return ELITE_MONTHLY_ADDON_GBP;
+  if (name.includes("premium")) return PREMIUM_MONTHLY_ADDON_GBP;
+  return 0;
+}
+
 export function planPriceForGarden(
   plan: SubscriptionPlan,
   gardenSize: GardenSize,
   selectedAddons: SignupServiceId[] = []
 ): number {
   const monthly =
-    GARDEN_SIZE_MONTHLY_PRICE_GBP[gardenSize] + signupAddonsMonthlyTotalGbp(gardenSize, selectedAddons);
+    GARDEN_SIZE_MONTHLY_PRICE_GBP[gardenSize] +
+    planTierMonthlyAddonGbp(plan) +
+    signupAddonsMonthlyTotalGbp(gardenSize, selectedAddons);
   return isAnnualPlan(plan) ? monthly * ANNUAL_MONTHS_CHARGED : monthly;
 }
 
+export function findSignupMonthlyPlanForFrequency(
+  plans: SubscriptionPlan[],
+  visitFrequency: SignupServiceId = DEFAULT_VISIT_FREQUENCY
+): SubscriptionPlan | undefined {
+  return findTierPlanForBilling(plans, matchPlanTierFromVisitFrequency(visitFrequency), "Monthly");
+}
+
 export function findSignupMonthlyPlan(plans: SubscriptionPlan[]): SubscriptionPlan | undefined {
-  return (
-    plans.find((p) => p.name === SIGNUP_MONTHLY_PLAN_NAME && p.billingInterval === "Monthly") ??
-    plans.find(
-      (p) =>
-        p.billingInterval === "Monthly" &&
-        !p.name.toLowerCase().includes("premium") &&
-        !p.name.toLowerCase().includes("elite")
-    )
-  );
+  return findSignupMonthlyPlanForFrequency(plans, DEFAULT_VISIT_FREQUENCY);
 }
 
 export function formatPlanPrice(plan: SubscriptionPlan, gardenSize: GardenSize = "Small") {
@@ -454,6 +461,29 @@ export function planVisitSummary(plan: SubscriptionPlan, visitFrequency?: Signup
     ? visitsPerYearFromFrequency(visitFrequency)
     : planVisitsPerYear(plan);
   return `${visits} visits per year`;
+}
+
+/** Lines for the signup quote card - visit cadence, core work, and selected add-ons. */
+export function signupQuoteIncludedLines(
+  visitFrequency: SignupServiceId,
+  selectedAddonIds: SignupServiceId[]
+): string[] {
+  const lines: string[] = [];
+  const freq = SIGNUP_SERVICES.find((s) => s.id === visitFrequency);
+  const visits = visitsPerYearFromFrequency(visitFrequency);
+  lines.push(
+    freq
+      ? `${visits} visits per year (${freq.description.toLowerCase()})`
+      : `${visits} visits per year`
+  );
+  lines.push(...CORE_VISIT_WORK);
+  for (const id of selectedAddonIds.filter(isSignupAddon)) {
+    const svc = SIGNUP_SERVICES.find((s) => s.id === id);
+    if (!svc) continue;
+    const occ = formatSignupAddonOccurrencesLabel(id);
+    lines.push(occ ? `${svc.label} (${occ})` : svc.label);
+  }
+  return lines;
 }
 
 function findTierPlan(basePlans: SubscriptionPlan[], tier: PlanTier, billing: BillingChoice) {

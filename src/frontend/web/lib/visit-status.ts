@@ -30,7 +30,7 @@ export function todayDateInputValue(): string {
   return new Date().toISOString().slice(0, 10);
 }
 
-/** Customer portal label — hide internal dispatch states (OpenForClaim, Claimed). */
+/** Customer portal label - hide internal dispatch states (OpenForClaim, Claimed). */
 export function customerVisitStatusLabel(status: string): string | null {
   const s = normalizeVisitStatus(status);
   if (s === "claimed" || s === "inprogress") return "Confirmed";

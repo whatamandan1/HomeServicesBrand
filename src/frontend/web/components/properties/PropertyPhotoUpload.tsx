@@ -148,7 +148,7 @@ export function PropertyPhotoUpload({
       <div>
         <p className="text-sm font-medium text-stone-700">Garden photos</p>
         <p className="text-xs text-stone-500">
-          Optional — up to {maxPhotos} photos help your gardener prepare for the first visit.
+          Optional - up to {maxPhotos} photos help your gardener prepare for the first visit.
         </p>
       </div>
 

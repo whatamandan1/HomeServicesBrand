@@ -19,7 +19,7 @@ public static class ConsumerPlanPricing
                 : 1);
     }
 
-    /// <summary>Legacy rank helper — prefer <see cref="GardenSizePricing"/>.</summary>
+    /// <summary>Legacy rank helper - prefer <see cref="GardenSizePricing"/>.</summary>
     public static int GardenSizeRank(GardenSize gardenSize) =>
         gardenSize switch
         {

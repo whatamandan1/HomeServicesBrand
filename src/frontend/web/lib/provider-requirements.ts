@@ -1,9 +1,9 @@
 /** Identity and eligibility checked before admin approval (not self-certified at signup). */
 export const PROVIDER_VETTING_REQUIRED = [
   "Valid photo ID (e.g. passport or driving licence)",
-  "Right to work in the UK — we will verify before you are approved",
-  "Basic DBS check — must pass before taking paid visits",
-  "Your own relevant insurance — e.g. public liability cover for gardening work",
+  "Right to work in the UK - we will verify before you are approved",
+  "Basic DBS check - must pass before taking paid visits",
+  "Your own relevant insurance - e.g. public liability cover for gardening work",
 ] as const;
 
 export const PROVIDER_INSURANCE_DECLARATION =
@@ -22,17 +22,17 @@ export const PROVIDER_EQUIPMENT_REQUIRED = [
   "Watering can or hose for light watering",
   "Rake",
   "Appropriate brush or broom for tidying paths and edges",
-  "Extension lead — at least 20 metres",
+  "Extension lead - at least 20 metres",
 ] as const;
 
 export const PROVIDER_EQUIPMENT_SUMMARY =
-  "Mower, strimmer or edger, hose or watering can, rake, brush, and a 20 m+ extension lead — every visit.";
+  "Mower, strimmer or edger, hose or watering can, rake, brush, and a 20 m+ extension lead - every visit.";
 
-/** Shown on apply page and provider portal — complements customer prep in consumer-plans. */
+/** Shown on apply page and provider portal - complements customer prep in consumer-plans. */
 export const PROVIDER_EQUIPMENT_NOTE =
   "We do not supply tools. The customer provides tap and power; you bring your gear and extension lead.";
 
-/** Declared in vetting — enables matching to customer add-on visits. */
+/** Declared in vetting - enables matching to customer add-on visits. */
 export const PROVIDER_ADDON_EQUIPMENT = [
   {
     field: "hasLeafBlower" as const,
@@ -57,4 +57,4 @@ export const PROVIDER_ADDON_EQUIPMENT = [
 ] as const;
 
 export const PROVIDER_ADDON_EQUIPMENT_SUMMARY =
-  "Tick the add-on equipment you own in Checks & documents — we only assign hedge, seasonal, and patio add-on visits to gardeners with the right tools.";
+  "Tick the add-on equipment you own in Checks & documents - we only assign hedge, seasonal, and patio add-on visits to gardeners with the right tools.";

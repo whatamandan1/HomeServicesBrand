@@ -1,4 +1,4 @@
-# Staging hardening — PostgreSQL, email & AI
+# Staging hardening - PostgreSQL, email & AI
 
 Staging works. These steps make it **production-ready for pilots**.
 
@@ -11,13 +11,13 @@ Staging works. These steps make it **production-ready for pilots**.
 
 Right now SQLite on Railway **wipes customers on every redeploy**.
 
-### Setup (same project — recommended)
+### Setup (same project - recommended)
 
 1. Railway project → **+ New** → **Database** → **PostgreSQL** (in the **same project** as your API)
 2. Click your **API service** → **Variables**
 3. Add **one** of these:
 
-**Option A — PG variables (best)**
+**Option A - PG variables (best)**
 
 ```
 PGHOST=${{Postgres.PGHOST}}
@@ -27,7 +27,7 @@ PGPASSWORD=${{Postgres.PGPASSWORD}}
 PGDATABASE=${{Postgres.PGDATABASE}}
 ```
 
-**Option B — Private DATABASE_URL**
+**Option B - Private DATABASE_URL**
 
 | Name | Value |
 |------|--------|
@@ -75,8 +75,8 @@ If you see `"database": "sqlite"` check `databaseSource`:
 | databaseSource | Fix |
 |----------------|-----|
 | `SQLite fallback` | `DATABASE_URL` not set on API service |
-| `DATABASE_URL unresolved` | Reference typo — use Option B (paste URL) |
-| `PGHOST/...` | PG vars linked — should work after redeploy |
+| `DATABASE_URL unresolved` | Reference typo - use Option B (paste URL) |
+| `PGHOST/...` | PG vars linked - should work after redeploy |
 
 Push the latest code first if you haven't (PostgreSQL support is in the repo):
 
@@ -131,7 +131,7 @@ See [twilio-sms-setup.md](./twilio-sms-setup.md) for full steps.
 | `Twilio__AuthToken` | your token |
 | `Twilio__FromPhoneNumber` | `+44...` |
 
-4. Redeploy API — `/health` should show `twilioConfigured: true`
+4. Redeploy API - `/health` should show `twilioConfigured: true`
 
 SMS sent on: welcome (signup), subscription confirmed, visit claimed, visit reminder (background job).
 
@@ -166,7 +166,7 @@ Test: Customer portal → Support chat. Without a key, you get a dev fallback me
 
 ## 5. Optional next builds
 
-- Custom domains on Vercel (`gardenssorted.co.uk` + `gardenssorted.com` redirect) — see [`custom-domain-setup.md`](custom-domain-setup.md)
+- Custom domains on Vercel (`gardenssorted.co.uk` + `gardenssorted.com` redirect) - see [`custom-domain-setup.md`](custom-domain-setup.md)
 - Stripe **live** mode + live webhook
 - Provider self-registration approval flow polish
 - Azure migration path (when scaling)

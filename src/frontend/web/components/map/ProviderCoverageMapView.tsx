@@ -39,7 +39,7 @@ export function ProviderCoverageMapView({ providers }: { providers: AdminProvide
       const lat = provider.coverageLatitude!;
       const lon = provider.coverageLongitude!;
       const color = PALETTE[index % PALETTE.length];
-      const label = `${provider.coveragePostcode ?? "—"}, ${provider.coverageRadiusMiles} miles${
+      const label = `${provider.coveragePostcode ?? "-"}, ${provider.coverageRadiusMiles} miles${
         provider.isApproved ? "" : " · pending approval"
       }`;
       const popup = `<strong>${escapeHtml(provider.name)}</strong><br/>${escapeHtml(label)}`;

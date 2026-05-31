@@ -42,10 +42,10 @@ public class PlanPricingTests
     }
 
     [Theory]
-    [InlineData(GardenSize.Small, 59.99)]
-    [InlineData(GardenSize.Medium, 79.99)]
-    [InlineData(GardenSize.Large, 99.99)]
-    public void ResolvePrice_premium_monthly_uses_garden_band_only(GardenSize size, decimal expected)
+    [InlineData(GardenSize.Small, 84.99)]
+    [InlineData(GardenSize.Medium, 104.99)]
+    [InlineData(GardenSize.Large, 124.99)]
+    public void ResolvePrice_premium_monthly_includes_tier_uplift(GardenSize size, decimal expected)
     {
         var plan = PremiumMonthlyPlan();
         var price = PlanPricing.ResolvePrice(plan, DefaultOptions, size);
@@ -67,10 +67,10 @@ public class PlanPricingTests
     }
 
     [Theory]
-    [InlineData(GardenSize.Small, 59.99)]
-    [InlineData(GardenSize.Medium, 79.99)]
-    [InlineData(GardenSize.Large, 99.99)]
-    public void ResolvePrice_elite_monthly_uses_garden_band_only(GardenSize size, decimal expected)
+    [InlineData(GardenSize.Small, 119.99)]
+    [InlineData(GardenSize.Medium, 139.99)]
+    [InlineData(GardenSize.Large, 159.99)]
+    public void ResolvePrice_elite_monthly_includes_tier_uplift(GardenSize size, decimal expected)
     {
         var plan = EliteMonthlyPlan();
         var price = PlanPricing.ResolvePrice(plan, DefaultOptions, size);
@@ -88,7 +88,7 @@ public class PlanPricingTests
         };
 
         var price = PlanPricing.ResolvePrice(plan, DefaultOptions, GardenSize.Large);
-        Assert.Equal(999.90m, price);
+        Assert.Equal(1599.90m, price);
     }
 
     [Fact]

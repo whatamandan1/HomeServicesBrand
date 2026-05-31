@@ -98,7 +98,7 @@ Portfolio account holders (landlords, letting agents, multi-property owners with
 - manage multiple properties under **one login / one portfolio** (v1)
 - specify **per-property** visit requirements, garden size, and address data for quoting
 - receive **personalised indicative quotes** (AI + calculation rules; subject to admin review)
-- view a **portfolio dashboard** — all properties, visits, spend, and per-property detail
+- view a **portfolio dashboard** - all properties, visits, spend, and per-property detail
 - **bulk import** properties via the portal (not at initial signup)
 - add/remove properties with **recalculated pricing** and **per-property 3-month minimum commitment**
 - pay via **monthly invoicing in arrears** (card if portfolio total **< £200/mo**, **BACS** if **≥ £200/mo**)
@@ -178,8 +178,8 @@ Consumer subscriptions use Stripe Checkout / subscription webhooks. Portfolio ac
 ## Multi-Property Solutions
 Support a separate **Multi-Property Solutions** commercial track alongside consumer signup:
 
-- **Audience:** private landlords, letting agents, holiday-let owners — **minimum 2 properties**
-- **Pricing:** personalised rates from calculation rules (property count, postcodes/clustering, per-property visit frequency, service level, garden size, seasonality) — **not** fixed Essential/Premium tiers
+- **Audience:** private landlords, letting agents, holiday-let owners - **minimum 2 properties**
+- **Pricing:** personalised rates from calculation rules (property count, postcodes/clustering, per-property visit frequency, service level, garden size, seasonality) - **not** fixed Essential/Premium tiers
 - **Quoting:** indicative quote returned immediately (phase 2+ via AI + rules); **admin review required** before agreement; admin price override supported
 - **Commitment:** **3 months per property**; removing a property mid-term still bills the quoted amount for that property through the commitment
 - **Changes:** adding a property recalculates totals; each new property gets its **own 3-month lock-in**
@@ -228,7 +228,7 @@ Implement:
 Internal CRM should support:
 - operational dashboards
 - customer management
-- portfolio account management (dedicated section — leads, quotes, overrides, invoicing)
+- portfolio account management (dedicated section - leads, quotes, overrides, invoicing)
 - provider management
 - workflow monitoring
 - dispatch visibility
@@ -336,7 +336,7 @@ Deprioritize:
 - advanced AI autonomy
 - native mobile apps
 - advanced analytics
-- dynamic pricing (consumer plans — portfolio personalised pricing is in scope via Multi-Property Solutions)
+- dynamic pricing (consumer plans - portfolio personalised pricing is in scope via Multi-Property Solutions)
 - route optimization
 - referral systems
 

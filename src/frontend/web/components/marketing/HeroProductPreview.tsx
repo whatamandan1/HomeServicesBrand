@@ -1,5 +1,4 @@
 import Image from "next/image";
-import Link from "next/link";
 import { Button } from "@/components/marketing/ui";
 import { HeroLocationBadge } from "@/components/marketing/HeroLocationBadge";
 import { HeroVisitPreviewCard } from "@/components/marketing/HeroVisitPreviewCard";
@@ -54,7 +53,7 @@ export function HeroProductPreview() {
             One subscription.
           </h1>
           <p className="mt-4 max-w-lg text-base text-gardens-dark/80 text-balance sm:mt-5 sm:text-lg">
-            We schedule visits, assign an approved local gardener, and keep you updated — you manage everything
+            We schedule visits, assign an approved local gardener, and keep you updated - you manage everything
             in your online account.
           </p>
         </div>
@@ -76,12 +75,6 @@ export function HeroProductPreview() {
               How it works
             </Button>
           </div>
-          <p className="mt-6 text-sm text-gardens-dark/70">
-            <Link href="/#pricing" className="font-medium text-gardens-primary hover:underline">
-              From £59.99/mo — small garden, 10 visits/year
-            </Link>
-            {" · priced by garden size + optional add-ons"}
-          </p>
         </div>
       </div>
     </section>

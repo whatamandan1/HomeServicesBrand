@@ -4,7 +4,7 @@ using Sorted.Core.Enums;
 namespace Sorted.Core.Plans;
 
 /// <summary>
-/// Minimum commitment periods — extended when optional signup add-ons are selected on monthly billing.
+/// Minimum commitment periods - extended when optional signup add-ons are selected on monthly billing.
 /// </summary>
 public static class SubscriptionCommitment
 {

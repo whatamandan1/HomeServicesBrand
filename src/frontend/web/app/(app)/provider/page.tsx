@@ -129,12 +129,12 @@ export default function ProviderPage() {
       if (action === "complete") {
         await refresh();
         setEarningsRefreshKey((key) => key + 1);
-        setNotice("Visit marked complete — earnings updated below.");
+        setNotice("Visit marked complete - earnings updated below.");
       } else {
         setMine((visits) =>
           visits.map((v) => (v.id === visitId ? updated : v))
         );
-        setNotice("Visit started — mark complete when you finish on site.");
+        setNotice("Visit started - mark complete when you finish on site.");
       }
       scrollToMyVisits();
     } catch (e) {
@@ -199,7 +199,7 @@ export default function ProviderPage() {
       {profile && !profile.isApproved && (
         <p className="rounded-lg border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-900">
           {profile.vetting.isSubmitted
-            ? "Thanks — we're verifying your details. You'll be able to claim jobs once approved."
+            ? "Thanks - we're verifying your details. You'll be able to claim jobs once approved."
             : PROVIDER_APPROVAL_PENDING_NOTE}
         </p>
       )}
@@ -326,7 +326,7 @@ export default function ProviderPage() {
               >
                 <div>
                   <div className="font-medium">
-                    {v.scheduledDate.slice(0, 10)} — {v.postcode}
+                    {v.scheduledDate.slice(0, 10)} - {v.postcode}
                   </div>
                   <div className="text-sm text-stone-500">{v.availabilityWindow}</div>
                   <StatusBadge status={v.status} />
@@ -347,7 +347,7 @@ export default function ProviderPage() {
                           a.scheduledDate.localeCompare(b.scheduledDate)
                         );
                       });
-                      setNotice("Job claimed — scroll down to start your visit when you arrive.");
+                      setNotice("Job claimed - scroll down to start your visit when you arrive.");
                       scrollToMyVisits();
                     } catch (e) {
                       setError(e instanceof Error ? e.message : "Claim failed");
@@ -377,7 +377,7 @@ export default function ProviderPage() {
         {initialLoading ? (
           <LoadingSpinner label="Loading your visits…" className="mt-2 block" />
         ) : upcoming.length === 0 ? (
-          <p className="mt-2 text-sm text-stone-500">No active visits — claim a job above.</p>
+          <p className="mt-2 text-sm text-stone-500">No active visits - claim a job above.</p>
         ) : myVisitsView === "map" ? (
           <VisitMap
             visits={upcoming}
@@ -397,7 +397,7 @@ export default function ProviderPage() {
                   <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
                     <div>
                       <div className="font-medium">
-                        {v.scheduledDate.slice(0, 10)} — {v.postcode}
+                        {v.scheduledDate.slice(0, 10)} - {v.postcode}
                       </div>
                       <div className="text-sm text-stone-500">{v.availabilityWindow}</div>
                       <div className="mt-2">
@@ -442,7 +442,7 @@ export default function ProviderPage() {
                 className="flex flex-wrap items-center justify-between gap-2 rounded-lg border border-stone-100 bg-stone-50 px-4 py-3 text-sm"
               >
                 <span>
-                  {v.scheduledDate.slice(0, 10)} — {v.postcode}
+                  {v.scheduledDate.slice(0, 10)} - {v.postcode}
                 </span>
                 <StatusBadge status={v.status} />
               </li>

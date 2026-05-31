@@ -2,13 +2,13 @@
 
 **Source of truth** for GardensSorted homeowner subscriptions.
 
-**Last updated:** 2026-05-31 — single launch plan (garden band + add-ons)
+**Last updated:** 2026-05-31 - single launch plan (garden band + add-ons)
 
 ---
 
 ## Launch offer (signup)
 
-One subscription at signup: **garden care** — **10 visits per year**, priced by **garden size band** plus optional **add-ons**. Marketing label: *Garden care*; DB plan name: `Essential Monthly` (legacy naming).
+One subscription at signup: **garden care** - **10 visits per year**, priced by **garden size band** plus optional **add-ons**. Marketing label: *Garden care*; DB plan name: `Essential Monthly` (legacy naming).
 
 **Premium / Elite** tiers are **inactive** at signup (`IsActive = false`) but remain in the database for existing subscribers. Tier upgrades are disabled until multi-tier plans return (`PlanCatalog.GetUpgradeTier` → `null`).
 
@@ -16,7 +16,7 @@ One subscription at signup: **garden care** — **10 visits per year**, priced b
 
 ## Garden size bands
 
-Maintained **lawn, beds, and edges** — not whole plot or large paved areas.
+Maintained **lawn, beds, and edges** - not whole plot or large paved areas.
 
 | Garden size | Provider time (on site) | Price / month | Provider pay / visit |
 |-------------|-------------------------|---------------|----------------------|
@@ -72,14 +72,14 @@ Configurable via `ProviderPayout` (`SmallVisitGbp`, `MediumVisitGbp`, `LargeVisi
 
 ## What's included on every visit
 
-Within the **maintained area** (lawn, planted beds, edges — not whole plot or large paving):
+Within the **maintained area** (lawn, planted beds, edges - not whole plot or large paving):
 
 | Work | Included |
 |------|----------|
 | Lawn mowing and edging | Yes |
 | Weeding in borders and planted beds | Yes |
 | General garden clean-up and tidy | Yes |
-| Light watering — pots, beds, obvious dry spots while on site | Yes |
+| Light watering - pots, beds, obvious dry spots while on site | Yes |
 
 Paid **signup add-ons** (hedge, seasonal, patio) are optional and billed separately.
 
@@ -113,11 +113,11 @@ Code: `SubscriptionCommitment.cs`. Stripe checkout and `EndsAtUtc` use the effec
 
 ### Cancellation and visit equalisation
 
-Visits are **seasonal** (more in spring/summer, fewer in winter). If a customer cancels before receiving all paid visits (including add-on sessions), remaining visits in the notice period may be **reduced** so delivered work matches what was paid for. Example: signup in April, cancel in June — visits from June onward may be scaled back. Full policy: [`/terms`](/terms) §6–7.
+Visits are **seasonal** (more in spring/summer, fewer in winter). If a customer cancels before receiving all paid visits (including add-on sessions), remaining visits in the notice period may be **reduced** so delivered work matches what was paid for. Example: signup in April, cancel in June - visits from June onward may be scaled back. Full policy: [`/terms`](/terms) §6–7.
 
 **Water:** Customer provides **access** (working outdoor tap or agreed supply). **Gardener brings** hose or watering can. No separate watering-only visits.
 
-**Gardeners:** Approved only after **ID**, **UK right-to-work** verification, **basic DBS** pass, and **their own relevant insurance**; they bring their own equipment — see [`provider-requirements.md`](provider-requirements.md).
+**Gardeners:** Approved only after **ID**, **UK right-to-work** verification, **basic DBS** pass, and **their own relevant insurance**; they bring their own equipment - see [`provider-requirements.md`](provider-requirements.md).
 
 **Green waste:** Customers **dispose of clippings themselves** or **provide a suitable council garden-waste bin** on collection day. We do not routinely haul green waste off site.
 
@@ -125,13 +125,13 @@ Visits are **seasonal** (more in spring/summer, fewer in winter). If a customer 
 
 ## Customer responsibilities (before each visit)
 
-1. **Access** — gate unlocked, path clear, pets kept away from the garden.
-2. **Clear lawn and beds** — no furniture, toys, tools, or branches in the way.
+1. **Access** - gate unlocked, path clear, pets kept away from the garden.
+2. **Clear lawn and beds** - no furniture, toys, tools, or branches in the way.
 3. **Pet waste** picked up in maintained areas.
-4. **Water** — working outdoor tap (gardener brings hose or watering can).
-5. **Power** — socket reachable from the garden; indoor or outdoor is fine. Gardener brings **20 m+ extension lead**.
-6. **Grass clippings** — customer bins them, or council garden-waste bin out on collection day.
-7. **Account details** — address, garden size, and access notes kept up to date.
+4. **Water** - working outdoor tap (gardener brings hose or watering can).
+5. **Power** - socket reachable from the garden; indoor or outdoor is fine. Gardener brings **20 m+ extension lead**.
+6. **Grass clippings** - customer bins them, or council garden-waste bin out on collection day.
+7. **Account details** - address, garden size, and access notes kept up to date.
 
 If these are not met, the visit may be marked incomplete without refund.
 
@@ -154,6 +154,6 @@ Documented in [`/terms`](/terms) (section 9). Signup acceptance records `TermsAc
 
 ## Related docs
 
-- [`sorted_saas_forecast_garden_bands.xlsx`](../sorted_saas_forecast_garden_bands.xlsx) — regenerate: `python3 scripts/build_forecast_garden_bands.py`
+- [`sorted_saas_forecast_garden_bands.xlsx`](../sorted_saas_forecast_garden_bands.xlsx) - regenerate: `python3 scripts/build_forecast_garden_bands.py`
 - [`provider-requirements.md`](provider-requirements.md)
 - [`first-month-marketing-plan.md`](first-month-marketing-plan.md)

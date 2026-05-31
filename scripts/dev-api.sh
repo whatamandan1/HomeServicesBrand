@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Fast local API start — build once, then run without recompiling.
+# Fast local API start - build once, then run without recompiling.
 set -euo pipefail
 export PATH="/usr/local/share/dotnet:${PATH:-}"
 

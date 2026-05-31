@@ -25,7 +25,7 @@ export function SocialProofSection() {
             Less stress, more time enjoying your garden
           </h2>
           <p className="mt-4 text-stone-600 leading-relaxed">
-            GardensSorted is built for people who want their outdoor space maintained properly — without becoming a part-time project manager.
+            GardensSorted is built for people who want their outdoor space maintained properly - without becoming a part-time project manager.
           </p>
           <p className="mt-3 text-xs text-stone-500">Feedback from early Yorkshire customers</p>
         </div>

@@ -206,7 +206,7 @@ export default function AdminPage() {
         setPageError(
           failures.length === results.length
             ? message
-            : `${message} — some sections may be incomplete. Refresh to retry.`
+            : `${message} - some sections may be incomplete. Refresh to retry.`
         );
       }
 
@@ -317,7 +317,7 @@ export default function AdminPage() {
       {!loading && dash && (
         <>
           <div className="flex flex-wrap items-center justify-between gap-3">
-            <p className="text-sm text-stone-500">Snapshot counts — click a card to jump to that section.</p>
+            <p className="text-sm text-stone-500">Snapshot counts - click a card to jump to that section.</p>
             <label className="text-sm text-stone-600">
               Trend range
               <select
@@ -364,7 +364,7 @@ export default function AdminPage() {
       <section id="signup-leads" className="scroll-mt-6">
         <h2 className="font-semibold">Incomplete signups</h2>
         <p className="mt-1 text-sm text-stone-500">
-          Contact details captured on /signup — follow up if someone dropped off before payment.
+          Contact details captured on /signup - follow up if someone dropped off before payment.
         </p>
         {signupLeadsError && (
           <AlertBanner
@@ -402,7 +402,7 @@ export default function AdminPage() {
 
       <section id="multi-property-solutions" className="scroll-mt-6">
         <h2 className="font-semibold">Multi-Property Solutions</h2>
-        <p className="mt-1 text-sm text-stone-500">Enquiry leads for multi-property accounts — separate from consumer customers.</p>
+        <p className="mt-1 text-sm text-stone-500">Enquiry leads for multi-property accounts - separate from consumer customers.</p>
         {portfolioError && (
           <AlertBanner variant="error" message={portfolioError} onDismiss={() => setPortfolioError(null)} />
         )}
@@ -467,7 +467,7 @@ export default function AdminPage() {
                     Coverage:{" "}
                     {p.coveragePostcode
                       ? `${p.coveragePostcode}, ${p.coverageRadiusMiles} miles`
-                      : "—"}
+                      : "-"}
                     {p.coveredOutcodes?.length ? (
                       <span className="block text-stone-400">
                         {p.coveredOutcodes.slice(0, 8).join(", ")}
@@ -718,7 +718,7 @@ export default function AdminPage() {
       <section id="workflow" className="scroll-mt-6">
         <h2 className="font-semibold">Workflow log</h2>
         <p className="mt-1 text-sm text-stone-500">
-          Recent platform events — signup, billing, scheduling, dispatch, and support.
+          Recent platform events - signup, billing, scheduling, dispatch, and support.
         </p>
         <WorkflowEventList events={workflowEvents} />
       </section>
@@ -734,7 +734,7 @@ export default function AdminPage() {
       <section id="threads" className="scroll-mt-6">
         <h2 className="font-semibold">Communication threads</h2>
         <p className="mt-1 text-sm text-stone-500">
-          Customer and guest chat threads — click View to read the full conversation.
+          Customer and guest chat threads - click View to read the full conversation.
         </p>
         <CommunicationThreadList
           threads={communicationThreads}

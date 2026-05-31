@@ -33,7 +33,7 @@ flowchart LR
 
 ---
 
-## Step 0 — Get started
+## Step 0 - Get started
 
 **Purpose:** Identify the customer and start lead capture before plan selection.
 
@@ -51,19 +51,19 @@ flowchart LR
 
 ---
 
-## Step 1 — Choose plan
+## Step 1 - Choose plan
 
 **Purpose:** Select billing interval, garden size, and tier (Essential / Premium / Elite).
 
 | Choice | Required | Notes |
 |--------|----------|-------|
 | Billing interval | Implicit | Monthly or Annual (`BillingIntervalToggle`) |
-| Garden size | Yes | Small / Medium / Large — drives price via `planPriceForGarden` |
+| Garden size | Yes | Small / Medium / Large - drives price via `planPriceForGarden` |
 | Plan tier | Yes | Maps to `SubscriptionPlanId` from API plans |
 
 **Data sources:**
 
-- `GET /api/plans` — live plans from DB (Stripe price IDs, visit cadence, minimum term)
+- `GET /api/plans` - live plans from DB (Stripe price IDs, visit cadence, minimum term)
 - Fallback: `FALLBACK_PLANS` in UI if API unreachable (signup blocked if plan id starts with `fallback-`)
 - Deep link: `?plan=<index>` pre-selects tier (annual billing)
 
@@ -73,19 +73,19 @@ flowchart LR
 
 ---
 
-## Step 2 — Finish signup
+## Step 2 - Finish signup
 
 **Purpose:** Service address, visit availability, password, optional garden photos, terms acceptance.
 
 | Field | Required | Validation | Register API field |
 |-------|----------|------------|-------------------|
 | Address line 1 | Yes | Non-empty | `line1` |
-| Address line 2 | No | — | `line2` |
+| Address line 2 | No | - | `line2` |
 | City | Yes | Non-empty | `city` |
 | Postcode | Yes | UK format (`isValidUkPostcode`, normalized) | `postcode` |
 | Availability | Yes | Preset or free text | `availabilityPreference` |
 | Password | Yes | Min length (`MIN_PASSWORD_LENGTH`) | `password` |
-| Garden photos | No | Up to 3; compressed client-side | Not in register — stashed in `sessionStorage` |
+| Garden photos | No | Up to 3; compressed client-side | Not in register - stashed in `sessionStorage` |
 | Terms | Implicit | Submit = accepted | `acceptedTerms: true` |
 
 **Not collected at signup:** Phone (sent as empty string; welcome SMS skipped unless phone added later).
@@ -98,7 +98,7 @@ flowchart LR
 
 **Endpoint:** `POST /api/auth/register/customer`
 
-**Request:** `RegisterCustomerRequest` — email, password, names, phone, address, `gardenSize`, `subscriptionPlanId`, `availabilityPreference`, `acceptedTerms`, `brandCode` (default `gardens-sorted`).
+**Request:** `RegisterCustomerRequest` - email, password, names, phone, address, `gardenSize`, `subscriptionPlanId`, `availabilityPreference`, `acceptedTerms`, `brandCode` (default `gardens-sorted`).
 
 **Backend effects** (`AuthService.RegisterCustomerAsync`):
 
@@ -108,7 +108,7 @@ flowchart LR
 4. Create `CustomerSubscription` with status **PendingPayment**
 5. Queue property geocoding (postcodes.io) for coverage/dispatch
 6. Mark matching signup lead **Converted**
-7. Send welcome email (and SMS if phone present) — async, non-blocking
+7. Send welcome email (and SMS if phone present) - async, non-blocking
 8. Return JWT + `pendingSubscriptionId`
 
 ---
@@ -199,7 +199,7 @@ See also: [`stripe-local-setup.md`](stripe-local-setup.md), [`deploy-staging.md`
 | Scenario | Behaviour |
 |----------|-----------|
 | Plans API down | Fallback pricing shown; register fails until live plans load |
-| Lead capture fails | Silent — does not block signup |
+| Lead capture fails | Silent - does not block signup |
 | Email already registered | Error + suggest login; auto-retry login + checkout |
 | Stripe checkout abandoned | Account exists; subscription stays PendingPayment; login → checkout |
 | Photo upload after payment fails | User can add photos in portal property section |
@@ -211,7 +211,7 @@ See also: [`stripe-local-setup.md`](stripe-local-setup.md), [`deploy-staging.md`
 
 - Phone number at signup (field exists in API but UI sends `""`)
 - Marketing opt-in (lead API supports it; UI always `false`)
-- Garden size help when unsure — AI from customer photos and/or aerial/Maps estimation to suggest Small/Medium/Large band ([`development-roadmap.md`](development-roadmap.md) § Possible later improvements)
+- Garden size help when unsure - AI from customer photos and/or aerial/Maps estimation to suggest Small/Medium/Large band ([`development-roadmap.md`](development-roadmap.md) § Possible later improvements)
 - Multi-property customer signup (separate `/multi-property-solutions` enquiry flow)
 - Self-serve subscription cancellation in portal (support/chat only)
 - Resume wizard from lead (admin visibility only; no customer “continue where you left off” link)

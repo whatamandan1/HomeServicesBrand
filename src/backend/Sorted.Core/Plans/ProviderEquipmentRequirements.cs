@@ -10,7 +10,7 @@ public static class ProviderEquipmentRequirements
         "Watering can or hose for light watering",
         "Rake",
         "Appropriate brush or broom for tidying paths and edges",
-        "Extension lead — at least 20 metres",
+        "Extension lead - at least 20 metres",
     ];
 
     public const string Summary =

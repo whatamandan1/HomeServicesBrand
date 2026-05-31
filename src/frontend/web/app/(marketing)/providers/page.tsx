@@ -20,7 +20,7 @@ const benefits = [
   {
     icon: MapPin,
     title: "Work in your area",
-    body: "Claim visits within a radius of your base postcode — no driving across the county for one job.",
+    body: "Claim visits within a radius of your base postcode - no driving across the county for one job.",
   },
   {
     icon: Calendar,
@@ -30,12 +30,12 @@ const benefits = [
   {
     icon: Banknote,
     title: "Fair, transparent pay",
-    body: "GardensSorted handles customer billing. You focus on great gardening — we handle scheduling and dispatch.",
+    body: "GardensSorted handles customer billing. You focus on great gardening - we handle scheduling and dispatch.",
   },
   {
     icon: Shield,
     title: "Approved network",
-    body: "ID, right-to-work, DBS, and your own relevant insurance verified before approval — plus support when you need it.",
+    body: "ID, right-to-work, DBS, and your own relevant insurance verified before approval - plus support when you need it.",
   },
 ];
 
@@ -94,14 +94,14 @@ export default function ProvidersPage() {
           ))}
         </ul>
         <p className="mx-auto mt-4 max-w-2xl text-sm text-stone-600">
-          Sign up first, then complete the checks &amp; documents form in your provider portal — approval only after we
+          Sign up first, then complete the checks &amp; documents form in your provider portal - approval only after we
           verify ID, right to work, DBS, and insurance.
         </p>
       </Section>
 
       <Section
         title="Equipment you must bring"
-        subtitle="Every visit — we don't supply tools. Customers provide water and electricity access; you bring your own gear including a 20 m+ extension lead."
+        subtitle="Every visit - we don't supply tools. Customers provide water and electricity access; you bring your own gear including a 20 m+ extension lead."
       >
         <ul className="mx-auto max-w-2xl space-y-2 text-sm text-stone-700">
           {PROVIDER_EQUIPMENT_REQUIRED.map((item) => (
@@ -117,7 +117,7 @@ export default function ProvidersPage() {
 
       <Section
         title="Add-on equipment (optional)"
-        subtitle="Declare what you own in the portal after signup — we match you to the right customer add-ons."
+        subtitle="Declare what you own in the portal after signup - we match you to the right customer add-ons."
       >
         <p className="mx-auto max-w-2xl text-sm text-stone-600">{PROVIDER_ADDON_EQUIPMENT_SUMMARY}</p>
         <ul className="mx-auto mt-4 max-w-2xl space-y-3 text-sm text-stone-700">

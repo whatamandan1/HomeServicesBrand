@@ -37,7 +37,7 @@ export function ServicePillarsSection() {
             Scheduled. Local. Online.
           </h2>
           <p className="mt-3 text-sm text-stone-600 sm:text-base">
-            The bits that matter most — without the hassle of juggling it yourself.
+            The bits that matter most - without the hassle of juggling it yourself.
           </p>
         </div>
 

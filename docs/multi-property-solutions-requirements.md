@@ -1,4 +1,4 @@
-# Multi-Property Solutions — Product Requirements
+# Multi-Property Solutions - Product Requirements
 
 **Status:** Phase 1 shipped (2026-05-23)  
 **Launch:** Same release window and geography as consumer GardensSorted (pilot coverage area)  
@@ -8,7 +8,7 @@
 
 ## Summary
 
-**Multi-Property Solutions** is a separate commercial track for people who manage **two or more properties** — private landlords, holiday-let owners, and letting agents. It is **not** a discount tier on consumer Essential/Premium subscriptions. Each account receives **personalised pricing** from calculation rules, **per-property visit requirements**, and **monthly invoicing in arrears** (not Stripe subscriptions).
+**Multi-Property Solutions** is a separate commercial track for people who manage **two or more properties** - private landlords, holiday-let owners, and letting agents. It is **not** a discount tier on consumer Essential/Premium subscriptions. Each account receives **personalised pricing** from calculation rules, **per-property visit requirements**, and **monthly invoicing in arrears** (not Stripe subscriptions).
 
 Tenants never interact with the platform. One login maps to one multi-property account for v1.
 
@@ -24,7 +24,7 @@ Tenants never interact with the platform. One login maps to one multi-property a
 
 **Minimum:** 2 properties always (cannot enquire with fewer).
 
-**Geography:** Same service area as consumer signup at launch. Properties outside coverage may be **waitlisted** or flagged for ops to **find a gardener** — they do not block the whole enquiry.
+**Geography:** Same service area as consumer signup at launch. Properties outside coverage may be **waitlisted** or flagged for ops to **find a gardener** - they do not block the whole enquiry.
 
 ---
 
@@ -45,10 +45,10 @@ Tenants never interact with the platform. One login maps to one multi-property a
 
 **Body (short):**
 - One account for every property you manage
-- Personalised pricing based on your properties — not one-size-fits-all plans
+- Personalised pricing based on your properties - not one-size-fits-all plans
 - Per-property visit schedules that match how you let and maintain each home
 - Monthly invoicing with card or BACS
-- Tenants never need to sign up — you stay in control
+- Tenants never need to sign up - you stay in control
 
 **Phase 1 CTA:** Request a quote  
 **Phase 2+ CTA:** Get an instant quote *(after AI pricing is live)*
@@ -80,10 +80,10 @@ Rules to be defined in a separate **multi-property pricing calculator**; the pla
 
 1. **Number of properties** in the account
 2. **Postcode / travel clustering** (efficiency across properties)
-3. **Visit frequency** — per property (not account-wide default)
-4. **Service level** — e.g. basic tidy vs full maintenance (per property)
-5. **Garden size** — collected at enquiry and signup
-6. **Seasonality** — e.g. holiday-let peak/off-peak patterns
+3. **Visit frequency** - per property (not account-wide default)
+4. **Service level** - e.g. basic tidy vs full maintenance (per property)
+5. **Garden size** - collected at enquiry and signup
+6. **Seasonality** - e.g. holiday-let peak/off-peak patterns
 
 ### Quote behaviour
 
@@ -105,7 +105,7 @@ Rules to be defined in a separate **multi-property pricing calculator**; the pla
 
 ## Enquiry & signup data
 
-### Phase 1 — Enquiry form only
+### Phase 1 - Enquiry form only
 
 Collect:
 
@@ -113,14 +113,14 @@ Collect:
 - Optional: company / trading name (for agents)
 - **Minimum 2 properties**, each with:
   - **Address** (line + postcode sufficient at this stage)
-  - **Garden size** (Small / Medium / Large — same enum as consumer)
+  - **Garden size** (Small / Medium / Large - same enum as consumer)
 - Free-text notes (optional)
 
 **Out of scope for phase 1:** instant quote, account creation, invoicing, portal.
 
 Deliverables: admin notification, CRM lead record, email acknowledgement to enquirer.
 
-### Phase 2+ — Multi-property signup (separate journey)
+### Phase 2+ - Multi-property signup (separate journey)
 
 Same visual language as consumer signup. Customer builds the property list to **get a price**:
 
@@ -135,10 +135,10 @@ Same visual language as consumer signup. Customer builds the property list to **
 
 Account holder can:
 
-- View **dashboard** — all properties, status, next visits, monthly spend
+- View **dashboard** - all properties, status, next visits, monthly spend
 - Drill into **per-property** visits, requirements, access notes, assigned gardener
 - See **consolidated spend** and savings vs standard consumer rates (when calculable)
-- **Bulk import** properties (CSV or paste) — not available at initial signup
+- **Bulk import** properties (CSV or paste) - not available at initial signup
 - Add properties (triggers recalc + new 3-month lock-in per property)
 - Request removal of properties (subject to commitment billing rules)
 
@@ -154,7 +154,7 @@ Tenants do not receive logins or communications from the platform (landlord/agen
 - **≥ £200/month:** BACS option.
 - **Invoicee:** account holder; letting agents decide whether they or the property owner is billed (offline arrangement; platform invoices the account holder).
 
-Separate **multi-property terms** (minimum term, BACS, cancellation, indicative quotes) — distinct from consumer `/terms` where appropriate.
+Separate **multi-property terms** (minimum term, BACS, cancellation, indicative quotes) - distinct from consumer `/terms` where appropriate.
 
 ---
 
@@ -166,19 +166,19 @@ Dedicated **Multi-Property Solutions** area in admin (not mixed with consumer cu
 - Enquiry pipeline: new → quoted → under review → accepted → active
 - View/edit per-property requirements and **override pricing**
 - Approve AI-generated quotes before agreement goes live
-- Reporting similar to consumer CRM: account count, properties per account, MRR, churn — scoped to multi-property segment
+- Reporting similar to consumer CRM: account count, properties per account, MRR, churn - scoped to multi-property segment
 
 ---
 
 ## Workflows (to implement)
 
-1. **Multi-property enquiry received** — log event, notify admin, ack email
-2. **Quote generated** — AI + rules, indicative, pending review
-3. **Quote approved / adjusted** — admin action, customer notified
-4. **Agreement activated** — account + properties + visit schedules
-5. **Monthly invoice generated** — arrears, card vs BACS routing
-6. **Property added / removed** — recalc, lock-in rules, commitment billing
-7. **Out-of-area property** — waitlist or ops “find a gardener” task
+1. **Multi-property enquiry received** - log event, notify admin, ack email
+2. **Quote generated** - AI + rules, indicative, pending review
+3. **Quote approved / adjusted** - admin action, customer notified
+4. **Agreement activated** - account + properties + visit schedules
+5. **Monthly invoice generated** - arrears, card vs BACS routing
+6. **Property added / removed** - recalc, lock-in rules, commitment billing
+7. **Out-of-area property** - waitlist or ops “find a gardener” task
 
 ---
 

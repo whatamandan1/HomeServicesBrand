@@ -6,7 +6,7 @@ import { Button, Section } from "@/components/marketing/ui";
 export const metadata: Metadata = {
   title: "About us",
   description:
-    "GardensSorted brings reliable subscription garden care to Yorkshire — trusted local gardeners, simple online signup, and visits you can manage from your account.",
+    "GardensSorted brings reliable subscription garden care to Yorkshire - trusted local gardeners, simple online signup, and visits you can manage from your account.",
 };
 
 const values = [
@@ -18,12 +18,12 @@ const values = [
   {
     icon: ShieldCheck,
     title: "Trusted gardeners",
-    body: "Every gardener is approved only after ID, right-to-work, and basic DBS checks — before they take visits in your area.",
+    body: "Every gardener is approved only after ID, right-to-work, and basic DBS checks - before they take visits in your area.",
   },
   {
     icon: MapPin,
     title: "Local to Yorkshire",
-    body: "We're starting where we know best — Leeds, York, Wakefield, and communities across the region.",
+    body: "We're starting where we know best - Leeds, York, Wakefield, and communities across the region.",
   },
   {
     icon: Users,
@@ -51,7 +51,7 @@ export default function AboutPage() {
 
       <Section
         title="What we do"
-        subtitle="A subscription service for routine garden maintenance — not one-off landscaping projects."
+        subtitle="A subscription service for routine garden maintenance - not one-off landscaping projects."
       >
         <div className="mx-auto max-w-3xl space-y-6 text-stone-600 leading-relaxed">
           <p>
@@ -60,7 +60,7 @@ export default function AboutPage() {
             online account.
           </p>
           <p>
-            It&apos;s the same idea as other subscriptions you already use — clear pricing upfront, regular service,
+            It&apos;s the same idea as other subscriptions you already use - clear pricing upfront, regular service,
             and support when you need it. No haggling, no wondering if someone will turn up.
           </p>
         </div>

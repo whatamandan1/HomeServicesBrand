@@ -67,7 +67,7 @@ public class VisitManagementService(SortedDbContext db, IWorkflowLogger workflow
             throw new InvalidOperationException("This visit can no longer be changed.");
 
         if (status == VisitStatus.InProgress && !allowInProgress)
-            throw new InvalidOperationException("Visits in progress cannot be changed — contact support.");
+            throw new InvalidOperationException("Visits in progress cannot be changed - contact support.");
     }
 
     private async Task CancelAsync(JobVisit visit, bool allowInProgress, CancellationToken ct)

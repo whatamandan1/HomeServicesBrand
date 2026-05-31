@@ -71,7 +71,7 @@ public static class DataSeeder
             {
                 BrandId = brand.Id,
                 Name = "Essential Monthly",
-                Description = "Up to 50 m² — mow, edge, weed borders, tidy. 10 visits/year. From £59.99/mo. 3-month minimum.",
+                Description = "Up to 50 m² - mow, edge, weed borders, tidy. 10 visits/year. From £59.99/mo. 3-month minimum.",
                 BillingInterval = SubscriptionBillingInterval.Monthly,
                 MinimumTermMonths = 3,
                 PriceGbp = 59.99m
@@ -80,7 +80,7 @@ public static class DataSeeder
             {
                 BrandId = brand.Id,
                 Name = "Essential Annual",
-                Description = "Up to 50 m² — 10 visits/year. Annual plan (~10 months price).",
+                Description = "Up to 50 m² - 10 visits/year. Annual plan (~10 months price).",
                 BillingInterval = SubscriptionBillingInterval.Annual,
                 MinimumTermMonths = 12,
                 PriceGbp = 599.90m
@@ -89,7 +89,7 @@ public static class DataSeeder
             {
                 BrandId = brand.Id,
                 Name = "Premium Monthly",
-                Description = "Legacy tier — not offered at signup.",
+                Description = "Legacy tier - not offered at signup.",
                 BillingInterval = SubscriptionBillingInterval.Monthly,
                 MinimumTermMonths = 3,
                 PriceGbp = 84.99m,
@@ -99,7 +99,7 @@ public static class DataSeeder
             {
                 BrandId = brand.Id,
                 Name = "Premium Annual",
-                Description = "Legacy tier — not offered at signup.",
+                Description = "Legacy tier - not offered at signup.",
                 BillingInterval = SubscriptionBillingInterval.Annual,
                 MinimumTermMonths = 12,
                 PriceGbp = 849.90m,
@@ -109,7 +109,7 @@ public static class DataSeeder
             {
                 BrandId = brand.Id,
                 Name = "Elite Monthly",
-                Description = "Legacy tier — not offered at signup.",
+                Description = "Legacy tier - not offered at signup.",
                 BillingInterval = SubscriptionBillingInterval.Monthly,
                 MinimumTermMonths = 3,
                 PriceGbp = 119.99m,
@@ -119,7 +119,7 @@ public static class DataSeeder
             {
                 BrandId = brand.Id,
                 Name = "Elite Annual",
-                Description = "Legacy tier — not offered at signup.",
+                Description = "Legacy tier - not offered at signup.",
                 BillingInterval = SubscriptionBillingInterval.Annual,
                 MinimumTermMonths = 12,
                 PriceGbp = 1199.90m,
@@ -254,7 +254,7 @@ public static class DataSeeder
             BrandId = brandId,
             CompanyName = "Mitchell Lettings",
             IndicativeMonthlyGbp = 185.00m,
-            AgreementNotes = "Indicative demo quote — subject to review before agreement."
+            AgreementNotes = "Indicative demo quote - subject to review before agreement."
         };
         db.MultiPropertyAccounts.Add(account);
 
@@ -643,7 +643,7 @@ public static class DataSeeder
         if (trimmed.StartsWith("prod_", StringComparison.OrdinalIgnoreCase))
         {
             logger.LogWarning(
-                "{Setting} is a Stripe Product ID ({ProductId}). Use a Price ID (price_...) from the product Pricing section — ignoring this value.",
+                "{Setting} is a Stripe Product ID ({ProductId}). Use a Price ID (price_...) from the product Pricing section - ignoring this value.",
                 settingName,
                 trimmed);
             return null;

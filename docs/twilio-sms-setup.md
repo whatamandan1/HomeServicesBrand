@@ -8,10 +8,10 @@ Twilio **cannot** send SMS **from** your own mobile number. That is not how the 
 
 | Role | Your personal mobile | Twilio number |
 |------|---------------------|---------------|
-| **FROM** (sender) | ❌ Not supported | ✅ Required — use your **free trial number** |
-| **TO** (recipient, trial only) | ✅ Verify it as a **Verified Caller ID** | — |
+| **FROM** (sender) | ❌ Not supported | ✅ Required - use your **free trial number** |
+| **TO** (recipient, trial only) | ✅ Verify it as a **Verified Caller ID** | - |
 
-On a **free trial**, SMS can only be sent **to numbers you have verified** (up to 5). Your phone is where test messages arrive — not what appears as the sender.
+On a **free trial**, SMS can only be sent **to numbers you have verified** (up to 5). Your phone is where test messages arrive - not what appears as the sender.
 
 Trial includes **100 SMS** and **one free Twilio phone number** (no purchase required for basic dev).
 
@@ -30,28 +30,28 @@ Emails (SendGrid) cover the same events.
 
 ---
 
-## Step 1 — Twilio account (free, no card)
+## Step 1 - Twilio account (free, no card)
 
 1. Sign up at [twilio.com/try-twilio](https://www.twilio.com/try-twilio)
-2. Verify your **email** and **personal mobile** (this unlocks the account — it is not your sender ID)
-3. **Console → Account → Account Info** — copy **Account SID** and **Auth Token**
+2. Verify your **email** and **personal mobile** (this unlocks the account - it is not your sender ID)
+3. **Console → Account → Account Info** - copy **Account SID** and **Auth Token**
 
 ---
 
-## Step 2 — Get your free trial number (not “buy”)
+## Step 2 - Get your free trial number (not “buy”)
 
 You need **one Twilio-owned number** as the sender. On trial this is free:
 
 1. **Console home** → click **Get phone number**  
-   Or: **Phone Numbers → Manage → Buy a number** — filter **United Kingdom**, tick **SMS**, pick the cheapest (~£1/mo is only after upgrade; trial assigns one free number)
+   Or: **Phone Numbers → Manage → Buy a number** - filter **United Kingdom**, tick **SMS**, pick the cheapest (~£1/mo is only after upgrade; trial assigns one free number)
 2. Copy the number in **E.164** format, e.g. `+447XXXXXXXXX`
-3. Put that in config as `FromPhoneNumber` — **not** your personal mobile
+3. Put that in config as `FromPhoneNumber` - **not** your personal mobile
 
 > Trial accounts can only have **one** Twilio number. Messages must be sent **from** that number (error 21607 if you use anything else).
 
 ---
 
-## Step 3 — Verify your mobile as a recipient (trial only)
+## Step 3 - Verify your mobile as a recipient (trial only)
 
 Trial accounts can only SMS **verified** numbers:
 
@@ -59,13 +59,13 @@ Trial accounts can only SMS **verified** numbers:
 2. **Add a new Caller ID** → enter **your personal mobile**
 3. Enter the SMS code Twilio sends you
 
-Repeat for any other test numbers (customers, team) — max 5 on trial.
+Repeat for any other test numbers (customers, team) - max 5 on trial.
 
 After you **upgrade** the account, you can send to any valid UK mobile without pre-verifying.
 
 ---
 
-## Step 4 — Local config
+## Step 4 - Local config
 
 Add to `src/backend/Sorted.Api/appsettings.Development.local.json`:
 
@@ -82,11 +82,11 @@ Add to `src/backend/Sorted.Api/appsettings.Development.local.json`:
 - `FromPhoneNumber` = your **Twilio trial number** (step 2)
 - When testing signup/reminders, use a **verified** mobile as the customer phone
 
-Restart the API. Check `GET http://localhost:5080/health` — `twilioConfigured` should be `true`.
+Restart the API. Check `GET http://localhost:5080/health` - `twilioConfigured` should be `true`.
 
 ---
 
-## Step 5 — Test without a full signup
+## Step 5 - Test without a full signup
 
 ```bash
 curl http://localhost:5080/api/dev/communications-status
@@ -119,7 +119,7 @@ Same trial rules apply on Railway until the account is upgraded.
 
 - **Trial SMS** is limited to your **signup country** (UK numbers if you signed up with a UK mobile).
 - Messages may include a trial prefix until you upgrade.
-- **Alphanumeric sender** (e.g. `GardensSorted` instead of a phone number) works in the UK for one-way notifications but **requires a paid account** — not available on trial.
+- **Alphanumeric sender** (e.g. `GardensSorted` instead of a phone number) works in the UK for one-way notifications but **requires a paid account** - not available on trial.
 - For production launch: upgrade Twilio, then consider alphanumeric sender or a dedicated UK long code.
 
 ---

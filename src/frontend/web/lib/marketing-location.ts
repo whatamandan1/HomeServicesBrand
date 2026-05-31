@@ -1,4 +1,4 @@
-/** Launch hubs — used to personalise homepage location copy from visitor coordinates. */
+/** Launch hubs - used to personalise homepage location copy from visitor coordinates. */
 export type ServiceHub = {
   id: string;
   label: string;

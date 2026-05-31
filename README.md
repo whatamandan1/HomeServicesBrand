@@ -35,7 +35,7 @@ dotnet build src/backend/Sorted.Api
 dotnet run --project src/backend/Sorted.Api --no-build
 ```
 
-API: http://localhost:5080 — Swagger: http://localhost:5080/swagger
+API: http://localhost:5080 - Swagger: http://localhost:5080/swagger
 
 SQLite database is created at `src/backend/Sorted.Api/sorted.db` on first run.
 
@@ -75,8 +75,8 @@ Set `Stripe:WebhookSecret` from the CLI output.
 
 ### 4. Customer flow
 
-1. http://localhost:3000/signup — register + checkout (or dev activate)
-2. http://localhost:3000/portal — subscriptions, visits, AI chat
+1. http://localhost:3000/signup - register + checkout (or dev activate)
+2. http://localhost:3000/portal - subscriptions, visits, AI chat
 3. Login as provider → claim open visits
 4. Login as admin → CRM dashboard, approve providers
 
@@ -94,7 +94,7 @@ src/frontend/web/       # Next.js (customer, provider, admin routes)
 
 See **[docs/deploy-staging.md](docs/deploy-staging.md)** for Vercel (frontend) + Railway (API).
 
-**Next:** **[docs/staging-hardening.md](docs/staging-hardening.md)** — PostgreSQL, SendGrid, OpenAI.  
+**Next:** **[docs/staging-hardening.md](docs/staging-hardening.md)** - PostgreSQL, SendGrid, OpenAI.  
 **Dev costs / skip payment:** **[docs/dev-costs-and-email.md](docs/dev-costs-and-email.md)**
 
 ## GitHub Actions

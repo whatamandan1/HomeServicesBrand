@@ -52,7 +52,7 @@ export default function LandlordPortalPage() {
           Multi-property dashboard
         </h1>
         <p className="mt-2 text-stone-600">
-          Demo view of your property portfolio — indicative pricing and visit schedule.
+          Demo view of your property portfolio - indicative pricing and visit schedule.
         </p>
       </div>
 

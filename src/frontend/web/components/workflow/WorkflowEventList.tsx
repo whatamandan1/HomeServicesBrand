@@ -27,7 +27,7 @@ function shortenPayload(json: string) {
 }
 
 function shortenId(id: string | null) {
-  if (!id) return "—";
+  if (!id) return "-";
   return id.slice(0, 8);
 }
 
@@ -112,7 +112,7 @@ export function WorkflowEventList({
           event: e.eventName,
           entity: e.entityType
             ? `${e.entityType} ${shortenId(e.entityId)}`
-            : "—",
+            : "-",
           payload: shortenPayload(e.payloadJson),
         }))}
         emptyMessage={controls.query ? "No events match your search." : emptyMessage}

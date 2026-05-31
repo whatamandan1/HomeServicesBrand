@@ -3,7 +3,7 @@
 import { usePathname } from "next/navigation";
 import { MOBILE_HOME_MAIN_PADDING_CLASS } from "@/lib/mobile-chrome";
 
-/** Homepage fixed bottom CTA bar — padding only where that bar is shown. */
+/** Homepage fixed bottom CTA bar - padding only where that bar is shown. */
 function needsMobileCtaPadding(pathname: string) {
   return pathname === "/";
 }

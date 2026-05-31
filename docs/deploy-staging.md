@@ -15,7 +15,7 @@ See [`custom-domain-setup.md`](custom-domain-setup.md) for DNS, CORS, and Stripe
 cd /Users/dan/Documents/HomeServicesBrand
 git init
 git add .
-git commit -m "Sorted MVP — GardensSorted platform"
+git commit -m "Sorted MVP - GardensSorted platform"
 git remote add origin YOUR_GITHUB_REPO_URL
 git push -u origin main
 ```
@@ -37,27 +37,27 @@ Ensure `appsettings.Development.local.json` is **not** committed (it is gitignor
 | `Jwt__Secret` | long random string (32+ chars) |
 | `Stripe__SecretKey` | `sk_test_...` or live later |
 | `Stripe__WebhookSecret` | from Stripe Dashboard webhook |
-| `Stripe__Prices__EssentialMonthly` | `price_...` — Essential **£29.95/mo** (small garden) |
-| `Stripe__Prices__EssentialAnnual` | `price_...` — Essential **£299.95/yr** |
-| `Stripe__Prices__PremiumMonthly` | `price_...` — Premium **£54.95/mo** |
-| `Stripe__Prices__PremiumAnnual` | `price_...` — Premium **£549.95/yr** |
-| `Stripe__Prices__EliteMonthly` | `price_...` — Elite **£89.95/mo** |
-| `Stripe__Prices__EliteAnnual` | `price_...` — Elite **£899.95/yr** |
+| `Stripe__Prices__EssentialMonthly` | `price_...` - Essential **£29.95/mo** (small garden) |
+| `Stripe__Prices__EssentialAnnual` | `price_...` - Essential **£299.95/yr** |
+| `Stripe__Prices__PremiumMonthly` | `price_...` - Premium **£54.95/mo** |
+| `Stripe__Prices__PremiumAnnual` | `price_...` - Premium **£549.95/yr** |
+| `Stripe__Prices__EliteMonthly` | `price_...` - Elite **£89.95/mo** |
+| `Stripe__Prices__EliteAnnual` | `price_...` - Elite **£899.95/yr** |
 | `Plans__EssentialMonthly` | `29.95` |
 | `Plans__EssentialAnnual` | `299.95` |
 | `Plans__PremiumMonthly` | `54.95` |
 | `Plans__PremiumAnnual` | `549.95` |
 | `Plans__EliteMonthly` | `89.95` |
 | `Plans__EliteAnnual` | `899.95` |
-| `Features__BypassStripeCheckout` | `false` — must be false in production (API refuses to start if true) |
+| `Features__BypassStripeCheckout` | `false` - must be false in production (API refuses to start if true) |
 | `Stripe__SuccessUrl` | `https://gardenssorted.co.uk/signup/success` |
 | `Stripe__CancelUrl` | `https://gardenssorted.co.uk/signup` |
 | `Stripe__BillingPortalReturnUrl` | `https://gardenssorted.co.uk/portal` |
 | `App__FrontendBaseUrl` | `https://gardenssorted.co.uk` |
-| `SendGrid__ApiKey` | optional — see [dev-costs-and-email.md](dev-costs-and-email.md) |
+| `SendGrid__ApiKey` | optional - see [dev-costs-and-email.md](dev-costs-and-email.md) |
 | `SendGrid__FromEmail` | verified sender (must match SendGrid single sender) |
 | `SendGrid__FromName` | `GardensSorted` |
-| `Twilio__AccountSid` | optional — see [twilio-sms-setup.md](twilio-sms-setup.md) |
+| `Twilio__AccountSid` | optional - see [twilio-sms-setup.md](twilio-sms-setup.md) |
 | `Twilio__AuthToken` | Twilio auth token |
 | `Twilio__FromPhoneNumber` | E.164, e.g. `+447...` |
 | `OpenAI__ApiKey` | optional |
@@ -78,18 +78,18 @@ Ensure `appsettings.Development.local.json` is **not** committed (it is gitignor
   - `customer.subscription.deleted`
 - Paste signing secret into `Stripe__WebhookSecret`
 
-**Note:** SQLite on Railway is ephemeral (resets on redeploy). Use **PostgreSQL** for persistent staging/production — the API applies EF migrations automatically on startup.
+**Note:** SQLite on Railway is ephemeral (resets on redeploy). Use **PostgreSQL** for persistent staging/production - the API applies EF migrations automatically on startup.
 
 ### PostgreSQL on Railway (recommended)
 
 1. In your Railway project → **+ New** → **Database** → **PostgreSQL**
 2. Open the **API service** → **Variables** → **Add variable reference** (or link Postgres service) so Railway injects `PGHOST`, `PGPORT`, `PGUSER`, `PGPASSWORD`, `PGDATABASE`
-3. Redeploy the API — on startup it runs `Database.Migrate()` and seeds demo data if the database is empty
-4. Check `GET /health` — expect `"database": "postgresql"`, `"canConnect": true`
+3. Redeploy the API - on startup it runs `Database.Migrate()` and seeds demo data if the database is empty
+4. Check `GET /health` - expect `"database": "postgresql"`, `"canConnect": true`
 
 If Postgres is in a **different** Railway project, copy `DATABASE_PUBLIC_URL` from the Postgres service into the API variables instead of using private `*.railway.internal` URLs.
 
-**Existing databases** created before migrations (via `EnsureCreated`) are detected automatically and stamped with the initial migration — no manual step required.
+**Existing databases** created before migrations (via `EnsureCreated`) are detected automatically and stamped with the initial migration - no manual step required.
 
 See [`docs/database-migrations.md`](database-migrations.md) for local migration commands.
 
@@ -105,7 +105,7 @@ You need a URL on the **service**, not the project:
 3. When asked for a **port**, choose **8080** (or whatever `PORT` shows in Variables).
 4. Test: `https://homeservicesbrand-production.up.railway.app/health` → `"database": "postgresql"`, `"canConnect": true`
 
-If you only see project-level settings, you clicked the wrong level — go back to the canvas and click the **API service card**.
+If you only see project-level settings, you clicked the wrong level - go back to the canvas and click the **API service card**.
 
 ---
 
@@ -119,16 +119,16 @@ If you only see project-level settings, you clicked the wrong level — go back 
 |------|--------|
 | Variable | Value |
 |----------|-------|
-| `API_URL` | Your Railway API URL (no trailing slash) — **required** for pricing/signup |
+| `API_URL` | Your Railway API URL (no trailing slash) - **required** for pricing/signup |
 | `NEXT_PUBLIC_SITE_URL` | `https://gardenssorted.co.uk` |
 | `NEXT_PUBLIC_SHOW_DEMO_LOGIN` | **Leave unset** on production (demo credentials hidden). Set `true` only for local dev. |
-| `NEXT_PUBLIC_API_URL` | optional — leave unset; `/api` is proxied via `API_URL` |
+| `NEXT_PUBLIC_API_URL` | optional - leave unset; `/api` is proxied via `API_URL` |
 
 Legacy: if you already use `NEXT_PUBLIC_API_URL` pointing at Railway, that still works as a direct browser call.
 
 4. Deploy → copy URL e.g. `https://gardenssorted.vercel.app`
 
-5. Update Railway variables (`Stripe__*`, `Cors__*`, `App__FrontendBaseUrl`) if the domain changed — see [`custom-domain-setup.md`](custom-domain-setup.md), then redeploy API.
+5. Update Railway variables (`Stripe__*`, `Cors__*`, `App__FrontendBaseUrl`) if the domain changed - see [`custom-domain-setup.md`](custom-domain-setup.md), then redeploy API.
 
 ---
 
@@ -143,7 +143,7 @@ Legacy: if you already use `NEXT_PUBLIC_API_URL` pointing at Railway, that still
 
 ## 5. GitHub Actions
 
-- **CI** (`.github/workflows/ci.yml`) — builds on every push  
+- **CI** (`.github/workflows/ci.yml`) - builds on every push  
 - Deploy is via Vercel/Railway GitHub integrations (recommended) rather than Actions secrets for MVP.
 
 Optional: add Vercel/Railway deploy hooks later.
@@ -153,12 +153,12 @@ Optional: add Vercel/Railway deploy hooks later.
 ## Local vs staging checklist
 
 - [ ] New `Jwt__Secret` in production (never use dev secret)  
-- [ ] `Stripe__WebhookSecret` set — API refuses to start without it in production  
+- [ ] `Stripe__WebhookSecret` set - API refuses to start without it in production  
 - [ ] `Features__BypassStripeCheckout=false` on Railway  
 - [ ] Stripe webhook points to Railway URL, not `stripe listen`  
 - [ ] CORS includes custom domain (`https://gardenssorted.co.uk`)  
 - [ ] `API_URL` on Vercel matches Railway URL  
 - [ ] `NEXT_PUBLIC_SHOW_DEMO_LOGIN` **not** set on Vercel (demo login hints hidden)  
-- [ ] All **six** Stripe Price IDs set — see [`stripe-price-ids-checklist.md`](stripe-price-ids-checklist.md)
+- [ ] All **six** Stripe Price IDs set - see [`stripe-price-ids-checklist.md`](stripe-price-ids-checklist.md)
 - [ ] `Plans__*` amounts match Stripe and [`consumer-plans-and-pricing.md`](consumer-plans-and-pricing.md)
 - [ ] `Features__SeedDemoData` still `true` until go-live gate (then set `false`)

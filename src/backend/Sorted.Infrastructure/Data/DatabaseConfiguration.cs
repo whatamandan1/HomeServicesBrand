@@ -12,7 +12,7 @@ public static class DatabaseConfiguration
 
     public static string ResolveConnectionString(IConfiguration configuration)
     {
-        // Prefer individual PG* vars — most reliable on Railway when services are linked
+        // Prefer individual PG* vars - most reliable on Railway when services are linked
         var fromPgVars = BuildFromPgEnvironmentVariables(configuration);
         if (fromPgVars is not null)
             return fromPgVars;

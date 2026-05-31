@@ -57,7 +57,7 @@ export function DataTable({
                   {c.label}
                 </span>
                 <span className="text-right text-sm font-medium text-stone-800">
-                  {String(row[c.key] ?? "—")}
+                  {String(row[c.key] ?? "-")}
                 </span>
               </div>
             ))}
@@ -81,7 +81,7 @@ export function DataTable({
               <tr key={i} className="border-b last:border-0">
                 {columns.map((c) => (
                   <td key={c.key} className="px-4 py-3">
-                    {String(row[c.key] ?? "—")}
+                    {String(row[c.key] ?? "-")}
                   </td>
                 ))}
               </tr>

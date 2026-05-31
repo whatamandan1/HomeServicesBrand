@@ -49,8 +49,8 @@ export function SupportChat({
 
   const defaultEmptyHint =
     mode === "guest"
-      ? "Ask about pricing, how it works, or whether we cover your area — no signup needed."
-      : "Ask about your visits, plan, or availability — e.g. “When is my next visit?”";
+      ? "Ask about pricing, how it works, or whether we cover your area - no signup needed."
+      : "Ask about your visits, plan, or availability - e.g. “When is my next visit?”";
 
   useEffect(() => {
     const saved = localStorage.getItem(threadStorageKey);
@@ -148,7 +148,7 @@ export function SupportChat({
           >
             {m.body}
             {m.escalated && (
-              <p className="mt-1 text-xs font-medium opacity-90">Escalated — our team will follow up shortly.</p>
+              <p className="mt-1 text-xs font-medium opacity-90">Escalated - our team will follow up shortly.</p>
             )}
           </div>
         ))}

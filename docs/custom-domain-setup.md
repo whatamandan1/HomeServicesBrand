@@ -1,10 +1,10 @@
-# Custom domain setup — gardenssorted.co.uk + gardenssorted.com
+# Custom domain setup - gardenssorted.co.uk + gardenssorted.com
 
 **Canonical site:** https://gardenssorted.co.uk  
 **Secondary domain:** https://gardenssorted.com → redirect to `.co.uk` (recommended)  
 **API (unchanged):** https://homeservicesbrand-production.up.railway.app
 
-Use **`.co.uk` as canonical** — email, legal copy, and Stripe redirects all use the UK domain. Point **`.com` at the same Vercel project** and 301-redirect it to `.co.uk` so SEO and share links stay consistent.
+Use **`.co.uk` as canonical** - email, legal copy, and Stripe redirects all use the UK domain. Point **`.com` at the same Vercel project** and 301-redirect it to `.co.uk` so SEO and share links stay consistent.
 
 ---
 
@@ -18,7 +18,7 @@ Vercel moves labels between releases. Use these paths:
 |---------|----------------------|---------------------------|
 | **Root Directory** | Project → **Settings** (sidebar) → **Build and Deployment** → scroll to **Root Directory** | Project → **Settings** → **General** → **Build and development settings** |
 | **Domains** | Project → **Settings** → **Domains** | Project home → **Domains** in the left sidebar (same level as Deployments) |
-| **Env vars** | Project → **Settings** → **Environment Variables** | Project → **Storage** tab area is wrong — stay under Settings |
+| **Env vars** | Project → **Settings** → **Environment Variables** | Project → **Storage** tab area is wrong - stay under Settings |
 
 You must be on the **project** (e.g. `home-services-brand`), not the **team** overview. Use the team switcher top-left if needed.
 
@@ -28,9 +28,9 @@ You must be on the **project** (e.g. `home-services-brand`), not the **team** ov
 
 1. Open **Domains** (see table above) → add all of these to the **same** project:
    - `gardenssorted.co.uk` (primary)
-   - `www.gardenssorted.co.uk` (optional — redirect to apex)
+   - `www.gardenssorted.co.uk` (optional - redirect to apex)
    - `gardenssorted.com`
-   - `www.gardenssorted.com` (optional — redirect to apex)
+   - `www.gardenssorted.com` (optional - redirect to apex)
 2. Configure DNS at each registrar per Vercel’s instructions (A/CNAME records).
 3. In Vercel domain settings, set **redirects**:
    - `gardenssorted.com` → `https://gardenssorted.co.uk`
@@ -44,7 +44,7 @@ You must be on the **project** (e.g. `home-services-brand`), not the **team** ov
 
 5. Redeploy the frontend.
 
-With redirects in place, visitors on `.com` land on `.co.uk` before any API calls — you only need one origin in CORS.
+With redirects in place, visitors on `.com` land on `.co.uk` before any API calls - you only need one origin in CORS.
 
 ---
 
@@ -70,7 +70,7 @@ Add extra CORS origins (only needed if users can browse on `.com` without being 
 | `Cors__AllowedOrigins__2` | `https://gardenssorted.com` |
 | `Cors__AllowedOrigins__3` | `https://www.gardenssorted.com` |
 
-Prefer redirect over extra CORS entries — one canonical URL is simpler for Stripe, SEO, and email links.
+Prefer redirect over extra CORS entries - one canonical URL is simpler for Stripe, SEO, and email links.
 
 ---
 
@@ -110,7 +110,7 @@ Leave `home-services-brand.vercel.app` attached in Vercel and redirect it to `ga
 
 | Domain | Role |
 |--------|------|
-| `gardenssorted.co.uk` | Canonical — SEO, Stripe, email, `NEXT_PUBLIC_SITE_URL` |
+| `gardenssorted.co.uk` | Canonical - SEO, Stripe, email, `NEXT_PUBLIC_SITE_URL` |
 | `gardenssorted.com` | Redirect to `.co.uk` (same Vercel project) |
 | `hello@gardenssorted.co.uk` | Transactional email sender (SendGrid) |
 | `home-services-brand.vercel.app` | Legacy alias → redirect (optional) |

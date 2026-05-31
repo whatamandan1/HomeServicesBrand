@@ -6,7 +6,7 @@ export const MOBILE_HOME_CTA_BAR_HEIGHT =
 export const MOBILE_HOME_MAIN_PADDING_CLASS =
   "max-md:pb-[calc(0.75rem+3rem+max(0.75rem,env(safe-area-inset-bottom)))]";
 
-/** Guest chat FAB — just above the homepage CTA bar (full Tailwind position classes). */
+/** Guest chat FAB - just above the homepage CTA bar (full Tailwind position classes). */
 export const GUEST_CHAT_FAB_CLASS_HOME =
   "fixed right-4 z-50 max-md:bottom-[calc(0.75rem+3rem+max(0.75rem,env(safe-area-inset-bottom))+0.75rem)] md:bottom-6";
 
@@ -17,7 +17,7 @@ export const SIGNUP_MOBILE_STICKY_FOOTER_HEIGHT =
 export const SIGNUP_MOBILE_BOTTOM_PADDING_CLASS =
   "max-md:pb-[calc(0.75rem+3rem+0.5rem+1.25rem+max(0.75rem,env(safe-area-inset-bottom)))]";
 
-/** Signup wizard fixed footer — above sticky bar + safe area. */
+/** Signup wizard fixed footer - above sticky bar + safe area. */
 export const GUEST_CHAT_FAB_CLASS_SIGNUP =
   "fixed right-4 z-50 max-md:bottom-[calc(0.75rem+3rem+0.5rem+1.25rem+max(0.75rem,env(safe-area-inset-bottom))+0.75rem)] md:bottom-6";
 

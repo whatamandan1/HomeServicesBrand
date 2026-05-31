@@ -6,10 +6,26 @@ export const FALLBACK_PLANS: SubscriptionPlan[] = [
   {
     id: "fallback-essential-monthly",
     name: SIGNUP_MONTHLY_PLAN_NAME,
-    description: "Garden care — 10 visits/year. Price by garden size from £59.99/mo. 3-month minimum.",
+    description: "Garden care - 10 visits/year. Price by garden size. 3-month minimum.",
     billingInterval: "Monthly",
     minimumTermMonths: 3,
     priceGbp: 59.99,
+  },
+  {
+    id: "fallback-premium-monthly",
+    name: "Premium Monthly",
+    description: "Garden care - 20 visits/year. Price by garden size. 3-month minimum.",
+    billingInterval: "Monthly",
+    minimumTermMonths: 3,
+    priceGbp: 84.99,
+  },
+  {
+    id: "fallback-elite-monthly",
+    name: "Elite Monthly",
+    description: "Garden care - 30 visits/year. Price by garden size. 3-month minimum.",
+    billingInterval: "Monthly",
+    minimumTermMonths: 3,
+    priceGbp: 119.99,
   },
 ];
 

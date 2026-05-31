@@ -53,7 +53,7 @@ public static class CustomerAvailabilityWindow
         if (hasEvening)
             return new CustomerTimeWindow(EveningStart, EveningEnd);
 
-        // Weekday / weekend without a time band — day-level only.
+        // Weekday / weekend without a time band - day-level only.
         if (normalized.Contains("weekday", StringComparison.Ordinal)
             || normalized.Contains("week day", StringComparison.Ordinal)
             || normalized.Contains("weekend", StringComparison.Ordinal))

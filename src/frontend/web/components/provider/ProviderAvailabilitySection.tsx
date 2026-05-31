@@ -224,7 +224,7 @@ export function ProviderAvailabilitySection({
                 <div>
                   <span className="font-medium">{entry.blockedDate}</span>
                   {entry.reason && (
-                    <span className="ml-2 text-stone-500">— {entry.reason}</span>
+                    <span className="ml-2 text-stone-500">- {entry.reason}</span>
                   )}
                 </div>
                 <button

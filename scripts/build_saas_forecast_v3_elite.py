@@ -11,7 +11,7 @@ from openpyxl.workbook.defined_name import DefinedName
 SRC = "/Users/dan/Documents/HomeServicesBrand/sorted_saas_recurring_revenue_forecast.xlsx"
 OUT = "/Users/dan/Documents/HomeServicesBrand/sorted_saas_recurring_revenue_forecast_v3_elite.xlsx"
 
-# Annual visits per plan (product truth 2026-05) — provider pay = visits/12 × per-visit rate
+# Annual visits per plan (product truth 2026-05) - provider pay = visits/12 × per-visit rate
 VISITS_ESS_YR = 10
 VISITS_PREM_YR = 20
 VISITS_ELITE_YR = 30
@@ -472,7 +472,7 @@ def clear_all_defined_names(wb):
 def update_inputs(wb):
     clear_all_defined_names(wb)
     ws = wb["Inputs"]
-    ws["A1"] = "Sorted — SaaS Forecast v4 (10/20/30 visits per year + VAT principal/agent)"
+    ws["A1"] = "Sorted - SaaS Forecast v4 (10/20/30 visits per year + VAT principal/agent)"
     ws.insert_rows(12, 2)
     ws.insert_rows(18, 2)
     ws.insert_rows(20, 3)
@@ -481,9 +481,9 @@ def update_inputs(wb):
     unmerge_input_blockers(ws)
 
     pricing = [
-        (8, "Essential Monthly (£/mo, small)", 29.95, "10 visits/yr — medium +£10, large +£20"),
-        (9, "Premium Monthly (£/mo, small)", 54.95, "20 visits/yr — medium +£10, large +£20"),
-        (10, "Elite Monthly (£/mo, small)", 89.95, "30 visits/yr + patio refresh — medium +£10, large +£20"),
+        (8, "Essential Monthly (£/mo, small)", 29.95, "10 visits/yr - medium +£10, large +£20"),
+        (9, "Premium Monthly (£/mo, small)", 54.95, "20 visits/yr - medium +£10, large +£20"),
+        (10, "Elite Monthly (£/mo, small)", 89.95, "30 visits/yr + patio refresh - medium +£10, large +£20"),
         (11, "Essential Annual (£/yr, small)", 299.95, "medium +£100, large +£200"),
         (12, "Premium Annual (£/yr, small)", 549.95, "medium +£100, large +£200"),
         (13, "Elite Annual (£/yr, small)", 899.95, "medium +£100, large +£200"),
@@ -524,10 +524,10 @@ def update_inputs(wb):
 
     ws["A24"] = "CHURN (edit for sensitivity)"
     ws["A24"].font = SECTION_FONT
-    ws["A25"] = "Monthly plan churn — post min term (%/mo)"
+    ws["A25"] = "Monthly plan churn - post min term (%/mo)"
     ws["B25"] = 0.055
     ws["B25"].fill = INPUT_FILL
-    ws["A26"] = "Annual plan churn — at renewal (%/yr)"
+    ws["A26"] = "Annual plan churn - at renewal (%/yr)"
     ws["B26"] = 0.2
     ws["B26"].fill = INPUT_FILL
 
@@ -537,10 +537,10 @@ def update_inputs(wb):
     prem_mo = round(VISITS_PREM_YR / 12 * PROV_SMALL, 2)
     elite_mo = round(VISITS_ELITE_YR / 12 * PROV_SMALL, 2)
     unit_rows = [
-        (29, "Customer Acquisition Cost — CAC (£)", 70, "Paid acquisition per customer"),
-        (30, "Provider pay — Essential (£/mo, small garden)", ess_mo, f"{VISITS_ESS_YR} visits/yr × £{PROV_SMALL}/visit ÷ 12"),
-        (31, "Provider pay — Premium (£/mo, small garden)", prem_mo, f"{VISITS_PREM_YR} visits/yr × £{PROV_SMALL}/visit ÷ 12"),
-        (32, "Provider pay — Elite (£/mo, small garden)", elite_mo, f"{VISITS_ELITE_YR} visits/yr × £{PROV_SMALL}/visit ÷ 12"),
+        (29, "Customer Acquisition Cost - CAC (£)", 70, "Paid acquisition per customer"),
+        (30, "Provider pay - Essential (£/mo, small garden)", ess_mo, f"{VISITS_ESS_YR} visits/yr × £{PROV_SMALL}/visit ÷ 12"),
+        (31, "Provider pay - Premium (£/mo, small garden)", prem_mo, f"{VISITS_PREM_YR} visits/yr × £{PROV_SMALL}/visit ÷ 12"),
+        (32, "Provider pay - Elite (£/mo, small garden)", elite_mo, f"{VISITS_ELITE_YR} visits/yr × £{PROV_SMALL}/visit ÷ 12"),
         (33, "Payment processing fee (%)", 0.03, "Stripe/card fees"),
         (34, "Ops + AI cost per customer (£/mo)", 5, "Support, hosting, AI per active sub"),
     ]
@@ -576,11 +576,11 @@ def update_inputs(wb):
     ws["A45"] = "Blended Elite annual (£/yr)"
     ws["B45"] = "=$B$13*$B$21+($B$13+100)*$B$22+($B$13+200)*$B$23"
     blend_visit = f"($B$21*{PROV_SMALL}+$B$22*{PROV_MEDIUM}+$B$23*{PROV_LARGE})"
-    ws["A46"] = "Blended provider pay — Essential (£/mo)"
+    ws["A46"] = "Blended provider pay - Essential (£/mo)"
     ws["B46"] = f"=({VISITS_ESS_YR}/12)*{blend_visit}"
-    ws["A47"] = "Blended provider pay — Premium (£/mo)"
+    ws["A47"] = "Blended provider pay - Premium (£/mo)"
     ws["B47"] = f"=({VISITS_PREM_YR}/12)*{blend_visit}"
-    ws["A48"] = "Blended provider pay — Elite (£/mo)"
+    ws["A48"] = "Blended provider pay - Elite (£/mo)"
     ws["B48"] = f"=({VISITS_ELITE_YR}/12)*{blend_visit}"
     for row in range(40, 49):
         ws.cell(row, 2).number_format = MONEY
@@ -675,7 +675,7 @@ def update_inputs(wb):
             ws.cell(new_r, 2).fill = copy(old_ws.cell(old_r, 2).fill)
         ws.cell(new_r, 3, old_ws.cell(old_r, 3).value)
 
-    ws["A66"] = "VAT basis — Agent mode (1=Agent, 0=Principal)"
+    ws["A66"] = "VAT basis - Agent mode (1=Agent, 0=Principal)"
     ws["A66"].font = SECTION_FONT
     ws["B66"] = 0
     ws["B66"].fill = INPUT_FILL
@@ -688,9 +688,9 @@ def update_assumptions(wb):
     ws = wb["Assumptions"]
     ws["A1"] = "Assumptions & Methodology v4 (10/20/30 visits per year + VAT modes)"
     rows = [
-        (6, "Essential Monthly", "=PriceEssMonthly", f"{VISITS_ESS_YR} visits/yr — 3-month minimum"),
-        (7, "Premium Monthly", "=PricePremMonthly", f"{VISITS_PREM_YR} visits/yr — 3-month minimum"),
-        (8, "Elite Monthly", "=PriceEliteMonthly", f"{VISITS_ELITE_YR} visits/yr + patio refresh — 3-month minimum"),
+        (6, "Essential Monthly", "=PriceEssMonthly", f"{VISITS_ESS_YR} visits/yr - 3-month minimum"),
+        (7, "Premium Monthly", "=PricePremMonthly", f"{VISITS_PREM_YR} visits/yr - 3-month minimum"),
+        (8, "Elite Monthly", "=PriceEliteMonthly", f"{VISITS_ELITE_YR} visits/yr + patio refresh - 3-month minimum"),
         (9, "Essential Annual", "=PriceEssAnnual", "12-month commitment"),
         (10, "Premium Annual", "=PricePremAnnual", "12-month commitment"),
         (11, "Elite Annual", "=PriceEliteAnnual", "12-month commitment"),
@@ -704,12 +704,12 @@ def update_assumptions(wb):
         (19, "Monthly churn (post min term)", "=MonthlyChurn", "Home services B2C: 4–7%/mo"),
         (20, "Annual churn (at renewal)", "=AnnualChurn", "B2C annual: 15–25%"),
         (21, "CAC", "=CAC", "Paid acquisition"),
-        (22, "Provider pay — Essential (small)", "=ProvPayEss", f"{VISITS_ESS_YR} visits/yr × £{PROV_SMALL}/visit ÷ 12"),
-        (23, "Provider pay — Premium (small)", "=ProvPayPrem", f"{VISITS_PREM_YR} visits/yr × £{PROV_SMALL}/visit ÷ 12"),
-        (24, "Provider pay — Elite (small)", "=ProvPayElite", f"{VISITS_ELITE_YR} visits/yr × £{PROV_SMALL}/visit ÷ 12"),
-        (25, "Blended provider pay — Essential", "=BlendedProvPayEss", "Garden-size weighted"),
-        (26, "Blended provider pay — Premium", "=BlendedProvPayPrem", "Garden-size weighted"),
-        (27, "Blended provider pay — Elite", "=BlendedProvPayElite", "Garden-size weighted"),
+        (22, "Provider pay - Essential (small)", "=ProvPayEss", f"{VISITS_ESS_YR} visits/yr × £{PROV_SMALL}/visit ÷ 12"),
+        (23, "Provider pay - Premium (small)", "=ProvPayPrem", f"{VISITS_PREM_YR} visits/yr × £{PROV_SMALL}/visit ÷ 12"),
+        (24, "Provider pay - Elite (small)", "=ProvPayElite", f"{VISITS_ELITE_YR} visits/yr × £{PROV_SMALL}/visit ÷ 12"),
+        (25, "Blended provider pay - Essential", "=BlendedProvPayEss", "Garden-size weighted"),
+        (26, "Blended provider pay - Premium", "=BlendedProvPayPrem", "Garden-size weighted"),
+        (27, "Blended provider pay - Elite", "=BlendedProvPayElite", "Garden-size weighted"),
         (28, "Payment fees", "=PaymentFee", "Stripe processing"),
         (29, "Ops + AI per customer", "=OpsAI", "Per active subscriber/month"),
         (30, "VAT agent mode", "=VATAgentMode", "0=Principal (VAT on gross), 1=Agent (VAT on margin)"),
@@ -766,14 +766,14 @@ def update_vat_comparison(wb):
         del wb["VAT Comparison"]
     idx = wb.sheetnames.index("Headlines") if "Headlines" in wb.sheetnames else 1
     ws = wb.create_sheet("VAT Comparison", idx + 1)
-    ws["A1"] = "VAT — Principal vs Agent"
+    ws["A1"] = "VAT - Principal vs Agent"
     ws["A1"].font = TITLE_FONT
     ws["A3"] = (
         "Parallel comparison using Model gross revenue and provider pay. "
         "Toggle live model on Inputs B66: 0 = Principal (VAT on gross), 1 = Agent (VAT on margin only)."
     )
     ws["A3"].font = NOTE_FONT
-    ws["A4"] = "See docs/vat-principal-vs-agent.md — accountant review required before filing."
+    ws["A4"] = "See docs/vat-principal-vs-agent.md - accountant review required before filing."
     ws["A4"].font = NOTE_FONT
     hdrs = [
         "Year", "Gross revenue", "Provider pay", "Platform margin",
@@ -817,11 +817,11 @@ def update_vat_comparison(wb):
 
 def update_headlines(wb):
     ws = wb["Headlines"]
-    ws["A1"] = "GardensSorted — Financial Headlines (v4 visits + VAT modes)"
-    ws["A28"] = "✓ SaaS cohorts — Essential / Premium / Elite tiers, monthly & annual subs, MRR/ARR"
-    ws["A29"] = f"✓ Visit cadence — {VISITS_ESS_YR}/{VISITS_PREM_YR}/{VISITS_ELITE_YR} visits per year (provider pay = visits/12 × per-visit rate)"
-    ws["A30"] = "✓ Garden size mix — customer price & provider pay uplifts for medium (+£10/+£3) and large (+£20/+£6)"
-    ws["A31"] = "✓ VAT — toggle Principal vs Agent on Inputs B66; see VAT Comparison sheet"
+    ws["A1"] = "GardensSorted - Financial Headlines (v4 visits + VAT modes)"
+    ws["A28"] = "✓ SaaS cohorts - Essential / Premium / Elite tiers, monthly & annual subs, MRR/ARR"
+    ws["A29"] = f"✓ Visit cadence - {VISITS_ESS_YR}/{VISITS_PREM_YR}/{VISITS_ELITE_YR} visits per year (provider pay = visits/12 × per-visit rate)"
+    ws["A30"] = "✓ Garden size mix - customer price & provider pay uplifts for medium (+£10/+£3) and large (+£20/+£6)"
+    ws["A31"] = "✓ VAT - toggle Principal vs Agent on Inputs B66; see VAT Comparison sheet"
     ws["A32"] = None
     metrics = [
         ("A6", model_ref("ARR", 16)), ("C6", model_ref("ARR", 28)), ("E6", model_ref("ARR", 64)), ("G6", model_ref("Cash", 64)),
@@ -912,7 +912,7 @@ def update_unit_economics(wb):
 
 def update_sens_scenarios(wb):
     ws = wb["Sens - Scenarios"]
-    ws["A1"] = "Scenario Comparison — Conservative / Base / Aggressive (v4)"
+    ws["A1"] = "Scenario Comparison - Conservative / Base / Aggressive (v4)"
     blocks = {"B": 0, "C": 1, "D": 2}
     rows = [
         (13, "TotCust", 16), (14, "MRR", 16), (15, "ARR", 16), (16, "Cash", 16),
@@ -931,7 +931,7 @@ def update_sens_scenarios(wb):
 
 def update_sens_churn(wb):
     ws = wb["Sens - Churn"]
-    ws["A1"] = "Churn Sensitivity — v3 Elite full model"
+    ws["A1"] = "Churn Sensitivity - v3 Elite full model"
     ws["B5"] = model_ref("MRR", 16)
     ws["B6"] = model_ref("MRR", 28)
     ws["B7"] = model_ref("ARR", 28)
@@ -948,7 +948,7 @@ def update_sens_churn(wb):
 
 def update_sens_annual_mix(wb):
     ws = wb["Sens - Annual Mix"]
-    ws["A1"] = "Annual Plan Mix Sensitivity — v3 Elite engine"
+    ws["A1"] = "Annual Plan Mix Sensitivity - v3 Elite engine"
     for i in range(7):
         r = 9 + i
         block = 12 + i
@@ -962,7 +962,7 @@ def update_sens_annual_mix(wb):
 
 def update_sens_cac(wb):
     ws = wb["Sens - CAC & Marketing"]
-    ws["A1"] = "CAC Sensitivity — v3 Elite full model engine"
+    ws["A1"] = "CAC Sensitivity - v3 Elite full model engine"
     for i in range(7):
         r = 9 + i
         block = 19 + i
@@ -976,7 +976,7 @@ def update_sens_cac(wb):
 
 def update_sens_winter(wb, base_refs, winter_refs, season_start):
     ws = wb["Sens - Winter Pivot"]
-    ws["A1"] = "Winter Pivot — Property Care Scenario (v3 Elite)"
+    ws["A1"] = "Winter Pivot - Property Care Scenario (v3 Elite)"
     for i, mo in enumerate(range(1, 13)):
         r = 13 + i
         ir = season_start + mo - 1
@@ -985,10 +985,10 @@ def update_sens_winter(wb, base_refs, winter_refs, season_start):
         ws.cell(r, 5, f"=Inputs!D{ir}")
         ws.cell(r, 6, f"=Inputs!F{ir}")
     metrics = [
-        ("End Year 1 — Customers", 16), ("End Year 1 — MRR (£)", 16), ("End Year 1 — ARR (£)", 16),
-        ("End Year 1 — Cash (£)", 16), ("Year 1 — Gross Revenue (£)", (5, 16)), ("Year 1 — Profit (£)", (5, 16)),
-        ("End Year 2 — Customers", 28), ("End Year 2 — MRR (£)", 28), ("End Year 2 — Cash (£)", 28),
-        ("End Year 5 — Customers", 64), ("End Year 5 — MRR (£)", 64), ("End Year 5 — Cash (£)", 64),
+        ("End Year 1 - Customers", 16), ("End Year 1 - MRR (£)", 16), ("End Year 1 - ARR (£)", 16),
+        ("End Year 1 - Cash (£)", 16), ("Year 1 - Gross Revenue (£)", (5, 16)), ("Year 1 - Profit (£)", (5, 16)),
+        ("End Year 2 - Customers", 28), ("End Year 2 - MRR (£)", 28), ("End Year 2 - Cash (£)", 28),
+        ("End Year 5 - Customers", 64), ("End Year 5 - MRR (£)", 64), ("End Year 5 - Cash (£)", 64),
     ]
     for i, (label, target) in enumerate(metrics):
         r = 31 + i
@@ -1007,7 +1007,7 @@ def rebuild_model_and_scenarios(wb):
     idx = wb.sheetnames.index("Model")
     del wb["Model"]
     ws_m = wb.create_sheet("Model", idx)
-    ws_m["A1"] = "60-Month Model v4 — 10/20/30 visits per year + VAT principal/agent toggle"
+    ws_m["A1"] = "60-Month Model v4 - 10/20/30 visits per year + VAT principal/agent toggle"
     ws_m["A1"].font = TITLE_FONT
     M = write_block(ws_m, 1, None, "MonthlyChurn", "AnnualChurn", "AnnualMix", "CAC")
 

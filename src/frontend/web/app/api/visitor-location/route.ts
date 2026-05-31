@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 
-/** Edge/Vercel/Cloudflare geo headers — no precise location stored server-side. */
+/** Edge/Vercel/Cloudflare geo headers - no precise location stored server-side. */
 export async function GET(request: Request) {
   const lat = parseGeoHeader(request, [
     "x-vercel-ip-latitude",

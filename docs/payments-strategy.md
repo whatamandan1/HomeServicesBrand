@@ -15,7 +15,7 @@ All consumer subscriptions use **Stripe Checkout** (subscription mode) and the *
 | Webhooks (activate, renew, fail, cancel) | ✅ |
 | Plan upgrades (Essential → Premium → Elite) | ✅ |
 | Annual ↔ monthly switch | ✅ |
-| Fixed Price IDs (small garden) | ✅ Config-driven — see [`stripe-price-ids-checklist.md`](stripe-price-ids-checklist.md) |
+| Fixed Price IDs (small garden) | ✅ Config-driven - see [`stripe-price-ids-checklist.md`](stripe-price-ids-checklist.md) |
 | Dynamic pricing (medium/large garden uplift) | ✅ Stripe `price_data` at checkout |
 
 Implementation: `StripePaymentService`, `IPlatformServices` payment methods, webhook at `/api/webhooks/stripe`.
@@ -35,13 +35,13 @@ Implementation: `StripePaymentService`, `IPlatformServices` payment methods, web
 - Slower first payment (BACS mandate setup, not instant like cards)
 - Different UX at signup (mandate authorisation, not card form)
 - Refunds and chargebacks work differently
-- No built-in “Billing Portal” equivalent — more custom UI
+- No built-in “Billing Portal” equivalent - more custom UI
 
 **Recommendation**
 
 1. **Go-live on Stripe first** with all six Price IDs configured ([checklist](stripe-price-ids-checklist.md)).
 2. **Evaluate GoCardless** once you have 20–50 paying customers and clear unit economics.
-3. **Do not bolt GoCardless into `StripePaymentService`** — introduce a small `IPaymentProvider` (or `ISubscriptionBillingService`) abstraction when you start integration:
+3. **Do not bolt GoCardless into `StripePaymentService`** - introduce a small `IPaymentProvider` (or `ISubscriptionBillingService`) abstraction when you start integration:
    - `CreateCheckoutAsync`
    - `HandleWebhookAsync`
    - `UpgradePlanAsync`
@@ -66,6 +66,6 @@ Before accepting real money:
 
 ## Related docs
 
-- [`stripe-local-setup.md`](stripe-local-setup.md) — local dev with Stripe CLI
-- [`deploy-staging.md`](deploy-staging.md) — Railway + Vercel
-- [`consumer-plans-and-pricing.md`](consumer-plans-and-pricing.md) — plan amounts
+- [`stripe-local-setup.md`](stripe-local-setup.md) - local dev with Stripe CLI
+- [`deploy-staging.md`](deploy-staging.md) - Railway + Vercel
+- [`consumer-plans-and-pricing.md`](consumer-plans-and-pricing.md) - plan amounts

@@ -35,7 +35,7 @@ export function SignupLeadList({ leads }: { leads: SignupLeadSummary[] }) {
   if (leads.length === 0) {
     return (
       <p className="mt-2 text-sm text-stone-500">
-        No incomplete signups right now — leads appear when someone enters contact details on /signup.
+        No incomplete signups right now - leads appear when someone enters contact details on /signup.
       </p>
     );
   }
@@ -45,9 +45,9 @@ export function SignupLeadList({ leads }: { leads: SignupLeadSummary[] }) {
     email: lead.email,
     phone: lead.phone,
     step: signupLeadStepLabel(lead.lastStep),
-    plan: lead.selectedPlanName ?? "—",
-    garden: lead.gardenSize ?? "—",
-    postcode: lead.postcode ?? "—",
+    plan: lead.selectedPlanName ?? "-",
+    garden: lead.gardenSize ?? "-",
+    postcode: lead.postcode ?? "-",
     marketing: lead.marketingOptIn ? "Yes" : "No",
     started: new Date(lead.createdAtUtc).toLocaleString("en-GB", {
       dateStyle: "short",

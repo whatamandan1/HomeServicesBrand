@@ -64,7 +64,7 @@ export function VisitMapView({
       positions.push([visit.latitude, visit.longitude]);
       const color = visitMarkerColor(visit.status);
       const date =
-        typeof visit.scheduledDate === "string" ? visit.scheduledDate.slice(0, 10) : "—";
+        typeof visit.scheduledDate === "string" ? visit.scheduledDate.slice(0, 10) : "-";
       const popup = [
         `<strong>${escapeHtml(visit.postcode)}</strong>`,
         `${escapeHtml(date)} · ${escapeHtml(visit.availabilityWindow)}`,

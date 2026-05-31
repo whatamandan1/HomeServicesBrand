@@ -33,8 +33,12 @@ public class BrandsController(SortedDbContext db, IOptions<PlanPricingOptions> p
             .FirstOrDefaultAsync(ct);
         if (brandId == Guid.Empty) return NotFound();
 
+        // Compare plan names directly - EF cannot translate PlanCatalog.IsOfferedAtSignup.
         var plans = await db.SubscriptionPlans.AsNoTracking()
-            .Where(p => p.BrandId == brandId && p.IsActive && !p.IsDeleted && PlanCatalog.IsOfferedAtSignup(p.Name))
+            .Where(p => p.BrandId == brandId && p.IsActive && !p.IsDeleted
+                && (p.Name == PlanCatalog.SignupMonthlyPlanName
+                    || p.Name == PlanCatalog.PremiumMonthlyPlanName
+                    || p.Name == PlanCatalog.EliteMonthlyPlanName))
             .ToListAsync(ct);
 
         var opts = pricing.Value;

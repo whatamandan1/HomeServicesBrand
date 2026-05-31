@@ -11,9 +11,9 @@ Every gardener must pass **vetting before admin approval**. Applying online does
 | Check | Requirement |
 |-------|-------------|
 | **Photo ID** | Valid ID shown to GardensSorted (e.g. passport or driving licence) |
-| **Right to work** | Legal right to work in the UK — **verified by us** before approval |
-| **DBS** | **Basic DBS check passed** — required before paid visits |
-| **Insurance** | **Your own relevant insurance** — e.g. public liability for gardening work; declared at signup and **verified by us** before approval |
+| **Right to work** | Legal right to work in the UK - **verified by us** before approval |
+| **DBS** | **Basic DBS check passed** - required before paid visits |
+| **Insurance** | **Your own relevant insurance** - e.g. public liability for gardening work; declared at signup and **verified by us** before approval |
 
 After signup, gardeners complete the **Checks & documents** form in the provider portal (`/provider`). Code: `ProviderVettingRequirements.cs`, API `PUT /api/provider/me/vetting`.
 
@@ -27,12 +27,12 @@ Approved gardeners must **bring their own equipment** to every visit. GardensSor
 
 | Item | Required |
 |------|----------|
-| Lawn mower | Yes — suitable for typical domestic gardens |
-| Edging tool or strimmer | Yes — for lawn edges |
-| Watering can or hose | Yes — for light watering on site |
+| Lawn mower | Yes - suitable for typical domestic gardens |
+| Edging tool or strimmer | Yes - for lawn edges |
+| Watering can or hose | Yes - for light watering on site |
 | Rake | Yes |
-| Appropriate brush or broom | Yes — paths, edges, tidy-up |
-| Extension lead | Yes — **at least 20 metres** (when using electric tools and the customer provides power access) |
+| Appropriate brush or broom | Yes - paths, edges, tidy-up |
+| Extension lead | Yes - **at least 20 metres** (when using electric tools and the customer provides power access) |
 
 Code: `Sorted.Core/Plans/ProviderEquipmentRequirements.cs`, frontend `src/frontend/web/lib/provider-requirements.ts`.
 

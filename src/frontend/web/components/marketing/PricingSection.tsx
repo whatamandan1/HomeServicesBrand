@@ -58,13 +58,13 @@ export function PricingSection() {
     <div className="space-y-8">
       {offline && (
         <p className="rounded-xl bg-amber-50 px-4 py-3 text-center text-sm text-amber-900">
-          Showing standard pricing — live prices will load when the API is connected.
+          Showing standard pricing - live prices will load when the API is connected.
         </p>
       )}
 
       <div>
         <p className="text-center text-sm font-medium text-stone-600">
-          Monthly price by garden size — 10 visits per year included
+          Monthly price by garden size - 10 visits per year included
         </p>
         <div className="mt-4 grid gap-6 md:grid-cols-3">
           {GARDEN_SIZE_ORDER.map((size) => {
@@ -120,7 +120,7 @@ export function PricingSection() {
       </ul>
 
       <div className="rounded-2xl border border-amber-200/80 bg-amber-50/50 p-5 sm:p-6">
-        <h3 className="font-display text-lg font-semibold text-gardens-dark">Before each visit — your part</h3>
+        <h3 className="font-display text-lg font-semibold text-gardens-dark">Before each visit - your part</h3>
         <ul className="mt-3 space-y-1.5 text-sm text-stone-700">
           {CUSTOMER_VISIT_RESPONSIBILITIES.map((item) => (
             <li key={item}>• {item}</li>
@@ -157,7 +157,7 @@ export function PricingSection() {
           </div>
         </div>
         <p className="mt-4 text-xs text-stone-500">
-          Not in the subscription: {NOT_INCLUDED.slice(0, 3).join("; ")} —{" "}
+          Not in the subscription: {NOT_INCLUDED.slice(0, 3).join("; ")} -{" "}
           <a href="/#faq" className="text-gardens-primary hover:underline">
             see FAQs
           </a>

@@ -9,7 +9,7 @@ const display = Fraunces({ subsets: ["latin"], variable: "--font-display" });
 export const metadata: Metadata = {
   metadataBase: new URL(SITE_URL),
   title: {
-    default: "GardensSorted — Garden care, sorted.",
+    default: "GardensSorted - Garden care, sorted.",
     template: "%s | GardensSorted",
   },
   description:
@@ -19,14 +19,14 @@ export const metadata: Metadata = {
     apple: "/logo-icon.svg",
   },
   openGraph: {
-    title: "GardensSorted — Garden care, sorted.",
+    title: "GardensSorted - Garden care, sorted.",
     description: "Recurring garden care subscriptions for Yorkshire homes.",
     type: "website",
-    images: [{ url: "/og-image.jpg", width: 1200, height: 630, alt: "GardensSorted — Garden care, sorted." }],
+    images: [{ url: "/og-image.jpg", width: 1200, height: 630, alt: "GardensSorted - Garden care, sorted." }],
   },
   twitter: {
     card: "summary_large_image",
-    title: "GardensSorted — Garden care, sorted.",
+    title: "GardensSorted - Garden care, sorted.",
     description: "Recurring garden care subscriptions for Yorkshire homes.",
     images: ["/og-image.jpg"],
   },

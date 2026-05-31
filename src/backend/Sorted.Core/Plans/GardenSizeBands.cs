@@ -8,7 +8,7 @@ namespace Sorted.Core.Plans;
 public static class GardenSizeBands
 {
     public const string MaintainedAreaDefinition =
-        "Lawn, planted beds, and edges we cut and tidy on each visit — not your whole plot, large paving, or areas out of scope.";
+        "Lawn, planted beds, and edges we cut and tidy on each visit - not your whole plot, large paving, or areas out of scope.";
 
     public const int TravelMinutesPerVisit = 10;
 

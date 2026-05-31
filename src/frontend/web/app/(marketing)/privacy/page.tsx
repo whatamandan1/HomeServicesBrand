@@ -22,22 +22,22 @@ export default function PrivacyPage() {
       <h2>Information we collect</h2>
       <ul>
         <li>
-          <strong>Account details</strong> — name, email address, phone number, and login credentials (passwords are
+          <strong>Account details</strong> - name, email address, phone number, and login credentials (passwords are
           stored hashed, never in plain text).
         </li>
         <li>
-          <strong>Property information</strong> — address, postcode, garden size, access notes, and visit preferences.
+          <strong>Property information</strong> - address, postcode, garden size, access notes, and visit preferences.
         </li>
         <li>
-          <strong>Subscription and billing</strong> — plan choice, visit history, and payment status. Card details are
+          <strong>Subscription and billing</strong> - plan choice, visit history, and payment status. Card details are
           processed by Stripe; we do not store full card numbers on our servers.
         </li>
         <li>
-          <strong>Communications</strong> — support chat messages, emails, and SMS where you have opted in or we need
+          <strong>Communications</strong> - support chat messages, emails, and SMS where you have opted in or we need
           to notify you about a visit.
         </li>
         <li>
-          <strong>Technical data</strong> — basic logs from our website and API (IP address, browser type, pages viewed)
+          <strong>Technical data</strong> - basic logs from our website and API (IP address, browser type, pages viewed)
           to keep the service secure and reliable.
         </li>
       </ul>
@@ -66,16 +66,16 @@ export default function PrivacyPage() {
       <p>We use trusted processors to run the platform, including:</p>
       <ul>
         <li>
-          <strong>Stripe</strong> — payment processing and customer billing portal
+          <strong>Stripe</strong> - payment processing and customer billing portal
         </li>
         <li>
-          <strong>SendGrid</strong> — transactional email
+          <strong>SendGrid</strong> - transactional email
         </li>
         <li>
-          <strong>Hosting providers</strong> — Vercel (website) and Railway (API/database)
+          <strong>Hosting providers</strong> - Vercel (website) and Railway (API/database)
         </li>
         <li>
-          <strong>Approved gardeners</strong> — only the information needed to complete a visit (address, access notes,
+          <strong>Approved gardeners</strong> - only the information needed to complete a visit (address, access notes,
           schedule)
         </li>
       </ul>

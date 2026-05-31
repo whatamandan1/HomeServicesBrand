@@ -23,7 +23,7 @@ ESSENTIAL_VISITS_PER_YEAR = 10
 TRAVEL_MINUTES = 10
 
 # (name, max m², customer £/mo Essential, provider £/visit, on-site min, slot min)
-# Format: garden size — provider time — price/mo — provider pay/visit
+# Format: garden size - provider time - price/mo - provider pay/visit
 BANDS = [
     ("Small", "≤50 m²", 59.99, 20.00, 60, 70),
     ("Medium", "≤100 m²", 79.99, 30.00, 90, 100),
@@ -32,7 +32,7 @@ BANDS = [
 
 UK_HOUSING_MIX = (0.25, 0.45, 0.30)
 
-# Subscriber mix (edit on sheet) — default centres on Medium band
+# Subscriber mix (edit on sheet) - default centres on Medium band
 FORECAST_MIX = (0.15, 0.50, 0.35)
 TARGET_BLENDED_PRICE = sum(BANDS[i][2] * FORECAST_MIX[i] for i in range(3))
 
@@ -99,13 +99,13 @@ def build_garden_mix(wb):
     ws["A12"] = (
         "Maintained area ≈ lawn + beds we cut (not whole plot). "
         "Sources: JRF new-build rear sizes; adjusted for existing stock & paved areas. "
-        ">140 m² (~2%) excluded — quoted separately; mix renormalised to 100%."
+        ">140 m² (~2%) excluded - quoted separately; mix renormalised to 100%."
     )
     ws["A12"].font = NOTE_FONT
     ws.merge_cells("A12:D12")
 
     ws["A14"] = (
-        f"FORECAST MIX — Essential, {ESSENTIAL_VISITS_PER_YEAR} visits/yr "
+        f"FORECAST MIX - Essential, {ESSENTIAL_VISITS_PER_YEAR} visits/yr "
         f"(edit yellow mix %; provider £/mo = £/visit × {ESSENTIAL_VISITS_PER_YEAR}/12)"
     )
     ws["A14"].font = SECTION_FONT
@@ -167,7 +167,7 @@ def build_garden_mix(wb):
     ws.cell(22, 10, f"Target ~£{TARGET_BLENDED_PRICE:.2f} Essential monthly")
     ws.cell(22, 10).font = NOTE_FONT
 
-    ws["A23"] = "Blended price — UK housing mix only"
+    ws["A23"] = "Blended price - UK housing mix only"
     ws.cell(23, 3, "=SUMPRODUCT(C16:C18,I16:I18)")
     style_money(ws, 23, 3)
     ws.cell(23, 10, "Typical homes undershoot paid subscribers")
@@ -194,12 +194,12 @@ def build_garden_mix(wb):
     ws["A29"] = "Implied contribution (pre-fees, pre-ops)"
     ws.cell(29, 3, "=C22-E25-5")
     style_money(ws, 29, 3)
-    ws.cell(29, 10, "Assumes £5 ops/customer — change on Headlines")
+    ws.cell(29, 10, "Assumes £5 ops/customer - change on Headlines")
     ws.cell(29, 10).font = NOTE_FONT
 
     ws["A31"] = (
         "Why two mixes? Housing stock skews small (blended ~£52 customer price). "
-        "People who buy maintenance skew larger — use forecast mix for cash planning."
+        "People who buy maintenance skew larger - use forecast mix for cash planning."
     )
     ws["A31"].font = NOTE_FONT
     ws.merge_cells("A31:J31")
@@ -212,7 +212,7 @@ def build_headlines(wb):
     ws.column_dimensions["B"].width = 16
     ws.column_dimensions["D"].width = 42
 
-    ws["A1"] = "GardensSorted — Forecast (4 garden bands)"
+    ws["A1"] = "GardensSorted - Forecast (4 garden bands)"
     ws["A1"].font = TITLE_FONT
     ws["A2"] = "Edit yellow cells. Blended price & provider come from Garden mix tab."
     ws["A2"].font = NOTE_FONT

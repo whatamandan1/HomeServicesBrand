@@ -14,7 +14,7 @@ public static class ProviderVettingRequirements
     public const string Summary =
         "Gardeners must provide ID, pass right-to-work verification, pass a basic DBS check, and hold their own relevant insurance before approval.";
 
-    /// <summary>Admin checklist — confirm before setting <c>Provider.IsApproved</c>.</summary>
+    /// <summary>Admin checklist - confirm before setting <c>Provider.IsApproved</c>.</summary>
     public static readonly IReadOnlyList<string> AdminApprovalChecklist =
     [
         "Photo ID sighted and recorded",

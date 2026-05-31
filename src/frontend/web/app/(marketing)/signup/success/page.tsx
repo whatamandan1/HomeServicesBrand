@@ -44,7 +44,7 @@ function SignupSuccessContent() {
             ✓
           </p>
           <h1 className="mt-4 font-display text-2xl font-bold text-gardens-dark">Welcome to GardensSorted</h1>
-          <p className="mt-3 text-stone-600">Payment received — setting up your account…</p>
+          <p className="mt-3 text-stone-600">Payment received - setting up your account…</p>
           <LoadingSpinner label="Almost there…" className="mt-6 justify-center" />
           <Link href="/portal" className="mt-6 inline-block text-sm text-gardens-primary underline">
             Go to your account

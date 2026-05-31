@@ -73,7 +73,7 @@ public class AppOptions
 public class FeaturesOptions
 {
     public const string Section = "Features";
-    /// <summary>Skip Stripe checkout — activate subscription immediately (staging/dev only).</summary>
+    /// <summary>Skip Stripe checkout - activate subscription immediately (staging/dev only).</summary>
     public bool BypassStripeCheckout { get; set; }
     /// <summary>Create demo admin/provider accounts and sample dispatch data on startup.</summary>
     public bool SeedDemoData { get; set; } = true;
@@ -94,7 +94,7 @@ public class BackgroundJobsOptions
     public bool Enabled { get; set; } = true;
     public int IntervalMinutes { get; set; } = 60;
     public int TargetFutureVisits { get; set; } = 4;
-    /// <summary>Legacy default — visit spacing now comes from <see cref="Plans.PlanCatalog.VisitIntervalDays"/> per plan.</summary>
+    /// <summary>Legacy default - visit spacing now comes from <see cref="Plans.PlanCatalog.VisitIntervalDays"/> per plan.</summary>
     public int VisitIntervalDays { get; set; } = 7;
     public int DispatchOfferExpiryDays { get; set; } = 3;
     public int DispatchOpenWithinDays { get; set; } = 14;
@@ -104,7 +104,7 @@ public class BackgroundJobsOptions
 public class ProviderPayoutOptions
 {
     public const string Section = "ProviderPayout";
-    /// <summary>Fixed pay per completed visit (small garden) — same for Essential, Premium, and Elite.</summary>
+    /// <summary>Fixed pay per completed visit (small garden) - same for Essential, Premium, and Elite.</summary>
     public decimal SmallVisitGbp { get; set; } = ProviderVisitPay.ForGardenSize(GardenSize.Small);
     public decimal MediumVisitGbp { get; set; } = ProviderVisitPay.ForGardenSize(GardenSize.Medium);
     public decimal LargeVisitGbp { get; set; } = ProviderVisitPay.ForGardenSize(GardenSize.Large);

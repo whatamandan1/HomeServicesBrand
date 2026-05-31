@@ -64,7 +64,7 @@ export function ProviderEarningsSection({
       </div>
 
       {summary.earnings.length === 0 ? (
-        <p className="mt-4 text-stone-500">No completed visits yet — earnings appear here after you finish jobs.</p>
+        <p className="mt-4 text-stone-500">No completed visits yet - earnings appear here after you finish jobs.</p>
       ) : (
         <ul className="mt-4 space-y-2">
           {summary.earnings.map((earning) => (

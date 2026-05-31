@@ -10,7 +10,7 @@ export const metadata: Metadata = {
 export default function MultiPropertyThankYouPage() {
   return (
     <section className="mx-auto max-w-lg px-4 py-24 text-center">
-      <h1 className="font-display text-3xl font-bold text-gardens-dark">Thanks — we&apos;ve got it</h1>
+      <h1 className="font-display text-3xl font-bold text-gardens-dark">Thanks - we&apos;ve got it</h1>
       <p className="mt-4 text-stone-600">
         Your enquiry has been received. We&apos;ll review your properties and be in touch with a personalised indicative quote.
       </p>

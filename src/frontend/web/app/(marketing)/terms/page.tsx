@@ -93,10 +93,10 @@ export default function TermsPage() {
         </li>
         <li>
           <strong>Water:</strong> A working outdoor tap. We bring a hose or watering can. No tap? Tell us before signup
-          — we may skip watering that visit.
+          - we may skip watering that visit.
         </li>
         <li>
-          <strong>Power:</strong> A socket we can plug into from the garden — inside or outside your home is fine. Your
+          <strong>Power:</strong> A socket we can plug into from the garden - inside or outside your home is fine. Your
           gardener brings an extension lead of at least 20 metres.
         </li>
         <li>
@@ -138,7 +138,7 @@ export default function TermsPage() {
         and add-on sessions over the year, spread across the seasons as described above. If you cancel before you have
         received the visits you have paid for, including add-on sessions still due on the annual schedule, we may{" "}
         <strong>reduce the number of remaining visits</strong> in the notice period after cancellation so that, overall,
-        you receive approximately the visits and add-on work you have paid for — no more and no less.
+        you receive approximately the visits and add-on work you have paid for - no more and no less.
       </p>
       <p>
         <strong>Example:</strong> you subscribe in <strong>April</strong> with add-ons and cancel in <strong>June</strong>.
@@ -174,7 +174,7 @@ export default function TermsPage() {
         for <strong>twelve (12) months</strong> after your last visit arranged through GardensSorted, you will not engage,
         hire, or pay any gardener who was introduced to you through our service to perform garden maintenance or similar
         work at your property <strong>outside</strong> GardensSorted without our prior written consent. If you wish to
-        continue with the same gardener independently, contact us first — we may agree a handover or continuation
+        continue with the same gardener independently, contact us first - we may agree a handover or continuation
         arrangement.
       </p>
       <p>

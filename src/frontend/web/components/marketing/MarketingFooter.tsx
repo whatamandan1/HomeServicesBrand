@@ -10,7 +10,7 @@ export function MarketingFooter() {
             <Image src="/logo-white.svg" alt="GardensSorted" width={272} height={48} className="h-10 w-auto" />
           </Link>
           <p className="mt-4 max-w-sm text-sm text-gardens-accent/90">
-            Recurring garden care for Yorkshire homes — subscribe online, we handle the rest.
+            Recurring garden care for Yorkshire homes - subscribe online, we handle the rest.
           </p>
         </div>
         <div>

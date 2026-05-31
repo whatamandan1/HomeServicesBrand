@@ -30,13 +30,16 @@ public static class PlanCatalog
         return planName;
     }
 
-    /// <summary>Single plan offered at signup for launch (Premium/Elite reserved for future tiers).</summary>
     public const string SignupMonthlyPlanName = "Essential Monthly";
+    public const string PremiumMonthlyPlanName = "Premium Monthly";
+    public const string EliteMonthlyPlanName = "Elite Monthly";
 
     public static bool IsOfferedAtSignup(string planName) =>
-        planName.Equals(SignupMonthlyPlanName, StringComparison.OrdinalIgnoreCase);
+        planName.Equals(SignupMonthlyPlanName, StringComparison.OrdinalIgnoreCase)
+        || planName.Equals(PremiumMonthlyPlanName, StringComparison.OrdinalIgnoreCase)
+        || planName.Equals(EliteMonthlyPlanName, StringComparison.OrdinalIgnoreCase);
 
-    /// <summary>Next tier for in-account upgrades — disabled until multi-tier plans return.</summary>
+    /// <summary>Next tier for in-account upgrades - disabled until multi-tier plans return.</summary>
     public static string? GetUpgradeTier(string planName) => null;
 
     /// <summary>Included garden visits per year on an active subscription.</summary>

@@ -1,6 +1,6 @@
 import { useEffect } from "react";
 
-/** Lock document scroll when mobile nav (or similar) is open — avoids iOS overflow:hidden scroll bugs. */
+/** Lock document scroll when mobile nav (or similar) is open - avoids iOS overflow:hidden scroll bugs. */
 export function useBodyScrollLock(locked: boolean) {
   useEffect(() => {
     if (!locked) return;

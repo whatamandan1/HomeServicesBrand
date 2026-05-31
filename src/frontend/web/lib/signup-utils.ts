@@ -32,7 +32,7 @@ export const AVAILABILITY_PRESETS = [
   "Weekday afternoons",
   "Evenings",
   "Weekends",
-  "Flexible — contact me to arrange",
+  "Flexible - contact me to arrange",
 ] as const;
 
 export const MIN_PASSWORD_LENGTH = 8;

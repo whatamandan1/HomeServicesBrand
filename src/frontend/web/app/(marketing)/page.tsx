@@ -18,9 +18,9 @@ import { PRIMARY_CTA_HREF, PRIMARY_CTA_LABEL } from "@/lib/marketing-cta";
 export const metadata: Metadata = {
   title: "Garden care subscriptions in Yorkshire",
   description:
-    "Regular garden maintenance for Yorkshire homes. Pick your garden size, add optional extras, and we schedule trusted local gardeners — from £59.99/month.",
+    "Regular garden maintenance for Yorkshire homes. Pick your garden size, add optional extras, and we schedule trusted local gardeners - from £59.99/month.",
   openGraph: {
-    title: "GardensSorted — Garden care subscriptions in Yorkshire",
+    title: "GardensSorted - Garden care subscriptions in Yorkshire",
     description:
       "Regular garden maintenance for Yorkshire homes. Subscribe online and we handle scheduling.",
   },
@@ -35,7 +35,7 @@ const steps = [
   {
     icon: CalendarCheck,
     title: "We book your visits",
-    body: "Recurring visits are scheduled in your preferred window — weekday mornings, afternoons, or weekends.",
+    body: "Recurring visits are scheduled in your preferred window - weekday mornings, afternoons, or weekends.",
   },
   {
     icon: Users,
@@ -45,8 +45,8 @@ const steps = [
 ];
 
 const included = [
-  "10 visits per year — lawn, borders, and tidy on each visit",
-  "Priced by garden size, up to 150 m² maintained, from £59.99/month",
+  "10 visits per year - lawn, borders, and tidy on each visit",
+  "Priced by garden size, up to 150 m² maintained",
   "Optional add-ons: hedges, seasonal tidy, patio refresh",
   "Online account to view and manage every visit",
 ];
@@ -70,15 +70,15 @@ const faqs = [
   },
   {
     q: "Can I hire my gardener directly?",
-    a: "Your subscription covers visits arranged through GardensSorted. While you're subscribed, and for 12 months after your last platform visit, you agree not to hire gardeners we introduced to you for the same work off-platform without our consent — that protects scheduling and fair pay. Other local gardeners you've never booked through us are fine.",
+    a: "Your subscription covers visits arranged through GardensSorted. While you're subscribed, and for 12 months after your last platform visit, you agree not to hire gardeners we introduced to you for the same work off-platform without our consent - that protects scheduling and fair pay. Other local gardeners you've never booked through us are fine.",
   },
   {
     q: "What's not included?",
-    a: "Major clearance, tree surgery, tall hedge reduction, and landscaping. We don't make separate trips just for watering, patio cleaning, leaf blowing, or gutter clearing — but we can quote those as seasonal add-ons.",
+    a: "Major clearance, tree surgery, tall hedge reduction, and landscaping. We don't make separate trips just for watering, patio cleaning, leaf blowing, or gutter clearing - but we can quote those as seasonal add-ons.",
   },
   {
     q: "Do you water the garden?",
-    a: "Yes — light watering of pots, beds, and dry spots while we're on site. You need a working outdoor tap; we bring hose or watering can. We don't make extra trips just to water between visits.",
+    a: "Yes - light watering of pots, beds, and dry spots while we're on site. You need a working outdoor tap; we bring hose or watering can. We don't make extra trips just to water between visits.",
   },
   {
     q: "Can you clean the patio, blow leaves, or clear gutters?",
@@ -86,7 +86,7 @@ const faqs = [
   },
   {
     q: "Which areas do you cover?",
-    a: "We're launching across Yorkshire, starting with Leeds, York, Wakefield, and surrounding postcodes. Enter yours at signup — we'll confirm availability.",
+    a: "We're launching across Yorkshire, starting with Leeds, York, Wakefield, and surrounding postcodes. Enter yours at signup - we'll confirm availability.",
   },
   {
     q: "How does billing work?",
@@ -110,7 +110,7 @@ export default function HomePage() {
       <Section
         id="how-it-works"
         title="How it works"
-        subtitle="Garden care made simple — no chasing quotes or hunting for someone reliable each time."
+        subtitle="Garden care made simple - no chasing quotes or hunting for someone reliable each time."
         className="bg-stone-50/80"
       >
         <div className="grid gap-8 md:grid-cols-3">
@@ -158,7 +158,7 @@ export default function HomePage() {
       <Section
         id="pricing"
         title="Simple, transparent pricing"
-        subtitle="One subscription — monthly price by garden size, with optional add-ons."
+        subtitle="One subscription - monthly price by garden size, with optional add-ons."
         className="bg-stone-50/80"
       >
         <PricingSection />
@@ -167,7 +167,7 @@ export default function HomePage() {
       <Section
         id="faq"
         title="Common questions"
-        subtitle="Still unsure? Chat with us — we're happy to help before you sign up."
+        subtitle="Still unsure? Chat with us - we're happy to help before you sign up."
         className="border-t border-gardens-primary/10 bg-white"
       >
         <FaqAccordion items={faqs} />

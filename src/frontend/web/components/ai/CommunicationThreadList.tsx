@@ -166,7 +166,7 @@ export function CommunicationThreadList({
                 </td>
                 <td className="px-4 py-3">{t.messageCount}</td>
                 <td className="max-w-xs truncate px-4 py-3 text-stone-600">
-                  {t.lastMessagePreview ?? "—"}
+                  {t.lastMessagePreview ?? "-"}
                 </td>
                 <td className="px-4 py-3">
                   <button

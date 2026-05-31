@@ -7,7 +7,7 @@ import { PROVIDER_ADDON_EQUIPMENT } from "@/lib/provider-requirements";
 import { LoadingSpinner } from "@/components/ui/feedback";
 
 function idTypeLabel(value: string | null) {
-  if (!value) return "—";
+  if (!value) return "-";
   return ID_DOCUMENT_TYPES.find((t) => t.value === value)?.label ?? value;
 }
 
@@ -60,7 +60,7 @@ export function AdminProviderVettingSection({
   if (!vetting?.status.isSubmitted) {
     return (
       <p className="rounded-lg border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-900">
-        Provider has not submitted vetting details yet — they must complete the form in their portal after signup.
+        Provider has not submitted vetting details yet - they must complete the form in their portal after signup.
       </p>
     );
   }
@@ -73,12 +73,12 @@ export function AdminProviderVettingSection({
       <dl className="grid gap-2 sm:grid-cols-2">
         <div>
           <dt className="text-stone-500">Date of birth</dt>
-          <dd className="font-medium">{vetting.dateOfBirth ?? "—"}</dd>
+          <dd className="font-medium">{vetting.dateOfBirth ?? "-"}</dd>
         </div>
         <div>
           <dt className="text-stone-500">Photo ID</dt>
           <dd className="font-medium">
-            {idTypeLabel(vetting.idDocumentType)} — {vetting.idDocumentNumber ?? "—"}
+            {idTypeLabel(vetting.idDocumentType)} - {vetting.idDocumentNumber ?? "-"}
           </dd>
         </div>
         <div className="sm:col-span-2">
@@ -86,17 +86,17 @@ export function AdminProviderVettingSection({
           <dd className="font-medium">
             {vetting.rightToWorkShareCode
               ? `Share code: ${vetting.rightToWorkShareCode}`
-              : vetting.rightToWorkDocumentDescription ?? "—"}
+              : vetting.rightToWorkDocumentDescription ?? "-"}
           </dd>
         </div>
         <div>
           <dt className="text-stone-500">DBS certificate</dt>
-          <dd className="font-medium">{vetting.dbsCertificateNumber ?? "—"}</dd>
+          <dd className="font-medium">{vetting.dbsCertificateNumber ?? "-"}</dd>
         </div>
         <div>
           <dt className="text-stone-500">DBS issue date</dt>
           <dd className="font-medium">
-            {vetting.dbsIssueDate ?? "—"}
+            {vetting.dbsIssueDate ?? "-"}
             {vetting.dbsOnUpdateService ? " · Update Service" : ""}
           </dd>
         </div>
@@ -104,7 +104,7 @@ export function AdminProviderVettingSection({
           <dt className="text-stone-500">Insurance</dt>
           <dd className="font-medium">
             {vetting.hasOwnRelevantInsurance
-              ? "Declared — own relevant cover for gardening work"
+              ? "Declared - own relevant cover for gardening work"
               : "Not declared"}
           </dd>
         </div>

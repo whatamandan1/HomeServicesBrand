@@ -1,4 +1,4 @@
-# Dev setup — costs, email & skipping payment
+# Dev setup - costs, email & skipping payment
 
 ## Personal email for SendGrid (fine for now)
 
@@ -13,7 +13,7 @@ For staging/dev, verify your **personal email** as a SendGrid Single Sender:
 2. Update Railway only:
    - `SendGrid__FromEmail` → new address
    - `SendGrid__FromName` → `GardensSorted`
-3. Redeploy API — no code changes
+3. Redeploy API - no code changes
 
 Domain authentication is recommended before launch (better deliverability than single sender).
 
@@ -23,10 +23,10 @@ Domain authentication is recommended before launch (better deliverability than s
 
 | Service | Dev approach | Cost |
 |---------|----------------|------|
-| **Stripe (customer subs)** | Test mode keys **or** bypass checkout (below) | **£0** — test cards never charge real money |
+| **Stripe (customer subs)** | Test mode keys **or** bypass checkout (below) | **£0** - test cards never charge real money |
 | **SendGrid** | Free tier (~100 emails/day) | **£0** |
 | **Twilio SMS** | Trial credit; verify your mobile on trial | **£0** for light testing |
-| **OpenAI** | Optional — omit `OpenAI__ApiKey` until needed; or set [usage limits](https://platform.openai.com/settings/organization/limits) | Pay-as-you-go, pennies for testing |
+| **OpenAI** | Optional - omit `OpenAI__ApiKey` until needed; or set [usage limits](https://platform.openai.com/settings/organization/limits) | Pay-as-you-go, pennies for testing |
 | **Railway** | Hobby/free credits | varies |
 | **Vercel** | Free tier for hobby | **£0** |
 
@@ -48,7 +48,7 @@ Signup will show **“Dev mode: payment skipped”** and go straight to the port
 
 ### Stripe test mode (alternative)
 
-If bypass is **off**, keep `Stripe__SecretKey` as `sk_test_...` — customers use test card `4242 4242 4242 4242`. **No real money** moves; you still exercise the full payment flow.
+If bypass is **off**, keep `Stripe__SecretKey` as `sk_test_...` - customers use test card `4242 4242 4242 4242`. **No real money** moves; you still exercise the full payment flow.
 
 ---
 
@@ -60,7 +60,7 @@ Stripe__SecretKey=sk_test_...          # optional while bypass is on
 SendGrid__ApiKey=SG...                 # free tier
 SendGrid__FromEmail=your@gmail.com     # your verified personal sender
 SendGrid__FromName=GardensSorted
-Twilio__AccountSid=AC...               # optional — see docs/twilio-sms-setup.md
+Twilio__AccountSid=AC...               # optional - see docs/twilio-sms-setup.md
 Twilio__AuthToken=...
 Twilio__FromPhoneNumber=+44...
 OpenAI__ApiKey=                        # leave empty to skip AI costs

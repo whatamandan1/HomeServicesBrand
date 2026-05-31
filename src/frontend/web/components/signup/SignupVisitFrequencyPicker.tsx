@@ -1,17 +1,13 @@
 "use client";
 
-import {
-  isVisitFrequencyOfferedAtSignup,
-  signupVisitFrequencyOptions,
-  type SignupServiceId,
-} from "@/lib/consumer-plans";
+import { signupVisitFrequencyOptions, type SignupServiceId } from "@/lib/consumer-plans";
 
 type SignupVisitFrequencyPickerProps = {
   value: SignupServiceId;
   onChange: (id: SignupServiceId) => void;
 };
 
-/** Visit count per year — stacked on mobile, segmented row from sm+. */
+/** Visit count per year - stacked on mobile, segmented row from sm+. */
 export function SignupVisitFrequencyPicker({ value, onChange }: SignupVisitFrequencyPickerProps) {
   const options = signupVisitFrequencyOptions();
 
@@ -26,27 +22,23 @@ export function SignupVisitFrequencyPicker({ value, onChange }: SignupVisitFrequ
       >
         {options.map((option) => {
           const selected = value === option.id;
-          const offered = isVisitFrequencyOfferedAtSignup(option.id);
           return (
             <button
               key={option.id}
               type="button"
               role="radio"
               aria-checked={selected}
-              disabled={!offered}
-              title={offered ? option.description : `${option.description} Coming soon.`}
-              onClick={() => offered && onChange(option.id)}
+              title={option.description}
+              onClick={() => onChange(option.id)}
               className={`min-h-[48px] rounded-xl border px-3 py-3 text-left transition sm:rounded-lg sm:px-2 sm:py-2.5 sm:text-center ${
-                selected && offered
+                selected
                   ? "border-gardens-primary bg-gardens-light/50 text-gardens-dark ring-2 ring-gardens-primary/30 sm:bg-white sm:shadow-sm sm:ring-1"
-                  : offered
-                    ? "border-stone-200 bg-white text-stone-700 hover:border-gardens-primary/40 sm:border-transparent sm:bg-transparent sm:hover:bg-white/60"
-                    : "cursor-not-allowed border-stone-200 bg-stone-50 text-stone-400 sm:opacity-70"
+                  : "border-stone-200 bg-white text-stone-700 hover:border-gardens-primary/40 sm:border-transparent sm:bg-transparent sm:hover:bg-white/60"
               }`}
             >
               <span className="block text-sm font-semibold sm:text-sm">{option.label}</span>
               <span className="mt-0.5 block text-xs font-normal text-stone-500 sm:mt-0">
-                {offered ? option.description : "Coming soon"}
+                {option.description}
               </span>
             </button>
           );

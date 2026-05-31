@@ -78,7 +78,7 @@ export function PortfolioEnquiryForm() {
       <div className="mx-auto max-w-2xl rounded-2xl border border-gardens-primary/20 bg-white p-6 shadow-soft sm:p-8">
         <h2 className="font-display text-2xl font-semibold text-gardens-dark">Request a quote</h2>
         <p className="mt-2 text-sm text-stone-600">
-          Tell us about your properties (minimum two). We&apos;ll review your portfolio and send a personalised indicative quote — subject to confirmation.
+          Tell us about your properties (minimum two). We&apos;ll review your portfolio and send a personalised indicative quote - subject to confirmation.
         </p>
 
         <form onSubmit={onSubmit} className="mt-6 space-y-6">

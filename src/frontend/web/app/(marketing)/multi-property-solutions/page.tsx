@@ -4,7 +4,7 @@ import { Button, Section } from "@/components/marketing/ui";
 import { PortfolioEnquiryForm } from "@/components/portfolios/PortfolioEnquiryForm";
 
 export const metadata: Metadata = {
-  title: "For landlords — multi-property garden care",
+  title: "For landlords - multi-property garden care",
   description:
     "Garden maintenance for landlords, letting agents, and multi-property owners across Yorkshire. One account, personalised pricing, monthly invoicing.",
 };
@@ -13,7 +13,7 @@ const benefits = [
   {
     icon: Building2,
     title: "One account, every property",
-    body: "Manage two holiday lets or dozens of rentals from a single account — tenants never need to sign up.",
+    body: "Manage two holiday lets or dozens of rentals from a single account - tenants never need to sign up.",
   },
   {
     icon: ClipboardList,
@@ -52,7 +52,7 @@ export default function MultiPropertySolutionsPage() {
 
       <Section
         title="Built for multi-property owners and managers"
-        subtitle="Private landlords, letting agents, and holiday-let owners — minimum two properties."
+        subtitle="Private landlords, letting agents, and holiday-let owners - minimum two properties."
       >
         <div className="grid gap-6 md:grid-cols-2">
           {benefits.map((b) => (
@@ -71,7 +71,7 @@ export default function MultiPropertySolutionsPage() {
 
       <Section
         title="How it works"
-        subtitle="Request a quote today — we'll follow up with a personalised indicative price."
+        subtitle="Request a quote today - we'll follow up with a personalised indicative price."
       >
         <ol className="mx-auto max-w-2xl space-y-4 text-sm text-stone-600">
           <li className="rounded-xl border border-stone-200 bg-white p-4">

@@ -46,9 +46,16 @@ public static class GardenSizePricing
             _ => 20m
         };
 
-    /// <summary>Base monthly price by garden band (add-ons priced separately).</summary>
-    public static decimal MonthlyPriceGbp(string planName, GardenSize gardenSize) =>
-        EssentialMonthlyPriceGbp(gardenSize);
+    /// <summary>Base monthly price by garden band plus visit-frequency tier uplift (add-ons priced separately).</summary>
+    public static decimal MonthlyPriceGbp(string planName, GardenSize gardenSize)
+    {
+        var price = EssentialMonthlyPriceGbp(gardenSize);
+        if (PlanCatalog.IsElite(planName))
+            return price + EliteMonthlyAddonGbp;
+        if (PlanCatalog.IsPremium(planName))
+            return price + PremiumMonthlyAddonGbp;
+        return price;
+    }
 
     public static decimal AnnualPriceGbp(string planName, GardenSize gardenSize) =>
         MonthlyPriceGbp(planName, gardenSize) * AnnualMonthsCharged;

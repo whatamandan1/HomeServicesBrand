@@ -196,7 +196,7 @@ var twilioConfigured = !string.IsNullOrWhiteSpace(app.Configuration["Twilio:Acco
     && !string.IsNullOrWhiteSpace(app.Configuration["Twilio:AuthToken"])
     && !string.IsNullOrWhiteSpace(app.Configuration["Twilio:FromPhoneNumber"]);
 startupLogger.LogInformation(
-    "Sorted API starting — DB config: {Database} ({Source}) | Stripe: {StripeKey} | Webhook: {Webhook} | SendGrid: {SendGrid} | Twilio: {Twilio} | OpenAI: {OpenAi}",
+    "Sorted API starting - DB config: {Database} ({Source}) | Stripe: {StripeKey} | Webhook: {Webhook} | SendGrid: {SendGrid} | Twilio: {Twilio} | OpenAI: {OpenAi}",
     dbKind,
     dbSource,
     stripeConfigured ? "ok" : "missing",

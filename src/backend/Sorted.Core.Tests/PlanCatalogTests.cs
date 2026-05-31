@@ -30,9 +30,11 @@ public class PlanCatalogTests
 
     [Theory]
     [InlineData("Essential Monthly", true)]
-    [InlineData("Premium Monthly", false)]
+    [InlineData("Premium Monthly", true)]
+    [InlineData("Elite Monthly", true)]
     [InlineData("Essential Annual", false)]
-    public void IsOfferedAtSignup_only_essential_monthly(string planName, bool offered) =>
+    [InlineData("Premium Annual", false)]
+    public void IsOfferedAtSignup_monthly_tiers_only(string planName, bool offered) =>
         Assert.Equal(offered, PlanCatalog.IsOfferedAtSignup(planName));
 
     [Theory]

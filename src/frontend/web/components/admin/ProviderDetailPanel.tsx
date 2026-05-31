@@ -77,7 +77,7 @@ export function ProviderDetailPanel({
       setRadius(updated.coverageRadiusMiles);
       onUpdated(updated);
       setMessage(
-        "Coverage saved. Postcode areas refresh in the background — reload this panel in a minute if the list looks stale."
+        "Coverage saved. Postcode areas refresh in the background - reload this panel in a minute if the list looks stale."
       );
     } catch (e) {
       setError(e instanceof Error ? e.message : "Update failed");
@@ -91,7 +91,7 @@ export function ProviderDetailPanel({
     try {
       await api.approveProvider(token, provider.id);
       onUpdated({ ...provider, isApproved: true });
-      setMessage("Provider approved — they can now claim jobs.");
+      setMessage("Provider approved - they can now claim jobs.");
     } catch (e) {
       setError(e instanceof Error ? e.message : "Approval failed");
     }
@@ -210,7 +210,7 @@ export function ProviderDetailPanel({
         <h4 className="text-sm font-semibold text-gardens-dark">Postcode areas</h4>
         {outcodes.length === 0 ? (
           <p className="mt-2 text-sm text-stone-500">
-            No areas synced yet — they appear after signup or after you save coverage.
+            No areas synced yet - they appear after signup or after you save coverage.
           </p>
         ) : (
           <p className="mt-2 text-xs text-stone-600">

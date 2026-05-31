@@ -4,7 +4,7 @@ using Sorted.Core.Enums;
 namespace Sorted.Core.Plans;
 
 /// <summary>
-/// Optional signup add-ons — priced per on-site session, amortised into monthly subscription.
+/// Optional signup add-ons - priced per on-site session, amortised into monthly subscription.
 /// Hedges / seasonal: 4× per year. Patio &amp; path refresh: 2× per year.
 /// </summary>
 public static class SignupAddonPricing

@@ -75,7 +75,7 @@ export function VisitList({
             <div className="flex flex-wrap items-start justify-between gap-3">
               <div>
                 <div className="font-medium">
-                  {v.scheduledDate.slice(0, 10)} — {v.postcode}
+                  {v.scheduledDate.slice(0, 10)} - {v.postcode}
                 </div>
                 <div className="text-sm text-stone-500">{v.availabilityWindow}</div>
                 <div className="mt-2 flex flex-wrap items-center gap-2">

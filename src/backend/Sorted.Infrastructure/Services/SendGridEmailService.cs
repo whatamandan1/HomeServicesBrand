@@ -43,7 +43,7 @@ public class SendGridEmailService(IOptions<SendGridOptions> options, ILogger<Sen
         => SendAsync(
             toEmail,
             "We received your multi-property enquiry",
-            $"Hi {contactName}, thanks for your enquiry. We've received your property details and will review them shortly. We'll be in touch with a personalised indicative quote — subject to review before any agreement is confirmed.",
+            $"Hi {contactName}, thanks for your enquiry. We've received your property details and will review them shortly. We'll be in touch with a personalised indicative quote - subject to review before any agreement is confirmed.",
             ct);
 
     public Task SendPortfolioEnquiryAdminNotifyAsync(
@@ -56,7 +56,7 @@ public class SendGridEmailService(IOptions<SendGridOptions> options, ILogger<Sen
         => SendAsync(
             opsEmail,
             "New multi-property enquiry",
-            $"New multi-property enquiry from {contactName} ({email}, {phone}) — {propertyCount} properties. Review in the admin Multi-Property Solutions section.",
+            $"New multi-property enquiry from {contactName} ({email}, {phone}) - {propertyCount} properties. Review in the admin Multi-Property Solutions section.",
             ct);
 
     private async Task SendAsync(string toEmail, string subject, string plainText, CancellationToken ct)

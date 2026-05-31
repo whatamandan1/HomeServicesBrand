@@ -148,7 +148,7 @@ export function PortfolioEnquiryList({
                         {detail.properties.map((p) => (
                           <li key={p.id} className="rounded-md bg-stone-50 px-3 py-2 text-stone-600">
                             {p.line1}
-                            {p.line2 ? `, ${p.line2}` : ""}, {p.city}, {p.postcode} — {p.gardenSize} garden
+                            {p.line2 ? `, ${p.line2}` : ""}, {p.city}, {p.postcode} - {p.gardenSize} garden
                           </li>
                         ))}
                       </ul>

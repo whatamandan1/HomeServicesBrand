@@ -27,7 +27,7 @@ function shorten(text: string, max = 80) {
 }
 
 function formatConfidence(score: number | null) {
-  if (score === null) return "—";
+  if (score === null) return "-";
   return `${Math.round(score * 100)}%`;
 }
 
@@ -129,7 +129,7 @@ export function AiActionLogList({
           prompt: shorten(l.promptSummary),
           response: shorten(l.responseSummary),
           confidence: formatConfidence(l.confidenceScore),
-          escalated: l.escalated ? "Yes" : "—",
+          escalated: l.escalated ? "Yes" : "-",
         }))}
         emptyMessage={controls.query ? "No AI actions match your search." : emptyMessage}
       />

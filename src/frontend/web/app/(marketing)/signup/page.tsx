@@ -7,7 +7,7 @@ import { Check, ChevronLeft, ChevronRight } from "lucide-react";
 import { api, type AuthResponse, type GardenSize, type SubscriptionPlan } from "@/lib/api";
 import { FALLBACK_PLANS, sortPlans } from "@/lib/plans";
 import {
-  findSignupMonthlyPlan,
+  findSignupMonthlyPlanForFrequency,
   formatPriceFrom,
   GARDEN_SIZE_ABOVE_BAND_NOTE,
   GARDEN_SIZE_GUIDE,
@@ -21,7 +21,7 @@ import {
   formatSignupAddonOccurrencesLabel,
   isSignupAddon,
   planPriceForGarden,
-  planVisitSummary,
+  signupQuoteIncludedLines,
   DEFAULT_VISIT_FREQUENCY,
   SIGNUP_ADDON_SERVICE_IDS,
   CORE_VISIT_WORK,
@@ -83,17 +83,28 @@ export default function SignupPage() {
     [selectedServices]
   );
 
+  const quoteIncludedLines = useMemo(
+    () => signupQuoteIncludedLines(visitFrequency, selectedAddonIds),
+    [visitFrequency, selectedAddonIds]
+  );
+
   useEffect(() => {
     const urls = pendingPhotos.map((file) => URL.createObjectURL(file));
     setPhotoPreviewUrls(urls);
     return () => urls.forEach((url) => URL.revokeObjectURL(url));
   }, [pendingPhotos]);
 
-  function applyPlans(sorted: SubscriptionPlan[]) {
+  function applyPlans(sorted: SubscriptionPlan[], frequency: SignupServiceId = visitFrequency) {
     setPlans(sorted);
-    const plan = findSignupMonthlyPlan(sorted);
+    const plan = findSignupMonthlyPlanForFrequency(sorted, frequency);
     if (plan) setSelectedPlanId(plan.id);
   }
+
+  useEffect(() => {
+    if (plans.length === 0) return;
+    const plan = findSignupMonthlyPlanForFrequency(plans, visitFrequency);
+    if (plan) setSelectedPlanId(plan.id);
+  }, [visitFrequency, plans]);
 
   useEffect(() => {
     setPlansLoading(true);
@@ -104,7 +115,7 @@ export default function SignupPage() {
         applyPlans(sortPlans(FALLBACK_PLANS));
         setError(
           process.env.NODE_ENV === "development"
-            ? "Could not load live plans — showing standard pricing. Signup may fail until the API is reachable."
+            ? "Could not load live plans - showing standard pricing. Signup may fail until the API is reachable."
             : "We're having trouble loading plans. Please refresh the page or try again in a moment."
         );
       })
@@ -130,7 +141,8 @@ export default function SignupPage() {
     setStepHint(null);
   }
 
-  const selectedPlan = plans.find((p) => p.id === selectedPlanId) ?? findSignupMonthlyPlan(plans);
+  const selectedPlan =
+    plans.find((p) => p.id === selectedPlanId) ?? findSignupMonthlyPlanForFrequency(plans, visitFrequency);
 
   const leadSnapshot = useMemo(
     () => ({
@@ -149,7 +161,7 @@ export default function SignupPage() {
 
   function stepValidationMessage(): string | null {
     if (step === 1) {
-      if (!selectedPlanId) return "We could not find a plan — please refresh and try again.";
+      if (!selectedPlanId) return "We could not find a plan - please refresh and try again.";
       return null;
     }
     if (step === 2) {
@@ -312,7 +324,7 @@ export default function SignupPage() {
             {step === 2 ? "Your quote" : "Get your quote"}
           </h1>
           <p className="mt-2 text-stone-600">
-            Step {step + 1} of {STEPS.length} — {STEPS[step]}
+            Step {step + 1} of {STEPS.length} - {STEPS[step]}
           </p>
         </div>
 
@@ -342,7 +354,7 @@ export default function SignupPage() {
         {skipPayment && process.env.NODE_ENV === "development" && (
           <AlertBanner
             variant="warning"
-            message="Dev mode: payment skipped — subscription activates immediately."
+            message="Dev mode: payment skipped - subscription activates immediately."
             className="mt-6"
           />
         )}
@@ -452,22 +464,6 @@ export default function SignupPage() {
                   })}
 
                 </div>
-
-                {plansLoading ? (
-                  <div className="mt-3 h-10 animate-pulse rounded-lg bg-stone-200" aria-busy="true" />
-                ) : (
-                  activePlan && (
-                    <div className="mt-3 rounded-lg border border-gardens-primary/25 bg-gardens-light/50 px-3 py-2">
-                      <p className="text-sm text-gardens-dark">
-                        <span className="font-semibold">Garden care</span>
-                        <span className="text-stone-600">
-                          {" "}
-                          · {planVisitSummary(activePlan, visitFrequency)}
-                        </span>
-                      </p>
-                    </div>
-                  )
-                )}
               </div>
             )}
 
@@ -500,7 +496,6 @@ export default function SignupPage() {
                       Your personalised quote
                     </p>
                     <p className="mt-2 font-display text-xl font-bold text-gardens-dark">Garden care</p>
-                    <p className="mt-2 text-sm text-stone-600">{planVisitSummary(activePlan, visitFrequency)}</p>
                     <div className="mt-4 flex flex-wrap items-end justify-between gap-4 border-t border-gardens-primary/15 pt-4">
                       <p className="text-xs text-stone-500">Billed monthly</p>
                       <div className="text-right">
@@ -515,12 +510,22 @@ export default function SignupPage() {
                         </p>
                       </div>
                     </div>
-                    <Link
-                      href="/#pricing"
-                      className="mt-4 block text-center text-xs font-medium text-gardens-primary hover:underline"
-                    >
-                      See what&apos;s included
-                    </Link>
+                    <div className="mt-4 border-t border-gardens-primary/15 pt-4">
+                      <p className="text-xs font-semibold uppercase tracking-wide text-stone-500">
+                        What&apos;s included
+                      </p>
+                      <ul className="mt-2 space-y-1.5 text-sm text-stone-700">
+                        {quoteIncludedLines.map((item) => (
+                          <li key={item} className="flex gap-2">
+                            <Check
+                              className="mt-0.5 h-4 w-4 shrink-0 text-gardens-primary"
+                              aria-hidden
+                            />
+                            {item}
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
                   </div>
                 )}
               </div>
@@ -529,7 +534,7 @@ export default function SignupPage() {
             {step === 3 && (
               <div className="space-y-4 rounded-2xl border border-stone-200 bg-white p-4 shadow-soft sm:space-y-5 sm:p-6">
                 <p className="text-sm text-stone-600">
-                  Last step — tell us who you are and where we&apos;ll maintain your garden.
+                  Last step - tell us who you are and where we&apos;ll maintain your garden.
                 </p>
                 <Field label="First name" value={form.firstName} onChange={(v) => updateField("firstName", v)} required autoComplete="given-name" />
                 <Field label="Last name" value={form.lastName} onChange={(v) => updateField("lastName", v)} required autoComplete="family-name" />
@@ -587,7 +592,7 @@ export default function SignupPage() {
                   <div>
                     <p className="text-sm font-medium text-stone-700">Garden photos (optional)</p>
                     <p className="text-xs text-stone-500">
-                      Up to 3 photos help your gardener prepare — uploaded after payment.
+                      Up to 3 photos help your gardener prepare - uploaded after payment.
                     </p>
                   </div>
                   <div className="flex flex-wrap gap-3">

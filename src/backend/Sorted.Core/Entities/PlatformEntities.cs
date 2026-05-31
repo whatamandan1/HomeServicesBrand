@@ -139,11 +139,11 @@ public class Provider : AuditableEntity
     public bool HasOwnRelevantInsurance { get; set; }
     public DateTime? InsuranceVerifiedAtUtc { get; set; }
 
-    /// <summary>Own leaf blower — seasonal tidy and leaf clearance add-ons.</summary>
+    /// <summary>Own leaf blower - seasonal tidy and leaf clearance add-ons.</summary>
     public bool HasLeafBlower { get; set; }
-    /// <summary>Own hedge trimmer — hedge trimming add-ons.</summary>
+    /// <summary>Own hedge trimmer - hedge trimming add-ons.</summary>
     public bool HasHedgeTrimmer { get; set; }
-    /// <summary>Own pressure washer with patio-safe attachment — patio &amp; path refresh add-ons.</summary>
+    /// <summary>Own pressure washer with patio-safe attachment - patio &amp; path refresh add-ons.</summary>
     public bool HasPressureWasherForPatio { get; set; }
 
     public ICollection<ProviderTerritory> Territories { get; set; } = [];

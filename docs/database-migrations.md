@@ -24,7 +24,7 @@ export PATH="$PATH:$HOME/.dotnet/tools"
 ## Production / staging (PostgreSQL on Railway)
 
 1. Add a PostgreSQL service and link it to the API (see [`deploy-staging.md`](deploy-staging.md)).
-2. Deploy — migrations apply on startup; seed data runs if the database is empty.
+2. Deploy - migrations apply on startup; seed data runs if the database is empty.
 3. Verify: `GET https://YOUR-API/health` → `"database": "postgresql"`, `"canConnect": true`.
 
 ## Legacy databases
@@ -46,6 +46,6 @@ If you deployed before migrations (using `EnsureCreated`), existing tables are d
 1. Update entities in `Sorted.Core/Entities/` and `SortedDbContext` if needed.
 2. Run `./scripts/db-add-migration.sh YourMigrationName`.
 3. Commit the new files under `Data/Migrations/`.
-4. Deploy — Railway applies the migration on next API startup.
+4. Deploy - Railway applies the migration on next API startup.
 
 Migrations are generated against **SQLite** so they work for local dev and PostgreSQL on Railway.

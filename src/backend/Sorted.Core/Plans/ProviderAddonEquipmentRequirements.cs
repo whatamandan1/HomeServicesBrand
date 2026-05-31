@@ -1,7 +1,7 @@
 namespace Sorted.Core.Plans;
 
 /// <summary>
-/// Optional add-on equipment gardeners declare in vetting — required to be assigned matching customer add-ons.
+/// Optional add-on equipment gardeners declare in vetting - required to be assigned matching customer add-ons.
 /// </summary>
 public static class ProviderAddonEquipmentRequirements
 {

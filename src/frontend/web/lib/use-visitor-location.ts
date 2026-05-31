@@ -114,7 +114,7 @@ export function useVisitorLocation() {
   };
 }
 
-/** For tests or Storybook — reset cached lookup. */
+/** For tests or Storybook - reset cached lookup. */
 export function resetVisitorLocationCache() {
   sharedPromise = null;
   try {

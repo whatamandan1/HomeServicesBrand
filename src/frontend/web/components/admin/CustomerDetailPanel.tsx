@@ -8,7 +8,7 @@ import { api, type AdminCustomerDetail, type AuthResponse, type CommunicationThr
 import { StatusBadge } from "@/components/ui";
 
 function formatDate(iso: string | null) {
-  if (!iso) return "—";
+  if (!iso) return "-";
   return new Date(iso).toLocaleDateString("en-GB");
 }
 
@@ -124,7 +124,7 @@ export function CustomerDetailPanel({
             </div>
             <div>
               <span className="text-stone-500">Phone</span>
-              <p className="font-medium">{detail.phone ?? "—"}</p>
+              <p className="font-medium">{detail.phone ?? "-"}</p>
             </div>
             <div>
               <span className="text-stone-500">Joined</span>

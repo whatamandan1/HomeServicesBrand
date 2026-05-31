@@ -1,4 +1,4 @@
-# Stripe Price IDs — pre-deploy checklist
+# Stripe Price IDs - pre-deploy checklist
 
 Complete **before** taking real payments in staging or production. Without matching Price IDs, small-garden checkout may use dynamic `price_data` (works in test, harder to reconcile in Stripe Dashboard).
 
@@ -8,7 +8,7 @@ Complete **before** taking real payments in staging or production. Without match
 
 ## 1. Create products in Stripe Dashboard
 
-Stripe → **Products** → create one product per plan (or one product with six prices — either is fine).
+Stripe → **Products** → create one product per plan (or one product with six prices - either is fine).
 
 Use **test mode** first, then repeat in **live mode** before go-live.
 
@@ -79,7 +79,7 @@ See [`deploy-staging.md`](deploy-staging.md) and [`stripe-local-setup.md`](strip
 ## 4. Verify after deploy
 
 - [ ] API logs: `Applied Stripe Price IDs from configuration to subscription plans` (or no error about invalid `prod_` IDs)
-- [ ] `GET /api/brands/gardens-sorted/plans` — six plans, correct `priceGbp` values
+- [ ] `GET /api/brands/gardens-sorted/plans` - six plans, correct `priceGbp` values
 - [ ] Signup **Essential Monthly** (small garden) → Stripe Checkout shows **£29.95/month**
 - [ ] Signup **Premium Monthly** → **£54.95/month**
 - [ ] Signup **Elite Monthly** → **£89.95/month**
@@ -105,4 +105,4 @@ See [`deploy-staging.md`](deploy-staging.md) and [`stripe-local-setup.md`](strip
 
 ## 6. Alternative providers (GoCardless)
 
-Stripe is integrated today. Direct Debit via **GoCardless** is a possible UK alternative for lower recurring fees — see [`payments-strategy.md`](payments-strategy.md). Do **not** remove Stripe env vars until a second provider is implemented; run parallel in staging first.
+Stripe is integrated today. Direct Debit via **GoCardless** is a possible UK alternative for lower recurring fees - see [`payments-strategy.md`](payments-strategy.md). Do **not** remove Stripe env vars until a second provider is implemented; run parallel in staging first.

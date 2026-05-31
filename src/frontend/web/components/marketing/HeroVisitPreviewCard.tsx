@@ -48,7 +48,7 @@ export function HeroVisitPreviewCard({ compact = false }: { compact?: boolean })
               <span aria-hidden>·</span>
               <span>View account</span>
             </div>
-            <p className="mt-4 text-xs text-stone-500">Example from a customer account — yours will look like this.</p>
+            <p className="mt-4 text-xs text-stone-500">Example from a customer account - yours will look like this.</p>
           </>
         )}
       </div>

@@ -3,16 +3,16 @@
 Living marketing strategy for the initial **GardensSorted** launch under the **Sorted** platform.
 
 **Last updated:** 2026-05-28  
-**Status:** Draft — pre go-live  
+**Status:** Draft - pre go-live  
 **Related:** [`sorted_high_level_business_plan_v_2.md`](../sorted_high_level_business_plan_v_2.md), [`consumer-plans-and-pricing.md`](consumer-plans-and-pricing.md), [`multi-property-solutions-requirements.md`](multi-property-solutions-requirements.md), [`development-roadmap.md`](development-roadmap.md)
 
 ---
 
 ## 1. Purpose
 
-This document defines how GardensSorted will acquire, convert, and retain customers in the Yorkshire pilot — and how marketing will scale as we add postcodes, providers, and future Sorted brands.
+This document defines how GardensSorted will acquire, convert, and retain customers in the Yorkshire pilot - and how marketing will scale as we add postcodes, providers, and future Sorted brands.
 
-**Primary goal:** Build **recurring subscription density** in target postcodes — not broad awareness for its own sake.
+**Primary goal:** Build **recurring subscription density** in target postcodes - not broad awareness for its own sake.
 
 **Secondary goal:** Establish a repeatable acquisition playbook that transfers to future brands (CleaningSorted, RepairsSorted, etc.) on the shared Sorted platform.
 
@@ -22,7 +22,7 @@ This document defines how GardensSorted will acquire, convert, and retain custom
 
 | Factor | Implication for marketing |
 |--------|---------------------------|
-| Recurring subscriptions (£30–£110/mo) | Emphasise reliability, schedule, and peace of mind — not one-off quotes |
+| Recurring subscriptions (£30–£110/mo) | Emphasise reliability, schedule, and peace of mind - not one-off quotes |
 | Local contractor delivery | Trust, vetting, and “local gardener” messaging matter |
 | Yorkshire pilot (Leeds, York, Wakefield + surrounds) | Hyper-local targeting beats national brand spend |
 | AI-assisted ops + low headcount | Marketing must convert self-serve; support chat is a conversion tool, not a sales team |
@@ -48,22 +48,22 @@ Marketing activity maps to product readiness in [`development-roadmap.md`](devel
 
 ## 4. Target audiences
 
-### 4.1 Primary — Residential homeowners (B2C)
+### 4.1 Primary - Residential homeowners (B2C)
 
 **Who:** Yorkshire homeowners with a garden they want maintained but lack time, confidence, or consistency to do it themselves.
 
 | Persona | Profile | Plan bias | Message angle |
 |---------|---------|-----------|---------------|
-| **Time-poor professional** | Dual income, suburban semi; garden visible but neglected | Premium / Elite | “Your garden sorted — without becoming a project manager” |
+| **Time-poor professional** | Dual income, suburban semi; garden visible but neglected | Premium / Elite | “Your garden sorted - without becoming a project manager” |
 | **Comfort-seeking retiree** | Wants tidy garden, values same gardener and predictable visits | Essential / Premium | “Reliable local care on a schedule you choose” |
 | **Proud homeowner** | Invested in outdoor space; wants it to look good for visitors | Premium / Elite | “Regular upkeep that keeps your garden looking its best” |
-| **Overwhelmed first-time owner** | Recently moved; garden bigger or faster-growing than expected | Premium | “We handle the routine — you enjoy the space” |
+| **Overwhelmed first-time owner** | Recently moved; garden bigger or faster-growing than expected | Premium | “We handle the routine - you enjoy the space” |
 
 **Garden size:** Courtyard band (up to 40 m² maintained) is the entry offer (from **£39.95/mo** Essential). Four bands to 140 m²; above that is quoted. Uplifts should be clear at signup to avoid surprise and support load.
 
 **Geography (initial):** Leeds, York, Wakefield and surrounding postcodes. Postcode checker at signup is the primary availability gate.
 
-### 4.2 Secondary — Multi-property (B2B-lite)
+### 4.2 Secondary - Multi-property (B2B-lite)
 
 **Who:** Private landlords, holiday-let owners, letting agents with **2+ properties** in coverage area.
 
@@ -75,7 +75,7 @@ Marketing activity maps to product readiness in [`development-roadmap.md`](devel
 
 **Marketing:** Separate track via **For landlords** nav → `/multi-property-solutions`. Lower volume, higher LTV; outbound and partnerships over performance ads.
 
-### 4.3 Supply-side (providers) — not customer marketing, but coupled
+### 4.3 Supply-side (providers) - not customer marketing, but coupled
 
 Provider density in a postcode **enables** marketing in that postcode. Provider recruitment (local Facebook groups, Gumtree, word of mouth, `/providers#apply`) should run **ahead of or in parallel with** consumer spend in each area.
 
@@ -85,7 +85,7 @@ Provider density in a postcode **enables** marketing in that postcode. Provider 
 
 ### 5.1 Positioning statement
 
-> **GardensSorted** is the easy way for Yorkshire homeowners to keep their garden maintained year-round — subscribe online, get scheduled visits from approved local gardeners, and manage everything in one account.
+> **GardensSorted** is the easy way for Yorkshire homeowners to keep their garden maintained year-round - subscribe online, get scheduled visits from approved local gardeners, and manage everything in one account.
 
 ### 5.2 Category
 
@@ -101,11 +101,11 @@ We are **not** a lead-gen directory or quote marketplace. We sell **recurring ga
 
 ### 5.3 Message pillars
 
-1. **Sorted, not stressful** — No quote chasing; visits on a schedule.
-2. **Local & trusted** — Approved gardeners in your area; continuity where possible.
-3. **Simple pricing** — Essential / Premium / Elite; small / medium / large; monthly or annual.
-4. **You're in control** — Online account, reschedule, chat support.
-5. **Built for Yorkshire** — Launching locally; expanding as coverage grows.
+1. **Sorted, not stressful** - No quote chasing; visits on a schedule.
+2. **Local & trusted** - Approved gardeners in your area; continuity where possible.
+3. **Simple pricing** - Essential / Premium / Elite; small / medium / large; monthly or annual.
+4. **You're in control** - Online account, reschedule, chat support.
+5. **Built for Yorkshire** - Launching locally; expanding as coverage grows.
 
 ### 5.4 Proof points (use as we earn them)
 
@@ -136,9 +136,9 @@ Reference: [`consumer-plans-and-pricing.md`](consumer-plans-and-pricing.md).
 | **Premium** | 2 / month | £54.95/mo | Faster-growing gardens, more complete care |
 | **Elite** | 3 / month | £89.95/mo | Near-weekly care; patio refresh included 1×/year |
 
-**Annual billing:** ~2 months free vs monthly — primary upsell at checkout and in lifecycle email.
+**Annual billing:** ~2 months free vs monthly - primary upsell at checkout and in lifecycle email.
 
-**Minimum term:** 3 months (monthly) / 12 months (annual) — must be clear in ads and landing pages to reduce disputes and chargebacks.
+**Minimum term:** 3 months (monthly) / 12 months (annual) - must be clear in ads and landing pages to reduce disputes and chargebacks.
 
 **Launch promotions (to decide):**
 
@@ -162,7 +162,7 @@ Reference: [`consumer-plans-and-pricing.md`](consumer-plans-and-pricing.md).
 | **Active paying subscribers** | Set per postcode cluster | Density > vanity signups |
 | **Monthly recurring revenue (MRR)** | Track by plan tier | Essential = volume; Premium/Elite = margin |
 | **Subscriber churn (monthly)** | < 5% (assumption to validate) | Exit surveys after cancel |
-| **CAC (blended)** | See §7.4–7.6 | Tiered by plan and phase — do not use one number for all forecasts |
+| **CAC (blended)** | See §7.4–7.6 | Tiered by plan and phase - do not use one number for all forecasts |
 | **LTV : CAC** | ≥ 3 : 1 | Needs churn + ARPU validation |
 | **Payback period** | ≤ 3 months | Critical for paid scale |
 
@@ -170,11 +170,11 @@ Reference: [`consumer-plans-and-pricing.md`](consumer-plans-and-pricing.md).
 
 | Phase | Realistic CAC | Notes |
 |-------|---------------|-------|
-| **Month 1 (learning)** | £60–£100 | No reviews, cold traffic, creative unproven — normal, not failure |
+| **Month 1 (learning)** | £60–£100 | No reviews, cold traffic, creative unproven - normal, not failure |
 | **Months 2–6 (optimising)** | £45–£75 | Retargeting pool building; cut bad keywords/audiences |
 | **Year 2+ (mature local)** | £25–£45 | Referrals, SEO, brand search, reviews contributing |
 
-**Long-run optimisation target:** **£30 blended CAC** — achievable with referrals, retargeting, and local density, typically **12–18 months** after go-live, not week one.
+**Long-run optimisation target:** **£30 blended CAC** - achievable with referrals, retargeting, and local density, typically **12–18 months** after go-live, not week one.
 
 ### 7.2 Funnel metrics
 
@@ -189,7 +189,7 @@ Reference: [`consumer-plans-and-pricing.md`](consumer-plans-and-pricing.md).
 
 ### 7.3 Channel KPIs
 
-Track separately — blended CAC hides failing channels.
+Track separately - blended CAC hides failing channels.
 
 | Metric | Weak (month 1) | OK | Strong |
 |--------|----------------|-----|--------|
@@ -209,7 +209,7 @@ Also track:
 
 ### 7.4 CAC benchmarks (local home services, UK)
 
-Planning ranges for a **local garden subscription** — not guarantees. Garden care is **local, trust-heavy, and low urgency** vs emergency trades.
+Planning ranges for a **local garden subscription** - not guarantees. Garden care is **local, trust-heavy, and low urgency** vs emergency trades.
 
 | Stage | What's happening | Typical CAC |
 |-------|------------------|-------------|
@@ -222,7 +222,7 @@ Planning ranges for a **local garden subscription** — not guarantees. Garden c
 
 | Channel | Typical range | Notes |
 |---------|---------------|-------|
-| Google Search (non-brand, local) | £35–£70 | Best first channel — high intent |
+| Google Search (non-brand, local) | £35–£70 | Best first channel - high intent |
 | Google Search (brand) | £10–£25 | Cheap once people know you |
 | Meta prospecting | £60–£120+ | Easy to burn budget early |
 | Meta retargeting | £25–£50 | Needs site traffic first |
@@ -234,7 +234,7 @@ Blended CAC only looks good when referrals and organic are a meaningful share. I
 
 ### 7.5 Price vs affordable CAC
 
-**CAC does not automatically change when price changes** — but price determines whether a given CAC is survivable.
+**CAC does not automatically change when price changes** - but price determines whether a given CAC is survivable.
 
 ```
 CAC = marketing spend ÷ new paying customers
@@ -256,11 +256,11 @@ Price mainly affects **lead → paid conversion** and **contribution margin** (w
 
 **Implications:**
 
-- **Essential (~£30/mo):** model **£20–£35 CAC** for paid scale — £70+ is hard to justify unless churn is very low.
+- **Essential (~£30/mo):** model **£20–£35 CAC** for paid scale - £70+ is hard to justify unless churn is very low.
 - **Premium (~£55/mo):** **£40–£65 CAC** is plausible with decent conversion.
 - **Elite (~£90/mo):** can tolerate higher CAC on unit economics, but audience is smaller so measured CAC may stay high.
 
-**Do not use one blended CAC across tiers** — Essential and Premium often have different conversion and different affordability.
+**Do not use one blended CAC across tiers** - Essential and Premium often have different conversion and different affordability.
 
 ### 7.6 Forecasting scenarios (for financial model)
 
@@ -304,10 +304,10 @@ Ensure implied subscriber volume is realistic for postcode size and seasonality.
 
 **Campaign structure:**
 
-1. **Brand** — GardensSorted, Gardens Sorted, gardenssorted.co.uk  
-2. **Local service** — garden maintenance {city}, lawn mowing {city}, gardener {city}  
-3. **Competitor / alternative** — (careful) lawn care service, garden tidy  
-4. **Retargeting** — site visitors who viewed pricing but didn’t checkout (Meta + Google Display)
+1. **Brand** - GardensSorted, Gardens Sorted, gardenssorted.co.uk  
+2. **Local service** - garden maintenance {city}, lawn mowing {city}, gardener {city}  
+3. **Competitor / alternative** - (careful) lawn care service, garden tidy  
+4. **Retargeting** - site visitors who viewed pricing but didn’t checkout (Meta + Google Display)
 
 **Landing:** Homepage `/#pricing` or dedicated `/signup` for high-intent keywords.
 
@@ -354,8 +354,8 @@ Launch after **50+ happy customers** and reliable visit quality.
 |----------|---------|
 | Refer a neighbour | £25 credit both sides after 2nd paid month |
 | Annual upgrade nudge | Email at month 2 of monthly billing |
-| Seasonal add-ons | Autumn leaf clearance, patio clean — email + portal |
-| Win-back | Cancelled subscribers — offer pause vs cancel (product dependent) |
+| Seasonal add-ons | Autumn leaf clearance, patio clean - email + portal |
+| Win-back | Cancelled subscribers - offer pause vs cancel (product dependent) |
 
 ### 8.6 Multi-Property Solutions (landlords)
 
@@ -385,8 +385,8 @@ Ad / search / referral
 ### 9.2 Secondary paths
 
 - **Guest chat on homepage** → AI + human escalation → signup link  
-- **Signup lead capture** — partial wizard data to admin (`signup-leads`); **manual follow-up** for abandoners  
-- **Unavailable postcode** — waitlist capture (if built) or clear “not yet in your area”
+- **Signup lead capture** - partial wizard data to admin (`signup-leads`); **manual follow-up** for abandoners  
+- **Unavailable postcode** - waitlist capture (if built) or clear “not yet in your area”
 
 ### 9.3 Optimisation priorities
 
@@ -406,17 +406,17 @@ Follow existing GardensSorted web components (`src/frontend/web/components/marke
 
 - Primary green palette, stone neutrals, display font for headlines
 - Photography: real Yorkshire gardens, diverse housing stock, seasonal variety
-- Avoid stock “perfect estate” only — include relatable suburban gardens
+- Avoid stock “perfect estate” only - include relatable suburban gardens
 
 ### 10.2 Ad copy templates (draft)
 
 **Search:**
 
-> Regular garden maintenance in Leeds — from £29.95/mo. Subscribe online, local gardeners, manage visits in your account. See plans.
+> Regular garden maintenance in Leeds - from £29.95/mo. Subscribe online, local gardeners, manage visits in your account. See plans.
 
 **Social:**
 
-> Tired of chasing gardeners? GardensSorted keeps your garden maintained on a schedule — lawn, borders, tidy. Yorkshire homeowners: see plans from £29.95/month.
+> Tired of chasing gardeners? GardensSorted keeps your garden maintained on a schedule - lawn, borders, tidy. Yorkshire homeowners: see plans from £29.95/month.
 
 **Landlord:**
 
@@ -437,14 +437,14 @@ Follow existing GardensSorted web components (`src/frontend/web/components/marke
 
 ### 11.1 Month 1 validation test
 
-**Goal:** Learn **directional CAC**, **CPL**, and **lead → paid conversion** in **one geography** on **1–2 channels** — not prove the full business model.
+**Goal:** Learn **directional CAC**, **CPL**, and **lead → paid conversion** in **one geography** on **1–2 channels** - not prove the full business model.
 
 **What makes the test valid:**
 
-1. **One city cluster only** (e.g. Leeds + tight radius) — not all Yorkshire at once  
-2. **Fulfilment ready** — new signups can get first visit within ~14 days  
+1. **One city cluster only** (e.g. Leeds + tight radius) - not all Yorkshire at once  
+2. **Fulfilment ready** - new signups can get first visit within ~14 days  
 3. **Full funnel tracked:** ad click → signup start → lead captured → Stripe paid → first visit completed  
-4. **One price story in ads** for the first 2–3 weeks (Essential *or* Premium — not both)  
+4. **One price story in ads** for the first 2–3 weeks (Essential *or* Premium - not both)  
 5. **Run 14–21 days** before major structural changes (algorithms and seasonality need time)
 
 **Budget tiers (month 1 total):**
@@ -457,7 +457,7 @@ Follow existing GardensSorted web components (`src/frontend/web/components/marke
 
 **Rule of thumb:** spend at least **~10× expected CAC** on your primary channel in month 1. If CAC might be £60, allocate **£600+ to Google alone** as a floor before splitting to Meta.
 
-Below **~£1,000 total**, you mostly learn whether tracking works — not what CAC is.
+Below **~£1,000 total**, you mostly learn whether tracking works - not what CAC is.
 
 **Recommended month 1 plan: £3,000**
 
@@ -474,23 +474,23 @@ Below **~£1,000 total**, you mostly learn whether tracking works — not what C
 
 | Priority | Channel | Month 1 role |
 |----------|---------|--------------|
-| **1** | Google Search (local + brand) | Primary — highest intent |
+| **1** | Google Search (local + brand) | Primary - highest intent |
 | **2** | Meta retargeting | Convert pricing/signup abandoners |
 | **3** | Meta prospecting | Small controlled test only |
-| **Defer** | Direct mail, display, TikTok, PR for CAC learning | — |
-| **Free (essential)** | Google Business Profile, review asks after first visit | — |
+| **Defer** | Direct mail, display, TikTok, PR for CAC learning | - |
+| **Free (essential)** | Google Business Profile, review asks after first visit | - |
 
 **Google campaign structure (month 1):**
 
-1. **Local service** — `garden maintenance leeds`, `lawn mowing leeds`, `gardener near me` (+ city variants)  
-2. **Brand** — GardensSorted, gardenssorted.co.uk  
-3. **Retargeting** — pricing/signup visitors (Google + Meta once traffic exists)
+1. **Local service** - `garden maintenance leeds`, `lawn mowing leeds`, `gardener near me` (+ city variants)  
+2. **Brand** - GardensSorted, gardenssorted.co.uk  
+3. **Retargeting** - pricing/signup visitors (Google + Meta once traffic exists)
 
-**Landing:** `/signup` or `/#pricing` — not homepage alone for high-intent keywords.
+**Landing:** `/signup` or `/#pricing` - not homepage alone for high-intent keywords.
 
 **Meta (month 1):**
 
-- **Retargeting first** — site visitors, signup abandoners  
+- **Retargeting first** - site visitors, signup abandoners  
 - **Prospecting:** homeowners 35–65, 5–10 mile radius, 1 audience, real garden creative  
 - **Avoid:** broad national prospecting, boosting random posts, many audiences at once
 
@@ -499,7 +499,7 @@ Below **~£1,000 total**, you mostly learn whether tracking works — not what C
 | Outcome | Action |
 |---------|--------|
 | Google CPL > £35, lead → paid < 5% | Fix landing page, offer clarity, postcode messaging before scaling spend |
-| Blended CAC £60–£90 | Normal for month 1 — optimise month 2 |
+| Blended CAC £60–£90 | Normal for month 1 - optimise month 2 |
 | Blended CAC > £120 with poor conversion | Pause prospecting; focus Google + retargeting; review fulfilment/trust signals |
 | One channel clearly wins | Shift 70%+ of month 2 budget there |
 
@@ -534,7 +534,7 @@ Monthly ad budget ≈ (target new subscribers × CAC)
 - Pause ad group if **2× target CPL and zero paid conversions** after ~£150–£200 spend  
 - Pause postcode if activation (first visit) SLA missed  
 - Reinvest savings from referrals into winning postcodes  
-- Do not model **£30 CAC** for month 1 paid-only acquisition — use §7.6 scenarios
+- Do not model **£30 CAC** for month 1 paid-only acquisition - use §7.6 scenarios
 
 ---
 
@@ -563,7 +563,7 @@ utm_content={ad-variant}
 
 ## 13. Launch calendar (90-day outline)
 
-### Days 1–30 — Foundation & month 1 validation test
+### Days 1–30 - Foundation & month 1 validation test
 
 - [ ] Finalise pilot postcode list and provider coverage map  
 - [ ] Set up Google Ads + Meta accounts, conversion events, UTMs  
@@ -571,14 +571,14 @@ utm_content={ad-variant}
 - [ ] Publish `/areas/{city}` pages (minimum: Leeds, York, Wakefield)  
 - [ ] Prepare 3 ad creative sets; **one lead price story** (Essential *or* Premium) for first 2–3 weeks  
 - [ ] Internal QA: signup → first visit scheduling path  
-- [ ] **Month 1 paid test:** **£3,000** total (see §11.1) — **one city first** (e.g. Leeds)  
+- [ ] **Month 1 paid test:** **£3,000** total (see §11.1) - **one city first** (e.g. Leeds)  
   - [ ] Google Search ~£1,900 (local service + brand)  
   - [ ] Meta retargeting ~£600  
   - [ ] Meta prospecting test ~£400  
 - [ ] Track weekly: CPL by channel, lead → paid %, CAC, activation within 21 days  
 - [ ] Do not judge CAC before **day 14–21** unless spend is clearly wasted
 
-### Days 31–60 — Learn & refine
+### Days 31–60 - Learn & refine
 
 - [ ] Review CAC, lead quality, postcode conversion weekly  
 - [ ] Turn off underperforming keywords / audiences  
@@ -587,7 +587,7 @@ utm_content={ad-variant}
 - [ ] A/B test hero headline or pricing CTA  
 - [ ] Begin landlord outbound (20 targets/week)  
 
-### Days 61–90 — Scale winners
+### Days 61–90 - Scale winners
 
 - [ ] Increase budget in postcodes with CAC < target and provider capacity  
 - [ ] Launch referral programme if NPS / visit quality supports it  
@@ -603,7 +603,7 @@ utm_content={ad-variant}
 |------|------------|
 | Spend ahead of provider supply | Postcode-level gating; recruit providers before ad scale |
 | High churn after first month | Clear plan scope; quality checks; same-gardener continuity |
-| CAC above target | Use §7.4 benchmarks — month 1 £60–£100 is normal; cut bad ad groups; improve conversion before scaling; shift to retargeting/referrals/SEO for year 2 £30 target |
+| CAC above target | Use §7.4 benchmarks - month 1 £60–£100 is normal; cut bad ad groups; improve conversion before scaling; shift to retargeting/referrals/SEO for year 2 £30 target |
 | Seasonality (winter dip) | Seasonal messaging; annual plans; add-ons |
 | VAT / pricing changes | Keep marketing copy synced with [`consumer-plans-and-pricing.md`](consumer-plans-and-pricing.md) |
 | Demo data on production | Complete pre-launch gate before paid acquisition ([`development-roadmap.md`](development-roadmap.md)) |
@@ -640,7 +640,7 @@ Track answers here as the plan matures.
 
 ---
 
-## Appendix A — Competitor watchlist (initial)
+## Appendix A - Competitor watchlist (initial)
 
 Monitor messaging and pricing quarterly; not exhaustive.
 
@@ -649,11 +649,11 @@ Monitor messaging and pricing quarterly; not exhaustive.
 | National lawn / garden franchises | TruGreen, local franchise brands | Pricing, coverage, subscription vs one-off |
 | Local independents | Facebook Marketplace, Gumtree | Price undercutting, trust gap |
 | Home services marketplaces | Bark, Checkatrade | Lead-gen model vs our subscription |
-| DIY | — | “Not for everyone” — time-poor angle |
+| DIY | - | “Not for everyone” - time-poor angle |
 
 ---
 
-## Appendix B — Seasonal marketing themes
+## Appendix B - Seasonal marketing themes
 
 | Season | Theme | Content / offer |
 |--------|-------|-----------------|

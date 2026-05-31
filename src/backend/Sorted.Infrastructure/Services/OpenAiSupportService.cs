@@ -105,7 +105,7 @@ public class OpenAiSupportService(
 
         if (string.IsNullOrWhiteSpace(apiKey))
         {
-            return "Thanks for your message. Our team will follow up shortly. (OpenAI not configured — add OpenAI__ApiKey to enable live AI replies.)";
+            return "Thanks for your message. Our team will follow up shortly. (OpenAI not configured - add OpenAI__ApiKey to enable live AI replies.)";
         }
 
         try
@@ -124,15 +124,15 @@ public class OpenAiSupportService(
             var systemPrompt = customerId.HasValue
                 ? "You are GardensSorted customer support for a Yorkshire UK gardening subscription service. " +
                   "Be brief, friendly, and factual. Use the customer account context when answering about their plan or visits. " +
-                  "For cancellations, billing disputes, or refunds, confirm the request has been escalated to the team — do not tell them to email billing or contact support separately. " +
-                  "Customers can switch from monthly to annual billing instantly from their account portal — direct them there for annual billing. " +
-                  "Customers can upgrade plans instantly from their account portal (Essential → Premium → Elite) — direct them there for plan upgrades. " +
+                  "For cancellations, billing disputes, or refunds, confirm the request has been escalated to the team - do not tell them to email billing or contact support separately. " +
+                  "Customers can switch from monthly to annual billing instantly from their account portal - direct them there for annual billing. " +
+                  "Customers can upgrade plans instantly from their account portal (Essential → Premium → Elite) - direct them there for plan upgrades. " +
                   "Topics: visit windows, subscription plans, property access, billing questions.\n\n"
                 : "You are GardensSorted's friendly website assistant for a Yorkshire UK gardening subscription service. " +
-                  "The visitor is NOT signed in — answer pre-sales questions about how the service works, pricing, coverage, and signup. " +
+                  "The visitor is NOT signed in - answer pre-sales questions about how the service works, pricing, coverage, and signup. " +
                   "Be brief, warm, and helpful. Encourage signup at /signup when they seem ready. " +
-                  "Do not invent account-specific details (visits, billing) — they need to sign up first for that. " +
-                  "For refunds, cancellations, or complaints, confirm a human will follow up — do not ask them to contact billing separately.\n\n";
+                  "Do not invent account-specific details (visits, billing) - they need to sign up first for that. " +
+                  "For refunds, cancellations, or complaints, confirm a human will follow up - do not ask them to contact billing separately.\n\n";
 
             var client = new ChatClient(model, apiKey);
 
@@ -159,12 +159,12 @@ public class OpenAiSupportService(
         catch (ClientResultException ex)
         {
             logger.LogWarning(ex, "OpenAI API error {Status} for chat thread {ThreadId}", ex.Status, threadId);
-            return "Sorry — I'm having trouble connecting right now. Your message is saved and our team will follow up shortly.";
+            return "Sorry - I'm having trouble connecting right now. Your message is saved and our team will follow up shortly.";
         }
         catch (Exception ex)
         {
             logger.LogWarning(ex, "OpenAI support chat failed for thread {ThreadId}", threadId);
-            return "Sorry — I'm having trouble connecting right now. Your message is saved and our team will follow up shortly.";
+            return "Sorry - I'm having trouble connecting right now. Your message is saved and our team will follow up shortly.";
         }
     }
 
@@ -179,11 +179,11 @@ public class OpenAiSupportService(
         var planLines = plans.Count > 0
             ? string.Join("\n", plans.Select(p =>
                 $"- {p.Name}: £{p.PriceGbp}/{(p.BillingInterval == SubscriptionBillingInterval.Monthly ? "month" : "year")}, {p.MinimumTermMonths}-month minimum. {p.Description}"))
-            : "- Essential Monthly: from £59.99/month (garden-size band), 10 visits per year, 3-month minimum (6-month if signup add-ons selected)\n- Signup add-ons (hedges, seasonal tidy, patio): fixed sessions per year; monthly fee spreads annual cost; 6-month minimum on monthly billing\n- Early cancellation: remaining visits may be reduced to equalise paid vs delivered work (seasonal scheduling — see terms)\n- Each visit includes: mow & edge, border/bed weeding, general tidy, light watering while on site\n- Customer provides water access (tap); gardener brings own tools; do not hire platform gardeners off-platform (12 months after last visit)\n- Garden sizes: ≤50 m² (£59.99), ≤100 m² (£79.99), ≤150 m² (£99.99); above 150 m² quoted";
+            : "- Essential Monthly: from £59.99/month (garden-size band), 10 visits per year, 3-month minimum (6-month if signup add-ons selected)\n- Signup add-ons (hedges, seasonal tidy, patio): fixed sessions per year; monthly fee spreads annual cost; 6-month minimum on monthly billing\n- Early cancellation: remaining visits may be reduced to equalise paid vs delivered work (seasonal scheduling - see terms)\n- Each visit includes: mow & edge, border/bed weeding, general tidy, light watering while on site\n- Customer provides water access (tap); gardener brings own tools; do not hire platform gardeners off-platform (12 months after last visit)\n- Garden sizes: ≤50 m² (£59.99), ≤100 m² (£79.99), ≤150 m² (£99.99); above 150 m² quoted";
 
         return $"""
             Visitor status: Not signed in (pre-sales / general questions)
-            Service area: Yorkshire, UK (Leeds, York, and surrounding areas — launching)
+            Service area: Yorkshire, UK (Leeds, York, and surrounding areas - launching)
             How it works: Subscribe online → recurring visits scheduled → local gardeners assigned
             Current plans:
             {planLines}
@@ -218,7 +218,7 @@ public class OpenAiSupportService(
                 .Where(v => v.ScheduledDate >= DateTime.UtcNow.Date && v.Status != VisitStatus.Cancelled)
                 .OrderBy(v => v.ScheduledDate)
                 .Take(3)
-                .Select(v => $"{v.ScheduledDate:dd MMM yyyy} — {v.AvailabilityWindow} ({v.Status}) at {v.Property.Postcode}")
+                .Select(v => $"{v.ScheduledDate:dd MMM yyyy} - {v.AvailabilityWindow} ({v.Status}) at {v.Property.Postcode}")
                 .ToListAsync(ct);
 
         return $"""
@@ -245,28 +245,28 @@ public class OpenAiSupportService(
         var lower = userMessage.ToLowerInvariant();
         if (lower.Contains("cancel"))
         {
-            return "Thanks for getting in touch. I've escalated your cancellation request to our customer service team — someone will follow up with you shortly.";
+            return "Thanks for getting in touch. I've escalated your cancellation request to our customer service team - someone will follow up with you shortly.";
         }
 
         if (lower.Contains("upgrade"))
         {
-            return "You can upgrade your plan instantly from your account portal — open My account and use Upgrade on your subscription (Essential → Premium → Elite).";
+            return "You can upgrade your plan instantly from your account portal - open My account and use Upgrade on your subscription (Essential → Premium → Elite).";
         }
 
         if (lower.Contains("annual") || lower.Contains("switch"))
         {
-            return "You can switch to annual billing instantly from your account portal — open My account and click Switch to annual billing on your subscription.";
+            return "You can switch to annual billing instantly from your account portal - open My account and click Switch to annual billing on your subscription.";
         }
 
         if (EscalationKeywords.Any(k => userMessage.Contains(k, StringComparison.OrdinalIgnoreCase)))
         {
             return isCustomer
-                ? "Thanks for getting in touch. I've escalated this to our customer service team — someone will follow up with you shortly."
-                : "Thanks for your message. I've passed this to our team — someone will follow up with you shortly.";
+                ? "Thanks for getting in touch. I've escalated this to our customer service team - someone will follow up with you shortly."
+                : "Thanks for your message. I've passed this to our team - someone will follow up with you shortly.";
         }
 
         return isCustomer
-            ? "Thanks for your message. I've escalated this to our customer service team — someone will follow up with you shortly."
-            : "Thanks for your message. I've passed this to our team — someone will follow up with you shortly.";
+            ? "Thanks for your message. I've escalated this to our customer service team - someone will follow up with you shortly."
+            : "Thanks for your message. I've passed this to our team - someone will follow up with you shortly.";
     }
 }
