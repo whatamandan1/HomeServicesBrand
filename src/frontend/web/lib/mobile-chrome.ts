@@ -10,8 +10,8 @@ export const MOBILE_HOME_MAIN_PADDING_CLASS =
 export const SIGNUP_MOBILE_STICKY_FOOTER_HEIGHT =
   "calc(0.75rem + 3rem + 0.75rem + 1.25rem + 1rem + max(0.75rem, env(safe-area-inset-bottom)))";
 
-/** Extra 2rem buffer so expanded <details> and long lists clear the fixed footer on Android. */
-export const SIGNUP_MOBILE_BOTTOM_PADDING_CLASS =
+/** Space below signup content for the fixed mobile footer (also set in globals.css on [data-signup-wizard]). */
+export const SIGNUP_MOBILE_WIZARD_PADDING_CLASS =
   "max-md:pb-[calc(0.75rem+3rem+0.75rem+1.25rem+1rem+2rem+max(0.75rem,env(safe-area-inset-bottom)))]";
 
 /** CSS class modifiers for .guest-chat-fab (see globals.css). */

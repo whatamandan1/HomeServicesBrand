@@ -5,7 +5,6 @@ import {
   expectBodyNotPositionFixed,
   expectMobileSignupShell,
   scrollSignupContentToBottom,
-  signupScrollRegion,
 } from "./helpers/signup-mobile";
 
 test.describe("Signup wizard mobile layout", () => {
@@ -17,8 +16,9 @@ test.describe("Signup wizard mobile layout", () => {
 
   test("step 1 garden size scrolls when content overflows", async ({ page }) => {
     await expect(page.getByText("Step 1 of 4")).toBeVisible();
-    const scroll = signupScrollRegion(page);
-    const canScroll = await scroll.evaluate((el) => el.scrollHeight > el.clientHeight + 8);
+    const canScroll = await page.evaluate(
+      () => document.documentElement.scrollHeight > window.innerHeight + 8
+    );
     if (canScroll) {
       await scrollSignupContentToBottom(page);
     }

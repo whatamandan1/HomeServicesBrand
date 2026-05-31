@@ -11,7 +11,7 @@ Playwright end-to-end tests in `src/frontend/web/e2e/` run on every push/PR to `
 
 Tests cover:
 
-- Signup wizard: single scroll region, `signup-wizard-active`, sticky footer, scroll on steps 1–4
+- Signup wizard: window scroll on mobile (no nested overflow), fixed footer, scroll on steps 1–4
 - Marketing header: mobile menu without `body { position: fixed }`
 - Legacy `/#pricing` → `/signup` redirect
 

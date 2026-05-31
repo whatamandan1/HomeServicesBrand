@@ -1,26 +1,20 @@
-import { expect, type Locator, type Page } from "@playwright/test";
+import { expect, type Page } from "@playwright/test";
 
-export function signupScrollRegion(page: Page): Locator {
+export function signupContent(page: Page) {
   return page.getByTestId("signup-mobile-scroll");
 }
 
-export function signupStickyFooter(page: Page): Locator {
+export function signupStickyFooter(page: Page) {
   return page.getByTestId("signup-mobile-footer");
 }
 
-/** Mobile wizard uses one inner scroll surface; footer stays outside it. */
+/** Mobile signup: window scroll + fixed footer (no nested overflow). */
 export async function expectMobileSignupShell(page: Page) {
   await expect(page.getByRole("heading", { name: /Get your quote|Your quote/i })).toBeVisible();
   await expect(page.locator("[data-signup-wizard]")).toBeVisible();
-  await expect(signupScrollRegion(page)).toBeVisible();
+  await expect(signupContent(page)).toBeVisible();
   await expect(signupStickyFooter(page)).toBeVisible();
-
-  await expect(page.locator("html")).toHaveClass(/signup-wizard-active/);
-
-  const overflowY = await signupScrollRegion(page).evaluate(
-    (el) => getComputedStyle(el).overflowY
-  );
-  expect(overflowY).toBe("auto");
+  await expect(page.locator("html")).not.toHaveClass(/signup-wizard-active/);
 }
 
 export async function expectBodyNotPositionFixed(page: Page) {
@@ -28,20 +22,17 @@ export async function expectBodyNotPositionFixed(page: Page) {
   expect(position).not.toBe("fixed");
 }
 
-/** Scrolls when content overflows; no-op when the step fits on screen. */
+/** Scrolls the page when content overflows; no-op when the step fits on screen. */
 export async function scrollSignupContentToBottom(page: Page) {
-  const scroll = signupScrollRegion(page);
-  const metrics = await scroll.evaluate((el) => ({
-    scrollHeight: el.scrollHeight,
-    clientHeight: el.clientHeight,
+  const metrics = await page.evaluate(() => ({
+    scrollHeight: document.documentElement.scrollHeight,
+    clientHeight: window.innerHeight,
   }));
   if (metrics.scrollHeight <= metrics.clientHeight + 8) return;
 
-  await scroll.evaluate((el) => {
-    el.scrollTop = el.scrollHeight;
-  });
-  const scrollTop = await scroll.evaluate((el) => el.scrollTop);
-  expect(scrollTop).toBeGreaterThan(0);
+  await page.evaluate(() => window.scrollTo(0, document.documentElement.scrollHeight));
+  const scrollY = await page.evaluate(() => window.scrollY);
+  expect(scrollY).toBeGreaterThan(0);
 }
 
 export async function clickSignupPrimary(page: Page, label: RegExp) {

@@ -22,19 +22,6 @@ html.mobile-nav-open body {
   overflow: hidden;
 }
 
-/* Signup wizard: lock body scroll on mobile only; desktop uses normal page scroll. */
-@media (max-width: 767px) {
-  html.signup-wizard-active {
-    overflow: hidden;
-    height: 100%;
-  }
-
-  html.signup-wizard-active body {
-    overflow: hidden;
-    overscroll-behavior-y: auto;
-  }
-}
-
 /*
  * Leaflet + Tailwind: preflight sets img { max-width: 100% } which breaks tile
  * rendering (grey map). These rules must stay outside @layer.
@@ -139,14 +126,10 @@ html.mobile-nav-open body {
   }
 }
 
-/* Signup wizard inner scroll (mobile) - reliable touch scroll above fixed footer */
+/* Signup on mobile: window scroll + fixed footer (avoid nested overflow on Android). */
 @media (max-width: 767px) {
-  .signup-mobile-scroll {
-    overflow-y: scroll;
-    -webkit-overflow-scrolling: touch;
-    overscroll-behavior-y: contain;
-    touch-action: pan-y;
-    scroll-padding-bottom: calc(
+  [data-signup-wizard] {
+    padding-bottom: calc(
       0.75rem + 3rem + 0.75rem + 1.25rem + 1rem + 2rem + max(0.75rem, env(safe-area-inset-bottom))
     );
   }

@@ -43,25 +43,26 @@ import { useSignupLeadCapture } from "@/lib/use-signup-lead";
 import { AlertBanner, LoadingSpinner } from "@/components/ui/feedback";
 import { AvailabilityPicker } from "@/components/signup/AvailabilityPicker";
 import { SignupVisitFrequencyPicker } from "@/components/signup/SignupVisitFrequencyPicker";
-import { SIGNUP_MOBILE_BOTTOM_PADDING_CLASS } from "@/lib/mobile-chrome";
+import { SIGNUP_MOBILE_WIZARD_PADDING_CLASS } from "@/lib/mobile-chrome";
 
 const STEPS = ["Garden size", "Add-ons", "Your quote", "Finish signup"] as const;
 
 const SIGNUP_MOBILE_FOOTER_CLEARANCE_PX = 148;
 
-function ensureVisibleInSignupScroll(
-  scrollEl: HTMLDivElement | null,
+function isMobileSignupLayout() {
+  return typeof window !== "undefined" && window.matchMedia("(max-width: 767px)").matches;
+}
+
+function ensureVisibleAboveSignupFooter(
   target: HTMLElement | null,
   gapPx = SIGNUP_MOBILE_FOOTER_CLEARANCE_PX
 ) {
-  if (!scrollEl || !target) return;
-  if (typeof window === "undefined" || !window.matchMedia("(max-width: 767px)").matches) return;
+  if (!target || !isMobileSignupLayout()) return;
   requestAnimationFrame(() => {
-    const scrollRect = scrollEl.getBoundingClientRect();
     const targetRect = target.getBoundingClientRect();
-    const overflow = targetRect.bottom - (scrollRect.bottom - gapPx);
+    const overflow = targetRect.bottom - (window.innerHeight - gapPx);
     if (overflow > 0) {
-      scrollEl.scrollBy({ top: overflow, behavior: "smooth" });
+      window.scrollBy({ top: overflow, behavior: "smooth" });
     }
   });
 }
@@ -128,19 +129,13 @@ export default function SignupPage() {
   }, [visitFrequency, plans]);
 
   useEffect(() => {
-    document.documentElement.classList.add("signup-wizard-active");
-    return () => document.documentElement.classList.remove("signup-wizard-active");
-  }, []);
-
-  useEffect(() => {
     if (step !== 2 || !quoteUnveiled) return;
-    const scrollEl = mobileScrollRef.current;
-    if (!scrollEl) return;
     requestAnimationFrame(() => {
-      const quote = scrollEl.querySelector("[data-signup-quote]");
-      const included = scrollEl.querySelector("[data-signup-quote-included]");
+      const root = mobileScrollRef.current;
+      const quote = root?.querySelector("[data-signup-quote]");
+      const included = root?.querySelector("[data-signup-quote-included]");
       quote?.scrollIntoView({ block: "start", behavior: "smooth" });
-      ensureVisibleInSignupScroll(scrollEl, (included ?? quote) as HTMLElement | null);
+      ensureVisibleAboveSignupFooter((included ?? quote) as HTMLElement | null);
     });
   }, [quoteUnveiled, step]);
 
@@ -163,10 +158,8 @@ export default function SignupPage() {
   }, []);
 
   useLayoutEffect(() => {
-    const scrollEl = mobileScrollRef.current;
-    const isMobileLayout = typeof window !== "undefined" && window.matchMedia("(max-width: 767px)").matches;
-    if (scrollEl && isMobileLayout) {
-      scrollEl.scrollTo({ top: 0, behavior: "instant" });
+    if (isMobileSignupLayout()) {
+      window.scrollTo({ top: 0, left: 0, behavior: "instant" });
       return;
     }
     topRef.current?.scrollIntoView({ block: "start" });
@@ -403,7 +396,7 @@ export default function SignupPage() {
   return (
     <div
       data-signup-wizard
-      className="pt-4 max-md:flex max-md:min-h-0 max-md:flex-1 max-md:flex-col max-md:overflow-hidden max-md:pt-3 md:pb-12 md:pt-12"
+      className={`pt-4 max-md:pt-3 md:pb-12 md:pt-12 ${SIGNUP_MOBILE_WIZARD_PADDING_CLASS}`}
     >
       <div ref={topRef} className="mx-auto w-full max-w-5xl shrink-0 scroll-mt-8 px-4">
         <div className="text-center">
@@ -429,12 +422,8 @@ export default function SignupPage() {
 
       </div>
 
-      <div className="mx-auto flex w-full max-w-5xl max-md:min-h-0 max-md:flex-1 max-md:flex-col md:px-4">
-        <div
-          ref={mobileScrollRef}
-          data-testid="signup-mobile-scroll"
-          className={`signup-mobile-scroll mt-3 max-md:flex-1 max-md:min-h-0 max-md:overflow-y-auto max-md:overscroll-y-contain max-md:px-4 ${SIGNUP_MOBILE_BOTTOM_PADDING_CLASS} md:mt-8`}
-        >
+      <div className="mx-auto w-full max-w-5xl md:px-4">
+        <div ref={mobileScrollRef} data-testid="signup-mobile-scroll" className="mt-3 max-md:px-4 md:mt-8">
             {usingFallback && (
               <AlertBanner
                 variant="warning"
@@ -502,11 +491,10 @@ export default function SignupPage() {
                   className="mt-4 rounded-lg border border-stone-100 bg-stone-50 px-3 py-2 md:hidden"
                   onToggle={(e) => {
                     if (!e.currentTarget.open) return;
-                    const scrollEl = mobileScrollRef.current;
-                    ensureVisibleInSignupScroll(scrollEl, e.currentTarget);
+                    ensureVisibleAboveSignupFooter(e.currentTarget);
                     const addons = e.currentTarget.parentElement?.querySelector("[data-signup-addons]");
                     if (addons instanceof HTMLElement) {
-                      requestAnimationFrame(() => ensureVisibleInSignupScroll(scrollEl, addons));
+                      requestAnimationFrame(() => ensureVisibleAboveSignupFooter(addons));
                     }
                   }}
                 >
@@ -696,7 +684,7 @@ export default function SignupPage() {
                   className="rounded-xl border border-stone-200 bg-stone-50 px-3 py-2 md:hidden"
                   onToggle={(e) => {
                     if (!e.currentTarget.open) return;
-                    ensureVisibleInSignupScroll(mobileScrollRef.current, e.currentTarget);
+                    ensureVisibleAboveSignupFooter(e.currentTarget);
                   }}
                 >
                   <summary className="cursor-pointer text-sm font-medium text-stone-800">
@@ -792,7 +780,6 @@ export default function SignupPage() {
               </p>
             )}
 
-            <div className="shrink-0 max-md:min-h-[4rem] md:hidden" aria-hidden />
 
             <div className="mt-8 hidden flex-col gap-3 md:flex md:flex-row md:justify-between">
               {step > 0 ? (
