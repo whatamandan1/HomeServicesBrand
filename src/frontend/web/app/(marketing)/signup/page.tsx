@@ -3,11 +3,11 @@
 import { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { Check, ChevronDown, ChevronLeft, ChevronRight, ChevronUp } from "lucide-react";
+import { Check, ChevronLeft, ChevronRight } from "lucide-react";
 import { api, type AuthResponse, type GardenSize, type SubscriptionPlan } from "@/lib/api";
 import { FALLBACK_PLANS, sortPlans } from "@/lib/plans";
 import {
-  findTierPlanForBilling,
+  findSignupMonthlyPlan,
   formatPriceFrom,
   GARDEN_SIZE_ABOVE_BAND_NOTE,
   GARDEN_SIZE_GUIDE,
@@ -18,19 +18,13 @@ import {
   effectiveMinimumTermMonths,
   formatSignupAddonOccurrencesLabel,
   isSignupAddon,
-  isVisitFrequencyService,
-  matchPlanTierFromVisitFrequency,
-  planFeatures,
   planPriceForGarden,
-  SIGNUP_ADDON_SERVICE_IDS,
   planVisitSummary,
-  PLAN_TIERS,
+  SIGNUP_ADDON_SERVICE_IDS,
   CORE_VISIT_WORK,
   SIGNUP_CHECKBOX_GROUPS,
   SIGNUP_SERVICE_GROUP_LABELS,
   SIGNUP_SERVICES,
-  signupVisitFrequencyOptions,
-  type PlanTier,
   type SignupServiceId,
 } from "@/lib/consumer-plans";
 import { saveAuth } from "@/lib/auth-storage";
@@ -41,27 +35,18 @@ import {
   isValidUkPostcode,
   MIN_PASSWORD_LENGTH,
   normalizeUkPostcode,
-  tierFromPlan,
 } from "@/lib/signup-utils";
 import { useSignupLeadCapture } from "@/lib/use-signup-lead";
 import { AlertBanner, LoadingSpinner } from "@/components/ui/feedback";
 import { AvailabilityPicker } from "@/components/signup/AvailabilityPicker";
-const STEPS = ["Garden size", "Find your plan", "Your quote", "Finish signup"] as const;
-
-const DEFAULT_SERVICES: SignupServiceId[] = ["lawn-borders"];
-const DEFAULT_VISIT_FREQUENCY: SignupServiceId = "monthly";
+const STEPS = ["Garden size", "Add-ons", "Your quote", "Finish signup"] as const;
 
 export default function SignupPage() {
   const router = useRouter();
   const [step, setStep] = useState(0);
   const [plans, setPlans] = useState<SubscriptionPlan[]>([]);
   const [plansLoading, setPlansLoading] = useState(true);
-  const billing = "Monthly" as const;
-  const [selectedTier, setSelectedTier] = useState<PlanTier>("essential");
-  const [selectedServices, setSelectedServices] = useState<SignupServiceId[]>(DEFAULT_SERVICES);
-  const [visitFrequency, setVisitFrequency] = useState<SignupServiceId>(DEFAULT_VISIT_FREQUENCY);
-  const [showPlanAlternatives, setShowPlanAlternatives] = useState(false);
-  const [planOverridden, setPlanOverridden] = useState(false);
+  const [selectedServices, setSelectedServices] = useState<SignupServiceId[]>([]);
   const [selectedPlanId, setSelectedPlanId] = useState("");
   const [skipPayment, setSkipPayment] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -85,11 +70,6 @@ export default function SignupPage() {
   const [quoteUnveiled, setQuoteUnveiled] = useState(false);
   const topRef = useRef<HTMLDivElement>(null);
 
-  const matchedTier = useMemo(
-    () => matchPlanTierFromVisitFrequency(visitFrequency),
-    [visitFrequency]
-  );
-
   const addonCount = useMemo(() => countSignupAddons(selectedServices), [selectedServices]);
 
   const selectedAddonIds = useMemo(
@@ -105,19 +85,8 @@ export default function SignupPage() {
 
   function applyPlans(sorted: SubscriptionPlan[]) {
     setPlans(sorted);
-    const params = new URLSearchParams(window.location.search);
-    const planIndex = params.get("plan");
-    if (planIndex !== null && sorted[Number(planIndex)]) {
-      const fromUrl = sorted[Number(planIndex)];
-      const tier = tierFromPlan(fromUrl);
-      setSelectedTier(tier);
-      setPlanOverridden(true);
-      const monthlyPlan = findTierPlanForBilling(sorted, tier, "Monthly");
-      setSelectedPlanId(monthlyPlan?.id ?? fromUrl.id);
-    } else {
-      const defaultPlan = findTierPlanForBilling(sorted, selectedTier, billing) ?? sorted[0];
-      if (defaultPlan) setSelectedPlanId(defaultPlan.id);
-    }
+    const plan = findSignupMonthlyPlan(sorted);
+    if (plan) setSelectedPlanId(plan.id);
   }
 
   useEffect(() => {
@@ -138,16 +107,6 @@ export default function SignupPage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  useEffect(() => {
-    if (plans.length === 0) return;
-    const plan = findTierPlanForBilling(plans, selectedTier, billing);
-    if (plan) setSelectedPlanId(plan.id);
-  }, [selectedTier, plans]);
-
-  useEffect(() => {
-    if (!planOverridden) setSelectedTier(matchedTier);
-  }, [matchedTier, planOverridden]);
-
   useLayoutEffect(() => {
     topRef.current?.scrollIntoView({ block: "start" });
     window.scrollTo({ top: 0, left: 0, behavior: "instant" });
@@ -159,24 +118,13 @@ export default function SignupPage() {
   }
 
   function toggleService(id: SignupServiceId) {
-    setSelectedServices((current) => {
-      if (current.includes(id)) {
-        const next = current.filter((s) => s !== id);
-        return next.length === 0 ? current : next;
-      }
-      return [...current, id];
-    });
-    setPlanOverridden(false);
+    setSelectedServices((current) =>
+      current.includes(id) ? current.filter((s) => s !== id) : [...current, id]
+    );
     setStepHint(null);
   }
 
-  function selectVisitFrequency(id: SignupServiceId) {
-    setVisitFrequency(id);
-    setPlanOverridden(false);
-    setStepHint(null);
-  }
-
-  const selectedPlan = plans.find((p) => p.id === selectedPlanId);
+  const selectedPlan = plans.find((p) => p.id === selectedPlanId) ?? findSignupMonthlyPlan(plans);
 
   const leadSnapshot = useMemo(
     () => ({
@@ -195,7 +143,6 @@ export default function SignupPage() {
 
   function stepValidationMessage(): string | null {
     if (step === 1) {
-      if (selectedServices.length === 0) return "Select at least one service to continue.";
       if (!selectedPlanId) return "We could not find a plan — please refresh and try again.";
       return null;
     }
@@ -345,17 +292,7 @@ export default function SignupPage() {
 
   const usingFallback = plans.length > 0 && plans[0]?.id.startsWith("fallback-");
 
-  const visibleTiers = useMemo(
-    () =>
-      PLAN_TIERS.map((tier) => ({
-        ...tier,
-        plan: findTierPlanForBilling(plans, tier.id, billing),
-      })).filter((t) => t.plan),
-    [plans, billing]
-  );
-
-  const activePlan = findTierPlanForBilling(plans, selectedTier, billing);
-  const activeTierMeta = PLAN_TIERS.find((t) => t.id === selectedTier);
+  const activePlan = selectedPlan;
   const minimumTermMonths = useMemo(
     () => (activePlan ? effectiveMinimumTermMonths(activePlan, selectedServices) : 3),
     [activePlan, selectedServices]
@@ -366,7 +303,7 @@ export default function SignupPage() {
       <div ref={topRef} className="mx-auto max-w-5xl scroll-mt-8 px-4">
         <div className="text-center">
           <h1 className="font-display text-2xl font-bold text-gardens-dark sm:text-3xl">
-            {step === 2 ? "Your quote" : "Find your plan"}
+            {step === 2 ? "Your quote" : "Get your quote"}
           </h1>
           <p className="mt-2 text-stone-600">
             Step {step + 1} of {STEPS.length} — {STEPS[step]}
@@ -443,7 +380,7 @@ export default function SignupPage() {
             {step === 1 && (
               <div className="rounded-2xl border border-stone-200 bg-white p-4 shadow-soft sm:p-5">
                 <p className="text-xs text-stone-600 sm:text-sm">
-                  Every plan includes regular maintenance — tick any add-ons and choose visit frequency.
+                  Garden care includes 10 visits per year — tick any optional add-ons below.
                 </p>
                 <div className="mt-3 rounded-lg border border-stone-100 bg-stone-50 px-3 py-2">
                   <p className="text-xs font-semibold uppercase tracking-wide text-stone-500">
@@ -504,47 +441,15 @@ export default function SignupPage() {
                     );
                   })}
 
-                  <fieldset>
-                    <legend className="text-xs font-semibold uppercase tracking-wide text-stone-500">
-                      {SIGNUP_SERVICE_GROUP_LABELS["visit-frequency"]}
-                    </legend>
-                    <div
-                      className="mt-1.5 grid grid-cols-3 overflow-hidden rounded-xl border border-stone-200 bg-stone-100/80 p-1"
-                      role="radiogroup"
-                      aria-label="Visit frequency"
-                    >
-                      {signupVisitFrequencyOptions().map((option) => {
-                        const selected = visitFrequency === option.id;
-                        return (
-                          <button
-                            key={option.id}
-                            type="button"
-                            role="radio"
-                            aria-checked={selected}
-                            title={option.description}
-                            onClick={() => selectVisitFrequency(option.id)}
-                            className={`min-h-[48px] rounded-lg px-2 py-2.5 text-sm font-semibold transition ${
-                              selected
-                                ? "bg-white text-gardens-dark shadow-sm ring-1 ring-gardens-primary/40"
-                                : "text-stone-600 hover:bg-white/60 hover:text-gardens-dark"
-                            }`}
-                          >
-                            {option.label}
-                          </button>
-                        );
-                      })}
-                    </div>
-                  </fieldset>
                 </div>
 
                 {plansLoading ? (
                   <div className="mt-3 h-10 animate-pulse rounded-lg bg-stone-200" aria-busy="true" />
                 ) : (
-                  activeTierMeta &&
                   activePlan && (
                     <div className="mt-3 rounded-lg border border-gardens-primary/25 bg-gardens-light/50 px-3 py-2">
                       <p className="text-sm text-gardens-dark">
-                        <span className="font-semibold">{activeTierMeta.label}</span>
+                        <span className="font-semibold">Garden care</span>
                         <span className="text-stone-600"> · {planVisitSummary(activePlan)}</span>
                       </p>
                     </div>
@@ -576,15 +481,13 @@ export default function SignupPage() {
                   </p>
                 </div>
 
-                {quoteUnveiled && !plansLoading && activeTierMeta && activePlan && (
+                {quoteUnveiled && !plansLoading && activePlan && (
                   <div className="rounded-2xl border border-gardens-primary/30 bg-gardens-light/40 p-5 sm:p-6">
                     <p className="text-xs font-semibold uppercase tracking-wide text-gardens-primary">
                       Your personalised quote
                     </p>
-                    <p className="mt-2 font-display text-xl font-bold text-gardens-dark">
-                      {activeTierMeta.label}
-                    </p>
-                    <p className="text-sm text-stone-600">{activeTierMeta.tagline}</p>
+                    <p className="mt-2 font-display text-xl font-bold text-gardens-dark">Garden care</p>
+                    <p className="text-sm text-stone-600">10 visits per year</p>
                     <p className="mt-2 text-sm text-stone-600">{planVisitSummary(activePlan)}</p>
                     <div className="mt-4 flex flex-wrap items-end justify-between gap-4 border-t border-gardens-primary/15 pt-4">
                       <p className="text-xs text-stone-500">Billed monthly</p>
@@ -600,61 +503,12 @@ export default function SignupPage() {
                         </p>
                       </div>
                     </div>
-
-                    <button
-                      type="button"
-                      onClick={() => setShowPlanAlternatives((v) => !v)}
-                      className="mt-4 flex w-full items-center justify-between rounded-xl border border-stone-200/80 bg-white/80 px-4 py-2.5 text-sm font-medium text-stone-700"
+                    <Link
+                      href="/#pricing"
+                      className="mt-4 block text-center text-xs font-medium text-gardens-primary hover:underline"
                     >
-                      See other plans (optional)
-                      {showPlanAlternatives ? (
-                        <ChevronUp className="h-4 w-4" />
-                      ) : (
-                        <ChevronDown className="h-4 w-4" />
-                      )}
-                    </button>
-
-                    {showPlanAlternatives && (
-                      <div className="mt-3 space-y-2">
-                        {visibleTiers.map(({ id, label, tagline, plan }) => {
-                          if (!plan) return null;
-                          const selected = selectedTier === id;
-                          const price = planPriceForGarden(plan, form.gardenSize, selectedServices);
-                          return (
-                            <button
-                              key={plan.id}
-                              type="button"
-                              onClick={() => {
-                                setSelectedTier(id);
-                                setPlanOverridden(true);
-                              }}
-                              className={`relative w-full rounded-xl border p-4 text-left transition ${
-                                selected
-                                  ? "border-gardens-primary bg-white ring-2 ring-gardens-primary/30"
-                                  : "border-stone-200 bg-white hover:border-stone-300"
-                              }`}
-                            >
-                              <div className="flex items-start justify-between gap-3">
-                                <div>
-                                  <p className="font-semibold text-gardens-dark">{label}</p>
-                                  <p className="text-xs text-stone-500">{tagline}</p>
-                                  <p className="mt-2 text-lg font-bold text-gardens-primary">
-                                    {formatPriceFrom(price, "mo")}
-                                  </p>
-                                </div>
-                                {selected && <Check className="h-5 w-5 shrink-0 text-gardens-primary" />}
-                              </div>
-                            </button>
-                          );
-                        })}
-                        <Link
-                          href="/#pricing"
-                          className="block pt-1 text-center text-xs font-medium text-gardens-primary hover:underline"
-                        >
-                          Full feature comparison
-                        </Link>
-                      </div>
-                    )}
+                      See what&apos;s included
+                    </Link>
                   </div>
                 )}
               </div>
@@ -824,7 +678,7 @@ export default function SignupPage() {
           <p className="text-center text-xs text-stone-500">
             Step {step + 1} of {STEPS.length}
             {step === 0 && " — pick your garden size"}
-            {step === 1 && " — tick services, we find your plan"}
+            {step === 1 && " — optional add-ons"}
             {step === 2 && !quoteUnveiled && " — enter email for your quote"}
             {step === 3 && " — finish signup"}
           </p>

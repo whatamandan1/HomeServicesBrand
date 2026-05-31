@@ -4,8 +4,12 @@ import { formatGbp } from "@/lib/format";
 /** Annual checkout ≈ 10× monthly (~two months free). Mirrors `GardenSizePricing` in the API. */
 export const ANNUAL_MONTHS_CHARGED = 10;
 
-export const PREMIUM_MONTHLY_ADDON_GBP = 25;
-export const ELITE_MONTHLY_ADDON_GBP = 60;
+/** @deprecated Launch uses garden-band pricing only; tiers may return later. */
+export const PREMIUM_MONTHLY_ADDON_GBP = 0;
+export const ELITE_MONTHLY_ADDON_GBP = 0;
+
+/** DB plan name for new signups (marketing: "Garden care"). */
+export const SIGNUP_MONTHLY_PLAN_NAME = "Essential Monthly";
 
 /** Lawn, beds, and edges we maintain — not whole-plot area or large paved zones. */
 export const GARDEN_SIZE_MAINTAINED_AREA_NOTE =
@@ -95,12 +99,16 @@ export const CORE_VISIT_WORK = [
   "Light watering of pots, beds & obvious dry spots while on site",
 ] as const;
 
-export const ESSENTIAL_FEATURES = [
-  "10 professional visits per year",
+export const GARDEN_CARE_FEATURES = [
+  "10 professional visits per year (~every 5–6 weeks)",
   ...CORE_VISIT_WORK,
+  "Optional add-ons at signup (hedges, seasonal tidy, patio)",
   "Reschedule or cancel visits in your account",
   "Customer support when you need help",
 ];
+
+/** @deprecated Use GARDEN_CARE_FEATURES */
+export const ESSENTIAL_FEATURES = GARDEN_CARE_FEATURES;
 
 export const PREMIUM_FEATURES = [
   "Everything in Essential",
@@ -120,7 +128,7 @@ export const ELITE_FEATURES = [
 
 export const ON_VISIT_WHEN_POSSIBLE = [
   "Light sweep of garden-adjacent patio or paths (not a deep clean)",
-  "Autumn leaf blow and clear within the maintained garden area (Premium & Elite visits)",
+  "Light leaf blow and clear within the maintained garden when we're on site",
 ];
 
 export const SEASONAL_ADDONS = [
@@ -172,26 +180,28 @@ export type PlanCompareRow = {
   elite: boolean | string;
 };
 
-/** Side-by-side feature matrix for Essential / Premium / Elite. */
-export const PLAN_COMPARE_ROWS: PlanCompareRow[] = [
-  { label: "Visits included", essential: "10 / year", premium: "20 / year", elite: "30 / year" },
-  { label: "Typical visit spacing", essential: "~every 5–6 weeks", premium: "Fortnightly", elite: "Weekly" },
-  { label: "Lawn mowing & edging", essential: true, premium: true, elite: true },
-  { label: "Border weeding & general tidy", essential: true, premium: true, elite: true },
-  { label: "You dispose of clippings or provide a garden-waste bin", essential: true, premium: true, elite: true },
-  { label: "Light watering (you provide tap; gardener brings hose)", essential: true, premium: true, elite: true },
-  { label: "Hedge trim & shaping (on visit)", essential: false, premium: true, elite: true },
-  { label: "Seasonal tidy & leaf blow", essential: false, premium: true, elite: true },
-  { label: "Patio & path refresh (add-on)", essential: false, premium: false, elite: false },
-  { label: "Priority scheduling", essential: false, premium: true, elite: false },
-  { label: "First-choice visit windows", essential: false, premium: false, elite: true },
-  { label: "Reschedule in your account", essential: true, premium: true, elite: true },
+/** @deprecated Multi-tier matrix — kept for legacy references. */
+export const PLAN_COMPARE_ROWS: PlanCompareRow[] = [];
+
+export type GardenCareCompareRow = { label: string; value: boolean | string };
+
+/** What's included in the launch garden-care subscription. */
+export const GARDEN_CARE_COMPARE_ROWS: GardenCareCompareRow[] = [
+  { label: "Visits included", value: "10 / year" },
+  { label: "Typical visit spacing", value: "~every 5–6 weeks" },
+  { label: "Lawn mowing & edging", value: true },
+  { label: "Border weeding & general tidy", value: true },
+  { label: "You dispose of clippings or provide a garden-waste bin", value: true },
+  { label: "Light watering (you provide tap; gardener brings hose)", value: true },
+  { label: "Hedge trim & shaping (optional add-on)", value: "4× / year" },
+  { label: "Seasonal tidy & leaf clearance (optional add-on)", value: "4× / year" },
+  { label: "Patio & path refresh (optional add-on)", value: "2× / year" },
+  { label: "Reschedule in your account", value: true },
 ];
 
+/** @deprecated Launch offers one plan; tiers may return later. */
 export const PLAN_TIERS: { id: PlanTier; label: string; tagline: string }[] = [
-  { id: "essential", label: "Essential", tagline: "10 visits a year" },
-  { id: "premium", label: "Premium", tagline: "20 visits a year" },
-  { id: "elite", label: "Elite", tagline: "30 visits a year" },
+  { id: "essential", label: "Garden care", tagline: "10 visits a year" },
 ];
 
 export type SignupServiceId =
@@ -236,27 +246,6 @@ export const SIGNUP_SERVICES: SignupServiceOption[] = [
     description: "Garden tidy and leaf clearance when the season needs it.",
     minTier: "essential",
     group: "addons",
-  },
-  {
-    id: "monthly",
-    label: "10 a year",
-    description: "10 visits per year (~every 5–6 weeks) — Essential.",
-    minTier: "essential",
-    group: "visit-frequency",
-  },
-  {
-    id: "fortnightly",
-    label: "20 a year",
-    description: "20 visits per year (~fortnightly) — Premium.",
-    minTier: "premium",
-    group: "visit-frequency",
-  },
-  {
-    id: "weekly",
-    label: "30 a year",
-    description: "30 visits per year (~weekly in season) — Elite.",
-    minTier: "elite",
-    group: "visit-frequency",
   },
   {
     id: "patio",
@@ -344,19 +333,14 @@ export const SIGNUP_SERVICE_GROUP_LABELS: Record<SignupServiceGroup, string> = {
 /** Optional extras on signup step 2 (core maintenance is always included). */
 export const SIGNUP_ADDON_SERVICE_IDS: SignupServiceId[] = ["hedges", "seasonal", "patio"];
 
-export const SIGNUP_VISIT_FREQUENCY_IDS: SignupServiceId[] = ["monthly", "fortnightly", "weekly"];
+/** @deprecated Visit frequency tiers removed at launch. */
+export const SIGNUP_VISIT_FREQUENCY_IDS: SignupServiceId[] = [];
 
-export function isVisitFrequencyService(id: SignupServiceId): boolean {
-  return SIGNUP_VISIT_FREQUENCY_IDS.includes(id);
+export function isVisitFrequencyService(_id: SignupServiceId): boolean {
+  return false;
 }
 
-export function signupVisitFrequencyOptions(): SignupServiceOption[] {
-  return SIGNUP_VISIT_FREQUENCY_IDS.map((id) => SIGNUP_SERVICES.find((s) => s.id === id)).filter(
-    (s): s is SignupServiceOption => s !== undefined
-  );
-}
-
-/** Checkbox groups on signup (visit frequency uses a separate segmented control). */
+/** Checkbox groups on signup step 2. */
 export const SIGNUP_CHECKBOX_GROUPS: SignupServiceGroup[] = ["addons"];
 
 const TIER_RANK: Record<PlanTier, number> = {
@@ -396,22 +380,26 @@ function isAnnualPlan(plan: SubscriptionPlan) {
   return plan.billingInterval !== "Monthly";
 }
 
-function tierMonthlyAddon(plan: SubscriptionPlan): number {
-  if (isElitePlan(plan.name)) return ELITE_MONTHLY_ADDON_GBP;
-  if (isPremiumPlan(plan.name)) return PREMIUM_MONTHLY_ADDON_GBP;
-  return 0;
-}
-
 export function planPriceForGarden(
   plan: SubscriptionPlan,
   gardenSize: GardenSize,
   selectedAddons: SignupServiceId[] = []
 ): number {
   const monthly =
-    GARDEN_SIZE_MONTHLY_PRICE_GBP[gardenSize] +
-    tierMonthlyAddon(plan) +
-    signupAddonsMonthlyTotalGbp(gardenSize, selectedAddons);
+    GARDEN_SIZE_MONTHLY_PRICE_GBP[gardenSize] + signupAddonsMonthlyTotalGbp(gardenSize, selectedAddons);
   return isAnnualPlan(plan) ? monthly * ANNUAL_MONTHS_CHARGED : monthly;
+}
+
+export function findSignupMonthlyPlan(plans: SubscriptionPlan[]): SubscriptionPlan | undefined {
+  return (
+    plans.find((p) => p.name === SIGNUP_MONTHLY_PLAN_NAME && p.billingInterval === "Monthly") ??
+    plans.find(
+      (p) =>
+        p.billingInterval === "Monthly" &&
+        !p.name.toLowerCase().includes("premium") &&
+        !p.name.toLowerCase().includes("elite")
+    )
+  );
 }
 
 export function formatPlanPrice(plan: SubscriptionPlan, gardenSize: GardenSize = "Small") {
@@ -424,21 +412,15 @@ export function formatPriceFrom(price: number, period: "month" | "year" | "mo" |
   return `From £${formatGbp(price)}/${period}`;
 }
 
-export function planFeatures(plan: SubscriptionPlan): string[] {
-  if (isElitePlan(plan.name)) return ELITE_FEATURES;
-  if (isPremiumPlan(plan.name)) return PREMIUM_FEATURES;
-  return ESSENTIAL_FEATURES;
+export function planFeatures(_plan?: SubscriptionPlan): string[] {
+  return GARDEN_CARE_FEATURES;
 }
 
-export function planTierLabel(plan: SubscriptionPlan) {
-  if (isElitePlan(plan.name)) return "Elite";
-  if (isPremiumPlan(plan.name)) return "Premium";
-  return "Essential";
+export function planTierLabel(_plan?: SubscriptionPlan) {
+  return "Garden care";
 }
 
-export function planVisitsPerYear(plan: SubscriptionPlan): number {
-  if (isElitePlan(plan.name)) return 30;
-  if (isPremiumPlan(plan.name)) return 20;
+export function planVisitsPerYear(_plan?: SubscriptionPlan): number {
   return 10;
 }
 
@@ -466,26 +448,15 @@ export function findTierPlanForBilling(
 }
 
 /** Monthly prices for the pricing matrix (small-garden base from API). */
-export function monthlyPriceMatrix(basePlans: SubscriptionPlan[]) {
-  const essential = findTierPlan(basePlans, "essential", "Monthly");
-  const premium = findTierPlan(basePlans, "premium", "Monthly");
-  const elite = findTierPlan(basePlans, "elite", "Monthly");
-  if (!essential || !premium || !elite) return null;
-
+export function gardenSizeMonthlyPriceMatrix() {
   return GARDEN_SIZE_ORDER.map((size) => ({
     size,
-    essential: planPriceForGarden(essential, size),
-    premium: planPriceForGarden(premium, size),
-    elite: planPriceForGarden(elite, size),
+    monthly: GARDEN_SIZE_MONTHLY_PRICE_GBP[size],
+    guide: GARDEN_SIZE_GUIDE[size],
   }));
 }
 
-export function nextUpgradePlanLabel(planName: string, billingInterval: string): string | null {
-  const annual = billingInterval === "Annual";
-  const name = planName.toLowerCase();
-  if (name.includes("elite")) return null;
-  if (name.includes("premium")) {
-    return annual ? "Elite Annual (£1,199.90/year)" : "Elite Monthly (£119.99/month)";
-  }
-  return annual ? "Premium Annual (£849.90/year)" : "Premium Monthly (£84.99/month)";
+/** @deprecated Launch has no in-app tier upgrades. */
+export function nextUpgradePlanLabel(_planName: string, _billingInterval: string): string | null {
+  return null;
 }

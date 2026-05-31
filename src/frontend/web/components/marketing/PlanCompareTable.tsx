@@ -2,20 +2,8 @@
 
 import Link from "next/link";
 import { Check, Minus } from "lucide-react";
-import type { SubscriptionPlan } from "@/lib/api";
-import {
-  findTierPlanForBilling,
-  PLAN_COMPARE_ROWS,
-  PLAN_TIERS,
-  planPriceForGarden,
-  type PlanTier,
-} from "@/lib/consumer-plans";
+import { GARDEN_CARE_COMPARE_ROWS, GARDEN_SIZE_MONTHLY_PRICE_GBP } from "@/lib/consumer-plans";
 import { formatGbp } from "@/lib/format";
-import { planSignupHref } from "@/lib/plans";
-
-type PlanCompareTableProps = {
-  plans: SubscriptionPlan[];
-};
 
 function CompareCell({ value }: { value: boolean | string }) {
   if (typeof value === "string") {
@@ -36,68 +24,48 @@ function CompareCell({ value }: { value: boolean | string }) {
   );
 }
 
-export function PlanCompareTable({ plans }: PlanCompareTableProps) {
-  const tierPlans = PLAN_TIERS.map((tier) => ({
-    ...tier,
-    plan: findTierPlanForBilling(plans, tier.id, "Monthly"),
-  }));
-
+export function PlanCompareTable() {
   return (
     <div className="rounded-2xl border border-stone-200 bg-white shadow-soft overflow-hidden">
       <div className="border-b border-stone-100 bg-gardens-light/30 px-4 py-5 sm:px-6">
-        <h3 className="font-display text-lg font-semibold text-gardens-dark">Compare plans</h3>
-        <p className="mt-1 text-sm text-stone-600">All prices shown are monthly billing.</p>
+        <h3 className="font-display text-lg font-semibold text-gardens-dark">What&apos;s included</h3>
+        <p className="mt-1 text-sm text-stone-600">
+          Garden care subscription — from £{formatGbp(GARDEN_SIZE_MONTHLY_PRICE_GBP.Small)}/mo for a small garden.
+          Add optional extras at signup.
+        </p>
       </div>
 
       <div className="overflow-x-auto">
-        <table className="min-w-[640px] w-full text-left text-sm">
+        <table className="min-w-[320px] w-full text-left text-sm">
           <thead>
             <tr className="border-b border-stone-100">
-              <th className="w-[40%] py-4 pl-4 pr-3 font-medium text-stone-500 sm:pl-6">What you get</th>
-              {tierPlans.map(({ id, label, tagline, plan }) => (
-                <th key={id} className="px-3 py-4 text-center align-top">
-                  <p className="text-xs font-semibold uppercase tracking-wide text-gardens-primary">{label}</p>
-                  <p className="mt-1 text-xs font-normal text-stone-500">{tagline}</p>
-                  {plan && (
-                    <p className="mt-3 font-display text-2xl font-bold text-gardens-dark">
-                      <span className="text-sm font-normal text-stone-500">From </span>
-                      £{formatGbp(planPriceForGarden(plan, "Small"))}
-                      <span className="text-sm font-normal text-stone-500">/mo</span>
-                    </p>
-                  )}
-                  {plan && (
-                    <Link
-                      href={planSignupHref(plans, id as PlanTier)}
-                      className={`mt-3 inline-block rounded-full px-4 py-2 text-xs font-semibold ${
-                        id === "premium"
-                          ? "bg-gardens-primary text-white hover:bg-gardens-dark"
-                          : "border border-gardens-primary text-gardens-primary hover:bg-gardens-light"
-                      }`}
-                    >
-                      Choose {label}
-                    </Link>
-                  )}
-                </th>
-              ))}
+              <th className="w-[55%] py-4 pl-4 pr-3 font-medium text-stone-500 sm:pl-6">Feature</th>
+              <th className="px-3 py-4 text-center align-top">
+                <p className="text-xs font-semibold uppercase tracking-wide text-gardens-primary">Garden care</p>
+                <p className="mt-1 text-xs font-normal text-stone-500">10 visits / year</p>
+              </th>
             </tr>
           </thead>
           <tbody>
-            {PLAN_COMPARE_ROWS.map((row) => (
+            {GARDEN_CARE_COMPARE_ROWS.map((row) => (
               <tr key={row.label} className="border-b border-stone-50 last:border-0">
                 <td className="py-3 pl-4 pr-3 text-stone-700 sm:pl-6">{row.label}</td>
                 <td className="px-3 py-3 text-center">
-                  <CompareCell value={row.essential} />
-                </td>
-                <td className="px-3 py-3 text-center">
-                  <CompareCell value={row.premium} />
-                </td>
-                <td className="px-3 py-3 text-center">
-                  <CompareCell value={row.elite} />
+                  <CompareCell value={row.value} />
                 </td>
               </tr>
             ))}
           </tbody>
         </table>
+      </div>
+
+      <div className="border-t border-stone-100 px-4 py-4 text-center sm:px-6">
+        <Link
+          href="/signup"
+          className="inline-block rounded-full bg-gardens-primary px-6 py-2.5 text-sm font-semibold text-white hover:bg-gardens-dark"
+        >
+          Get your quote
+        </Link>
       </div>
     </div>
   );

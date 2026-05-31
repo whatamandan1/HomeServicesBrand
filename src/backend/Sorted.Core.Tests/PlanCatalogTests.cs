@@ -24,14 +24,16 @@ public class PlanCatalogTests
         Assert.Equal("Elite", PlanCatalog.GetTier("Elite Monthly"));
     }
 
+    [Fact]
+    public void GetUpgradeTier_disabled_for_launch() =>
+        Assert.Null(PlanCatalog.GetUpgradeTier("Essential Monthly"));
+
     [Theory]
-    [InlineData("Essential Monthly", "Premium")]
-    [InlineData("Premium Monthly", "Elite")]
-    [InlineData("Elite Monthly", null)]
-    public void GetUpgradeTier_returns_next_tier(string planName, string? expected)
-    {
-        Assert.Equal(expected, PlanCatalog.GetUpgradeTier(planName));
-    }
+    [InlineData("Essential Monthly", true)]
+    [InlineData("Premium Monthly", false)]
+    [InlineData("Essential Annual", false)]
+    public void IsOfferedAtSignup_only_essential_monthly(string planName, bool offered) =>
+        Assert.Equal(offered, PlanCatalog.IsOfferedAtSignup(planName));
 
     [Theory]
     [InlineData("Essential Monthly", 10, 36)]

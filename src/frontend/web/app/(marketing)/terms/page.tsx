@@ -33,8 +33,8 @@ export default function TermsPage() {
         signup: <strong>lawn mowing and edging</strong>, <strong>weeding in borders and planted beds</strong>,{" "}
         <strong>general garden clean-up and tidy</strong>, and <strong>light watering</strong> of pots, beds, and obvious
         dry spots while we are on site (when you provide access to water).
-        Premium and Elite plans add visit frequency and extra tasks shown on our pricing page (such as light hedge work
-        or seasonal tidy). We do not guarantee a specific visual outcome each visit — results depend on weather,
+        Optional add-ons at signup (such as hedge trim, seasonal tidy, or patio refresh) are delivered on a separate
+        schedule shown on our pricing page. We do not guarantee a specific visual outcome each visit — results depend on weather,
         season, and garden condition — but we aim to deliver consistent maintenance as described in your plan.
       </p>
 

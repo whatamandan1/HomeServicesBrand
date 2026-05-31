@@ -1,55 +1,15 @@
 import type { SubscriptionPlan } from "@/lib/api";
-import { findTierPlanForBilling, type BillingChoice, type PlanTier } from "@/lib/consumer-plans";
+import { SIGNUP_MONTHLY_PLAN_NAME } from "@/lib/consumer-plans";
 
 /** Shown when live plan API is unavailable (matches seeded backend plans). */
 export const FALLBACK_PLANS: SubscriptionPlan[] = [
   {
     id: "fallback-essential-monthly",
-    name: "Essential Monthly",
-    description: "Up to 50 m² — mow, edge, weed & tidy. 10 visits/year. From £59.99/mo. 3-month minimum.",
+    name: SIGNUP_MONTHLY_PLAN_NAME,
+    description: "Garden care — 10 visits/year. Price by garden size from £59.99/mo. 3-month minimum.",
     billingInterval: "Monthly",
     minimumTermMonths: 3,
     priceGbp: 59.99,
-  },
-  {
-    id: "fallback-premium-monthly",
-    name: "Premium Monthly",
-    description: "Two visits per month (small garden) — hedges, beds, seasonal tidy. 3-month minimum.",
-    billingInterval: "Monthly",
-    minimumTermMonths: 3,
-    priceGbp: 84.99,
-  },
-  {
-    id: "fallback-elite-monthly",
-    name: "Elite Monthly",
-    description: "Three visits per month (~every 10 days, small garden) — everything in Premium. 3-month minimum.",
-    billingInterval: "Monthly",
-    minimumTermMonths: 3,
-    priceGbp: 119.99,
-  },
-  {
-    id: "fallback-essential-annual",
-    name: "Essential Annual",
-    description: "10 visits per year (small garden), 12-month commitment — discounted.",
-    billingInterval: "Annual",
-    minimumTermMonths: 12,
-    priceGbp: 599.90,
-  },
-  {
-    id: "fallback-premium-annual",
-    name: "Premium Annual",
-    description: "Two visits per month (small garden), 12-month commitment — discounted.",
-    billingInterval: "Annual",
-    minimumTermMonths: 12,
-    priceGbp: 849.90,
-  },
-  {
-    id: "fallback-elite-annual",
-    name: "Elite Annual",
-    description: "Three visits per month (~every 10 days, small garden), 12-month commitment — discounted.",
-    billingInterval: "Annual",
-    minimumTermMonths: 12,
-    priceGbp: 1199.90,
   },
 ];
 
@@ -67,13 +27,11 @@ export function planSignupIndex(plans: SubscriptionPlan[], planId: string): numb
   return idx >= 0 ? idx : 0;
 }
 
-export function planSignupHref(plans: SubscriptionPlan[], tier: PlanTier): string {
-  const plan = findTierPlanForBilling(plans, tier, "Monthly");
-  if (!plan) return "/signup";
-  return `/signup?plan=${planSignupIndex(plans, plan.id)}`;
+export function planSignupHref(_plans?: SubscriptionPlan[]): string {
+  return "/signup";
 }
 
 /** @deprecated Use nextUpgradePlanLabel from consumer-plans */
-export function premiumPlanLabel(billingInterval: string) {
-  return billingInterval === "Annual" ? "Premium Annual (£559.95/year)" : "Premium Monthly (£64.95/month)";
+export function premiumPlanLabel(_billingInterval: string) {
+  return null;
 }

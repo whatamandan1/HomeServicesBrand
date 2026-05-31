@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 using Sorted.Core.Dtos;
+using Sorted.Core.Plans;
 using Sorted.Core.Options;
 using Sorted.Infrastructure.Data;
 using Sorted.Infrastructure.Services;
@@ -33,7 +34,7 @@ public class BrandsController(SortedDbContext db, IOptions<PlanPricingOptions> p
         if (brandId == Guid.Empty) return NotFound();
 
         var plans = await db.SubscriptionPlans.AsNoTracking()
-            .Where(p => p.BrandId == brandId && p.IsActive && !p.IsDeleted)
+            .Where(p => p.BrandId == brandId && p.IsActive && !p.IsDeleted && PlanCatalog.IsOfferedAtSignup(p.Name))
             .ToListAsync(ct);
 
         var opts = pricing.Value;

@@ -129,9 +129,9 @@ export function HeroProductPreview() {
           </div>
           <p className="mt-6 text-sm text-gardens-dark/70">
             <Link href="/#pricing" className="font-medium text-gardens-primary hover:underline">
-              From £59.99/mo — Essential, small garden
+              From £59.99/mo — small garden, 10 visits/year
             </Link>
-            {" · Essential, Premium & Elite plans"}
+            {" · priced by garden size + optional add-ons"}
           </p>
         </div>
       </div>

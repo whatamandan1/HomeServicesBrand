@@ -89,37 +89,41 @@ public static class DataSeeder
             {
                 BrandId = brand.Id,
                 Name = "Premium Monthly",
-                Description = "Two visits per month for a small garden — hedges, beds, and seasonal tidy. 3-month minimum.",
+                Description = "Legacy tier — not offered at signup.",
                 BillingInterval = SubscriptionBillingInterval.Monthly,
                 MinimumTermMonths = 3,
-                PriceGbp = 84.99m
+                PriceGbp = 84.99m,
+                IsActive = false
             },
             new SubscriptionPlan
             {
                 BrandId = brand.Id,
                 Name = "Premium Annual",
-                Description = "Two visits per month for a small garden, 12-month commitment — discounted vs monthly.",
+                Description = "Legacy tier — not offered at signup.",
                 BillingInterval = SubscriptionBillingInterval.Annual,
                 MinimumTermMonths = 12,
-                PriceGbp = 849.90m
+                PriceGbp = 849.90m,
+                IsActive = false
             },
             new SubscriptionPlan
             {
                 BrandId = brand.Id,
                 Name = "Elite Monthly",
-                Description = "Three visits per month (~every 10 days) for a small garden — everything in Premium. 3-month minimum.",
+                Description = "Legacy tier — not offered at signup.",
                 BillingInterval = SubscriptionBillingInterval.Monthly,
                 MinimumTermMonths = 3,
-                PriceGbp = 119.99m
+                PriceGbp = 119.99m,
+                IsActive = false
             },
             new SubscriptionPlan
             {
                 BrandId = brand.Id,
                 Name = "Elite Annual",
-                Description = "Three visits per month (~every 10 days) for a small garden, 12-month commitment — discounted vs monthly.",
+                Description = "Legacy tier — not offered at signup.",
                 BillingInterval = SubscriptionBillingInterval.Annual,
                 MinimumTermMonths = 12,
-                PriceGbp = 1199.90m
+                PriceGbp = 1199.90m,
+                IsActive = false
             });
 
         await db.SaveChangesAsync(ct);

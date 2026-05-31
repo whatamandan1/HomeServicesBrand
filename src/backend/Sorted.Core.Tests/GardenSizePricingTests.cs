@@ -27,8 +27,8 @@ public class GardenSizePricingTests
     [InlineData("Essential Monthly", GardenSize.Small, 59.99)]
     [InlineData("Essential Monthly", GardenSize.Medium, 79.99)]
     [InlineData("Essential Monthly", GardenSize.Large, 99.99)]
-    [InlineData("Premium Monthly", GardenSize.Small, 84.99)]
-    [InlineData("Elite Monthly", GardenSize.Large, 159.99)]
+    [InlineData("Premium Monthly", GardenSize.Small, 59.99)]
+    [InlineData("Elite Monthly", GardenSize.Large, 99.99)]
     public void Monthly_price_by_plan_and_garden(string plan, GardenSize size, decimal expected) =>
         Assert.Equal(expected, GardenSizePricing.MonthlyPriceGbp(plan, size));
 

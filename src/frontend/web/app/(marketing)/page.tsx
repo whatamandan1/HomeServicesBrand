@@ -28,7 +28,7 @@ const steps = [
   {
     icon: Sparkles,
     title: "Choose your plan",
-    body: "Pick monthly or annual care for your garden size. Sign up in a few minutes with your address and when you're usually home.",
+    body: "Pick your garden size and any add-ons. Sign up in a few minutes with your address and when you're usually home.",
   },
   {
     icon: CalendarCheck,
@@ -43,29 +43,24 @@ const steps = [
 ];
 
 const included = [
-  "Essential: 10 visits per year — lawn, borders, and tidy",
-  "Premium: 20 visits per year plus hedges & beds",
-  "Elite: 30 visits per year (~every 10 days) with patio refresh included",
-  "Three garden sizes up to 150 m² — priced by time on site",
+  "10 visits per year — lawn, borders, and tidy on each visit",
+  "Three garden sizes up to 150 m² — from £59.99/month",
+  "Optional add-ons: hedges, seasonal tidy, patio refresh",
   "Online account to view and manage every visit",
 ];
 
 const faqs = [
   {
-    q: "What's included in Essential?",
-    a: "10 visits per year (about monthly): lawn mowing and edging, weeding in borders and beds, general garden tidy, and light watering while we're there (you provide a working outdoor tap; your gardener brings a hose or watering can). You dispose of clippings or provide a garden-waste bin. Manage visits through your online account.",
-  },
-  {
-    q: "What's included in Premium?",
-    a: "20 visits per year (about every two weeks), plus everything in Essential — light hedge trim and seasonal tidy work like leaves and light pruning.",
-  },
-  {
-    q: "What's included in Elite?",
-    a: "30 visits per year (about every 10 days), with everything in Premium plus one included patio & path refresh per year. Best for fast-growing gardens or owners who want consistent upkeep through the season.",
+    q: "What's included in garden care?",
+    a: "10 visits per year (about every 5–6 weeks): lawn mowing and edging, weeding in borders and beds, general garden tidy, and light watering while we're there (you provide a working outdoor tap; your gardener brings a hose or watering can). You dispose of clippings or provide a garden-waste bin. Manage visits through your online account.",
   },
   {
     q: "How does garden size affect price?",
-    a: "Prices depend on maintained lawn and beds (not your whole plot): up to 50 m² from £59.99/month, up to 100 m² £79.99, up to 150 m² £99.99 (Essential, 10 visits/year). Premium and Elite add £25 or £60/month on the same garden size. Above 150 m² we quote separately.",
+    a: "Prices depend on maintained lawn and beds (not your whole plot): up to 50 m² from £59.99/month, up to 100 m² £79.99, up to 150 m² £99.99 for 10 visits per year. Optional add-ons (hedges, seasonal tidy, patio) are priced separately at signup. Above 150 m² we quote separately.",
+  },
+  {
+    q: "What add-ons can I choose?",
+    a: "At signup you can add hedge trim (4× per year), seasonal tidy and leaf clearance (4× per year), or patio and path refresh (2× per year). Add-ons require a 6-month minimum term on monthly billing.",
   },
   {
     q: "What do I need to prepare before a visit?",
@@ -85,7 +80,7 @@ const faqs = [
   },
   {
     q: "Can you clean the patio, blow leaves, or clear gutters?",
-    a: "Premium and Elite include light leaf blow and clear in the garden on visit days in season, and we'll lightly sweep garden-adjacent paving while we're there. Thorough patio cleaning, large leaf clearances, and gutter clearing are optional add-ons — message us for a quote.",
+    a: "On regular visits we'll lightly sweep garden-adjacent paving and do light leaf work in the maintained area when we're there. Thorough patio cleaning, dedicated seasonal leaf clearance, and gutter clearing are optional add-ons at signup.",
   },
   {
     q: "Which areas do you cover?",

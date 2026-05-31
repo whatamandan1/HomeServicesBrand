@@ -30,15 +30,14 @@ public static class PlanCatalog
         return planName;
     }
 
-    /// <summary>Next tier for in-account upgrades, or null when already on Elite.</summary>
-    public static string? GetUpgradeTier(string planName)
-    {
-        if (IsEssential(planName))
-            return PremiumToken;
-        if (IsPremium(planName))
-            return EliteToken;
-        return null;
-    }
+    /// <summary>Single plan offered at signup for launch (Premium/Elite reserved for future tiers).</summary>
+    public const string SignupMonthlyPlanName = "Essential Monthly";
+
+    public static bool IsOfferedAtSignup(string planName) =>
+        planName.Equals(SignupMonthlyPlanName, StringComparison.OrdinalIgnoreCase);
+
+    /// <summary>Next tier for in-account upgrades — disabled until multi-tier plans return.</summary>
+    public static string? GetUpgradeTier(string planName) => null;
 
     /// <summary>Included garden visits per year on an active subscription.</summary>
     public static int VisitsPerYear(string planName) =>

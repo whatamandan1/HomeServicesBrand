@@ -2,11 +2,19 @@
 
 **Source of truth** for GardensSorted homeowner subscriptions.
 
-**Last updated:** 2026-05-30 — visit scope, customer prep, off-platform terms
+**Last updated:** 2026-05-31 — single launch plan (garden band + add-ons)
 
 ---
 
-## Garden size bands (Essential)
+## Launch offer (signup)
+
+One subscription at signup: **garden care** — **10 visits per year**, priced by **garden size band** plus optional **add-ons**. Marketing label: *Garden care*; DB plan name: `Essential Monthly` (legacy naming).
+
+**Premium / Elite** tiers are **inactive** at signup (`IsActive = false`) but remain in the database for existing subscribers. Tier upgrades are disabled until multi-tier plans return (`PlanCatalog.GetUpgradeTier` → `null`).
+
+---
+
+## Garden size bands
 
 Maintained **lawn, beds, and edges** — not whole plot or large paved areas.
 
@@ -18,54 +26,39 @@ Maintained **lawn, beds, and edges** — not whole plot or large paved areas.
 
 Above **150 m²** → personalised quote.
 
-**Essential cadence:** **10 visits per year** (~every 5–6 weeks). Provider monthly equivalent ≈ `(10 ÷ 12) × pay per visit`.
+**Cadence:** **10 visits per year** (~every 5–6 weeks). Provider monthly equivalent ≈ `(10 ÷ 12) × pay per visit`.
 
 Implementation: `Sorted.Core/Plans/GardenSizePricing.cs`, `ProviderVisitPay.cs`, frontend `src/frontend/web/lib/consumer-plans.ts`.
 
 ---
 
-## Plan tiers (monthly price = garden band + addon)
+### Monthly prices (launch)
 
-Premium and Elite add a fixed amount on top of the **same garden band** price:
+| Garden | £/month |
+|--------|---------|
+| ≤50 m² | £59.99 |
+| ≤100 m² | £79.99 |
+| ≤150 m² | £99.99 |
 
-| Addon | £/month |
-|-------|---------|
-| Premium | **+£25** |
-| Elite | **+£60** |
-
-### Example monthly prices (Essential band)
-
-| Garden | Essential | Premium | Elite |
-|--------|-----------|---------|-------|
-| ≤50 m² | £59.99 | £84.99 | £119.99 |
-| ≤100 m² | £79.99 | £104.99 | £139.99 |
-| ≤150 m² | £99.99 | £124.99 | £159.99 |
-
-### Annual billing
-
-Annual checkout ≈ **10× monthly** (~two months free vs paying every month).
-
-| Garden | Essential annual |
-|--------|------------------|
-| ≤50 m² | £599.90 |
-| ≤100 m² | £799.90 |
-| ≤150 m² | £999.90 |
+Annual billing is **hidden at signup** for now; when enabled, checkout ≈ **10× monthly** (~two months free).
 
 ---
 
-## Visits per year
+## Legacy tiers (not at signup)
 
-| Tier | Visits / year |
-|------|----------------|
-| Essential | **10** |
-| Premium | **20** |
-| Elite | **30** |
+| Tier | Visits / year | Status |
+|------|----------------|--------|
+| Essential | **10** | **Offered** (as garden care) |
+| Premium | **20** | Inactive at signup |
+| Elite | **30** | Inactive at signup |
+
+Existing Premium/Elite subscriptions keep their visit cadence and pricing rules in code.
 
 ---
 
 ## Provider pay (internal)
 
-Fixed **per completed visit** by garden band (same for Essential, Premium, Elite).
+Fixed **per completed visit** by garden band (all active subscriptions).
 
 | Garden | £/visit | Essential £/mo equiv. (10 visits/yr) |
 |--------|---------|--------------------------------------|
@@ -77,7 +70,7 @@ Configurable via `ProviderPayout` (`SmallVisitGbp`, `MediumVisitGbp`, `LargeVisi
 
 ---
 
-## What's included on every visit (all tiers)
+## What's included on every visit
 
 Within the **maintained area** (lawn, planted beds, edges — not whole plot or large paving):
 
@@ -88,11 +81,11 @@ Within the **maintained area** (lawn, planted beds, edges — not whole plot or 
 | General garden clean-up and tidy | Yes |
 | Light watering (pots, beds, obvious dry spots — while on site) | Yes |
 
-**Premium** adds 20 visits/year with lighter hedge and seasonal tidy on visit days where possible. **Elite** adds 30 visits/year. Paid **signup add-ons** (hedge, seasonal, patio) are optional on any tier and billed separately.
+Paid **signup add-ons** (hedge, seasonal, patio) are optional and billed separately.
 
-### Signup add-ons (optional, all tiers)
+### Signup add-ons (optional)
 
-Visit frequency sets Essential / Premium / Elite only — it does **not** include free add-on sessions. Each selected add-on is delivered on a **fixed schedule** (not every maintenance visit). The monthly subscription charge spreads the annual cost over 12 months.
+Each selected add-on is delivered on a **fixed schedule** (not every maintenance visit). The monthly subscription charge spreads the annual cost over 12 months.
 
 | Add-on | Sessions / year |
 |--------|-----------------|

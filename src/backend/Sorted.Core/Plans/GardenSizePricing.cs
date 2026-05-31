@@ -4,7 +4,7 @@ namespace Sorted.Core.Plans;
 
 /// <summary>
 /// Garden-size bands: maintained area, visit time, customer monthly price, provider pay per visit.
-/// Plan tier adds a fixed monthly amount on top of the garden price (see <see cref="TierMonthlyAddonGbp"/>).
+/// Launch pricing is garden band only; legacy tier names still resolve to the same band price.
 /// </summary>
 public static class GardenSizePricing
 {
@@ -46,15 +46,9 @@ public static class GardenSizePricing
             _ => 20m
         };
 
-    public static decimal MonthlyPriceGbp(string planName, GardenSize gardenSize)
-    {
-        var price = EssentialMonthlyPriceGbp(gardenSize);
-        if (PlanCatalog.IsElite(planName))
-            return price + EliteMonthlyAddonGbp;
-        if (PlanCatalog.IsPremium(planName))
-            return price + PremiumMonthlyAddonGbp;
-        return price;
-    }
+    /// <summary>Base monthly price by garden band (add-ons priced separately).</summary>
+    public static decimal MonthlyPriceGbp(string planName, GardenSize gardenSize) =>
+        EssentialMonthlyPriceGbp(gardenSize);
 
     public static decimal AnnualPriceGbp(string planName, GardenSize gardenSize) =>
         MonthlyPriceGbp(planName, gardenSize) * AnnualMonthsCharged;
