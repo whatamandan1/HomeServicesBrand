@@ -1,11 +1,12 @@
 import { CUSTOMER_VISIT_RESPONSIBILITIES_SUMMARY } from "@/lib/consumer-plans";
+import { VISIT_CADENCE_FAQ_DETAIL } from "@/lib/marketing-copy";
 
 export type FaqItem = { q: string; a: string };
 
 export const HOME_FAQS: FaqItem[] = [
   {
     q: "What's included in garden care?",
-    a: "10 visits per year, about every 5–6 weeks: lawn mowing and edging, weeding, general tidy, and light watering on each visit. You need a working outdoor tap; we bring hose or watering can. You dispose of clippings or leave your garden-waste bin out. Manage everything in your online account.",
+    a: `${VISIT_CADENCE_FAQ_DETAIL}. You need a working outdoor tap; we bring hose or watering can. You dispose of clippings or leave your garden-waste bin out. Manage everything in your online account.`,
   },
   {
     q: "How does garden size affect price?",

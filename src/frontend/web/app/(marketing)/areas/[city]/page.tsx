@@ -16,6 +16,7 @@ import {
 import { faqPageJsonLd, localServiceJsonLd } from "@/lib/seo/json-ld";
 import { canonicalPath } from "@/lib/seo/site";
 import { PRIMARY_CTA_HREF, PRIMARY_CTA_LABEL } from "@/lib/marketing-cta";
+import { VISIT_CADENCE_INCLUDED } from "@/lib/marketing-copy";
 
 type PageProps = { params: Promise<{ city: string }> };
 
@@ -58,7 +59,7 @@ export default async function AreaCityPage({ params }: PageProps) {
         className="bg-stone-50/80"
       >
         <ul className="mx-auto max-w-2xl list-disc space-y-2 pl-5 text-sm leading-relaxed text-stone-700">
-          <li>10 scheduled visits per year - lawn, borders, and tidy each time</li>
+          <li>{VISIT_CADENCE_INCLUDED}</li>
           <li>Vetted local gardeners - manage visits in your online account</li>
           <li>Personalised quote by garden size before you subscribe</li>
           <li>Secure online checkout and support when you need us</li>

@@ -1,4 +1,5 @@
 import type { FaqItem } from "@/lib/seo/home-faqs";
+import { VISIT_CADENCE_HEADLINE } from "@/lib/marketing-copy";
 import { BUSINESS_DESCRIPTION, BUSINESS_NAME, canonicalPath } from "@/lib/seo/site";
 import type { AreaPageCopy } from "@/lib/seo/area-pages";
 import type { CustomerTestimonial } from "@/lib/seo/testimonials";
@@ -63,7 +64,7 @@ export function localServiceJsonLd(copy: AreaPageCopy) {
         "@type": "Service",
         name: "Garden care subscription",
         description:
-          "10 garden maintenance visits per year. Personalised quote by garden size after signup.",
+          `${VISIT_CADENCE_HEADLINE} for garden maintenance. Personalised quote by garden size after signup.`,
         areaServed: copy.hub.areaLabel,
         provider: {
           "@type": "Organization",
@@ -110,6 +111,6 @@ export function serviceCatalogJsonLd() {
     },
     areaServed: "Yorkshire, England",
     description:
-      "Regular garden maintenance with 10 visits per year. Personalised monthly quote by garden size - provided during online signup.",
+      `Regular garden maintenance with ${VISIT_CADENCE_HEADLINE.toLowerCase()}. Personalised monthly quote by garden size - provided during online signup.`,
   };
 }

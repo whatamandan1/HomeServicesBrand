@@ -1,4 +1,5 @@
 import { SERVICE_HUBS, type ServiceHub } from "@/lib/marketing-location";
+import { VISIT_CADENCE_HEADLINE } from "@/lib/marketing-copy";
 
 /** City slugs with dedicated SEO landing pages (month-1 pilot hubs). */
 export const AREA_CITY_SLUGS = ["leeds", "york", "wakefield"] as const;
@@ -33,7 +34,7 @@ function buildCopy(hub: ServiceHub): AreaPageCopy {
     slug: hub.id as AreaCitySlug,
     hub,
     metaTitle: `Garden maintenance ${city}`,
-    metaDescription: `Regular garden maintenance in ${city} and ${hub.areaLabel}. 10 visits per year, vetted local gardeners. Get your personalised quote online.`,
+    metaDescription: `Regular garden maintenance in ${city} and ${hub.areaLabel}. ${VISIT_CADENCE_HEADLINE.toLowerCase()}, vetted local gardeners. Get your personalised quote online.`,
     h1: `Regular garden maintenance in ${city}`,
     heroLead: `Lawn, borders, and tidy on a schedule - vetted local gardeners in ${hub.areaLabel}, managed in your online account.`,
     localParagraph: `GardensSorted is built for Yorkshire homeowners who want dependable garden care without chasing quotes. We serve ${hub.areaLabel} and nearby postcodes - enter yours when you get your quote and we'll confirm we can reach you.`,
@@ -65,7 +66,7 @@ export function areaFaqs(copy: AreaPageCopy): { q: string; a: string }[] {
     },
     {
       q: "How often do you visit?",
-      a: "Garden care includes 10 visits per year - roughly every 5–6 weeks. Each visit covers lawn mowing and edging, weeding, and a general tidy of the areas we maintain.",
+      a: "Garden care includes 10–30 visits per year depending on the schedule you choose - from roughly every 5–6 weeks up to weekly in season. Each visit covers lawn mowing and edging, weeding, and a general tidy of the areas we maintain.",
     },
     {
       q: "How is pricing calculated?",

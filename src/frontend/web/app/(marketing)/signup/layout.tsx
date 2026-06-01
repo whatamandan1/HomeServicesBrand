@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { VISIT_CADENCE_HEADLINE } from "@/lib/marketing-copy";
 import { canonicalPath } from "@/lib/seo/site";
 
 export const metadata: Metadata = {
@@ -9,7 +10,7 @@ export const metadata: Metadata = {
   openGraph: {
     title: "Get your garden care quote | GardensSorted",
     description:
-      "Personalised garden care pricing for Leeds, York, Wakefield and surrounding areas. 10 visits per year.",
+      `Personalised garden care pricing for Leeds, York, Wakefield and surrounding areas. ${VISIT_CADENCE_HEADLINE.toLowerCase()}.`,
     url: canonicalPath("/signup"),
   },
   robots: { index: true, follow: true },

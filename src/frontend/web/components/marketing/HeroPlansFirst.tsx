@@ -6,6 +6,7 @@ import {
   GARDEN_SIZE_MONTHLY_PRICE_GBP,
 } from "@/lib/consumer-plans";
 import { formatGbp } from "@/lib/format";
+import { VISIT_CADENCE_HEADLINE } from "@/lib/marketing-copy";
 import { Button } from "@/components/marketing/ui";
 
 export function HeroPlansFirst() {
@@ -22,7 +23,7 @@ export function HeroPlansFirst() {
             Garden care priced by size.
           </h1>
           <p className="mt-4 text-base text-stone-600 text-balance sm:text-lg">
-            10 visits per year included. Pick your garden size, add optional extras, and sign up in minutes.
+            {VISIT_CADENCE_HEADLINE} included. Pick your garden size, add optional extras, and sign up in minutes.
           </p>
         </div>
 
@@ -40,7 +41,7 @@ export function HeroPlansFirst() {
                   {guide.shortName}
                 </p>
                 <p className="mt-1 text-sm text-stone-600">{guide.label} maintained</p>
-                <p className="mt-3 text-sm font-medium text-stone-700">10 visits per year</p>
+                <p className="mt-3 text-sm font-medium text-stone-700">{VISIT_CADENCE_HEADLINE}</p>
                 <p className="mt-4 font-display text-2xl font-bold text-gardens-dark">
                   From £{formatGbp(monthly)}/mo
                 </p>

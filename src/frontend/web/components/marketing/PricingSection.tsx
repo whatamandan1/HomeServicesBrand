@@ -19,6 +19,7 @@ import {
   SHARED_FEATURES,
   findSignupMonthlyPlan,
 } from "@/lib/consumer-plans";
+import { VISIT_CADENCE_HEADLINE } from "@/lib/marketing-copy";
 export function PricingSection() {
   const [plans, setPlans] = useState<SubscriptionPlan[]>([]);
   const [loaded, setLoaded] = useState(false);
@@ -64,7 +65,7 @@ export function PricingSection() {
 
       <div>
         <p className="text-center text-sm font-medium text-stone-600">
-          Monthly price by garden size - 10 visits per year included
+          Monthly price by garden size - {VISIT_CADENCE_HEADLINE.toLowerCase()} included
         </p>
         <div className="mt-4 grid gap-6 md:grid-cols-3">
           {GARDEN_SIZE_ORDER.map((size) => {
