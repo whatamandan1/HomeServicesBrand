@@ -3,27 +3,38 @@
 import { useCallback, useEffect, useState } from "react";
 import { createPortal } from "react-dom";
 import Link from "next/link";
-import { usePathname, useRouter } from "next/navigation";
+import { usePathname } from "next/navigation";
 import { Menu, X } from "lucide-react";
 import { Logo } from "@/components/marketing/Logo";
 import { PRIMARY_CTA_HREF, PRIMARY_CTA_LABEL } from "@/lib/marketing-cta";
 import { useBodyScrollLock } from "@/lib/use-body-scroll-lock";
 
 const links = [
+  { href: "/#pricing", label: "Pricing" },
   { href: "/#how-it-works", label: "How it works" },
   { href: "/about", label: "About us" },
   { href: "/providers", label: "For gardeners" },
   { href: "/multi-property-solutions", label: "For landlords" },
 ];
 
-function isLegacyPricingHash() {
-  return typeof window !== "undefined" && window.location.hash.toLowerCase() === "#pricing";
+function scrollToHash(hash: string) {
+  const id = hash.replace(/^#/, "");
+  if (!id) return;
+  document.getElementById(id)?.scrollIntoView({ behavior: "smooth", block: "start" });
+}
+
+function resolveMarketingHref(pathname: string, href: string) {
+  if (!href.startsWith("/#")) return href;
+  const id = href.slice(2);
+  if (pathname.startsWith("/areas/") && (id === "pricing" || id === "faq")) {
+    return `#${id}`;
+  }
+  return href;
 }
 
 export function MarketingHeader() {
   const [open, setOpen] = useState(false);
   const pathname = usePathname();
-  const router = useRouter();
 
   const closeMenu = useCallback(() => setOpen(false), []);
 
@@ -34,17 +45,16 @@ export function MarketingHeader() {
   useEffect(() => {
     const onHashChange = () => {
       closeMenu();
-      if (isLegacyPricingHash()) {
-        router.replace("/signup");
+      const hash = window.location.hash.toLowerCase();
+      if (hash === "#pricing" || hash === "#how-it-works" || hash === "#faq") {
+        scrollToHash(hash);
       }
     };
 
     window.addEventListener("hashchange", onHashChange);
-    if (isLegacyPricingHash()) {
-      onHashChange();
-    }
+    onHashChange();
     return () => window.removeEventListener("hashchange", onHashChange);
-  }, [closeMenu, router]);
+  }, [closeMenu]);
 
   useBodyScrollLock(open);
 
@@ -55,11 +65,17 @@ export function MarketingHeader() {
   const handleNavClick = useCallback(
     (href: string) => (e: React.MouseEvent<HTMLAnchorElement>) => {
       closeMenu();
+      const resolved = resolveMarketingHref(pathname, href);
+      if (resolved.startsWith("#")) {
+        e.preventDefault();
+        window.history.pushState(null, "", `${pathname}${resolved}`);
+        scrollToHash(resolved);
+        return;
+      }
       if (href.startsWith("/#") && pathname === "/") {
         e.preventDefault();
-        const id = href.slice(2);
         window.history.pushState(null, "", href);
-        document.getElementById(id)?.scrollIntoView({ behavior: "smooth", block: "start" });
+        scrollToHash(href.slice(1));
         window.dispatchEvent(new HashChangeEvent("hashchange"));
       }
     },
@@ -108,7 +124,7 @@ export function MarketingHeader() {
             {links.map((l) => (
               <li key={l.href}>
                 <Link
-                  href={l.href}
+                  href={resolveMarketingHref(pathname, l.href)}
                   className="flex min-h-[48px] items-center rounded-xl px-3 text-base font-medium text-stone-700 hover:bg-gardens-light/50"
                   onClick={handleNavClick(l.href)}
                 >
@@ -145,7 +161,11 @@ export function MarketingHeader() {
 
           <nav className="hidden items-center gap-8 text-sm font-medium text-stone-600 md:flex" aria-label="Main">
             {links.map((l) => (
-              <Link key={l.href} href={l.href} className="transition hover:text-gardens-primary">
+              <Link
+                key={l.href}
+                href={resolveMarketingHref(pathname, l.href)}
+                className="transition hover:text-gardens-primary"
+              >
                 {l.label}
               </Link>
             ))}

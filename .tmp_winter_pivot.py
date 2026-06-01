@@ -41,15 +41,15 @@ SHARED = {
 WINTER_PIVOT = {
     1:  (0.72, 1.08),   # Jan
     2:  (0.82, 1.05),   # Feb
-    3:  (0.87, 1.04),   # Mar — unchanged
+    3:  (0.87, 1.04),   # Mar - unchanged
     4:  (1.07, 0.85),
     5:  (1.17, 0.76),
     6:  (1.22, 0.71),
     7:  (1.22, 0.71),
     8:  (1.17, 0.76),
     9:  (1.02, 0.90),
-    10: (1.00, 0.98),   # Oct — leaf/gutter season
-    11: (1.05, 0.95),   # Nov — peak gutter/leaf
+    10: (1.00, 0.98),   # Oct - leaf/gutter season
+    11: (1.05, 0.95),   # Nov - peak gutter/leaf
     12: (0.78, 1.08),   # Dec
 }
 
@@ -62,7 +62,7 @@ ws_in['F54'] = 'Pivot churn'
 ws_in['E54'].font = Font(bold=True)
 ws_in['F54'].font = Font(bold=True)
 
-ws_in['A67'] = 'WINTER PIVOT SEASONALITY (property care — gutter, leaf, patio)'
+ws_in['A67'] = 'WINTER PIVOT SEASONALITY (property care - gutter, leaf, patio)'
 ws_in['A67'].font = SECTION_FONT
 ws_in['A68'] = 'Used by Sens - Winter Pivot scenario. Oct–Nov boosted for leaf/gutter; winter churn reduced (customers stay on year-round plan).'
 ws_in['A68'].font = NOTE_FONT
@@ -270,7 +270,7 @@ if 'Sens - Winter Pivot' in wb.sheetnames:
 idx = wb.sheetnames.index('Sens - CAC & Marketing') + 1
 ws = wb.create_sheet('Sens - Winter Pivot', idx)
 
-ws['A1'] = 'Winter Pivot — Property Care Scenario (gutter, leaf, patio)'
+ws['A1'] = 'Winter Pivot - Property Care Scenario (gutter, leaf, patio)'
 ws['A1'].font = TITLE_FONT
 ws['A2'] = 'Compares base garden seasonality vs year-round property care. Edit yellow cells. Pivot seasonality: Inputs cols E & F.'
 ws['A2'].font = NOTE_FONT
@@ -317,7 +317,7 @@ for i, mo in enumerate(range(1, 13)):
         if c in (2, 3, 5, 6):
             ws.cell(r, c).number_format = '0.00'
 
-ws['A27'] = 'OUTPUT COMPARISON — Base vs Winter Pivot (full model engine)'
+ws['A27'] = 'OUTPUT COMPARISON - Base vs Winter Pivot (full model engine)'
 ws['A27'].font = SECTION_FONT
 ws['A28'] = 'Base = standard seasonality (Inputs cols B & D). Winter Pivot = cols E & F + Premium property care bundle.'
 ws['A28'].font = NOTE_FONT
@@ -329,18 +329,18 @@ for i, h in enumerate(out_hdr, 1):
     c.fill = HEADER_FILL
 
 metrics = [
-    ('End Year 1 — Customers', f"='Scenario Engine'!{BASE['TotCust']}$16", f"='Scenario Engine'!{WP['TotCust']}$16"),
-    ('End Year 1 — MRR (£)', f"='Scenario Engine'!{BASE['MRR']}$16", f"='Scenario Engine'!{WP['MRR']}$16"),
-    ('End Year 1 — ARR (£)', f"='Scenario Engine'!{BASE['ARR']}$16", f"='Scenario Engine'!{WP['ARR']}$16"),
-    ('End Year 1 — Cash (£)', f"='Scenario Engine'!{BASE['Cash']}$16", f"='Scenario Engine'!{WP['Cash']}$16"),
-    ('Year 1 — Gross Revenue (£)', f"=SUM('Scenario Engine'!{BASE['GrossRev']}$5:'Scenario Engine'!{BASE['GrossRev']}$16)", f"=SUM('Scenario Engine'!{WP['GrossRev']}$5:'Scenario Engine'!{WP['GrossRev']}$16)"),
-    ('Year 1 — Profit (£)', f"=SUM('Scenario Engine'!{BASE['Profit']}$5:'Scenario Engine'!{BASE['Profit']}$16)", f"=SUM('Scenario Engine'!{WP['Profit']}$5:'Scenario Engine'!{WP['Profit']}$16)"),
-    ('End Year 2 — Customers', f"='Scenario Engine'!{BASE['TotCust']}$28", f"='Scenario Engine'!{WP['TotCust']}$28"),
-    ('End Year 2 — MRR (£)', f"='Scenario Engine'!{BASE['MRR']}$28", f"='Scenario Engine'!{WP['MRR']}$28"),
-    ('End Year 2 — Cash (£)', f"='Scenario Engine'!{BASE['Cash']}$28", f"='Scenario Engine'!{WP['Cash']}$28"),
-    ('End Year 5 — Customers', f"='Scenario Engine'!{BASE['TotCust']}$64", f"='Scenario Engine'!{WP['TotCust']}$64"),
-    ('End Year 5 — MRR (£)', f"='Scenario Engine'!{BASE['MRR']}$64", f"='Scenario Engine'!{WP['MRR']}$64"),
-    ('End Year 5 — Cash (£)', f"='Scenario Engine'!{BASE['Cash']}$64", f"='Scenario Engine'!{WP['Cash']}$64"),
+    ('End Year 1 - Customers', f"='Scenario Engine'!{BASE['TotCust']}$16", f"='Scenario Engine'!{WP['TotCust']}$16"),
+    ('End Year 1 - MRR (£)', f"='Scenario Engine'!{BASE['MRR']}$16", f"='Scenario Engine'!{WP['MRR']}$16"),
+    ('End Year 1 - ARR (£)', f"='Scenario Engine'!{BASE['ARR']}$16", f"='Scenario Engine'!{WP['ARR']}$16"),
+    ('End Year 1 - Cash (£)', f"='Scenario Engine'!{BASE['Cash']}$16", f"='Scenario Engine'!{WP['Cash']}$16"),
+    ('Year 1 - Gross Revenue (£)', f"=SUM('Scenario Engine'!{BASE['GrossRev']}$5:'Scenario Engine'!{BASE['GrossRev']}$16)", f"=SUM('Scenario Engine'!{WP['GrossRev']}$5:'Scenario Engine'!{WP['GrossRev']}$16)"),
+    ('Year 1 - Profit (£)', f"=SUM('Scenario Engine'!{BASE['Profit']}$5:'Scenario Engine'!{BASE['Profit']}$16)", f"=SUM('Scenario Engine'!{WP['Profit']}$5:'Scenario Engine'!{WP['Profit']}$16)"),
+    ('End Year 2 - Customers', f"='Scenario Engine'!{BASE['TotCust']}$28", f"='Scenario Engine'!{WP['TotCust']}$28"),
+    ('End Year 2 - MRR (£)', f"='Scenario Engine'!{BASE['MRR']}$28", f"='Scenario Engine'!{WP['MRR']}$28"),
+    ('End Year 2 - Cash (£)', f"='Scenario Engine'!{BASE['Cash']}$28", f"='Scenario Engine'!{WP['Cash']}$28"),
+    ('End Year 5 - Customers', f"='Scenario Engine'!{BASE['TotCust']}$64", f"='Scenario Engine'!{WP['TotCust']}$64"),
+    ('End Year 5 - MRR (£)', f"='Scenario Engine'!{BASE['MRR']}$64", f"='Scenario Engine'!{WP['MRR']}$64"),
+    ('End Year 5 - Cash (£)', f"='Scenario Engine'!{BASE['Cash']}$64", f"='Scenario Engine'!{WP['Cash']}$64"),
 ]
 for i, (label, base_f, wp_f) in enumerate(metrics):
     r = 31 + i
@@ -364,14 +364,14 @@ if 'Assumptions' in wb.sheetnames:
     ws_a = wb['Assumptions']
     ws_a['A29'] = 'Winter pivot seasonality'
     ws_a['B29'] = 'Inputs cols E & F'
-    ws_a['C29'] = 'Sens - Winter Pivot tab — gutter/leaf/patio Oct–Feb'
+    ws_a['C29'] = 'Sens - Winter Pivot tab - gutter/leaf/patio Oct–Feb'
 
 # Headlines checklist
 if 'Headlines' in wb.sheetnames:
     ws_h = wb['Headlines']
     for r in range(30, 40):
         if ws_h[f'A{r}'].value and 'Sensitivity' in str(ws_h[f'A{r}'].value):
-            ws_h[f'A{r}'] = '✓ Sensitivity tabs — churn, mix, CAC, scenarios, winter pivot'
+            ws_h[f'A{r}'] = '✓ Sensitivity tabs - churn, mix, CAC, scenarios, winter pivot'
             break
 
 wb.save(OUT)

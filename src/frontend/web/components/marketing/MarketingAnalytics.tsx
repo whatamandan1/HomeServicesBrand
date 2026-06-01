@@ -81,7 +81,17 @@ export function MarketingAnalytics() {
   );
 }
 
-/** Call after checkout success or other conversion events (no-op without consent or IDs). */
+/** Meta standard event names for GA4-style event keys used in the app. */
+const META_EVENT_ALIASES: Record<string, string> = {
+  generate_lead: "Lead",
+  begin_checkout: "InitiateCheckout",
+  purchase: "Purchase",
+};
+
+/**
+ * Fire GA4 + Meta conversion events (no-op without cookie consent or tag IDs).
+ * Prefer GA4 recommended names: generate_lead, begin_checkout, purchase.
+ */
 export function trackMarketingEvent(
   eventName: string,
   params?: Record<string, string | number>
@@ -93,7 +103,8 @@ export function trackMarketingEvent(
     gtag?: (...args: unknown[]) => void;
   };
   if (META_PIXEL_ID && w.fbq) {
-    w.fbq("track", eventName, params);
+    const metaEvent = META_EVENT_ALIASES[eventName] ?? eventName;
+    w.fbq("track", metaEvent, params);
   }
   if (GA_MEASUREMENT_ID && w.gtag) {
     w.gtag("event", eventName, params);

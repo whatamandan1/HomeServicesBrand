@@ -196,7 +196,7 @@ def write_block(ws, sc, label, mchurn, achurn, annmix, cac, hdr_row=4):
 idx = wb.sheetnames.index('Model')
 del wb['Model']
 ws_m = wb.create_sheet('Model', idx)
-ws_m['A1'] = "60-Month Model (scalar formulas — Excel compatible)"
+ws_m['A1'] = "60-Month Model (scalar formulas - Excel compatible)"
 ws_m['A1'].font = TITLE_FONT
 M = write_block(ws_m, 1, None, 'MonthlyChurn', 'AnnualChurn', 'AnnualMix', 'CAC')
 

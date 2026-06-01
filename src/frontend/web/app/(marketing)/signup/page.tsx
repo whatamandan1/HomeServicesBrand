@@ -38,6 +38,7 @@ import {
   MIN_PASSWORD_LENGTH,
   normalizeUkPostcode,
 } from "@/lib/signup-utils";
+import { trackMarketingEvent } from "@/components/marketing/MarketingAnalytics";
 import { useSignupLeadCapture } from "@/lib/use-signup-lead";
 import { AlertBanner, LoadingSpinner } from "@/components/ui/feedback";
 import { AvailabilityPicker } from "@/components/signup/AvailabilityPicker";
@@ -97,6 +98,8 @@ export default function SignupPage() {
   const [quoteUnveiled, setQuoteUnveiled] = useState(false);
   const topRef = useRef<HTMLDivElement>(null);
   const mobileScrollRef = useRef<HTMLDivElement>(null);
+  const trackedLead = useRef(false);
+  const trackedCheckout = useRef(false);
 
   const addonCount = useMemo(() => countSignupAddons(selectedServices), [selectedServices]);
 
@@ -156,6 +159,18 @@ export default function SignupPage() {
     api.getPublicConfig().then((c) => setSkipPayment(c.bypassStripeCheckout)).catch(() => {});
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  useEffect(() => {
+    if (trackedLead.current) return;
+    trackedLead.current = true;
+    trackMarketingEvent("generate_lead", { event_category: "signup" });
+  }, []);
+
+  useEffect(() => {
+    if (step !== 3 || trackedCheckout.current) return;
+    trackedCheckout.current = true;
+    trackMarketingEvent("begin_checkout", { event_category: "signup" });
+  }, [step]);
 
   useLayoutEffect(() => {
     if (isMobileSignupLayout()) {

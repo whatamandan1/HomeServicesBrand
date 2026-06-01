@@ -4,7 +4,7 @@ import Link from "next/link";
 export function MarketingFooter() {
   return (
     <footer className="border-t border-gardens-primary/10 bg-gardens-dark text-gardens-light">
-      <div className="mx-auto grid max-w-6xl gap-10 px-4 py-12 md:grid-cols-4">
+      <div className="mx-auto grid max-w-6xl gap-10 px-4 py-12 md:grid-cols-5">
         <div className="md:col-span-2">
           <Link href="/" className="inline-block">
             <Image src="/logo-white.svg" alt="GardensSorted" width={272} height={48} className="h-10 w-auto" />
@@ -16,8 +16,17 @@ export function MarketingFooter() {
         <div>
           <p className="text-sm font-semibold text-white">Product</p>
           <ul className="mt-3 space-y-2 text-sm text-gardens-accent/80">
+            <li><Link href="/#pricing" className="inline-flex min-h-[44px] items-center hover:text-white">Pricing</Link></li>
             <li><Link href="/#how-it-works" className="inline-flex min-h-[44px] items-center hover:text-white">How it works</Link></li>
             <li><Link href="/signup" className="inline-flex min-h-[44px] items-center hover:text-white">Get your quote</Link></li>
+          </ul>
+        </div>
+        <div>
+          <p className="text-sm font-semibold text-white">Areas</p>
+          <ul className="mt-3 space-y-2 text-sm text-gardens-accent/80">
+            <li><Link href="/areas/leeds" className="hover:text-white">Leeds</Link></li>
+            <li><Link href="/areas/york" className="hover:text-white">York</Link></li>
+            <li><Link href="/areas/wakefield" className="hover:text-white">Wakefield</Link></li>
           </ul>
         </div>
         <div>

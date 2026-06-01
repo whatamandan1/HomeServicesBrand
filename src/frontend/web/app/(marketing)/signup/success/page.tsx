@@ -1,9 +1,10 @@
 "use client";
 
-import { Suspense, useEffect } from "react";
+import { Suspense, useEffect, useRef } from "react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { api } from "@/lib/api";
+import { trackMarketingEvent } from "@/components/marketing/MarketingAnalytics";
 import { loadAuth } from "@/lib/auth-storage";
 import { LoadingSpinner, PageLoading } from "@/components/ui/feedback";
 
@@ -11,6 +12,13 @@ function SignupSuccessContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const sessionId = searchParams.get("session_id");
+  const trackedPurchase = useRef(false);
+
+  useEffect(() => {
+    if (!sessionId || trackedPurchase.current) return;
+    trackedPurchase.current = true;
+    trackMarketingEvent("purchase", { event_category: "signup" });
+  }, [sessionId]);
 
   useEffect(() => {
     const auth = loadAuth();

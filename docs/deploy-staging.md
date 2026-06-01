@@ -121,6 +121,7 @@ If you only see project-level settings, you clicked the wrong level - go back to
 |----------|-------|
 | `API_URL` | Your Railway API URL (no trailing slash) - **required** for pricing/signup |
 | `NEXT_PUBLIC_SITE_URL` | `https://gardenssorted.co.uk` |
+| `NEXT_PUBLIC_GA_MEASUREMENT_ID` | e.g. `G-YTCG270KXL` — GA4 (loads after cookie consent; do not paste gtag HTML into pages) |
 | `NEXT_PUBLIC_SHOW_DEMO_LOGIN` | **Leave unset** on production (demo credentials hidden). Set `true` only for local dev. |
 | `NEXT_PUBLIC_API_URL` | optional - leave unset; `/api` is proxied via `API_URL` |
 

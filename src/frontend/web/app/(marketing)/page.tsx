@@ -9,20 +9,39 @@ import {
 import { Button, Section } from "@/components/marketing/ui";
 import { FaqAccordion } from "@/components/marketing/FaqAccordion";
 import { HeroProductPreview } from "@/components/marketing/HeroProductPreview";
+import { JsonLd } from "@/components/marketing/JsonLd";
+import { MarketingPricingTeaser } from "@/components/marketing/MarketingPricingTeaser";
+import { MarketingTrustBar } from "@/components/marketing/MarketingTrustBar";
 import { ServicePillarsSection } from "@/components/marketing/ServicePillarsSection";
 import { SocialProofSection } from "@/components/marketing/SocialProofSection";
-import { CUSTOMER_VISIT_RESPONSIBILITIES_SUMMARY } from "@/lib/consumer-plans";
 import { PRIMARY_CTA_HREF, PRIMARY_CTA_LABEL } from "@/lib/marketing-cta";
+import { HOME_FAQS } from "@/lib/seo/home-faqs";
+import {
+  faqPageJsonLd,
+  organizationJsonLd,
+  serviceCatalogJsonLd,
+  webSiteJsonLd,
+} from "@/lib/seo/json-ld";
+import { canonicalPath } from "@/lib/seo/site";
 
 export const metadata: Metadata = {
-  title: "Garden care subscriptions in Yorkshire",
+  title: "Garden maintenance Leeds & Yorkshire",
   description:
-    "Regular garden maintenance for Yorkshire homes. Pick your garden size, add optional extras, and we schedule trusted local gardeners.",
+    "Regular garden maintenance with 10 visits per year. Vetted local gardeners in Leeds, York, Wakefield and across Yorkshire. See pricing and get your quote online.",
+  alternates: { canonical: canonicalPath("/") },
   openGraph: {
-    title: "GardensSorted - Garden care subscriptions in Yorkshire",
+    title: "Garden maintenance Leeds & Yorkshire | GardensSorted",
     description:
-      "Regular garden maintenance for Yorkshire homes. Subscribe online and we handle scheduling.",
+      "Recurring garden care - lawn, borders, and tidy on a schedule. Subscribe online, manage visits in your account.",
+    url: canonicalPath("/"),
   },
+  keywords: [
+    "garden maintenance Leeds",
+    "gardener Leeds",
+    "garden care Yorkshire",
+    "lawn mowing Leeds",
+    "regular garden maintenance",
+  ],
 };
 
 const steps = [
@@ -50,61 +69,16 @@ const included = [
   "Online account to view and manage every visit",
 ];
 
-const faqs = [
-  {
-    q: "What's included in garden care?",
-    a: "10 visits per year, about every 5–6 weeks: lawn mowing and edging, weeding, general tidy, and light watering on each visit. You need a working outdoor tap; we bring hose or watering can. You dispose of clippings or leave your garden-waste bin out. Manage everything in your online account.",
-  },
-  {
-    q: "How does garden size affect price?",
-    a: "We price by the lawn and beds we maintain, not your whole plot, plus how often you want visits and any add-ons you choose. Use Get your quote to see your personalised monthly price before you pay. Above 150 m² maintained we quote separately.",
-  },
-  {
-    q: "What add-ons can I choose?",
-    a: "At signup you can add hedge trim 4× per year, seasonal tidy and leaf clearance 4× per year, or patio and path refresh 2× per year. Add-ons require a 6-month minimum term on monthly billing.",
-  },
-  {
-    q: "What do I need to prepare before a visit?",
-    a: `${CUSTOMER_VISIT_RESPONSIBILITIES_SUMMARY} See our terms for the full list.`,
-  },
-  {
-    q: "Can I hire my gardener directly?",
-    a: "Your subscription covers visits arranged through GardensSorted. While you're subscribed, and for 12 months after your last platform visit, you agree not to hire gardeners we introduced to you for the same work off-platform without our consent - that protects scheduling and fair pay. Other local gardeners you've never booked through us are fine.",
-  },
-  {
-    q: "What's not included?",
-    a: "Major clearance, tree surgery, tall hedge reduction, and landscaping. We don't make separate trips just for watering, patio cleaning, leaf blowing, or gutter clearing - but we can quote those as seasonal add-ons.",
-  },
-  {
-    q: "Do you water the garden?",
-    a: "Yes - light watering of pots, beds, and dry spots while we're on site. You need a working outdoor tap; we bring hose or watering can. We don't make extra trips just to water between visits.",
-  },
-  {
-    q: "Can you clean the patio, blow leaves, or clear gutters?",
-    a: "On regular visits we'll lightly sweep garden-adjacent paving and do light leaf work in the maintained area when we're there. Thorough patio cleaning, dedicated seasonal leaf clearance, and gutter clearing are optional add-ons at signup.",
-  },
-  {
-    q: "Which areas do you cover?",
-    a: "We're launching across Yorkshire, starting with Leeds, York, Wakefield, and surrounding postcodes. Enter yours at signup - we'll confirm availability.",
-  },
-  {
-    q: "How does billing work?",
-    a: "You subscribe online with a clear monthly price for your garden size and any add-ons you chose. After your minimum term, get in touch if you need to make changes.",
-  },
-  {
-    q: "Can I reschedule a visit?",
-    a: "Yes. Log in to your account to reschedule or cancel a visit before your gardener is on the way.",
-  },
-  {
-    q: "How do I get help?",
-    a: "Use the chat on our website or message us through your customer account. We're happy to answer questions before and after you sign up.",
-  },
-];
-
 export default function HomePage() {
   return (
     <>
+      <JsonLd
+        data={[organizationJsonLd(), webSiteJsonLd(), serviceCatalogJsonLd(), faqPageJsonLd(HOME_FAQS)]}
+      />
       <HeroProductPreview />
+
+      <MarketingTrustBar />
+      <MarketingPricingTeaser />
 
       <Section
         id="how-it-works"
@@ -160,7 +134,22 @@ export default function HomePage() {
         subtitle="Still unsure? Chat with us - we're happy to help before you sign up."
         className="border-t border-gardens-primary/10 bg-white"
       >
-        <FaqAccordion items={faqs} />
+        <FaqAccordion items={HOME_FAQS} />
+        <p className="mx-auto mt-6 max-w-2xl text-center text-sm text-stone-600">
+          Local pages:{" "}
+          <Link href="/areas/leeds" className="font-medium text-gardens-primary hover:underline">
+            Garden maintenance Leeds
+          </Link>
+          ,{" "}
+          <Link href="/areas/york" className="font-medium text-gardens-primary hover:underline">
+            York
+          </Link>
+          ,{" "}
+          <Link href="/areas/wakefield" className="font-medium text-gardens-primary hover:underline">
+            Wakefield
+          </Link>
+          .
+        </p>
         <p className="mx-auto mt-6 max-w-2xl text-center text-sm text-stone-600">
           Have a question we haven&apos;t answered?{" "}
           <Link href="/#chat" className="font-medium text-gardens-primary hover:underline">

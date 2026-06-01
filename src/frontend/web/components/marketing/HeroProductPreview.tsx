@@ -48,13 +48,11 @@ export function HeroProductPreview() {
         <div className="order-1 max-w-xl md:col-start-1 md:row-start-1">
           <HeroLocationBadge />
           <h1 className="mt-5 font-display text-3xl font-bold leading-tight text-gardens-dark sm:mt-6 sm:text-4xl md:text-5xl text-balance">
-            Regular visits.
-            <br />
-            One subscription.
+            Regular garden maintenance across Yorkshire
           </h1>
           <p className="mt-4 max-w-lg text-base text-gardens-dark/80 text-balance sm:mt-5 sm:text-lg">
-            We schedule visits, assign an approved local gardener, and keep you updated - you manage everything
-            in your online account.
+            10 visits per year - lawn, borders, and tidy on a schedule. We assign vetted local gardeners; you
+            manage everything in your online account.
           </p>
         </div>
 
@@ -68,11 +66,11 @@ export function HeroProductPreview() {
               {PRIMARY_CTA_LABEL}
             </Button>
             <Button
-              href="/#how-it-works"
+              href="/#pricing"
               variant="secondary"
               className="w-full border-gardens-primary/25 bg-white/90 sm:w-auto hover:bg-white"
             >
-              How it works
+              See pricing
             </Button>
           </div>
         </div>
