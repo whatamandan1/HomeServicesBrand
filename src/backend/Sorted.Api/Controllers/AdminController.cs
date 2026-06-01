@@ -345,9 +345,20 @@ public class AdminController(
     public async Task<ActionResult<AdminProviderVettingResponse>> ProviderVetting(Guid id, CancellationToken ct)
     {
         var provider = await db.Providers
+            .Include(p => p.IdDocumentPhoto)
             .FirstOrDefaultAsync(p => p.Id == id && !p.IsDeleted, ct);
         if (provider is null) return NotFound();
         return Ok(ProviderVettingMapper.ToAdminDetails(provider));
+    }
+
+    [HttpGet("providers/{id:guid}/vetting/id-photo/file")]
+    public async Task<IActionResult> ProviderIdPhotoFile(Guid id, CancellationToken ct)
+    {
+        var photo = await db.ProviderIdDocumentPhotos.AsNoTracking()
+            .FirstOrDefaultAsync(p => p.ProviderId == id && !p.IsDeleted, ct);
+        if (photo is null) return NotFound();
+
+        return File(photo.Data, photo.ContentType);
     }
 
     [HttpPatch("providers/{id:guid}/vetting")]
@@ -356,7 +367,9 @@ public class AdminController(
         [FromBody] AdminUpdateProviderVettingVerificationRequest request,
         CancellationToken ct)
     {
-        var provider = await db.Providers.FirstOrDefaultAsync(p => p.Id == id && !p.IsDeleted, ct);
+        var provider = await db.Providers
+            .Include(p => p.IdDocumentPhoto)
+            .FirstOrDefaultAsync(p => p.Id == id && !p.IsDeleted, ct);
         if (provider is null) return NotFound();
 
         var now = DateTime.UtcNow;
@@ -380,11 +393,13 @@ public class AdminController(
     [HttpPost("providers/{id:guid}/approve")]
     public async Task<IActionResult> ApproveProvider(Guid id, CancellationToken ct)
     {
-        var provider = await db.Providers.FirstOrDefaultAsync(p => p.Id == id, ct);
+        var provider = await db.Providers
+            .Include(p => p.IdDocumentPhoto)
+            .FirstOrDefaultAsync(p => p.Id == id, ct);
         if (provider is null) return NotFound();
 
         if (provider.VettingSubmittedAtUtc is null || !ProviderVettingMapper.IsSubmissionComplete(provider))
-            return BadRequest(new { error = "Provider must submit vetting details (ID, right to work, DBS, insurance) before approval." });
+            return BadRequest(new { error = "Provider must submit vetting details (photo ID upload, ID details, right to work, DBS, insurance) before approval." });
 
         if (provider.IdVerifiedAtUtc is null
             || provider.RightToWorkVerifiedAtUtc is null

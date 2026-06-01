@@ -151,8 +151,19 @@ public class Provider : AuditableEntity
     /// <summary>Own pressure washer with patio-safe attachment - patio &amp; path refresh add-ons.</summary>
     public bool HasPressureWasherForPatio { get; set; }
 
+    public ProviderIdDocumentPhoto? IdDocumentPhoto { get; set; }
     public ICollection<ProviderTerritory> Territories { get; set; } = [];
     public ICollection<ProviderBlockedDate> BlockedDates { get; set; } = [];
+}
+
+public class ProviderIdDocumentPhoto : AuditableEntity
+{
+    public Guid ProviderId { get; set; }
+    public Provider Provider { get; set; } = null!;
+    public string FileName { get; set; } = string.Empty;
+    public string ContentType { get; set; } = "image/jpeg";
+    public byte[] Data { get; set; } = [];
+    public int SizeBytes { get; set; }
 }
 
 public class ProviderBlockedDate : AuditableEntity

@@ -9,6 +9,7 @@ export const ID_DOCUMENT_TYPES = [
 export type ProviderVettingStatus = {
   isSubmitted: boolean;
   isComplete: boolean;
+  hasIdPhoto: boolean;
   idVerified: boolean;
   rightToWorkVerified: boolean;
   dbsVerified: boolean;

@@ -177,7 +177,7 @@ export default function TermsPage() {
       <p>
         Gardeners who perform visits are independent contractors approved to use our platform. GardensSorted coordinates
         scheduling, customer billing, and quality standards; the gardener performs the agreed maintenance at your
-        property. Before approval, gardeners must provide valid photo ID, pass right-to-work verification in the UK, and
+        property. Before approval, gardeners must upload valid photo ID in the provider portal, confirm their legal right to work in the UK as self-employed contractors, and
         pass a basic DBS check, and hold their own relevant insurance (such as public liability for gardening work).
         Approved gardeners bring their own tools every visit (mower, strimmer or edger, hose,
         rake, brush, and a 20 m+ extension lead). We do not supply equipment.

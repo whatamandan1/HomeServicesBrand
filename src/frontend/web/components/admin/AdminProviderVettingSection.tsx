@@ -6,6 +6,49 @@ import { ID_DOCUMENT_TYPES } from "@/lib/provider-vetting";
 import { PROVIDER_ADDON_EQUIPMENT } from "@/lib/provider-requirements";
 import { LoadingSpinner } from "@/components/ui/feedback";
 
+function AdminIdPhotoPreview({ token, providerId }: { token: string; providerId: string }) {
+  const [src, setSrc] = useState<string | null>(null);
+  const [failed, setFailed] = useState(false);
+
+  useEffect(() => {
+    let active = true;
+    let objectUrl: string | null = null;
+
+    void api
+      .adminFetchProviderIdPhotoBlob(token, providerId)
+      .then((blob) => {
+        if (!active) return;
+        objectUrl = URL.createObjectURL(blob);
+        setSrc(objectUrl);
+      })
+      .catch(() => {
+        if (active) setFailed(true);
+      });
+
+    return () => {
+      active = false;
+      if (objectUrl) URL.revokeObjectURL(objectUrl);
+    };
+  }, [providerId, token]);
+
+  if (failed) {
+    return <p className="text-sm text-amber-800">No ID photo uploaded yet.</p>;
+  }
+
+  if (!src) {
+    return <p className="text-sm text-stone-500">Loading ID photo…</p>;
+  }
+
+  return (
+    // eslint-disable-next-line @next/next/no-img-element
+    <img
+      src={src}
+      alt="Provider photo ID"
+      className="max-h-48 rounded-lg border border-stone-200 bg-white object-contain"
+    />
+  );
+}
+
 function idTypeLabel(value: string | null) {
   if (!value) return "-";
   return ID_DOCUMENT_TYPES.find((t) => t.value === value)?.label ?? value;
@@ -75,18 +118,29 @@ export function AdminProviderVettingSection({
           <dt className="text-stone-500">Date of birth</dt>
           <dd className="font-medium">{vetting.dateOfBirth ?? "-"}</dd>
         </div>
+        <div className="sm:col-span-2">
+          <dt className="text-stone-500">Photo ID upload</dt>
+          <dd className="mt-2">
+            {s.hasIdPhoto ? (
+              <AdminIdPhotoPreview token={token} providerId={providerId} />
+            ) : (
+              <p className="font-medium text-amber-800">Not uploaded</p>
+            )}
+          </dd>
+        </div>
         <div>
-          <dt className="text-stone-500">Photo ID</dt>
+          <dt className="text-stone-500">Photo ID details</dt>
           <dd className="font-medium">
             {idTypeLabel(vetting.idDocumentType)} - {vetting.idDocumentNumber ?? "-"}
           </dd>
         </div>
         <div className="sm:col-span-2">
-          <dt className="text-stone-500">Right to work</dt>
+          <dt className="text-stone-500">Right to work (self-employed)</dt>
           <dd className="font-medium">
-            {vetting.rightToWorkShareCode
-              ? `Share code: ${vetting.rightToWorkShareCode}`
-              : vetting.rightToWorkDocumentDescription ?? "-"}
+            {vetting.rightToWorkDocumentDescription
+              ?? (vetting.rightToWorkShareCode
+                ? `Legacy share code: ${vetting.rightToWorkShareCode}`
+                : "-")}
           </dd>
         </div>
         <div>

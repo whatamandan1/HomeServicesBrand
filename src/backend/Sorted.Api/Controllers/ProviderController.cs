@@ -32,8 +32,17 @@ public class ProviderController(
         return await db.Providers
             .Include(p => p.Territories)
             .Include(p => p.User)
+            .Include(p => p.IdDocumentPhoto)
             .FirstOrDefaultAsync(p => p.UserId == userId && !p.IsDeleted, ct);
     }
+
+    private const int MaxIdPhotoBytes = 512 * 1024;
+    private static readonly HashSet<string> AllowedIdPhotoContentTypes = new(StringComparer.OrdinalIgnoreCase)
+    {
+        "image/jpeg",
+        "image/png",
+        "image/webp"
+    };
 
     [HttpGet("me")]
     public async Task<ActionResult<ProviderProfileResponse>> Profile(CancellationToken ct)
@@ -97,6 +106,9 @@ public class ProviderController(
         if (validationError is not null)
             return BadRequest(new { error = validationError });
 
+        if (!ProviderVettingMapper.HasIdPhoto(provider))
+            return BadRequest(new { error = "Upload a photo of your ID before submitting." });
+
         ProviderVettingMapper.ApplySubmission(provider, request);
         await db.SaveChangesAsync(ct);
 
@@ -109,6 +121,134 @@ public class ProviderController(
             ct);
 
         return Ok(ProviderVettingMapper.ToDetails(provider, maskIdNumber: false));
+    }
+
+    [HttpGet("me/vetting/id-photo")]
+    public async Task<ActionResult<ProviderIdPhotoResponse>> IdPhotoMetadata(CancellationToken ct)
+    {
+        var provider = await GetProviderAsync(ct);
+        if (provider is null) return NotFound();
+
+        var photo = provider.IdDocumentPhoto;
+        if (photo is null || photo.IsDeleted) return NotFound();
+
+        return Ok(new ProviderIdPhotoResponse(
+            photo.Id,
+            photo.FileName,
+            photo.ContentType,
+            photo.SizeBytes,
+            photo.CreatedAtUtc));
+    }
+
+    [HttpGet("me/vetting/id-photo/file")]
+    public async Task<IActionResult> IdPhotoFile(CancellationToken ct)
+    {
+        var provider = await GetProviderAsync(ct);
+        if (provider is null) return NotFound();
+
+        var photo = provider.IdDocumentPhoto;
+        if (photo is null || photo.IsDeleted) return NotFound();
+
+        return File(photo.Data, photo.ContentType);
+    }
+
+    [HttpPost("me/vetting/id-photo")]
+    [RequestSizeLimit(MaxIdPhotoBytes + 1024)]
+    public async Task<ActionResult<ProviderIdPhotoResponse>> UploadIdPhoto(IFormFile file, CancellationToken ct)
+    {
+        if (file.Length == 0)
+            return BadRequest(new { error = "Choose a photo of your ID to upload." });
+        if (file.Length > MaxIdPhotoBytes)
+            return BadRequest(new { error = "Photo must be 512 KB or smaller." });
+        if (!AllowedIdPhotoContentTypes.Contains(file.ContentType))
+            return BadRequest(new { error = "Only JPEG, PNG, and WebP photos are supported." });
+
+        var provider = await GetProviderAsync(ct);
+        if (provider is null) return NotFound();
+        if (provider.IsApproved)
+            return BadRequest(new { error = "Vetting details cannot be changed after approval. Contact support." });
+
+        await using var stream = new MemoryStream();
+        await file.CopyToAsync(stream, ct);
+        var data = stream.ToArray();
+
+        var existing = provider.IdDocumentPhoto;
+        if (existing is not null && !existing.IsDeleted)
+        {
+            existing.FileName = Path.GetFileName(file.FileName);
+            existing.ContentType = file.ContentType;
+            existing.Data = data;
+            existing.SizeBytes = data.Length;
+            existing.UpdatedAtUtc = DateTime.UtcNow;
+            await db.SaveChangesAsync(ct);
+
+            await workflow.LogAsync(
+                "provider_onboarding",
+                "id_photo_updated",
+                nameof(ProviderIdDocumentPhoto),
+                existing.Id,
+                new { provider.Id, existing.SizeBytes },
+                ct);
+
+            return Ok(new ProviderIdPhotoResponse(
+                existing.Id,
+                existing.FileName,
+                existing.ContentType,
+                existing.SizeBytes,
+                existing.CreatedAtUtc));
+        }
+
+        var photo = new ProviderIdDocumentPhoto
+        {
+            ProviderId = provider.Id,
+            FileName = Path.GetFileName(file.FileName),
+            ContentType = file.ContentType,
+            Data = data,
+            SizeBytes = data.Length
+        };
+        db.ProviderIdDocumentPhotos.Add(photo);
+        await db.SaveChangesAsync(ct);
+
+        await workflow.LogAsync(
+            "provider_onboarding",
+            "id_photo_uploaded",
+            nameof(ProviderIdDocumentPhoto),
+            photo.Id,
+            new { provider.Id, photo.SizeBytes },
+            ct);
+
+        return Ok(new ProviderIdPhotoResponse(
+            photo.Id,
+            photo.FileName,
+            photo.ContentType,
+            photo.SizeBytes,
+            photo.CreatedAtUtc));
+    }
+
+    [HttpDelete("me/vetting/id-photo")]
+    public async Task<IActionResult> DeleteIdPhoto(CancellationToken ct)
+    {
+        var provider = await GetProviderAsync(ct);
+        if (provider is null) return NotFound();
+        if (provider.IsApproved)
+            return BadRequest(new { error = "Vetting details cannot be changed after approval. Contact support." });
+
+        var photo = provider.IdDocumentPhoto;
+        if (photo is null || photo.IsDeleted) return NotFound();
+
+        photo.IsDeleted = true;
+        photo.UpdatedAtUtc = DateTime.UtcNow;
+        await db.SaveChangesAsync(ct);
+
+        await workflow.LogAsync(
+            "provider_onboarding",
+            "id_photo_deleted",
+            nameof(ProviderIdDocumentPhoto),
+            photo.Id,
+            new { provider.Id },
+            ct);
+
+        return NoContent();
     }
 
     [HttpPatch("me/coverage")]

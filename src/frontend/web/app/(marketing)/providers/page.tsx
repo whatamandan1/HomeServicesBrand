@@ -6,6 +6,7 @@ import { ProviderSignupForm } from "@/components/providers/ProviderSignupForm";
 import {
   PROVIDER_ADDON_EQUIPMENT,
   PROVIDER_ADDON_EQUIPMENT_SUMMARY,
+  PROVIDER_DBS_APPLY_URL,
   PROVIDER_EQUIPMENT_REQUIRED,
   PROVIDER_VETTING_REQUIRED,
 } from "@/lib/provider-requirements";
@@ -35,7 +36,7 @@ const benefits = [
   {
     icon: Shield,
     title: "Approved network",
-    body: "ID, right-to-work, DBS, and your own relevant insurance verified before approval - plus support when you need it.",
+    body: "Photo ID, right to work as a self-employed contractor, DBS, and your own relevant insurance verified before approval - plus support when you need it.",
   },
 ];
 
@@ -94,8 +95,17 @@ export default function ProvidersPage() {
           ))}
         </ul>
         <p className="mx-auto mt-4 max-w-2xl text-sm text-stone-600">
-          Sign up first, then complete the checks &amp; documents form in your provider portal - approval only after we
-          verify ID, right to work, DBS, and insurance.
+          Sign up first, then complete the checks &amp; documents form in your provider portal - upload your photo ID,
+          then add your details. Approval only after we verify ID, right to work, DBS, and insurance. No basic DBS yet?{" "}
+          <a
+            href={PROVIDER_DBS_APPLY_URL}
+            className="text-gardens-primary hover:underline"
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            Apply on GOV.UK
+          </a>
+          .
         </p>
       </Section>
 

@@ -1,7 +1,7 @@
 /** Identity and eligibility checked before admin approval (not self-certified at signup). */
 export const PROVIDER_VETTING_REQUIRED = [
-  "Valid photo ID (e.g. passport or driving licence)",
-  "Right to work in the UK - we will verify before you are approved",
+  "Upload a photo of valid ID (e.g. passport or driving licence)",
+  "Right to work in the UK as a self-employed contractor - we verify from your documents before you are approved",
   "Basic DBS check - must pass before taking paid visits",
   "Your own relevant insurance - e.g. public liability cover for gardening work",
 ] as const;
@@ -10,10 +10,20 @@ export const PROVIDER_INSURANCE_DECLARATION =
   "I hold my own relevant insurance for gardening work (such as public liability) and will keep it in force while taking visits through GardensSorted.";
 
 export const PROVIDER_VETTING_SUMMARY =
-  "Before approval we verify your ID, right to work, a basic DBS check, and that you hold your own relevant insurance.";
+  "Before approval we verify your photo ID upload, right to work as a self-employed contractor, a basic DBS check, and that you hold your own relevant insurance.";
+
+export const PROVIDER_RTW_SUMMARY =
+  "Approved gardeners are self-employed contractors, not employees. Describe the document that shows you can legally work in the UK — usually the same photo ID you uploaded above.";
+
+export const PROVIDER_DBS_APPLY_URL = "https://www.gov.uk/request-copy-criminal-record";
+
+export const PROVIDER_DBS_UPDATE_SERVICE_URL = "https://www.gov.uk/dbs-update-service";
+
+export const PROVIDER_DBS_SUMMARY =
+  "You need a basic DBS check before approval. If you don't have one yet, apply online through GOV.UK (currently £21.50). Enter your certificate number and issue date here once it arrives.";
 
 export const PROVIDER_APPROVAL_PENDING_NOTE =
-  "Complete the checks & documents form below (ID, right to work, DBS, insurance). We verify everything before you can claim jobs.";
+  "Complete the checks & documents form below - upload your photo ID, then add ID details, right to work, DBS, and insurance. We verify everything before you can claim jobs.";
 
 /** Equipment every approved gardener must bring to each visit. */
 export const PROVIDER_EQUIPMENT_REQUIRED = [

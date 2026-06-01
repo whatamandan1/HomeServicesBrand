@@ -5,8 +5,8 @@ public static class ProviderVettingRequirements
 {
     public static readonly IReadOnlyList<string> RequiredChecks =
     [
-        "Valid photo ID (e.g. passport or driving licence)",
-        "Right to work in the UK (verified by GardensSorted before approval)",
+        "Upload a clear photo of valid photo ID (e.g. passport or driving licence)",
+        "Right to work in the UK as a self-employed contractor (verified from submitted documents)",
         "Basic DBS check passed",
         "Own relevant insurance (e.g. public liability for gardening work)",
     ];
@@ -17,8 +17,8 @@ public static class ProviderVettingRequirements
     /// <summary>Admin checklist - confirm before setting <c>Provider.IsApproved</c>.</summary>
     public static readonly IReadOnlyList<string> AdminApprovalChecklist =
     [
-        "Photo ID sighted and recorded",
-        "Right to work in the UK verified",
+        "Photo ID upload reviewed and matched to submitted details",
+        "Right to work verified from photo ID and submitted document details (self-employed contractor)",
         "Basic DBS check passed (certificate or update service result on file)",
         "Relevant insurance confirmed (policy or certificate on file)",
         "Equipment requirement understood",

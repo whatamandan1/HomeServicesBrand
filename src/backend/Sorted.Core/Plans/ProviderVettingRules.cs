@@ -33,8 +33,8 @@ public static class ProviderVettingRules
         if (string.IsNullOrWhiteSpace(idDocumentType) || string.IsNullOrWhiteSpace(idDocumentNumber))
             return false;
 
-        var hasRtw = IsShareCodeValid(rightToWorkShareCode)
-                     || !string.IsNullOrWhiteSpace(rightToWorkDocumentDescription);
+        var hasRtw = !string.IsNullOrWhiteSpace(rightToWorkDocumentDescription)
+                     || IsShareCodeValid(rightToWorkShareCode);
         if (!hasRtw) return false;
 
         if (string.IsNullOrWhiteSpace(dbsCertificateNumber) || dbsIssueDate is null)

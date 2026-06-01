@@ -13,6 +13,7 @@ public class SortedDbContext(DbContextOptions<SortedDbContext> options) : DbCont
     public DbSet<SubscriptionPlan> SubscriptionPlans => Set<SubscriptionPlan>();
     public DbSet<CustomerSubscription> CustomerSubscriptions => Set<CustomerSubscription>();
     public DbSet<Provider> Providers => Set<Provider>();
+    public DbSet<ProviderIdDocumentPhoto> ProviderIdDocumentPhotos => Set<ProviderIdDocumentPhoto>();
     public DbSet<ProviderTerritory> ProviderTerritories => Set<ProviderTerritory>();
     public DbSet<ProviderBlockedDate> ProviderBlockedDates => Set<ProviderBlockedDate>();
     public DbSet<JobVisit> JobVisits => Set<JobVisit>();
@@ -73,6 +74,11 @@ public class SortedDbContext(DbContextOptions<SortedDbContext> options) : DbCont
             .HasOne(s => s.PreferredProvider).WithMany().HasForeignKey(s => s.PreferredProviderId);
         modelBuilder.Entity<PropertyMedia>()
             .HasOne(m => m.Property).WithMany(p => p.Media).HasForeignKey(m => m.CustomerPropertyId);
+        modelBuilder.Entity<ProviderIdDocumentPhoto>()
+            .HasOne(p => p.Provider).WithOne(p => p.IdDocumentPhoto).HasForeignKey<ProviderIdDocumentPhoto>(p => p.ProviderId);
+        modelBuilder.Entity<ProviderIdDocumentPhoto>()
+            .HasIndex(p => p.ProviderId)
+            .IsUnique();
         modelBuilder.Entity<ProviderEarning>()
             .HasOne(e => e.Provider).WithMany().HasForeignKey(e => e.ProviderId);
         modelBuilder.Entity<ProviderEarning>()

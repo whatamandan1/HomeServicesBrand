@@ -10,11 +10,15 @@ public static class ProviderVettingMapper
         new(
             p.VettingSubmittedAtUtc is not null,
             IsSubmissionComplete(p),
+            HasIdPhoto(p),
             p.IdVerifiedAtUtc is not null,
             p.RightToWorkVerifiedAtUtc is not null,
             p.DbsVerifiedAtUtc is not null,
             p.InsuranceVerifiedAtUtc is not null,
             p.VettingSubmittedAtUtc);
+
+    public static bool HasIdPhoto(Provider p) =>
+        p.IdDocumentPhoto is not null && !p.IdDocumentPhoto.IsDeleted;
 
     public static ProviderVettingDetailsResponse ToDetails(Provider p, bool maskIdNumber) =>
         new(
@@ -58,7 +62,8 @@ public static class ProviderVettingMapper
     }
 
     public static bool IsSubmissionComplete(Provider p) =>
-        ProviderVettingRules.HasMinimumSubmission(
+        HasIdPhoto(p)
+        && ProviderVettingRules.HasMinimumSubmission(
             p.DateOfBirth,
             p.IdDocumentType,
             p.IdDocumentNumber,
@@ -73,9 +78,7 @@ public static class ProviderVettingMapper
         p.DateOfBirth = request.DateOfBirth;
         p.IdDocumentType = request.IdDocumentType?.Trim();
         p.IdDocumentNumber = request.IdDocumentNumber?.Trim();
-        p.RightToWorkShareCode = string.IsNullOrWhiteSpace(request.RightToWorkShareCode)
-            ? null
-            : request.RightToWorkShareCode.Trim();
+        p.RightToWorkShareCode = null;
         p.RightToWorkDocumentDescription = string.IsNullOrWhiteSpace(request.RightToWorkDocumentDescription)
             ? null
             : request.RightToWorkDocumentDescription.Trim();
@@ -101,13 +104,8 @@ public static class ProviderVettingMapper
         if (!ProviderVettingRules.IdDocumentTypes.Contains(request.IdDocumentType.Trim(), StringComparer.OrdinalIgnoreCase))
             return "Select a valid ID document type.";
 
-        var hasShareCode = ProviderVettingRules.IsShareCodeValid(request.RightToWorkShareCode);
-        var hasDocDesc = !string.IsNullOrWhiteSpace(request.RightToWorkDocumentDescription);
-        if (!hasShareCode && !hasDocDesc)
-            return "Provide a UK right-to-work share code (9 characters) or describe the document you will show us.";
-
-        if (hasShareCode && hasDocDesc)
-            return "Provide either a right-to-work share code or a document description, not both.";
+        if (string.IsNullOrWhiteSpace(request.RightToWorkDocumentDescription))
+            return "Describe the document that shows your right to work in the UK as a self-employed contractor.";
 
         if (string.IsNullOrWhiteSpace(request.DbsCertificateNumber) || request.DbsIssueDate is null)
             return "DBS certificate number and issue date are required.";

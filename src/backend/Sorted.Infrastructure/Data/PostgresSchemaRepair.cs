@@ -277,6 +277,25 @@ internal static class PostgresSchemaRepair
         ALTER TABLE "CustomerSubscriptions" ADD COLUMN IF NOT EXISTS "SelectedSignupAddonsJson" TEXT NULL;
         """;
 
+    private const string ProviderIdDocumentPhotoSql = """
+        CREATE TABLE IF NOT EXISTS "ProviderIdDocumentPhotos" (
+            "Id" uuid NOT NULL,
+            "ProviderId" uuid NOT NULL,
+            "FileName" text NOT NULL,
+            "ContentType" text NOT NULL,
+            "Data" bytea NOT NULL,
+            "SizeBytes" integer NOT NULL,
+            "CreatedAtUtc" timestamp with time zone NOT NULL,
+            "UpdatedAtUtc" timestamp with time zone NULL,
+            "IsDeleted" boolean NOT NULL DEFAULT FALSE,
+            CONSTRAINT "PK_ProviderIdDocumentPhotos" PRIMARY KEY ("Id"),
+            CONSTRAINT "FK_ProviderIdDocumentPhotos_Providers_ProviderId" FOREIGN KEY ("ProviderId") REFERENCES "Providers" ("Id") ON DELETE CASCADE
+        );
+
+        CREATE UNIQUE INDEX IF NOT EXISTS "IX_ProviderIdDocumentPhotos_ProviderId"
+            ON "ProviderIdDocumentPhotos" ("ProviderId");
+        """;
+
     private const string CommunicationTrackingSql = """
         ALTER TABLE "SignupLeads" ADD COLUMN IF NOT EXISTS "AbandonEmail1SentAtUtc" timestamp with time zone NULL;
         ALTER TABLE "SignupLeads" ADD COLUMN IF NOT EXISTS "AbandonEmail2SentAtUtc" timestamp with time zone NULL;
@@ -314,6 +333,7 @@ internal static class PostgresSchemaRepair
             await db.Database.ExecuteSqlRawAsync(ProviderVettingSql, ct);
             await db.Database.ExecuteSqlRawAsync(ProviderAddonEquipmentSql, ct);
             await db.Database.ExecuteSqlRawAsync(SubscriptionSignupAddonsSql, ct);
+            await db.Database.ExecuteSqlRawAsync(ProviderIdDocumentPhotoSql, ct);
             await db.Database.ExecuteSqlRawAsync(CommunicationTrackingSql, ct);
             logger.LogInformation("PostgreSQL schema repair completed");
         }

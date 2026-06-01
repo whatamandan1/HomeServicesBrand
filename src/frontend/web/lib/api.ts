@@ -220,11 +220,20 @@ export type AdminCustomerDetail = {
 export type ProviderVettingStatus = {
   isSubmitted: boolean;
   isComplete: boolean;
+  hasIdPhoto: boolean;
   idVerified: boolean;
   rightToWorkVerified: boolean;
   dbsVerified: boolean;
   insuranceVerified: boolean;
   submittedAtUtc: string | null;
+};
+
+export type ProviderIdPhoto = {
+  id: string;
+  fileName: string;
+  contentType: string;
+  sizeBytes: number;
+  createdAtUtc: string;
 };
 
 export type ProviderVettingDetails = {
@@ -634,6 +643,23 @@ export const api = {
       method: "PUT",
       body: JSON.stringify(body),
     }, token),
+  providerIdPhoto: async (token: string) => {
+    const res = await fetch(`${API_BASE}/api/provider/me/vetting/id-photo`, {
+      headers: { Authorization: `Bearer ${token}` },
+    });
+    if (res.status === 404) return null;
+    if (!res.ok) {
+      const text = await res.text();
+      throw new Error(text || res.statusText || "Could not load ID photo");
+    }
+    return res.json() as Promise<ProviderIdPhoto>;
+  },
+  providerUploadIdPhoto: (token: string, file: File) =>
+    uploadForm<ProviderIdPhoto>("/api/provider/me/vetting/id-photo", file, token),
+  providerDeleteIdPhoto: (token: string) =>
+    request<void>("/api/provider/me/vetting/id-photo", { method: "DELETE" }, token),
+  providerFetchIdPhotoBlob: (token: string) =>
+    fetchBlob("/api/provider/me/vetting/id-photo/file", token),
   providerUpdateCoverage: (
     token: string,
     coveragePostcode: string,
@@ -714,6 +740,8 @@ export const api = {
     request<void>(`/api/admin/providers/${id}/approve`, { method: "POST" }, token),
   adminProviderVetting: (token: string, providerId: string) =>
     request<AdminProviderVetting>(`/api/admin/providers/${providerId}/vetting`, {}, token),
+  adminFetchProviderIdPhotoBlob: (token: string, providerId: string) =>
+    fetchBlob(`/api/admin/providers/${providerId}/vetting/id-photo/file`, token),
   adminUpdateProviderVettingVerification: (
     token: string,
     providerId: string,

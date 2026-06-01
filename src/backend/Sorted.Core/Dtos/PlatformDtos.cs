@@ -103,11 +103,19 @@ public record RescheduleVisitRequest(DateTime ScheduledDate);
 public record ProviderVettingStatusResponse(
     bool IsSubmitted,
     bool IsComplete,
+    bool HasIdPhoto,
     bool IdVerified,
     bool RightToWorkVerified,
     bool DbsVerified,
     bool InsuranceVerified,
     DateTime? SubmittedAtUtc);
+
+public record ProviderIdPhotoResponse(
+    Guid Id,
+    string FileName,
+    string ContentType,
+    int SizeBytes,
+    DateTime CreatedAtUtc);
 
 public record ProviderVettingDetailsResponse(
     ProviderVettingStatusResponse Status,

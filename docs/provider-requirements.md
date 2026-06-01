@@ -10,9 +10,9 @@ Every gardener must pass **vetting before admin approval**. Applying online does
 
 | Check | Requirement |
 |-------|-------------|
-| **Photo ID** | Valid ID shown to GardensSorted (e.g. passport or driving licence) |
-| **Right to work** | Legal right to work in the UK - **verified by us** before approval |
-| **DBS** | **Basic DBS check passed** - required before paid visits |
+| **Photo ID** | Upload a clear photo of valid ID in the provider portal (e.g. passport or driving licence), plus document type and number |
+| **Right to work** | Legal right to work in the UK as a **self-employed contractor** — verified from your uploaded photo ID and document details before approval |
+| **DBS** | **Basic DBS check passed** - required before paid visits. Don't have one? [Apply for a basic DBS check on GOV.UK](https://www.gov.uk/request-copy-criminal-record) (England & Wales, ~£21.50) |
 | **Insurance** | **Your own relevant insurance** - e.g. public liability for gardening work; declared at signup and **verified by us** before approval |
 
 After signup, gardeners complete the **Checks & documents** form in the provider portal (`/provider`). Code: `ProviderVettingRequirements.cs`, API `PUT /api/provider/me/vetting`.

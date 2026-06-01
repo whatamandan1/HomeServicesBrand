@@ -7,9 +7,14 @@ import {
   PROVIDER_ADDON_EQUIPMENT,
   PROVIDER_ADDON_EQUIPMENT_SUMMARY,
   PROVIDER_INSURANCE_DECLARATION,
+  PROVIDER_DBS_APPLY_URL,
+  PROVIDER_DBS_SUMMARY,
+  PROVIDER_DBS_UPDATE_SERVICE_URL,
+  PROVIDER_RTW_SUMMARY,
   PROVIDER_VETTING_SUMMARY,
 } from "@/lib/provider-requirements";
 import { LoadingSpinner } from "@/components/ui/feedback";
+import { ProviderIdPhotoUpload } from "@/components/provider/ProviderIdPhotoUpload";
 
 type Props = {
   token: string;
@@ -22,11 +27,9 @@ type Props = {
 export function ProviderVettingSection({ token, isApproved, status, onSubmitted, onError }: Props) {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
-  const [rtwMode, setRtwMode] = useState<"shareCode" | "document">("shareCode");
   const [dateOfBirth, setDateOfBirth] = useState("");
   const [idDocumentType, setIdDocumentType] = useState("Passport");
   const [idDocumentNumber, setIdDocumentNumber] = useState("");
-  const [rightToWorkShareCode, setRightToWorkShareCode] = useState("");
   const [rightToWorkDocumentDescription, setRightToWorkDocumentDescription] = useState("");
   const [dbsCertificateNumber, setDbsCertificateNumber] = useState("");
   const [dbsIssueDate, setDbsIssueDate] = useState("");
@@ -35,6 +38,7 @@ export function ProviderVettingSection({ token, isApproved, status, onSubmitted,
   const [hasHedgeTrimmer, setHasHedgeTrimmer] = useState(false);
   const [hasPressureWasherForPatio, setHasPressureWasherForPatio] = useState(false);
   const [hasOwnRelevantInsurance, setHasOwnRelevantInsurance] = useState(false);
+  const [hasIdPhoto, setHasIdPhoto] = useState(false);
   const [localMessage, setLocalMessage] = useState<string | null>(null);
 
   useEffect(() => {
@@ -45,12 +49,10 @@ export function ProviderVettingSection({ token, isApproved, status, onSubmitted,
         if (d.dateOfBirth) setDateOfBirth(d.dateOfBirth);
         if (d.idDocumentType) setIdDocumentType(d.idDocumentType);
         if (d.idDocumentNumber) setIdDocumentNumber(d.idDocumentNumber);
-        if (d.rightToWorkShareCode) {
-          setRtwMode("shareCode");
-          setRightToWorkShareCode(d.rightToWorkShareCode);
-        } else if (d.rightToWorkDocumentDescription) {
-          setRtwMode("document");
+        if (d.rightToWorkDocumentDescription) {
           setRightToWorkDocumentDescription(d.rightToWorkDocumentDescription);
+        } else if (d.rightToWorkShareCode) {
+          setRightToWorkDocumentDescription(`Share code on file (${d.rightToWorkShareCode}) - please describe your right-to-work document`);
         }
         if (d.dbsCertificateNumber) setDbsCertificateNumber(d.dbsCertificateNumber);
         if (d.dbsIssueDate) setDbsIssueDate(d.dbsIssueDate);
@@ -59,6 +61,7 @@ export function ProviderVettingSection({ token, isApproved, status, onSubmitted,
         setHasHedgeTrimmer(d.hasHedgeTrimmer);
         setHasPressureWasherForPatio(d.hasPressureWasherForPatio);
         setHasOwnRelevantInsurance(d.hasOwnRelevantInsurance);
+        setHasIdPhoto(d.status.hasIdPhoto);
       })
       .catch(() => {
         /* first visit - empty form */
@@ -69,6 +72,10 @@ export function ProviderVettingSection({ token, isApproved, status, onSubmitted,
   async function submit(e: React.FormEvent) {
     e.preventDefault();
     if (isApproved) return;
+    if (!hasIdPhoto) {
+      onError("Upload a photo of your ID before submitting.");
+      return;
+    }
 
     setSaving(true);
     setLocalMessage(null);
@@ -78,9 +85,8 @@ export function ProviderVettingSection({ token, isApproved, status, onSubmitted,
       dateOfBirth,
       idDocumentType,
       idDocumentNumber: idDocumentNumber.trim(),
-      rightToWorkShareCode: rtwMode === "shareCode" ? rightToWorkShareCode.trim() || null : null,
-      rightToWorkDocumentDescription:
-        rtwMode === "document" ? rightToWorkDocumentDescription.trim() || null : null,
+      rightToWorkShareCode: null,
+      rightToWorkDocumentDescription: rightToWorkDocumentDescription.trim() || null,
       dbsCertificateNumber: dbsCertificateNumber.trim(),
       dbsIssueDate,
       dbsOnUpdateService,
@@ -172,92 +178,87 @@ export function ProviderVettingSection({ token, isApproved, status, onSubmitted,
           </label>
         </div>
 
+        <ProviderIdPhotoUpload
+          token={token}
+          disabled={isApproved}
+          onPhotoChange={setHasIdPhoto}
+          loadPhoto={api.providerIdPhoto}
+          uploadPhoto={api.providerUploadIdPhoto}
+          deletePhoto={api.providerDeleteIdPhoto}
+          fetchPhotoBlob={api.providerFetchIdPhotoBlob}
+        />
+
         <fieldset className="space-y-3">
-          <legend className="text-sm font-medium text-stone-700">Right to work in the UK</legend>
-          <div className="flex flex-wrap gap-4 text-sm">
-            <label className="flex items-center gap-2">
+          <legend className="text-sm font-medium text-stone-700">Right to work in the UK (self-employed)</legend>
+          <p className="text-xs text-stone-500">{PROVIDER_RTW_SUMMARY}</p>
+          <label className="block text-sm text-stone-600">
+            Right-to-work document
+            <input
+              required
+              value={rightToWorkDocumentDescription}
+              onChange={(e) => setRightToWorkDocumentDescription(e.target.value)}
+              className="field-input mt-1"
+              placeholder="e.g. British passport (same as photo ID above)"
+            />
+          </label>
+        </fieldset>
+
+        <fieldset className="space-y-3">
+          <legend className="text-sm font-medium text-stone-700">Basic DBS check</legend>
+          <p className="text-xs text-stone-500">
+            {PROVIDER_DBS_SUMMARY}{" "}
+            <a
+              href={PROVIDER_DBS_APPLY_URL}
+              className="text-gardens-primary hover:underline"
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              Apply for a basic DBS check on GOV.UK
+            </a>
+            .
+          </p>
+          <div className="grid gap-4 sm:grid-cols-2">
+            <label className="block text-sm font-medium text-stone-700">
+              Certificate number
               <input
-                type="radio"
-                name="rtwMode"
-                checked={rtwMode === "shareCode"}
-                onChange={() => setRtwMode("shareCode")}
+                required
+                value={dbsCertificateNumber}
+                onChange={(e) => setDbsCertificateNumber(e.target.value)}
+                className="field-input mt-1"
               />
-              Gov.uk share code
             </label>
-            <label className="flex items-center gap-2">
+            <label className="block text-sm font-medium text-stone-700">
+              Issue date
               <input
-                type="radio"
-                name="rtwMode"
-                checked={rtwMode === "document"}
-                onChange={() => setRtwMode("document")}
+                type="date"
+                required
+                value={dbsIssueDate}
+                onChange={(e) => setDbsIssueDate(e.target.value)}
+                className="field-input mt-1"
               />
-              I will show a document
             </label>
           </div>
-          {rtwMode === "shareCode" ? (
-            <label className="block text-sm text-stone-600">
-              9-character share code from{" "}
+
+          <label className="flex items-start gap-2 text-sm text-stone-600">
+            <input
+              type="checkbox"
+              checked={dbsOnUpdateService}
+              onChange={(e) => setDbsOnUpdateService(e.target.checked)}
+              className="mt-1"
+            />
+            <span>
+              Registered with the{" "}
               <a
-                href="https://www.gov.uk/prove-right-to-work"
+                href={PROVIDER_DBS_UPDATE_SERVICE_URL}
                 className="text-gardens-primary hover:underline"
                 target="_blank"
                 rel="noopener noreferrer"
               >
-                prove right to work
+                DBS Update Service
               </a>
-              <input
-                required
-                maxLength={9}
-                value={rightToWorkShareCode}
-                onChange={(e) => setRightToWorkShareCode(e.target.value.toUpperCase())}
-                className="field-input mt-1 font-mono uppercase"
-                placeholder="ABC12DEF3"
-              />
-            </label>
-          ) : (
-            <label className="block text-sm text-stone-600">
-              Document you will present (e.g. British passport)
-              <input
-                required
-                value={rightToWorkDocumentDescription}
-                onChange={(e) => setRightToWorkDocumentDescription(e.target.value)}
-                className="field-input mt-1"
-              />
-            </label>
-          )}
+            </span>
+          </label>
         </fieldset>
-
-        <div className="grid gap-4 sm:grid-cols-2">
-          <label className="block text-sm font-medium text-stone-700">
-            Basic DBS certificate number
-            <input
-              required
-              value={dbsCertificateNumber}
-              onChange={(e) => setDbsCertificateNumber(e.target.value)}
-              className="field-input mt-1"
-            />
-          </label>
-          <label className="block text-sm font-medium text-stone-700">
-            DBS issue date
-            <input
-              type="date"
-              required
-              value={dbsIssueDate}
-              onChange={(e) => setDbsIssueDate(e.target.value)}
-              className="field-input mt-1"
-            />
-          </label>
-        </div>
-
-        <label className="flex items-start gap-2 text-sm text-stone-600">
-          <input
-            type="checkbox"
-            checked={dbsOnUpdateService}
-            onChange={(e) => setDbsOnUpdateService(e.target.checked)}
-            className="mt-1"
-          />
-          Registered with the DBS Update Service
-        </label>
 
         <label className="flex items-start gap-2 rounded-lg border border-stone-200 bg-stone-50 px-3 py-3 text-sm text-stone-700">
           <input
@@ -310,7 +311,8 @@ export function ProviderVettingSection({ token, isApproved, status, onSubmitted,
         </fieldset>
 
         <p className="text-xs text-stone-500">
-          We store this securely for verification only. You may be asked to show original documents before approval.
+          We store this securely for verification only. Your ID photo and details are reviewed by our team before
+          approval.
         </p>
 
         {localMessage && (
