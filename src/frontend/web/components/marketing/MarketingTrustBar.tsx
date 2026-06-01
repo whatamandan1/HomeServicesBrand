@@ -9,7 +9,7 @@ const items = [
   {
     icon: CreditCard,
     title: "Secure checkout",
-    body: "Subscribe online with Stripe - clear pricing before you pay.",
+    body: "Subscribe online with Stripe - your personalised quote before you pay.",
   },
   {
     icon: MapPin,

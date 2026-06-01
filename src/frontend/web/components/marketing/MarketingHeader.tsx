@@ -3,14 +3,13 @@
 import { useCallback, useEffect, useState } from "react";
 import { createPortal } from "react-dom";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { Menu, X } from "lucide-react";
 import { Logo } from "@/components/marketing/Logo";
 import { PRIMARY_CTA_HREF, PRIMARY_CTA_LABEL } from "@/lib/marketing-cta";
 import { useBodyScrollLock } from "@/lib/use-body-scroll-lock";
 
 const links = [
-  { href: "/#pricing", label: "Pricing" },
   { href: "/#how-it-works", label: "How it works" },
   { href: "/about", label: "About us" },
   { href: "/providers", label: "For gardeners" },
@@ -26,15 +25,20 @@ function scrollToHash(hash: string) {
 function resolveMarketingHref(pathname: string, href: string) {
   if (!href.startsWith("/#")) return href;
   const id = href.slice(2);
-  if (pathname.startsWith("/areas/") && (id === "pricing" || id === "faq")) {
+  if (pathname.startsWith("/areas/") && id === "faq") {
     return `#${id}`;
   }
   return href;
 }
 
+function isPricingHash() {
+  return typeof window !== "undefined" && window.location.hash.toLowerCase() === "#pricing";
+}
+
 export function MarketingHeader() {
   const [open, setOpen] = useState(false);
   const pathname = usePathname();
+  const router = useRouter();
 
   const closeMenu = useCallback(() => setOpen(false), []);
 
@@ -45,8 +49,12 @@ export function MarketingHeader() {
   useEffect(() => {
     const onHashChange = () => {
       closeMenu();
+      if (isPricingHash()) {
+        router.replace(PRIMARY_CTA_HREF);
+        return;
+      }
       const hash = window.location.hash.toLowerCase();
-      if (hash === "#pricing" || hash === "#how-it-works" || hash === "#faq") {
+      if (hash === "#how-it-works" || hash === "#faq") {
         scrollToHash(hash);
       }
     };
@@ -54,7 +62,7 @@ export function MarketingHeader() {
     window.addEventListener("hashchange", onHashChange);
     onHashChange();
     return () => window.removeEventListener("hashchange", onHashChange);
-  }, [closeMenu]);
+  }, [closeMenu, router]);
 
   useBodyScrollLock(open);
 

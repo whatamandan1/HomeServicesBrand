@@ -4,7 +4,6 @@ import { notFound } from "next/navigation";
 import { AreaLandingHero } from "@/components/marketing/AreaLandingHero";
 import { FaqAccordion } from "@/components/marketing/FaqAccordion";
 import { JsonLd } from "@/components/marketing/JsonLd";
-import { MarketingPricingTeaser } from "@/components/marketing/MarketingPricingTeaser";
 import { MarketingTrustBar } from "@/components/marketing/MarketingTrustBar";
 import { Button, Section } from "@/components/marketing/ui";
 import {
@@ -53,7 +52,6 @@ export default async function AreaCityPage({ params }: PageProps) {
       <JsonLd data={[localServiceJsonLd(copy), faqPageJsonLd(faqs)]} />
       <AreaLandingHero copy={copy} />
       <MarketingTrustBar />
-      <MarketingPricingTeaser cityLabel={copy.hub.label} />
       <Section
         title="Why GardensSorted"
         subtitle={`Reliable garden maintenance for ${copy.hub.label} homeowners - without chasing quotes every season.`}
@@ -62,7 +60,7 @@ export default async function AreaCityPage({ params }: PageProps) {
         <ul className="mx-auto max-w-2xl list-disc space-y-2 pl-5 text-sm leading-relaxed text-stone-700">
           <li>10 scheduled visits per year - lawn, borders, and tidy each time</li>
           <li>Vetted local gardeners - manage visits in your online account</li>
-          <li>Clear monthly price by garden size before you subscribe</li>
+          <li>Personalised quote by garden size before you subscribe</li>
           <li>Secure online checkout and support when you need us</li>
         </ul>
         <div className="mt-8 flex justify-center">

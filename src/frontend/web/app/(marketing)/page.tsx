@@ -10,7 +10,6 @@ import { Button, Section } from "@/components/marketing/ui";
 import { FaqAccordion } from "@/components/marketing/FaqAccordion";
 import { HeroProductPreview } from "@/components/marketing/HeroProductPreview";
 import { JsonLd } from "@/components/marketing/JsonLd";
-import { MarketingPricingTeaser } from "@/components/marketing/MarketingPricingTeaser";
 import { MarketingTrustBar } from "@/components/marketing/MarketingTrustBar";
 import { ServicePillarsSection } from "@/components/marketing/ServicePillarsSection";
 import { SocialProofSection } from "@/components/marketing/SocialProofSection";
@@ -29,7 +28,7 @@ import { canonicalPath } from "@/lib/seo/site";
 export const metadata: Metadata = {
   title: "Garden maintenance Leeds & Yorkshire",
   description:
-    "Regular garden maintenance with 10 visits per year. Vetted local gardeners in Leeds, York, Wakefield and across Yorkshire. See pricing and get your quote online.",
+    "Regular garden maintenance with 10 visits per year. Vetted local gardeners in Leeds, York, Wakefield and across Yorkshire. Get your personalised quote online.",
   alternates: { canonical: canonicalPath("/") },
   openGraph: {
     title: "Garden maintenance Leeds & Yorkshire | GardensSorted",
@@ -59,7 +58,7 @@ const steps = [
 
 const included = [
   "10 visits per year - lawn, borders, and tidy on each visit",
-  "Priced by garden size, up to 150 m² maintained",
+  "Personalised quote by garden size (up to 150 m² maintained)",
   "Optional add-ons: hedges, seasonal tidy, patio refresh",
   "Online account to view and manage every visit",
 ];
@@ -79,7 +78,6 @@ export default function HomePage() {
       <HeroProductPreview />
 
       <MarketingTrustBar />
-      <MarketingPricingTeaser />
 
       <Section
         id="how-it-works"

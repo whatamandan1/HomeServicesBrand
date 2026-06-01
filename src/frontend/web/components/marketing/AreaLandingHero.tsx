@@ -21,8 +21,8 @@ export function AreaLandingHero({ copy }: AreaLandingHeroProps) {
         <p className="mt-3 max-w-2xl text-sm text-stone-600">{copy.localParagraph}</p>
         <div className="mt-8 flex flex-wrap gap-3">
           <Button href={PRIMARY_CTA_HREF}>{PRIMARY_CTA_LABEL}</Button>
-          <Button href="#pricing" variant="secondary" className="border-gardens-primary/25 bg-white/90 hover:bg-white">
-            See pricing
+          <Button href="/#how-it-works" variant="secondary" className="border-gardens-primary/25 bg-white/90 hover:bg-white">
+            How it works
           </Button>
         </div>
         <div className="relative mt-10 aspect-[21/9] max-h-72 overflow-hidden rounded-2xl border border-gardens-primary/20 shadow-soft">

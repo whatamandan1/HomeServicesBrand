@@ -66,11 +66,11 @@ export function HeroProductPreview() {
               {PRIMARY_CTA_LABEL}
             </Button>
             <Button
-              href="/#pricing"
+              href="/#how-it-works"
               variant="secondary"
               className="w-full border-gardens-primary/25 bg-white/90 sm:w-auto hover:bg-white"
             >
-              See pricing
+              How it works
             </Button>
           </div>
         </div>

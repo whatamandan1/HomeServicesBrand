@@ -24,7 +24,7 @@ Month 1 will be **loss-making on cash** - that is expected. See **§4** for unit
 |------|------|
 | **Total budget** | **£4,000** over 4 weeks |
 | **Spend rhythm** | **£2,000** weeks 1–2 → review → **£2,000** weeks 3–4 |
-| **Price in ads** | **No headline £** - pricing on site by garden size (£59.99–£99.99/mo); single **garden care** story |
+| **Price in ads** | **No headline £** - no public price grid; quote in signup wizard; single **garden care** story |
 | **Geography** | **One city first** (default: **Leeds** + tight radius) |
 | **Primary channel** | Google Search (local service + brand) |
 | **Secondary** | Meta retargeting; small Meta prospecting test |
@@ -201,7 +201,7 @@ Plug measured CAC, marketing, and garden-band mix into [`sorted_saas_forecast_ga
 **Google Search - do**
 
 - Campaigns: **Brand**, **Local service** (`garden maintenance leeds`, `lawn mowing leeds`, `gardener near me`)  
-- Landing: **`/areas/leeds`** for Leeds local keywords; **`/signup`** for high-intent; **`/`** for brand - not homepage alone without pricing  
+- Landing: **`/areas/leeds`** for Leeds local keywords; **`/signup`** for high-intent; **`/`** for brand  
 - Geo: Leeds + radius; exclude postcodes you cannot serve  
 - Always-on brand terms (cheap; protect name)
 
@@ -209,13 +209,13 @@ Plug measured CAC, marketing, and garden-band mix into [`sorted_saas_forecast_ga
 
 - Broad match national keywords  
 - Multiple cities in fortnight 1  
-- Send paid traffic to generic homepage with no pricing CTA
+- Send paid traffic to homepage without a clear CTA to **get your quote**  
 
 **Meta - do**
 
 - Retarget: site visitors, pricing viewers, signup abandoners (7–30 day window)  
 - Prospecting: homeowners 35–65, 5–10 mile radius, one creative test  
-- Creative: real gardens, **no headline £** (pricing on site), local trust (“Yorkshire”, vetted gardeners)
+- Creative: real gardens, **no headline £** (quote in signup), local trust (“Yorkshire”, vetted gardeners)
 
 **Meta - don’t**
 
@@ -243,7 +243,7 @@ All paid creative for month 1 leads with **one offer** — garden care, 10 visit
 
 > **Regular garden maintenance in Leeds** — lawn, borders, and tidy on a schedule. Vetted local gardeners. See plans and get your quote online.
 
-Do **not** put a single “from £X” in ad headlines (pricing is **£59.99 / £79.99 / £99.99** by band on site). Do **not** advertise legacy tiers (Essential £29.95 / Premium £54.95) in parallel — blurs conversion data.
+Do **not** put a single “from £X” in ad headlines. **Do not** show a public price grid on marketing pages — price is revealed in the signup quote after garden size and details. Do **not** advertise legacy tiers in parallel — blurs conversion data.
 
 ### 6.2 Ad copy (draft)
 
@@ -257,8 +257,8 @@ Do **not** put a single “from £X” in ad headlines (pricing is **£59.99 / �
 
 ### 6.3 Landing page priorities
 
-1. Price and visit frequency clear above the fold (`/#pricing` or `/areas/leeds#pricing`)  
-2. Postcode / availability messaging at signup  
+1. **Get your quote** CTA above the fold — no public price grid; price in signup wizard  
+2. Postcode / availability messaging at signup (before payment)  
 3. Trust: Stripe, vetted gardeners, “built for Yorkshire”  
 4. Mobile CTA to `/signup`  
 5. 3-month minimum term visible (reduce disputes)
@@ -456,7 +456,7 @@ Complete at end of week 4.
 | # | Decision | Choice | Status |
 |---|----------|--------|--------|
 | 1 | Pilot city | **Leeds** | Confirmed |
-| 2 | Price in ads | **No headline £** — pricing on site by garden band | Confirmed |
+| 2 | Price in ads | **No headline £** — quote in signup only (no marketing price section) | Confirmed |
 | 3 | Fortnight 1 budget | £2,000 | Open |
 | 4 | Fortnight 2 budget | £2,000 (conditional) | Open |
 | 5 | Analytics stack | **GA4** | Confirmed |
