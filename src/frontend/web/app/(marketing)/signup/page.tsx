@@ -42,6 +42,7 @@ import { useSignupLeadCapture } from "@/lib/use-signup-lead";
 import { AlertBanner, LoadingSpinner } from "@/components/ui/feedback";
 import { AvailabilityPicker } from "@/components/signup/AvailabilityPicker";
 import { SignupVisitFrequencyPicker } from "@/components/signup/SignupVisitFrequencyPicker";
+import { UkAddressLookup } from "@/components/signup/UkAddressLookup";
 import { SIGNUP_MOBILE_WIZARD_PADDING_CLASS } from "@/lib/mobile-chrome";
 
 const STEPS = ["Garden size", "Add-ons", "Your quote", "Finish signup"] as const;
@@ -652,19 +653,17 @@ export default function SignupPage() {
                 </p>
                 <Field label="First name" value={form.firstName} onChange={(v) => updateField("firstName", v)} required autoComplete="given-name" />
                 <Field label="Last name" value={form.lastName} onChange={(v) => updateField("lastName", v)} required autoComplete="family-name" />
-                <Field label="Address line 1" value={form.line1} onChange={(v) => updateField("line1", v)} required autoComplete="address-line1" />
-                <Field label="Address line 2 (optional)" value={form.line2} onChange={(v) => updateField("line2", v)} autoComplete="address-line2" />
-                <div className="grid gap-4 sm:grid-cols-2">
-                  <Field label="City" value={form.city} onChange={(v) => updateField("city", v)} required autoComplete="address-level2" />
-                  <Field
-                    label="Postcode"
-                    value={form.postcode}
-                    onChange={(v) => updateField("postcode", v)}
-                    onBlur={() => updateField("postcode", normalizeUkPostcode(form.postcode))}
-                    required
-                    autoComplete="postal-code"
-                  />
-                </div>
+                <UkAddressLookup
+                  value={{
+                    line1: form.line1,
+                    line2: form.line2,
+                    city: form.city,
+                    postcode: form.postcode,
+                  }}
+                  onChange={(addr) => {
+                    setForm((f) => ({ ...f, ...addr }));
+                  }}
+                />
                 <AvailabilityPicker value={form.availability} onChange={(v) => updateField("availability", v)} />
                 <Field
                   label="Create a password"

@@ -40,6 +40,20 @@ export async function clickSignupPrimary(page: Page, label: RegExp) {
   await footer.getByRole("button", { name: label }).click();
 }
 
+/** Uses manual fields when address search is enabled in the environment. */
+export async function fillSignupAddress(
+  page: Page,
+  address: { line1: string; city: string; postcode: string }
+) {
+  const manual = page.getByTestId("address-manual-toggle");
+  if (await manual.isVisible().catch(() => false)) {
+    await manual.click();
+  }
+  await page.getByTestId("address-line1").fill(address.line1);
+  await page.getByLabel("City").fill(address.city);
+  await page.getByLabel("Postcode").fill(address.postcode);
+}
+
 export async function advanceToStep(page: Page, targetStep: number) {
   if (targetStep >= 1) {
     await clickSignupPrimary(page, /^Continue$/);

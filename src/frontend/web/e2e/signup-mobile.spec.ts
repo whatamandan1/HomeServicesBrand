@@ -4,6 +4,7 @@ import {
   clickSignupPrimary,
   expectBodyNotPositionFixed,
   expectMobileSignupShell,
+  fillSignupAddress,
   scrollSignupContentToBottom,
 } from "./helpers/signup-mobile";
 
@@ -47,9 +48,11 @@ test.describe("Signup wizard mobile layout", () => {
 
     await page.getByLabel("First name").fill("Test");
     await page.getByLabel("Last name").fill("User");
-    await page.getByLabel("Address line 1").fill("1 Test Street");
-    await page.getByLabel("City").fill("Leeds");
-    await page.getByLabel("Postcode").fill("LS1 4AP");
+    await fillSignupAddress(page, {
+      line1: "1 Test Street",
+      city: "Leeds",
+      postcode: "LS1 4AP",
+    });
     await page.getByRole("button", { name: "Weekday mornings" }).click();
     await page.getByLabel("Create a password").fill("test-password-12");
 
