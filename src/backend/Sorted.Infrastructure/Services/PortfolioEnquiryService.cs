@@ -133,16 +133,14 @@ public class PortfolioEnquiryService(
 
     private void QueueNotificationEmails(string contactName, string email, string phone, int propertyCount)
     {
-        var opsEmail = _appOptions.OpsNotificationEmail;
         _ = Task.Run(async () =>
         {
             try
             {
                 using var scope = scopeFactory.CreateScope();
-                var mail = scope.ServiceProvider.GetRequiredService<IEmailService>();
-                await mail.SendPortfolioEnquiryAckAsync(email, contactName);
-                if (!string.IsNullOrWhiteSpace(opsEmail))
-                    await mail.SendPortfolioEnquiryAdminNotifyAsync(opsEmail, contactName, email, phone, propertyCount);
+                var comms = scope.ServiceProvider.GetRequiredService<ICommunicationService>();
+                await comms.NotifyPortfolioEnquiryAckAsync(email, contactName);
+                await comms.NotifyPortfolioEnquiryOpsAsync(contactName, email, phone, propertyCount);
             }
             catch
             {

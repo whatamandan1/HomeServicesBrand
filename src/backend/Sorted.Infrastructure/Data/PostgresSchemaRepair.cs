@@ -277,6 +277,25 @@ internal static class PostgresSchemaRepair
         ALTER TABLE "CustomerSubscriptions" ADD COLUMN IF NOT EXISTS "SelectedSignupAddonsJson" TEXT NULL;
         """;
 
+    private const string CommunicationTrackingSql = """
+        ALTER TABLE "SignupLeads" ADD COLUMN IF NOT EXISTS "AbandonEmail1SentAtUtc" timestamp with time zone NULL;
+        ALTER TABLE "SignupLeads" ADD COLUMN IF NOT EXISTS "AbandonEmail2SentAtUtc" timestamp with time zone NULL;
+        ALTER TABLE "SignupLeads" ADD COLUMN IF NOT EXISTS "AbandonEmail3SentAtUtc" timestamp with time zone NULL;
+        ALTER TABLE "SignupLeads" ADD COLUMN IF NOT EXISTS "AbandonSmsSentAtUtc" timestamp with time zone NULL;
+        ALTER TABLE "CustomerSubscriptions" ADD COLUMN IF NOT EXISTS "CheckoutAbandonEmailSentAtUtc" timestamp with time zone NULL;
+        ALTER TABLE "CustomerSubscriptions" ADD COLUMN IF NOT EXISTS "VisitScheduleEmailSentAtUtc" timestamp with time zone NULL;
+        ALTER TABLE "CustomerSubscriptions" ADD COLUMN IF NOT EXISTS "AnnualNudgeSentAtUtc" timestamp with time zone NULL;
+        ALTER TABLE "CustomerSubscriptions" ADD COLUMN IF NOT EXISTS "WinbackEmailSentAtUtc" timestamp with time zone NULL;
+        ALTER TABLE "CustomerSubscriptions" ADD COLUMN IF NOT EXISTS "PaymentFailedNotifiedAtUtc" timestamp with time zone NULL;
+        ALTER TABLE "JobVisits" ADD COLUMN IF NOT EXISTS "CompletionNotifiedAtUtc" timestamp with time zone NULL;
+        ALTER TABLE "JobVisits" ADD COLUMN IF NOT EXISTS "ReviewAskSentAtUtc" timestamp with time zone NULL;
+        ALTER TABLE "JobVisits" ADD COLUMN IF NOT EXISTS "UnclaimedOpsAlertSentAtUtc" timestamp with time zone NULL;
+        ALTER TABLE "JobVisits" ADD COLUMN IF NOT EXISTS "DispatchNotifiedAtUtc" timestamp with time zone NULL;
+        ALTER TABLE "JobVisits" ADD COLUMN IF NOT EXISTS "ProviderReminderSentAtUtc" timestamp with time zone NULL;
+        ALTER TABLE "Escalations" ADD COLUMN IF NOT EXISTS "AckSentAtUtc" timestamp with time zone NULL;
+        ALTER TABLE "Escalations" ADD COLUMN IF NOT EXISTS "ResolvedEmailSentAtUtc" timestamp with time zone NULL;
+        """;
+
     public static async Task ApplyAsync(SortedDbContext db, ILogger logger, CancellationToken ct = default)
     {
         if (!(db.Database.ProviderName ?? "").Contains("Npgsql", StringComparison.OrdinalIgnoreCase))
@@ -295,6 +314,7 @@ internal static class PostgresSchemaRepair
             await db.Database.ExecuteSqlRawAsync(ProviderVettingSql, ct);
             await db.Database.ExecuteSqlRawAsync(ProviderAddonEquipmentSql, ct);
             await db.Database.ExecuteSqlRawAsync(SubscriptionSignupAddonsSql, ct);
+            await db.Database.ExecuteSqlRawAsync(CommunicationTrackingSql, ct);
             logger.LogInformation("PostgreSQL schema repair completed");
         }
         catch (Exception ex)

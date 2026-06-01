@@ -14,8 +14,7 @@ namespace Sorted.Infrastructure.Services;
 public class VisitSchedulingService(
     SortedDbContext db,
     IWorkflowLogger workflow,
-    IEmailService email,
-    ISmsService sms,
+    ICommunicationService communications,
     IProviderCoverageService coverage,
     IProviderAvailabilityService availability,
     IOptions<BackgroundJobsOptions> jobOptions,
@@ -130,6 +129,12 @@ public class VisitSchedulingService(
                 ExpiresAtUtc = now.AddDays(expiryDays)
             });
             opened++;
+
+            if (visit.DispatchNotifiedAtUtc is null)
+            {
+                await NotifyProvidersOfDispatchAsync(visit, ct);
+                visit.DispatchNotifiedAtUtc = now;
+            }
         }
 
         await db.SaveChangesAsync(ct);
@@ -218,9 +223,8 @@ public class VisitSchedulingService(
             var postcode = visit.Property.Postcode;
             var window = visit.AvailabilityWindow;
 
-            await email.SendVisitReminderEmailAsync(customer.Email, visit.ScheduledDate, postcode, window, ct);
-            if (!string.IsNullOrWhiteSpace(customer.Phone))
-                await sms.SendVisitReminderSmsAsync(customer.Phone, visit.ScheduledDate, postcode, ct);
+            await communications.NotifyVisitReminderAsync(
+                customer.Email, customer.Phone, customer.FirstName, visit.ScheduledDate, postcode, window, ct);
 
             visit.ReminderSentAtUtc = now;
             visit.UpdatedAtUtc = now;
@@ -271,6 +275,51 @@ public class VisitSchedulingService(
             sub.Id,
             new { count, startDate = startDate.ToString("yyyy-MM-dd"), autoAssigned },
             ct);
+
+        if (sub.VisitScheduleEmailSentAtUtc is null)
+        {
+            var user = sub.Customer.User;
+            await communications.NotifyVisitScheduledAsync(
+                user.Email,
+                user.FirstName,
+                created.Select(v => v.ScheduledDate).ToList(),
+                ct);
+            sub.VisitScheduleEmailSentAtUtc = DateTime.UtcNow;
+            await db.SaveChangesAsync(ct);
+        }
+    }
+
+    private async Task NotifyProvidersOfDispatchAsync(JobVisit visit, CancellationToken ct)
+    {
+        var property = await db.CustomerProperties
+            .AsNoTracking()
+            .FirstOrDefaultAsync(p => p.Id == visit.CustomerPropertyId, ct);
+        if (property is null) return;
+
+        var outcode = PostcodeFormat.Outcode(property.Postcode);
+        var providerIds = await db.ProviderTerritories
+            .Where(t => t.PostcodeSector == outcode && !t.IsDeleted)
+            .Select(t => t.ProviderId)
+            .Distinct()
+            .ToListAsync(ct);
+
+        if (providerIds.Count == 0) return;
+
+        var providers = await db.Providers
+            .Include(p => p.User)
+            .Where(p => providerIds.Contains(p.Id) && p.IsApproved && !p.IsDeleted)
+            .ToListAsync(ct);
+
+        foreach (var provider in providers)
+        {
+            await communications.NotifyProviderDispatchAsync(
+                provider.User.Email,
+                provider.User.Phone,
+                visit.ScheduledDate,
+                outcode,
+                visit.AvailabilityWindow,
+                ct);
+        }
     }
 
     private async Task<bool> TryAutoAssignPreferredProviderAsync(JobVisit visit, CancellationToken ct)
@@ -363,6 +412,7 @@ public class VisitSchedulingService(
     private async Task<CustomerSubscription?> LoadSubscriptionAsync(Guid subscriptionId, CancellationToken ct)
         => await db.CustomerSubscriptions
             .Include(s => s.Plan)
+            .Include(s => s.Customer).ThenInclude(c => c.User)
             .Include(s => s.Customer).ThenInclude(c => c.Properties)
             .FirstOrDefaultAsync(s => s.Id == subscriptionId && !s.IsDeleted, ct);
 

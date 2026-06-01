@@ -73,5 +73,8 @@ public class OperationalBackgroundService(
         await scheduling.OpenUpcomingVisitsForDispatchAsync(opts.DispatchOpenWithinDays, ct);
         await scheduling.ExpireStaleDispatchOffersAsync(opts.DispatchOfferExpiryDays, ct);
         await scheduling.SendDueVisitRemindersAsync(opts.ReminderLeadHours, ct);
+
+        var scheduledComms = scope.ServiceProvider.GetRequiredService<IScheduledCommunicationService>();
+        await scheduledComms.RunScheduledNotificationsAsync(ct);
     }
 }

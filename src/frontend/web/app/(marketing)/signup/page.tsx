@@ -84,6 +84,7 @@ export default function SignupPage() {
     firstName: "",
     lastName: "",
     email: "",
+    phone: "",
     password: "",
     line1: "",
     line2: "",
@@ -91,6 +92,7 @@ export default function SignupPage() {
     postcode: "",
     gardenSize: "Small" as GardenSize,
     availability: "",
+    marketingOptIn: false,
   });
   const [pendingPhotos, setPendingPhotos] = useState<File[]>([]);
   const [photoBusy, setPhotoBusy] = useState(false);
@@ -201,6 +203,8 @@ export default function SignupPage() {
       firstName: form.firstName,
       lastName: form.lastName,
       email: form.email,
+      phone: form.phone,
+      marketingOptIn: form.marketingOptIn,
       lastStep: step,
       selectedPlanName: selectedPlan?.name,
       gardenSize: form.gardenSize,
@@ -312,7 +316,7 @@ export default function SignupPage() {
         lastName: form.lastName.trim(),
         email: form.email.trim(),
         password: form.password,
-        phone: "",
+        phone: form.phone.trim(),
         line1: form.line1.trim(),
         line2: form.line2.trim() || null,
         city: form.city.trim(),
@@ -668,6 +672,14 @@ export default function SignupPage() {
                 </p>
                 <Field label="First name" value={form.firstName} onChange={(v) => updateField("firstName", v)} required autoComplete="given-name" />
                 <Field label="Last name" value={form.lastName} onChange={(v) => updateField("lastName", v)} required autoComplete="family-name" />
+                <Field
+                  label="Mobile number"
+                  type="tel"
+                  value={form.phone}
+                  onChange={(v) => updateField("phone", v)}
+                  autoComplete="tel"
+                  hint="For visit reminders and updates (optional)"
+                />
                 <UkAddressLookup
                   value={{
                     line1: form.line1,
@@ -680,6 +692,15 @@ export default function SignupPage() {
                   }}
                 />
                 <AvailabilityPicker value={form.availability} onChange={(v) => updateField("availability", v)} />
+                <label className="flex cursor-pointer items-start gap-3 rounded-xl border border-stone-200 bg-stone-50 px-3 py-3 text-sm text-stone-700">
+                  <input
+                    type="checkbox"
+                    checked={form.marketingOptIn}
+                    onChange={(e) => setForm((f) => ({ ...f, marketingOptIn: e.target.checked }))}
+                    className="mt-0.5 h-4 w-4 rounded border-stone-300 text-gardens-primary focus:ring-gardens-primary"
+                  />
+                  <span>Send me occasional tips and offers by email (optional)</span>
+                </label>
                 <Field
                   label="Create a password"
                   type="password"

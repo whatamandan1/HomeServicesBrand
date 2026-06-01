@@ -19,8 +19,7 @@ public class StripePaymentService(
     SortedDbContext db,
     IOptions<StripeOptions> stripeOptions,
     IOptions<PlanPricingOptions> planPricingOptions,
-    IEmailService email,
-    ISmsService sms,
+    ICommunicationService communications,
     IVisitSchedulingService scheduling,
     IWorkflowLogger workflow,
     IHostEnvironment environment,
@@ -228,6 +227,7 @@ public class StripePaymentService(
                 $"Subscription will end on {subscription.CancelsAtUtc:dddd d MMMM yyyy}."
                 + (subscription.Status == SubscriptionStatus.Cancelled ? " It is now cancelled." : "");
 
+            await NotifyCancellationAsync(subscription, ct);
             return new CancelSubscriptionResponse(subscription.CancelsAtUtc.Value, localMessage);
         }
 
@@ -267,6 +267,7 @@ public class StripePaymentService(
             ? $"Your subscription will end on {subscription.CancelsAtUtc:dddd d MMMM yyyy} when your minimum term finishes."
             : $"Your subscription will end on {subscription.CancelsAtUtc:dddd d MMMM yyyy} at the end of the current billing period.";
 
+        await NotifyCancellationAsync(subscription, ct);
         return new CancelSubscriptionResponse(subscription.CancelsAtUtc!.Value, message);
     }
 
@@ -295,11 +296,13 @@ public class StripePaymentService(
         if (string.IsNullOrWhiteSpace(subscription.StripeSubscriptionId))
         {
             await ApplyPlanChangeAsync(subscription, annualPlan, "switched_to_annual", ct);
+            await NotifyAnnualSwitchAsync(subscription, annualPlan.Name, subscription.EndsAtUtc!.Value, ct);
             return BuildSwitchToAnnualResponse(annualPlan, subscription.EndsAtUtc!.Value, proratedCharge: false);
         }
 
         await UpdateStripeSubscriptionPlanAsync(subscription, annualPlan, ct);
         await ApplyPlanChangeAsync(subscription, annualPlan, "switched_to_annual", ct);
+        await NotifyAnnualSwitchAsync(subscription, annualPlan.Name, subscription.EndsAtUtc!.Value, ct);
         return BuildSwitchToAnnualResponse(annualPlan, subscription.EndsAtUtc!.Value, proratedCharge: true);
     }
 
@@ -328,11 +331,13 @@ public class StripePaymentService(
         if (string.IsNullOrWhiteSpace(subscription.StripeSubscriptionId))
         {
             await ApplyPlanChangeAsync(subscription, targetPlan, "upgraded_to_premium", ct);
+            await NotifyUpgradeAsync(subscription, targetPlan.Name, ct);
             return BuildUpgradeResponse(targetPlan, subscription.EndsAtUtc!.Value, proratedCharge: false);
         }
 
         await UpdateStripeSubscriptionPlanAsync(subscription, targetPlan, ct);
         await ApplyPlanChangeAsync(subscription, targetPlan, "upgraded_to_premium", ct);
+        await NotifyUpgradeAsync(subscription, targetPlan.Name, ct);
         return BuildUpgradeResponse(targetPlan, subscription.EndsAtUtc!.Value, proratedCharge: true);
     }
 
@@ -548,7 +553,13 @@ public class StripePaymentService(
             ct);
 
         if (isRenewal)
+        {
             logger.LogInformation("Recorded renewal payment for subscription {SubscriptionId}", subscription.Id);
+            var user = subscription.Customer.User;
+            var periodEnd = subscription.EndsAtUtc ?? DateTime.UtcNow.AddMonths(1);
+            await communications.NotifyRenewalAsync(
+                user.Email, user.FirstName, amountGbp, subscription.Plan.Name, periodEnd, ct);
+        }
     }
 
     private async Task HandleInvoicePaymentFailedAsync(Event stripeEvent, CancellationToken ct)
@@ -560,6 +571,7 @@ public class StripePaymentService(
             return;
 
         var subscription = await db.CustomerSubscriptions
+            .Include(s => s.Customer).ThenInclude(c => c.User)
             .FirstOrDefaultAsync(s => s.StripeSubscriptionId == invoice.SubscriptionId, ct);
 
         if (subscription is null)
@@ -578,6 +590,19 @@ public class StripePaymentService(
 
         logger.LogWarning("Subscription {SubscriptionId} marked PastDue after failed invoice {InvoiceId}",
             subscription.Id, invoice.Id);
+
+        if (subscription.PaymentFailedNotifiedAtUtc is null)
+        {
+            var user = subscription.Customer.User;
+            await communications.NotifyPaymentFailedAsync(user.Email, user.Phone, user.FirstName, ct);
+            await communications.NotifyOpsPaymentFailedAsync(user.Email, subscription.Id, ct);
+            subscription.PaymentFailedNotifiedAtUtc = DateTime.UtcNow;
+            await db.SaveChangesAsync(ct);
+        }
+        else
+        {
+            await communications.NotifyPaymentRetryAsync(subscription.Customer.User.Email, subscription.Customer.User.FirstName, ct);
+        }
     }
 
     private async Task HandleSubscriptionUpdatedAsync(Event stripeEvent, CancellationToken ct)
@@ -661,10 +686,41 @@ public class StripePaymentService(
         await workflow.LogAsync("billing", "payment_succeeded", nameof(CustomerSubscription), subscription.Id, null, ct);
         await scheduling.GenerateVisitsForSubscriptionAsync(subscription.Id, ct: ct);
         await scheduling.OpenVisitsForDispatchAsync(ct);
-        await email.SendSubscriptionConfirmedEmailAsync(subscription.Customer.User.Email, subscription.Plan.Name, ct);
 
-        if (!string.IsNullOrWhiteSpace(subscription.Customer.User.Phone))
-            await sms.SendSubscriptionConfirmedSmsAsync(subscription.Customer.User.Phone, subscription.Plan.Name, ct);
+        var user = subscription.Customer.User;
+        await communications.NotifySubscriptionConfirmedAsync(
+            user.Email,
+            user.Phone,
+            user.FirstName,
+            subscription.Plan.Name,
+            subscription.AvailabilityPreference,
+            ct);
+    }
+
+    private async Task NotifyCancellationAsync(CustomerSubscription subscription, CancellationToken ct)
+    {
+        subscription = await LoadSubscriptionAsync(subscription.Id, ct) ?? subscription;
+        if (subscription.CancelsAtUtc is not { } cancelsAt)
+            return;
+
+        var user = subscription.Customer.User;
+        await communications.NotifyCancellationConfirmedAsync(
+            user.Email, user.Phone, user.FirstName, cancelsAt, ct);
+    }
+
+    private async Task NotifyUpgradeAsync(CustomerSubscription subscription, string planName, CancellationToken ct)
+    {
+        subscription = await LoadSubscriptionAsync(subscription.Id, ct) ?? subscription;
+        var user = subscription.Customer.User;
+        await communications.NotifyUpgradeConfirmedAsync(user.Email, user.FirstName, planName, ct);
+    }
+
+    private async Task NotifyAnnualSwitchAsync(
+        CustomerSubscription subscription, string planName, DateTime renewalDate, CancellationToken ct)
+    {
+        subscription = await LoadSubscriptionAsync(subscription.Id, ct) ?? subscription;
+        var user = subscription.Customer.User;
+        await communications.NotifyAnnualSwitchConfirmedAsync(user.Email, user.FirstName, planName, renewalDate, ct);
     }
 
     private async Task<CustomerSubscription?> LoadSubscriptionAsync(Guid subId, CancellationToken ct)

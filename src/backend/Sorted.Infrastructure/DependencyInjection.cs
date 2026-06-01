@@ -27,6 +27,7 @@ public static class DependencyInjection
             .PostConfigure(options => ProductionUrlConfiguration.ApplyAppUrls(options, configuration));
         services.Configure<BackgroundJobsOptions>(configuration.GetSection(BackgroundJobsOptions.Section));
         services.Configure<ProviderPayoutOptions>(configuration.GetSection(ProviderPayoutOptions.Section));
+        services.Configure<CommunicationsOptions>(configuration.GetSection(CommunicationsOptions.Section));
 
         var connectionString = DatabaseConfiguration.ResolveConnectionString(configuration);
         services.AddDbContext<SortedDbContext>(options =>
@@ -44,6 +45,8 @@ public static class DependencyInjection
         services.AddScoped<IStripePaymentService, StripePaymentService>();
         services.AddScoped<IEmailService, SendGridEmailService>();
         services.AddScoped<ISmsService, TwilioSmsService>();
+        services.AddScoped<ICommunicationService, CommunicationService>();
+        services.AddScoped<IScheduledCommunicationService, ScheduledCommunicationService>();
         services.AddScoped<IAiSupportService, OpenAiSupportService>();
         services.AddScoped<IVisitSchedulingService, VisitSchedulingService>();
         services.AddScoped<IVisitManagementService, VisitManagementService>();

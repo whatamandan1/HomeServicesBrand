@@ -13,7 +13,8 @@ namespace Sorted.Infrastructure.Services;
 public class ProviderEarningsService(
     SortedDbContext db,
     IOptions<ProviderPayoutOptions> payoutOptions,
-    IWorkflowLogger workflow) : IProviderEarningsService
+    IWorkflowLogger workflow,
+    ICommunicationService communications) : IProviderEarningsService
 {
     private readonly ProviderPayoutOptions _payoutOptions = payoutOptions.Value;
 
@@ -85,6 +86,7 @@ public class ProviderEarningsService(
     {
         var earning = await db.ProviderEarnings
             .Include(e => e.JobVisit).ThenInclude(v => v.Property)
+            .Include(e => e.Provider).ThenInclude(p => p.User)
             .FirstOrDefaultAsync(e => e.Id == earningId && !e.IsDeleted, ct)
             ?? throw new InvalidOperationException("Earning not found.");
 
@@ -103,6 +105,15 @@ public class ProviderEarningsService(
             nameof(ProviderEarning),
             earning.Id,
             new { earning.ProviderId, earning.AmountGbp },
+            ct);
+
+        var providerUser = earning.Provider.User;
+        await communications.NotifyProviderPayoutAsync(
+            providerUser.Email,
+            providerUser.FirstName,
+            earning.AmountGbp,
+            earning.JobVisit.ScheduledDate,
+            earning.PayoutNotes,
             ct);
 
         return MapResponse(earning);

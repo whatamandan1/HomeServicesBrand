@@ -95,6 +95,11 @@ public class CustomerSubscription : AuditableEntity
     public string? SelectedSignupAddonsJson { get; set; }
     public Guid? PreferredProviderId { get; set; }
     public Provider? PreferredProvider { get; set; }
+    public DateTime? CheckoutAbandonEmailSentAtUtc { get; set; }
+    public DateTime? VisitScheduleEmailSentAtUtc { get; set; }
+    public DateTime? AnnualNudgeSentAtUtc { get; set; }
+    public DateTime? WinbackEmailSentAtUtc { get; set; }
+    public DateTime? PaymentFailedNotifiedAtUtc { get; set; }
 }
 
 public class PasswordResetToken : AuditableEntity
@@ -178,6 +183,11 @@ public class JobVisit : AuditableEntity
     public Provider? AssignedProvider { get; set; }
     public DateTime? ClaimedAtUtc { get; set; }
     public DateTime? ReminderSentAtUtc { get; set; }
+    public DateTime? CompletionNotifiedAtUtc { get; set; }
+    public DateTime? ReviewAskSentAtUtc { get; set; }
+    public DateTime? UnclaimedOpsAlertSentAtUtc { get; set; }
+    public DateTime? DispatchNotifiedAtUtc { get; set; }
+    public DateTime? ProviderReminderSentAtUtc { get; set; }
 }
 
 public class DispatchOffer : AuditableEntity
@@ -254,6 +264,8 @@ public class Escalation : AuditableEntity
     public string Reason { get; set; } = string.Empty;
     public EscalationStatus Status { get; set; } = EscalationStatus.Open;
     public string? Notes { get; set; }
+    public DateTime? AckSentAtUtc { get; set; }
+    public DateTime? ResolvedEmailSentAtUtc { get; set; }
 }
 
 public class PortfolioEnquiry : AuditableEntity
@@ -297,6 +309,10 @@ public class SignupLead : AuditableEntity
     public string? SessionId { get; set; }
     public SignupLeadStatus Status { get; set; } = SignupLeadStatus.Active;
     public DateTime? ConvertedAtUtc { get; set; }
+    public DateTime? AbandonEmail1SentAtUtc { get; set; }
+    public DateTime? AbandonEmail2SentAtUtc { get; set; }
+    public DateTime? AbandonEmail3SentAtUtc { get; set; }
+    public DateTime? AbandonSmsSentAtUtc { get; set; }
 }
 
 public class MultiPropertyAccount : AuditableEntity

@@ -7,6 +7,8 @@ export type SignupLeadSnapshot = {
   firstName: string;
   lastName: string;
   email: string;
+  phone?: string;
+  marketingOptIn?: boolean;
   lastStep: number;
   selectedPlanName?: string;
   gardenSize?: GardenSize;
@@ -24,10 +26,10 @@ function canCapture(snapshot: SignupLeadSnapshot): boolean {
 function buildPayload(snapshot: SignupLeadSnapshot) {
   return {
     email: snapshot.email.trim(),
-    phone: "",
+    phone: snapshot.phone?.trim() ?? "",
     firstName: snapshot.firstName.trim(),
     lastName: snapshot.lastName.trim() || null,
-    marketingOptIn: false,
+    marketingOptIn: snapshot.marketingOptIn ?? false,
     lastStep: snapshot.lastStep,
     selectedPlanName: snapshot.selectedPlanName ?? null,
     gardenSize: snapshot.gardenSize ?? null,

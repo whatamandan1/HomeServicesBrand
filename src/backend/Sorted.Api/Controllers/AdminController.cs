@@ -27,7 +27,8 @@ public class AdminController(
     IProviderAvailabilityService availability,
     IProviderEarningsService earnings,
     IPortfolioEnquiryService portfolioEnquiries,
-    ISignupLeadService signupLeads) : ControllerBase
+    ISignupLeadService signupLeads,
+    ICommunicationService communications) : ControllerBase
 {
     [HttpGet("dashboard")]
     public async Task<ActionResult<AdminDashboardResponse>> Dashboard([FromQuery] int days = 30, CancellationToken ct = default)
@@ -397,6 +398,12 @@ public class AdminController(
         provider.IsApproved = true;
         provider.UpdatedAtUtc = DateTime.UtcNow;
         await db.SaveChangesAsync(ct);
+
+        var providerUser = await db.Users.AsNoTracking()
+            .FirstOrDefaultAsync(u => u.Id == provider.UserId, ct);
+        if (providerUser is not null)
+            await communications.NotifyProviderApprovedAsync(providerUser.Email, providerUser.FirstName, ct);
+
         return NoContent();
     }
 
@@ -668,6 +675,18 @@ public class AdminController(
         escalation.UpdatedAtUtc = DateTime.UtcNow;
         await db.SaveChangesAsync(ct);
         await workflow.LogAsync("support", "escalation_resolved", nameof(Escalation), escalation.Id, null, ct);
+
+        if (escalation.ResolvedEmailSentAtUtc is null
+            && escalation.Customer?.User is { } customer)
+        {
+            var resolution = string.IsNullOrWhiteSpace(escalation.Notes)
+                ? "Your request has been handled by our team."
+                : escalation.Notes;
+            await communications.NotifyEscalationResolvedAsync(
+                customer.Email, customer.FirstName, resolution, ct);
+            escalation.ResolvedEmailSentAtUtc = DateTime.UtcNow;
+            await db.SaveChangesAsync(ct);
+        }
 
         return Ok(ToEscalationResponse(escalation));
     }

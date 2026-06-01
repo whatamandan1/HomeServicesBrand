@@ -18,8 +18,7 @@ namespace Sorted.Api.Controllers;
 [Authorize(Roles = nameof(UserRole.Provider))]
 public class ProviderController(
     SortedDbContext db,
-    IEmailService email,
-    ISmsService sms,
+    ICommunicationService communications,
     IWorkflowLogger workflow,
     IProviderCoverageService coverage,
     IProviderAvailabilityService availability,
@@ -300,21 +299,14 @@ public class ProviderController(
         await db.SaveChangesAsync(ct);
 
         var customer = visit.Subscription.Customer.User;
-        await email.SendVisitClaimedEmailAsync(
+        await communications.NotifyVisitClaimedAsync(
             customer.Email,
+            customer.Phone,
+            customer.FirstName,
             visit.ScheduledDate,
             visit.Property.Postcode,
             visit.AvailabilityWindow,
             ct);
-
-        if (!string.IsNullOrWhiteSpace(customer.Phone))
-        {
-            await sms.SendVisitClaimedSmsAsync(
-                customer.Phone,
-                visit.ScheduledDate,
-                visit.Property.Postcode,
-                ct);
-        }
 
         return Ok(JobVisitResponseMapper.FromEntity(visit, provider.User.FirstName + " " + provider.User.LastName));
     }
@@ -376,6 +368,28 @@ public class ProviderController(
         {
             await earnings.AccrueForCompletedVisitAsync(visit.Id, provider.Id, ct);
             await scheduling.AssignPreferredProviderToPendingVisitsAsync(visit.CustomerSubscriptionId, ct);
+
+            visit = await db.JobVisits
+                .Include(v => v.Property)
+                .Include(v => v.Subscription).ThenInclude(s => s.Customer).ThenInclude(c => c.User)
+                .FirstAsync(v => v.Id == visitId, ct);
+
+            var nextVisit = await db.JobVisits
+                .Where(v =>
+                    v.CustomerSubscriptionId == visit.CustomerSubscriptionId
+                    && !v.IsDeleted
+                    && v.ScheduledDate > visit.ScheduledDate
+                    && v.Status != VisitStatus.Cancelled
+                    && v.Status != VisitStatus.Completed)
+                .OrderBy(v => v.ScheduledDate)
+                .Select(v => (DateTime?)v.ScheduledDate)
+                .FirstOrDefaultAsync(ct);
+
+            var user = visit.Subscription.Customer.User;
+            await communications.NotifyVisitCompletedAsync(
+                user.Email, user.Phone, user.FirstName, visit.Property.Postcode, nextVisit, ct);
+            visit.CompletionNotifiedAtUtc = DateTime.UtcNow;
+            await db.SaveChangesAsync(ct);
         }
 
         return Ok(JobVisitResponseMapper.FromEntity(visit, provider.User.FirstName + " " + provider.User.LastName));

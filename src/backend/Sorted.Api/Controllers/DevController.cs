@@ -17,8 +17,8 @@ namespace Sorted.Api.Controllers;
 public class DevController(
     SortedDbContext db,
     IVisitSchedulingService scheduling,
-    IEmailService email,
-    ISmsService sms,
+    IScheduledCommunicationService scheduledComms,
+    ICommunicationService communications,
     IHostEnvironment env,
     IOptions<SendGridOptions> sendGrid,
     IOptions<TwilioOptions> twilio) : ControllerBase
@@ -58,20 +58,18 @@ public class DevController(
         const string postcode = "LS1 4AP";
         const string window = "Morning (8am–12pm)";
 
-        await email.SendWelcomeEmailAsync(request.Email, request.FirstName, ct);
-        await email.SendSubscriptionConfirmedEmailAsync(request.Email, "Essential Monthly", ct);
-        await email.SendVisitClaimedEmailAsync(request.Email, visitDate, postcode, window, ct);
-        await email.SendVisitReminderEmailAsync(request.Email, visitDate, postcode, window, ct);
+        await communications.NotifyWelcomeAsync(request.Email, request.Phone, request.FirstName, ct);
+        await communications.NotifySubscriptionConfirmedAsync(
+            request.Email, request.Phone, request.FirstName, "Essential Monthly", window, ct);
+        await communications.NotifyVisitClaimedAsync(
+            request.Email, request.Phone, request.FirstName, visitDate, postcode, window, ct);
+        await communications.NotifyVisitReminderAsync(
+            request.Email, request.Phone, request.FirstName, visitDate, postcode, window, ct);
+        await communications.NotifyVisitCompletedAsync(
+            request.Email, request.Phone, request.FirstName, postcode, visitDate.AddDays(14), ct);
+        await communications.NotifyReviewAskAsync(request.Email, request.Phone, request.FirstName, ct);
 
-        var smsSent = false;
-        if (!string.IsNullOrWhiteSpace(request.Phone))
-        {
-            await sms.SendWelcomeSmsAsync(request.Phone, request.FirstName, ct);
-            await sms.SendSubscriptionConfirmedSmsAsync(request.Phone, "Essential Monthly", ct);
-            await sms.SendVisitClaimedSmsAsync(request.Phone, visitDate, postcode, ct);
-            await sms.SendVisitReminderSmsAsync(request.Phone, visitDate, postcode, ct);
-            smsSent = true;
-        }
+        var smsSent = !string.IsNullOrWhiteSpace(request.Phone);
 
         return Ok(new
         {
@@ -102,9 +100,9 @@ public class DevController(
         await scheduling.GenerateVisitsForSubscriptionAsync(subscriptionId, ct: ct);
         await scheduling.OpenVisitsForDispatchAsync(ct);
 
-        await email.SendSubscriptionConfirmedEmailAsync(sub.Customer.User.Email, sub.Plan.Name, ct);
-        if (!string.IsNullOrWhiteSpace(sub.Customer.User.Phone))
-            await sms.SendSubscriptionConfirmedSmsAsync(sub.Customer.User.Phone, sub.Plan.Name, ct);
+        var user = sub.Customer.User;
+        await communications.NotifySubscriptionConfirmedAsync(
+            user.Email, user.Phone, user.FirstName, sub.Plan.Name, sub.AvailabilityPreference, ct);
 
         return Ok(new { message = "Subscription activated (dev bypass)." });
     }
@@ -120,6 +118,7 @@ public class DevController(
         await scheduling.OpenUpcomingVisitsForDispatchAsync(ct: ct);
         await scheduling.ExpireStaleDispatchOffersAsync(ct: ct);
         await scheduling.SendDueVisitRemindersAsync(ct: ct);
+        await scheduledComms.RunScheduledNotificationsAsync(ct);
         return Ok(new { message = "Background jobs completed." });
     }
 

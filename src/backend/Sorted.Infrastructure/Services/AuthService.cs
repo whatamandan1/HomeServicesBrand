@@ -19,8 +19,7 @@ public class AuthService(
     SortedDbContext db,
     JwtTokenService jwt,
     IWorkflowLogger workflow,
-    IEmailService email,
-    ISmsService sms,
+    ICommunicationService communications,
     IPostcodeGeocodingService geocoding,
     IProviderCoverageService coverage,
     ISignupLeadService signupLeads,
@@ -107,9 +106,9 @@ public class AuthService(
         {
             try
             {
-                await email.SendWelcomeEmailAsync(welcomeEmail, welcomeFirstName, CancellationToken.None);
-                if (!string.IsNullOrWhiteSpace(welcomePhone))
-                    await sms.SendWelcomeSmsAsync(welcomePhone, welcomeFirstName, CancellationToken.None);
+                using var scope = scopeFactory.CreateScope();
+                var comms = scope.ServiceProvider.GetRequiredService<ICommunicationService>();
+                await comms.NotifyWelcomeAsync(welcomeEmail, welcomePhone, welcomeFirstName, CancellationToken.None);
             }
             catch
             {
@@ -166,6 +165,26 @@ public class AuthService(
             provider.Id,
             new { user.Email, geo.Postcode, radius },
             ct);
+
+        var providerEmail = user.Email;
+        var providerFirstName = user.FirstName;
+        var providerPhone = user.Phone;
+        var providerLastName = user.LastName;
+        _ = Task.Run(async () =>
+        {
+            try
+            {
+                using var scope = scopeFactory.CreateScope();
+                var comms = scope.ServiceProvider.GetRequiredService<ICommunicationService>();
+                await comms.NotifyProviderApplyAckAsync(providerEmail, providerFirstName, CancellationToken.None);
+                await comms.NotifyOpsProviderApplyAsync(
+                    $"{providerFirstName} {providerLastName}", providerEmail, providerPhone, CancellationToken.None);
+            }
+            catch
+            {
+                // Provider notifications should not block registration.
+            }
+        });
 
         var (token, expires) = jwt.CreateToken(user, null);
         return new AuthResponse(token, expires, user.Id, user.Email, user.Role, null);
@@ -277,7 +296,7 @@ public class AuthService(
 
         var resetUrl =
             $"{_appOptions.FrontendBaseUrl.TrimEnd('/')}/reset-password?token={Uri.EscapeDataString(token)}";
-        await email.SendPasswordResetEmailAsync(user.Email, resetUrl, ct);
+        await communications.NotifyPasswordResetAsync(user.Email, resetUrl, ct);
     }
 
     public async Task ResetPasswordAsync(string token, string newPassword, CancellationToken ct = default)

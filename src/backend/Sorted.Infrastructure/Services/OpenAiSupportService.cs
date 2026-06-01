@@ -14,6 +14,7 @@ namespace Sorted.Infrastructure.Services;
 
 public class OpenAiSupportService(
     SortedDbContext db,
+    ICommunicationService communications,
     IOptions<OpenAiOptions> options,
     ILogger<OpenAiSupportService> logger) : IAiSupportService
 {
@@ -74,13 +75,36 @@ public class OpenAiSupportService(
 
         if (shouldEscalate)
         {
-            db.Escalations.Add(new Escalation
+            var escalation = new Escalation
             {
                 CustomerId = customerId,
                 Reason = $"AI escalation ({(customerId.HasValue ? "customer" : "website")}): {request.Message[..Math.Min(200, request.Message.Length)]}",
                 Status = EscalationStatus.Open
-            });
+            };
+            db.Escalations.Add(escalation);
             reply = BuildEscalationReply(request.Message, customerId.HasValue);
+
+            await db.SaveChangesAsync(ct);
+
+            await communications.NotifyOpsEscalationAsync(escalation.Reason, escalation.Id, ct);
+
+            if (customerId.HasValue)
+            {
+                var customer = await db.Customers
+                    .Include(c => c.User)
+                    .AsNoTracking()
+                    .FirstOrDefaultAsync(c => c.Id == customerId.Value, ct);
+                if (customer is not null && escalation.AckSentAtUtc is null)
+                {
+                    await communications.NotifyEscalationAckAsync(
+                        customer.User.Email,
+                        customer.User.FirstName,
+                        request.Message[..Math.Min(120, request.Message.Length)],
+                        ct);
+                    escalation.AckSentAtUtc = DateTime.UtcNow;
+                    await db.SaveChangesAsync(ct);
+                }
+            }
         }
 
         db.Messages.Add(new Message { ThreadId = thread.Id, SenderRole = "AI", Body = reply, IsFromAi = true });
