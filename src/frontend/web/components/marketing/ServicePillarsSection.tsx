@@ -10,7 +10,7 @@ const pillars: { icon: LucideIcon; title: string; description: string }[] = [
   {
     icon: MapPin,
     title: "Local",
-    description: "Approved gardeners in your area",
+    description: "Vetted gardeners in your area",
   },
   {
     icon: MonitorSmartphone,

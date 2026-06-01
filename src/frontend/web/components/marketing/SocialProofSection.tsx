@@ -1,19 +1,5 @@
 import { Quote, Star } from "lucide-react";
-
-const testimonials = [
-  {
-    quote:
-      "I wanted someone dependable without the back-and-forth every few weeks. Having visits booked in advance makes life much easier.",
-    name: "Sarah M.",
-    area: "Leeds",
-  },
-  {
-    quote:
-      "Being able to see who's coming and reschedule online is a big deal for us. It feels properly organised, not like a favour from a mate.",
-    name: "James & Priya",
-    area: "York",
-  },
-];
+import { CUSTOMER_TESTIMONIALS } from "@/lib/seo/testimonials";
 
 export function SocialProofSection() {
   return (
@@ -25,13 +11,14 @@ export function SocialProofSection() {
             Less stress, more time enjoying your garden
           </h2>
           <p className="mt-4 text-stone-600 leading-relaxed">
-            GardensSorted is built for people who want their outdoor space maintained properly - without becoming a part-time project manager.
+            GardensSorted is built for people who want reliable garden maintenance - without becoming a part-time
+            project manager.
           </p>
-          <p className="mt-3 text-xs text-stone-500">Feedback from early Yorkshire customers</p>
+          <p className="mt-3 text-xs text-stone-500">Feedback from early Yorkshire customers (not Google reviews)</p>
         </div>
 
         <div className="mt-10 grid gap-6 md:grid-cols-2">
-          {testimonials.map((t) => (
+          {CUSTOMER_TESTIMONIALS.map((t) => (
             <blockquote
               key={t.name}
               className="rounded-2xl border border-gardens-primary/10 bg-white/80 p-6 md:p-8"

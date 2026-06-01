@@ -28,7 +28,7 @@ const benefits = [
   {
     icon: Calendar,
     title: "Same gardeners, less hassle",
-    body: "We match visits to your properties across our approved gardener network in your area.",
+    body: "We match visits to your properties across our vetted gardener network in your area.",
   },
 ];
 

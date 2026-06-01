@@ -2,8 +2,8 @@
 
 Operational plan for the **first 4 weeks of paid acquisition** after go-live.
 
-**Last updated:** 2026-05-28  
-**Status:** Draft - confirm open items in §13 before spend  
+**Last updated:** 2026-06-01  
+**Status:** Ready for spend - §13 decisions confirmed (Leeds, no headline £ in ads, GA4)  
 **Parent doc:** [`marketing-plan.md`](marketing-plan.md) (strategy, benchmarks, channel playbooks)
 
 ---
@@ -24,11 +24,11 @@ Month 1 will be **loss-making on cash** - that is expected. See **§4** for unit
 |------|------|
 | **Total budget** | **£4,000** over 4 weeks |
 | **Spend rhythm** | **£2,000** weeks 1–2 → review → **£2,000** weeks 3–4 |
-| **Launch price in ads** | **£49.95/month** (single plan story - do not mix tiers in creative) |
+| **Price in ads** | **No headline £** - pricing on site by garden size (£59.99–£99.99/mo); single **garden care** story |
 | **Geography** | **One city first** (default: **Leeds** + tight radius) |
 | **Primary channel** | Google Search (local service + brand) |
 | **Secondary** | Meta retargeting; small Meta prospecting test |
-| **Target outcome (base case)** | **~60 paying customers**, **~£3,000 MRR**, blended **CAC ~£65** |
+| **Target outcome (base case)** | **~60 paying customers**, **~£3,700 MRR** (small-garden mix), blended **CAC ~£65** |
 | **Fulfilment gate** | New signups receive first visit within **14 days** |
 
 ---
@@ -44,15 +44,15 @@ Learn **directional** numbers for:
 - Blended CAC (paid customers only)  
 - Activation: first visit completed within 21 days  
 
-### 3.2 Revenue targets at £49.95/mo
+### 3.2 Revenue targets (garden-band pricing)
 
-Planning range after **£4,000 spend** (assuming “happy” but realistic month-1 performance):
+Planning range after **£4,000 spend** (assuming “happy” but realistic month-1 performance). **MRR assumes ~£60 ARPU** (mostly small gardens at **£59.99/mo**; medium/large mix raises this). See [`consumer-plans-and-pricing.md`](consumer-plans-and-pricing.md).
 
 | Scenario | Blended CAC | New customers | End MRR | First-month gross* |
 |----------|-------------|---------------|---------|-------------------|
-| Conservative | £80 | ~50 | ~£2,500 | ~£2,500 |
-| **Base (plan for this)** | **£65** | **~62** | **~£3,100** | **~£3,100** |
-| Optimistic | £55 | ~73 | ~£3,650 | ~£3,650 |
+| Conservative | £80 | ~50 | ~£3,000 | ~£3,000 |
+| **Base (plan for this)** | **£65** | **~62** | **~£3,700** | **~£3,700** |
+| Optimistic | £55 | ~73 | ~£4,400 | ~£4,400 |
 
 \*Assumes each new subscriber pays one full month on signup; minimal churn in weeks 1–4.
 
@@ -83,19 +83,19 @@ Marketing KPIs in §3 measure **acquisition quality**. **§4** measures whether 
 
 ### 4.1 Important framing
 
-A **good month-1 marketing result** (~60 customers, ~£65 CAC) is **not** a profitable month on cash. You are spending **£4,000** to buy subscribers and learn the funnel. At **£49.95 with Essential (10 visits/year)**, contribution per customer is strong enough that **CAC payback is ~2–3 months** - inside a typical paid-scale target - but month 1 still shows a **cash loss** because ad spend lands upfront while provider costs and fees also go out in month 1.
+A **good month-1 marketing result** (~60 customers, ~£65 CAC) is **not** a profitable month on cash. You are spending **£4,000** to buy subscribers and learn the funnel. At **~£59.99/mo small garden** (10 visits/year), contribution per customer is strong enough that **CAC payback is ~2 months** on a small-garden mix - inside a typical paid-scale target - but month 1 still shows a **cash loss** because ad spend lands upfront while provider costs and fees also go out in month 1.
 
 **Plan for a month-1 cash loss.** The question is whether measured CAC and retention justify continuing, not whether month 1 pays back.
 
-### 4.2 Assumptions (base case at £49.95/mo)
+### 4.2 Assumptions (base case — small garden £59.99/mo)
 
-Adjust if garden size mix differs (medium/large provider uplifts).
+Adjust if garden size mix differs (medium/large raise ARPU and provider cost). **Do not use legacy £49.95** — live pricing is garden-band; see [`consumer-plans-and-pricing.md`](consumer-plans-and-pricing.md).
 
 | Input | Value | Notes |
 |-------|-------|-------|
-| Customer price | **£49.95/mo** | Single plan in ads - **Essential (10 visits/year)** |
-| Visits per year | **10** | Essential cadence (~every 5–6 weeks) |
-| Provider pay | **~£15/mo** | 10 ÷ 12 × **£18**/visit (Courtyard band) |
+| Customer price | **£59.99/mo** | Small garden band (planning default) |
+| Visits per year | **10** | Garden care cadence (~every 5–6 weeks) |
+| Provider pay | **~£16.67/mo** | 10 ÷ 12 × **£20**/visit (small band) |
 | Ops per customer | **£5/mo** | Support, hosting, AI |
 | Payment processing | **3%** | Stripe/card |
 | Platform fixed cost | **£250/mo** | Tools, hosting base |
@@ -106,8 +106,8 @@ Adjust if garden size mix differs (medium/large provider uplifts).
 
 ```
 Contribution = price × (1 − payment fee) − provider pay − ops
-             = £49.95 × 0.97 − £18 − £5
-             ≈ £25.45/mo
+             = £59.99 × 0.97 − £16.67 − £5
+             ≈ £36.50/mo
 ```
 
 ### 4.3 Month-1 cash picture (base case)
@@ -116,13 +116,13 @@ Illustrative **first calendar month** after full £4,000 spend and **~62 new sub
 
 | Line | £ |
 |------|---|
-| Subscription cash in (first payments) | **+3,100** |
+| Subscription cash in (first payments) | **+3,700** |
 | Ad spend | **−4,000** |
-| Provider pay (62 × ~£15/mo) | **−930** |
+| Provider pay (62 × ~£16.67/mo) | **−1,030** |
 | Ops (62 × £5) | **−310** |
-| Payment fees (~3% of gross) | **−~95** |
+| Payment fees (~3% of gross) | **−~110** |
 | Platform fixed | **−250** |
-| **Approx. month-1 net cash** | **−~£2,800** |
+| **Approx. month-1 net cash** | **−~£2,000** |
 
 Corporation tax, VAT, and initial setup costs are excluded. This is **working-capital burn**, not a full P&L.
 
@@ -132,25 +132,25 @@ Ad payback from **ongoing contribution** (ignoring churn for simplicity):
 
 ```
 Months to recover ads = total ad spend ÷ (customers × contribution per month)
-                        = £4,000 ÷ (62 × £23.45)
-                        ≈ 2.8 months
+                        = £4,000 ÷ (62 × £36.50)
+                        ≈ 1.8 months
 ```
 
 Per customer at **£65 CAC**:
 
 ```
-CAC payback = £65 ÷ £23.45 ≈ 2.8 months of contribution
+CAC payback = £65 ÷ £36.50 ≈ 1.8 months of contribution
 ```
 
-Target for paid scale is typically **≤ 3 months** payback on contribution. At **£49.95 with Essential at ~£15/mo provider cost**, **£65 CAC is inside that band** (~2.5 months). Month 1 still loses cash on a P&L basis because **£4,000 ads** land in the same month as **provider fulfilment** for new subs. **£65 CAC is acceptable for a learning month** if month-2 CAC trends down and churn is low.
+Target for paid scale is typically **≤ 3 months** payback on contribution. At **£59.99 small garden** with **~£16.67/mo provider cost**, **£65 CAC is inside that band** (~1.8 months). Month 1 still loses cash on a P&L basis because **£4,000 ads** land in the same month as **provider fulfilment** for new subs. **£65 CAC is acceptable for a learning month** if month-2 CAC trends down and churn is low. Reconcile mix and months 2–12 in [`sorted_saas_forecast_garden_bands.xlsx`](../sorted_saas_forecast_garden_bands.xlsx).
 
 ### 4.5 Scenarios vs economics
 
 | Scenario | Customers | MRR | Ad spend | Approx. month-1 cash gap* | Ad payback (contrib.) |
 |----------|-----------|-----|----------|----------------------------|------------------------|
-| Conservative | ~50 | ~£2,500 | £4,000 | **−~£3,100** | ~3.4 mo |
-| **Base** | **~62** | **~£3,100** | **£4,000** | **−~£2,800** | **~2.8 mo** |
-| Optimistic | ~73 | ~£3,650 | £4,000 | **−~£2,500** | ~2.3 mo |
+| Conservative | ~50 | ~£3,000 | £4,000 | **−~£2,400** | ~2.2 mo |
+| **Base** | **~62** | **~£3,700** | **£4,000** | **−~£2,000** | **~1.8 mo** |
+| Optimistic | ~73 | ~£4,400 | £4,000 | **−~£1,500** | ~1.5 mo |
 
 \*Same assumptions as §4.3. Gap narrows with more customers but **ad spend is fixed at £4k** - more customers also increases provider/ops outflow.
 
@@ -164,7 +164,7 @@ Month 1 does not need to be cash-positive. Continue to month 2 if:
 | CAC payback at measured CAC | **≤ 6 months** on contribution (stricter **≤ 4 months** to scale hard) |
 | Lead → paid | **≥ 8%** |
 | First visit within 21 days | **≥ 80%** |
-| Willing burn | You can fund **~£2.5k–£3k net cash gap** in month 1 plus working capital for provider float |
+| Willing burn | You can fund **~£2k–£2.5k net cash gap** in month 1 (small-garden mix) plus working capital for provider float |
 
 **Do not scale spend** (month 2+) until measured CAC payback on contribution is **≤ 3 months** (stricter **≤ 2.5 months** to scale hard).
 
@@ -201,7 +201,7 @@ Plug measured CAC, marketing, and garden-band mix into [`sorted_saas_forecast_ga
 **Google Search - do**
 
 - Campaigns: **Brand**, **Local service** (`garden maintenance leeds`, `lawn mowing leeds`, `gardener near me`)  
-- Landing: **`/signup`** or **`/#pricing`** - not homepage alone  
+- Landing: **`/areas/leeds`** for Leeds local keywords; **`/signup`** for high-intent; **`/`** for brand - not homepage alone without pricing  
 - Geo: Leeds + radius; exclude postcodes you cannot serve  
 - Always-on brand terms (cheap; protect name)
 
@@ -215,7 +215,7 @@ Plug measured CAC, marketing, and garden-band mix into [`sorted_saas_forecast_ga
 
 - Retarget: site visitors, pricing viewers, signup abandoners (7–30 day window)  
 - Prospecting: homeowners 35–65, 5–10 mile radius, one creative test  
-- Creative: real gardens, “from £49.95/month”, local trust (“Yorkshire”, vetted gardeners)
+- Creative: real gardens, **no headline £** (pricing on site), local trust (“Yorkshire”, vetted gardeners)
 
 **Meta - don’t**
 
@@ -237,31 +237,41 @@ Plug measured CAC, marketing, and garden-band mix into [`sorted_saas_forecast_ga
 
 ## 6. Messaging & offer
 
-### 6.1 Single price story
+### 6.1 Single offer story (no headline £ in ads)
 
-All paid creative for month 1 leads with:
+All paid creative for month 1 leads with **one offer** — garden care, 10 visits/year, priced on site by garden size:
 
-> **Regular garden maintenance from £49.95/month** - one scheduled visit per month. Subscribe online, local approved gardeners, manage visits in your account.
+> **Regular garden maintenance in Leeds** — lawn, borders, and tidy on a schedule. Vetted local gardeners. See plans and get your quote online.
 
-Do **not** advertise Essential (£29.95) and Premium (£54.95) in parallel during the test - it blurs conversion data.
+Do **not** put a single “from £X” in ad headlines (pricing is **£59.99 / £79.99 / £99.99** by band on site). Do **not** advertise legacy tiers (Essential £29.95 / Premium £54.95) in parallel — blurs conversion data.
 
 ### 6.2 Ad copy (draft)
 
-**Google Search**
+**Google Search (Leeds local)**
 
-> Regular garden maintenance in Leeds - from £49.95/mo (10 visits/year). Subscribe online, local gardeners, manage visits in your account. See plans.
+> Regular garden maintenance in Leeds. 10 visits per year, vetted gardeners, manage visits in your account. See plans and get your quote.
 
 **Meta**
 
-> Tired of chasing gardeners? GardensSorted keeps your garden maintained on a schedule - lawn, borders, tidy. Leeds homeowners: from £49.95/month.
+> Tired of chasing gardeners? GardensSorted keeps your Leeds garden maintained on a schedule — lawn, borders, tidy. See plans online.
 
 ### 6.3 Landing page priorities
 
-1. Price and visit frequency clear above the fold  
-2. Postcode checker / availability messaging  
-3. Trust: Stripe, vetting summary, “built for Yorkshire”  
+1. Price and visit frequency clear above the fold (`/#pricing` or `/areas/leeds#pricing`)  
+2. Postcode / availability messaging at signup  
+3. Trust: Stripe, vetted gardeners, “built for Yorkshire”  
 4. Mobile CTA to `/signup`  
 5. 3-month minimum term visible (reduce disputes)
+
+### 6.4 Landing URLs (live site)
+
+| Campaign | Final URL |
+|----------|-----------|
+| Leeds local service | `https://gardenssorted.co.uk/areas/leeds` |
+| Brand | `https://gardenssorted.co.uk/` |
+| High-intent quote | `https://gardenssorted.co.uk/signup` |
+
+Append UTMs (§11). Site has sitemap, JSON-LD, and GA4 conversion events (`generate_lead`, `begin_checkout`, `purchase`) after cookie consent.
 
 ---
 
@@ -272,7 +282,10 @@ Do **not** advertise Essential (£29.95) and Premium (£54.95) in parallel durin
 - [ ] Confirm **Leeds** (or chosen city) postcode coverage map  
 - [ ] Provider capacity: can fulfil new signups within **14 days**  
 - [ ] Google Ads + Meta accounts live; billing set  
-- [ ] Conversion tracking: signup start, lead captured, Stripe purchase  
+- [x] Local SEO pages live (`/areas/leeds`, york, wakefield)  
+- [ ] Google Search Console verified; sitemap submitted  
+- [ ] GA4 on production (`NEXT_PUBLIC_GA_MEASUREMENT_ID`); mark conversions in GA4  
+- [ ] Conversion tracking: signup start, lead captured, Stripe purchase (GA4 events + admin/Stripe)  
 - [ ] UTM convention on all links (see §10)  
 - [ ] Google Business Profile claimed and complete  
 - [ ] 2–3 ad creative sets ready (1:1 and 4:5 for Meta)  
@@ -328,7 +341,7 @@ Update every **Monday**:
 | CPL (blended) | | | | |
 | Lead → paid % | | | | |
 | CAC (blended) | | | | |
-| MRR added (£49.95 × new) | | | | |
+| MRR added (actual ARPU × new) | | | | |
 | First visits completed | | | | |
 
 ### 8.3 Tools
@@ -338,7 +351,7 @@ Update every **Monday**:
 | Ad spend & clicks | Google Ads, Meta Ads Manager |
 | Signup leads | Admin signup leads list |
 | Revenue | Stripe Dashboard |
-| Site behaviour | GA4 / Plausible (TBD) |
+| Site behaviour | **GA4** (consent-gated on site) |
 | Reviews | Google Business Profile |
 
 ---
@@ -375,7 +388,7 @@ Review at **day 14** before committing second £2,000.
 2. **Pause rule:** any ad group with **2× target CPL and zero paid conversions** after **~£150–£200** spend.  
 3. **Scale rule:** increase daily budget **≤ 20%** on ad groups with CAC below **£70** and ≥ 3 conversions.  
 4. **Do not** add York/Wakefield until Leeds CAC and fulfilment are proven.  
-5. **Do not** change price in ads mid-fortnight unless conversion is broken.
+5. **Do not** add headline pricing to ads mid-fortnight unless conversion is broken.
 
 ---
 
@@ -406,7 +419,7 @@ Complete at end of week 4.
 | Total spend | £4,000 | |
 | New paying customers | ~62 | |
 | Blended CAC | ~£65 | |
-| End MRR (£49.95) | ~£3,100 | |
+| End MRR (~£60 ARPU) | ~£3,700 | |
 | Google CPL | £12–£25 | |
 | Lead → paid % | 8–12% | |
 | First visit within 21 days | 80%+ | |
@@ -415,9 +428,9 @@ Complete at end of week 4.
 
 | Metric | Planned | Actual |
 |--------|---------|--------|
-| Approx. month-1 net cash | ~−£2,800 | |
-| Contribution per customer/mo | ~£23.45 | |
-| Ad payback (months, on contribution) | ~2.8 | |
+| Approx. month-1 net cash | ~−£2,000 | |
+| Contribution per customer/mo | ~£36.50 | |
+| Ad payback (months, on contribution) | ~1.8 | |
 | Fundable cash gap? | Y/N | |
 
 ### By channel
@@ -433,20 +446,20 @@ Complete at end of week 4.
 - [ ] Scale Leeds - increase to £X/month  
 - [ ] Add second city - which: York / Wakefield  
 - [ ] Shift channel mix - Google vs Meta split  
-- [ ] Change ad price story - stay £49.95 or test tier  
+- [ ] Change ad offer story - stay no-headline-£ or test creative  
 - [ ] Referral programme - ready? Y/N  
 
 ---
 
-## 13. Open decisions (confirm before day 1)
+## 13. Decisions (confirmed)
 
-| # | Decision | Default | Status |
-|---|----------|---------|--------|
-| 1 | Pilot city | Leeds | Open |
-| 2 | Launch price in ads | £49.95/mo | Open |
+| # | Decision | Choice | Status |
+|---|----------|--------|--------|
+| 1 | Pilot city | **Leeds** | Confirmed |
+| 2 | Price in ads | **No headline £** — pricing on site by garden band | Confirmed |
 | 3 | Fortnight 1 budget | £2,000 | Open |
 | 4 | Fortnight 2 budget | £2,000 (conditional) | Open |
-| 5 | Analytics stack | GA4 vs Plausible | Open |
+| 5 | Analytics stack | **GA4** | Confirmed |
 | 6 | Launch promotion | None (recommended) | Open |
 
 ---
@@ -459,7 +472,7 @@ Complete at end of week 4.
 | CAC looks “high” at £80 | Normal for month 1 marketing - see §4 for cash gap and payback; compare to §3.3 OK band |
 | Low lead → paid | Fix landing page before scaling; check postcode messaging |
 | Second £2k wasted | Fortnight 1 go/no-go (§9) |
-| Mixed plan messaging | Single £49.95 story all month |
+| Mixed plan messaging | Single garden-care story; no headline £ in ads |
 
 ---
 
@@ -476,4 +489,4 @@ Complete at end of week 4.
 
 ---
 
-*Confirm §13 decisions, then execute weeks 1–2. Do not release fortnight 2 budget until §9 go/no-go is complete. Budget for **~£2.5k–£3k** month-1 cash gap (§4).*
+*Execute weeks 1–2 with Leeds landing URLs (§6.4). Do not release fortnight 2 budget until §9 go/no-go is complete. Budget for **~£2k** month-1 cash gap on small-garden mix (§4).*

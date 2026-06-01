@@ -64,7 +64,7 @@ export default function PrivacyPage() {
       <p>We use personal data to:</p>
       <ul>
         <li>Provide and manage your subscription and scheduled garden visits</li>
-        <li>Match you with approved local gardeners and share visit details with them</li>
+        <li>Match you with vetted local gardeners and share visit details with them</li>
         <li>Process payments, invoices, and billing-related communications</li>
         <li>Respond to support requests, complaints, and safety issues</li>
         <li>Send transactional messages (visit confirmations, reminders, service updates)</li>

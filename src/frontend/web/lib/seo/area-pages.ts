@@ -35,7 +35,7 @@ function buildCopy(hub: ServiceHub): AreaPageCopy {
     metaTitle: `Garden maintenance ${city}`,
     metaDescription: `Regular garden maintenance in ${city} and ${hub.areaLabel}. 10 visits per year, vetted local gardeners, subscribe online. Get your personalised quote.`,
     h1: `Regular garden maintenance in ${city}`,
-    heroLead: `Lawn, borders, and tidy on a schedule - approved gardeners in ${hub.areaLabel}, managed in your online account.`,
+    heroLead: `Lawn, borders, and tidy on a schedule - vetted local gardeners in ${hub.areaLabel}, managed in your online account.`,
     localParagraph: `GardensSorted is built for Yorkshire homeowners who want dependable garden care without chasing quotes. We serve ${hub.areaLabel} and nearby postcodes - enter yours when you get your quote and we'll confirm we can reach you.`,
     keywords: [
       `garden maintenance ${city}`,

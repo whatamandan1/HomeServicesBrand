@@ -51,8 +51,8 @@ export function HeroProductPreview() {
             Regular garden maintenance across Yorkshire
           </h1>
           <p className="mt-4 max-w-lg text-base text-gardens-dark/80 text-balance sm:mt-5 sm:text-lg">
-            10 visits per year - lawn, borders, and tidy on a schedule. We assign vetted local gardeners; you
-            manage everything in your online account.
+            10 visits per year - regular garden maintenance for Leeds, York, Wakefield and across Yorkshire. Vetted
+            local gardeners; you manage everything in your online account.
           </p>
         </div>
 

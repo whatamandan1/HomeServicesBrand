@@ -3,6 +3,7 @@ import { formatGbp } from "@/lib/format";
 import type { FaqItem } from "@/lib/seo/home-faqs";
 import { BUSINESS_DESCRIPTION, BUSINESS_NAME, canonicalPath } from "@/lib/seo/site";
 import type { AreaPageCopy } from "@/lib/seo/area-pages";
+import type { CustomerTestimonial } from "@/lib/seo/testimonials";
 
 export function organizationJsonLd() {
   return {
@@ -75,6 +76,30 @@ export function localServiceJsonLd(copy: AreaPageCopy) {
         },
       },
     },
+  };
+}
+
+/** Homepage testimonials — genuine early feedback; distinct from Google Business Profile reviews. */
+export function customerTestimonialsJsonLd(testimonials: readonly CustomerTestimonial[]) {
+  return {
+    "@context": "https://schema.org",
+    "@type": "Organization",
+    name: BUSINESS_NAME,
+    url: canonicalPath("/"),
+    review: testimonials.map((t) => ({
+      "@type": "Review",
+      reviewBody: t.quote,
+      author: { "@type": "Person", name: t.name },
+      reviewRating: {
+        "@type": "Rating",
+        ratingValue: 5,
+        bestRating: 5,
+      },
+      contentLocation: {
+        "@type": "Place",
+        name: `${t.area}, Yorkshire`,
+      },
+    })),
   };
 }
 

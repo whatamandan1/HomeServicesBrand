@@ -17,11 +17,13 @@ import { SocialProofSection } from "@/components/marketing/SocialProofSection";
 import { PRIMARY_CTA_HREF, PRIMARY_CTA_LABEL } from "@/lib/marketing-cta";
 import { HOME_FAQS } from "@/lib/seo/home-faqs";
 import {
+  customerTestimonialsJsonLd,
   faqPageJsonLd,
   organizationJsonLd,
   serviceCatalogJsonLd,
   webSiteJsonLd,
 } from "@/lib/seo/json-ld";
+import { CUSTOMER_TESTIMONIALS } from "@/lib/seo/testimonials";
 import { canonicalPath } from "@/lib/seo/site";
 
 export const metadata: Metadata = {
@@ -35,13 +37,6 @@ export const metadata: Metadata = {
       "Recurring garden care - lawn, borders, and tidy on a schedule. Subscribe online, manage visits in your account.",
     url: canonicalPath("/"),
   },
-  keywords: [
-    "garden maintenance Leeds",
-    "gardener Leeds",
-    "garden care Yorkshire",
-    "lawn mowing Leeds",
-    "regular garden maintenance",
-  ],
 };
 
 const steps = [
@@ -58,7 +53,7 @@ const steps = [
   {
     icon: Users,
     title: "Your gardener arrives",
-    body: "Approved local gardeners take on your visits. View upcoming dates and details anytime in your online account.",
+    body: "Vetted local gardeners take on your visits. View upcoming dates and details anytime in your online account.",
   },
 ];
 
@@ -73,7 +68,13 @@ export default function HomePage() {
   return (
     <>
       <JsonLd
-        data={[organizationJsonLd(), webSiteJsonLd(), serviceCatalogJsonLd(), faqPageJsonLd(HOME_FAQS)]}
+        data={[
+          organizationJsonLd(),
+          webSiteJsonLd(),
+          serviceCatalogJsonLd(),
+          faqPageJsonLd(HOME_FAQS),
+          customerTestimonialsJsonLd(CUSTOMER_TESTIMONIALS),
+        ]}
       />
       <HeroProductPreview />
 
@@ -83,7 +84,7 @@ export default function HomePage() {
       <Section
         id="how-it-works"
         title="How it works"
-        subtitle="Garden care made simple - no chasing quotes or hunting for someone reliable each time."
+        subtitle="Regular garden maintenance made simple - no chasing quotes or hunting for someone reliable each time."
         className="bg-stone-50/80"
       >
         <div className="grid gap-8 md:grid-cols-3">

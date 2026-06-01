@@ -56,7 +56,7 @@ export default function AboutPage() {
         <div className="mx-auto max-w-3xl space-y-6 text-stone-600 leading-relaxed">
           <p>
             You choose a plan, tell us about your garden and when you&apos;re usually available, and we handle the
-            rest. Visits are scheduled in advance, matched to approved gardeners near you, and managed through your
+            rest. Visits are scheduled in advance, matched to vetted local gardeners near you, and managed through your
             online account.
           </p>
           <p>

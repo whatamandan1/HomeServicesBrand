@@ -25,7 +25,7 @@ export default function TermsPage() {
       <h2>2. The service</h2>
       <p>
         GardensSorted arranges recurring garden maintenance visits for residential properties in postcodes we actively
-        cover (shown during signup). We schedule visits, match work to approved local gardeners, and provide an online
+        cover (shown during signup). We schedule visits, match work to vetted local gardeners, and provide an online
         account to view upcoming visits and contact support. If we cannot serve your address, we will tell you before you
         pay.
       </p>
