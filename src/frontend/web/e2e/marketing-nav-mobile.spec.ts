@@ -1,4 +1,4 @@
-import { test, expect } from "@playwright/test";
+import { test, expect } from "./fixtures";
 import { expectBodyNotPositionFixed } from "./helpers/signup-mobile";
 
 test.describe("Marketing mobile navigation", () => {
