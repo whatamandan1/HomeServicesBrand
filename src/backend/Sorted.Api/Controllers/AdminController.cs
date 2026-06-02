@@ -8,6 +8,7 @@ using Sorted.Core.Enums;
 using Sorted.Core.Geo;
 using Sorted.Core.Interfaces;
 using Sorted.Infrastructure.Data;
+using Sorted.Infrastructure.Mapping;
 using Sorted.Infrastructure.Services;
 
 namespace Sorted.Api.Controllers;
@@ -217,6 +218,65 @@ public class AdminController(
             t.CreatedAtUtc)).ToList();
 
         return Ok(list);
+    }
+
+    [HttpPatch("customers/{customerId:guid}/properties/{propertyId:guid}")]
+    public async Task<ActionResult<CustomerPropertyResponse>> UpdateCustomerProperty(
+        Guid customerId,
+        Guid propertyId,
+        [FromBody] UpdateCustomerPropertyRequest request,
+        CancellationToken ct)
+    {
+        if (string.IsNullOrWhiteSpace(request.Line1)
+            || string.IsNullOrWhiteSpace(request.City)
+            || string.IsNullOrWhiteSpace(request.Postcode))
+            return BadRequest(new { error = "Address line 1, city, and postcode are required." });
+
+        var property = await db.CustomerProperties
+            .FirstOrDefaultAsync(p =>
+                p.Id == propertyId && p.CustomerId == customerId && !p.IsDeleted, ct);
+        if (property is null) return NotFound();
+
+        var normalizedPostcode = PostcodeFormat.Normalize(request.Postcode);
+        var postcodeChanged = !string.Equals(property.Postcode, normalizedPostcode, StringComparison.OrdinalIgnoreCase);
+
+        property.Line1 = request.Line1.Trim();
+        property.Line2 = string.IsNullOrWhiteSpace(request.Line2) ? null : request.Line2.Trim();
+        property.City = request.City.Trim();
+        property.Postcode = normalizedPostcode;
+        property.GardenSize = request.GardenSize;
+        property.AccessNotes = string.IsNullOrWhiteSpace(request.AccessNotes) ? null : request.AccessNotes.Trim();
+        property.UpdatedAtUtc = DateTime.UtcNow;
+
+        if (postcodeChanged)
+        {
+            var geo = await geocoding.LookupAsync(property.Postcode, ct);
+            property.Latitude = geo?.Latitude;
+            property.Longitude = geo?.Longitude;
+        }
+
+        await db.SaveChangesAsync(ct);
+        await workflow.LogAsync(
+            "customer_property",
+            "admin_updated",
+            nameof(CustomerProperty),
+            property.Id,
+            new { customerId, property.Postcode, property.GardenSize },
+            ct);
+
+        var photoCount = await db.PropertyMedia.CountAsync(
+            m => m.CustomerPropertyId == property.Id && !m.IsDeleted, ct);
+
+        return Ok(new CustomerPropertyResponse(
+            property.Id,
+            property.Line1,
+            property.Line2,
+            property.City,
+            property.Postcode,
+            property.GardenSize,
+            property.AccessNotes,
+            property.IsPrimary,
+            photoCount));
     }
 
     private static AdminCustomerSubscriptionResponse ToAdminSubscription(CustomerSubscription s)
@@ -521,6 +581,27 @@ public class AdminController(
         return Ok(await earnings.GetProviderEarningsAsync(id, ct));
     }
 
+    [HttpGet("providers/{id:guid}/visits")]
+    public async Task<ActionResult<IEnumerable<JobVisitResponse>>> ProviderVisits(
+        Guid id,
+        [FromQuery] int limit = 20,
+        CancellationToken ct = default)
+    {
+        var exists = await db.Providers.AnyAsync(p => p.Id == id && !p.IsDeleted, ct);
+        if (!exists) return NotFound();
+
+        limit = Math.Clamp(limit, 1, 100);
+        var visits = await db.JobVisits.AsNoTracking()
+            .Include(v => v.Property)
+            .Include(v => v.AssignedProvider).ThenInclude(p => p!.User)
+            .Where(v => v.AssignedProviderId == id && !v.IsDeleted)
+            .OrderByDescending(v => v.ScheduledDate)
+            .Take(limit)
+            .ToListAsync(ct);
+
+        return Ok(visits.Select(v => JobVisitResponseMapper.FromEntity(v)));
+    }
+
     [HttpPost("providers/{providerId:guid}/earnings/{earningId:guid}/mark-paid")]
     public async Task<ActionResult<ProviderEarningResponse>> MarkProviderEarningPaid(
         Guid providerId,
@@ -578,23 +659,70 @@ public class AdminController(
     }
 
     [HttpGet("visits")]
-    public async Task<ActionResult<IEnumerable<JobVisitResponse>>> Visits(CancellationToken ct)
+    public async Task<ActionResult<IEnumerable<AdminJobVisitResponse>>> Visits(
+        [FromQuery] VisitStatus? status,
+        [FromQuery] DateTime? fromDate,
+        [FromQuery] DateTime? toDate,
+        [FromQuery] int limit = 200,
+        CancellationToken ct = default)
     {
-        var visits = await db.JobVisits.AsNoTracking()
-            .Where(v => !v.IsDeleted)
+        limit = Math.Clamp(limit, 1, 500);
+        var query = db.JobVisits.AsNoTracking()
+            .Include(v => v.Property)
+            .Include(v => v.Subscription).ThenInclude(s => s.Customer).ThenInclude(c => c.User)
+            .Include(v => v.AssignedProvider).ThenInclude(p => p!.User)
+            .Where(v => !v.IsDeleted);
+
+        if (status is VisitStatus visitStatus)
+            query = query.Where(v => v.Status == visitStatus);
+        if (fromDate is DateTime from)
+            query = query.Where(v => v.ScheduledDate >= from);
+        if (toDate is DateTime to)
+            query = query.Where(v => v.ScheduledDate <= to);
+
+        var visits = await query
             .OrderByDescending(v => v.ScheduledDate)
-            .Take(100)
-            .Select(v => new JobVisitResponse(
+            .Take(limit)
+            .ToListAsync(ct);
+
+        var visitIds = visits.Select(v => v.Id).ToList();
+        var offers = await db.DispatchOffers.AsNoTracking()
+            .Where(o => visitIds.Contains(o.JobVisitId) && !o.IsDeleted)
+            .OrderByDescending(o => o.CreatedAtUtc)
+            .ToListAsync(ct);
+
+        var offerByVisit = offers
+            .GroupBy(o => o.JobVisitId)
+            .ToDictionary(g => g.Key, g => g.First());
+
+        var now = DateTime.UtcNow;
+        var list = visits.Select(v =>
+        {
+            offerByVisit.TryGetValue(v.Id, out var offer);
+            int? daysOpen = null;
+            if (v.Status == VisitStatus.OpenForClaim && v.DispatchNotifiedAtUtc is DateTime openedAt)
+                daysOpen = Math.Max(0, (int)(now - openedAt).TotalDays);
+
+            return new AdminJobVisitResponse(
                 v.Id,
                 v.ScheduledDate,
                 v.AvailabilityWindow,
                 v.Status,
                 v.Property.Postcode,
-                v.AssignedProvider != null ? v.AssignedProvider.User.FirstName + " " + v.AssignedProvider.User.LastName : null,
+                $"{v.Subscription.Customer.User.FirstName} {v.Subscription.Customer.User.LastName}".Trim(),
+                v.AssignedProvider is null
+                    ? null
+                    : $"{v.AssignedProvider.User.FirstName} {v.AssignedProvider.User.LastName}".Trim(),
                 v.Property.Latitude,
-                v.Property.Longitude))
-            .ToListAsync(ct);
-        return Ok(visits);
+                v.Property.Longitude,
+                offer?.ExpiresAtUtc,
+                offer?.Status.ToString(),
+                v.ClaimedAtUtc,
+                v.DispatchNotifiedAtUtc,
+                daysOpen);
+        }).ToList();
+
+        return Ok(list);
     }
 
     [HttpPost("visits/{visitId:guid}/cancel")]
@@ -732,10 +860,10 @@ public class AdminController(
     }
 
     [HttpPost("scheduling/open-dispatch")]
-    public async Task<IActionResult> OpenDispatch(CancellationToken ct)
+    public async Task<ActionResult<OpenDispatchResponse>> OpenDispatch(CancellationToken ct)
     {
-        await scheduling.OpenVisitsForDispatchAsync(ct);
-        return NoContent();
+        var result = await scheduling.OpenVisitsForDispatchAsync(ct);
+        return Ok(new OpenDispatchResponse(result.Opened, result.AutoAssigned));
     }
 
     [HttpPost("subscriptions/{subscriptionId:guid}/cancel")]

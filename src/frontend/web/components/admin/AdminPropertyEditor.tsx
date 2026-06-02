@@ -1,0 +1,149 @@
+"use client";
+
+import { useState } from "react";
+import type { CustomerProperty, GardenSize } from "@/lib/api";
+import { GARDEN_SIZE_ORDER, gardenSizeSelectLabel } from "@/lib/consumer-plans";
+
+type PropertyForm = {
+  line1: string;
+  line2: string;
+  city: string;
+  postcode: string;
+  gardenSize: GardenSize;
+  accessNotes: string;
+};
+
+function toForm(property: CustomerProperty): PropertyForm {
+  return {
+    line1: property.line1,
+    line2: property.line2 ?? "",
+    city: property.city,
+    postcode: property.postcode,
+    gardenSize: property.gardenSize,
+    accessNotes: property.accessNotes ?? "",
+  };
+}
+
+export function AdminPropertyEditor({
+  property,
+  saving,
+  onSave,
+}: {
+  property: CustomerProperty;
+  saving: boolean;
+  onSave: (body: {
+    line1: string;
+    line2: string | null;
+    city: string;
+    postcode: string;
+    gardenSize: GardenSize;
+    accessNotes: string | null;
+  }) => Promise<void>;
+}) {
+  const [form, setForm] = useState<PropertyForm>(() => toForm(property));
+  const [message, setMessage] = useState<string | null>(null);
+  const [error, setError] = useState<string | null>(null);
+
+  const dirty =
+    form.line1 !== property.line1
+    || form.line2 !== (property.line2 ?? "")
+    || form.city !== property.city
+    || form.postcode !== property.postcode
+    || form.gardenSize !== property.gardenSize
+    || form.accessNotes !== (property.accessNotes ?? "");
+
+  async function handleSave() {
+    setError(null);
+    setMessage(null);
+    try {
+      await onSave({
+        line1: form.line1.trim(),
+        line2: form.line2.trim() || null,
+        city: form.city.trim(),
+        postcode: form.postcode.trim(),
+        gardenSize: form.gardenSize,
+        accessNotes: form.accessNotes.trim() || null,
+      });
+      setMessage("Property saved.");
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "Save failed");
+    }
+  }
+
+  return (
+    <div className="mt-3 space-y-3 border-t border-stone-100 pt-3">
+      <label className="block text-sm">
+        <span className="font-medium text-stone-700">Address line 1</span>
+        <input
+          type="text"
+          value={form.line1}
+          onChange={(e) => setForm((f) => ({ ...f, line1: e.target.value }))}
+          className="field-input mt-1"
+        />
+      </label>
+      <label className="block text-sm">
+        <span className="font-medium text-stone-700">Address line 2</span>
+        <input
+          type="text"
+          value={form.line2}
+          onChange={(e) => setForm((f) => ({ ...f, line2: e.target.value }))}
+          className="field-input mt-1"
+        />
+      </label>
+      <div className="grid gap-3 sm:grid-cols-2">
+        <label className="block text-sm">
+          <span className="font-medium text-stone-700">City</span>
+          <input
+            type="text"
+            value={form.city}
+            onChange={(e) => setForm((f) => ({ ...f, city: e.target.value }))}
+            className="field-input mt-1"
+          />
+        </label>
+        <label className="block text-sm">
+          <span className="font-medium text-stone-700">Postcode</span>
+          <input
+            type="text"
+            value={form.postcode}
+            onChange={(e) => setForm((f) => ({ ...f, postcode: e.target.value }))}
+            className="field-input mt-1"
+          />
+        </label>
+      </div>
+      <label className="block text-sm">
+        <span className="font-medium text-stone-700">Garden size</span>
+        <select
+          value={form.gardenSize}
+          onChange={(e) => setForm((f) => ({ ...f, gardenSize: e.target.value as GardenSize }))}
+          className="field-input mt-1"
+        >
+          {GARDEN_SIZE_ORDER.map((size) => (
+            <option key={size} value={size}>
+              {gardenSizeSelectLabel(size)}
+            </option>
+          ))}
+        </select>
+      </label>
+      <label className="block text-sm">
+        <span className="font-medium text-stone-700">Access notes</span>
+        <textarea
+          value={form.accessNotes}
+          onChange={(e) => setForm((f) => ({ ...f, accessNotes: e.target.value }))}
+          className="field-input mt-1 min-h-[72px]"
+        />
+      </label>
+      {message && <p className="text-sm text-green-800">{message}</p>}
+      {error && <p className="text-sm text-red-600">{error}</p>}
+      {dirty && (
+        <button
+          type="button"
+          disabled={saving}
+          onClick={handleSave}
+          className="rounded-lg bg-gardens-primary px-3 py-1.5 text-sm font-semibold text-white disabled:opacity-50"
+        >
+          {saving ? "Saving…" : "Save property"}
+        </button>
+      )}
+    </div>
+  );
+}

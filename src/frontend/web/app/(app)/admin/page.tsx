@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
-import { api, type AdminCustomer, type AdminDashboard, type AdminProvider, type AiActionLog, type CommunicationThreadSummary, type Escalation, type JobVisit, type PortfolioEnquirySummary, type SignupLeadSummary, type WorkflowEvent } from "@/lib/api";
+import { api, type AdminCustomer, type AdminDashboard, type AdminJobVisit, type AdminProvider, type AiActionLog, type CommunicationThreadSummary, type Escalation, type PortfolioEnquirySummary, type SignupLeadSummary, type WorkflowEvent } from "@/lib/api";
 import { useAuth } from "@/lib/use-auth";
 import { DashboardTrends } from "@/components/admin/DashboardTrends";
 import { CustomerDetailPanel } from "@/components/admin/CustomerDetailPanel";
@@ -20,7 +20,7 @@ import {
   PageLoading,
 } from "@/components/ui/feedback";
 import { isImpersonating } from "@/lib/auth-storage";
-import { VisitList } from "@/components/visits/VisitList";
+import { AdminVisitBoard } from "@/components/admin/AdminVisitBoard";
 import { EscalationList } from "@/components/escalations/EscalationList";
 import { WorkflowEventList } from "@/components/workflow/WorkflowEventList";
 import { AiActionLogList } from "@/components/ai/AiActionLogList";
@@ -59,7 +59,9 @@ export default function AdminPage() {
   const [trendDays, setTrendDays] = useState(30);
   const [customers, setCustomers] = useState<AdminCustomer[]>([]);
   const [providers, setProviders] = useState<AdminProvider[]>([]);
-  const [visits, setVisits] = useState<JobVisit[]>([]);
+  const [visits, setVisits] = useState<AdminJobVisit[]>([]);
+  const [visitStatusFilter, setVisitStatusFilter] = useState("all");
+  const [workflowRefreshing, setWorkflowRefreshing] = useState(false);
   const [escalations, setEscalations] = useState<Escalation[]>([]);
   const [workflowEvents, setWorkflowEvents] = useState<WorkflowEvent[]>([]);
   const [aiActionLogs, setAiActionLogs] = useState<AiActionLog[]>([]);
@@ -86,8 +88,19 @@ export default function AdminPage() {
 
   function refreshVisits() {
     if (!auth?.token) return;
-    api.adminVisits(auth.token).then(setVisits);
+    const options: { status?: string; limit?: number } = { limit: 200 };
+    if (visitStatusFilter !== "all") options.status = visitStatusFilter;
+    api.adminVisits(auth.token, options).then(setVisits);
     api.adminDashboard(auth.token, trendDays).then(setDash);
+  }
+
+  function refreshWorkflowEvents(workflow?: string) {
+    if (!auth?.token) return;
+    setWorkflowRefreshing(true);
+    api
+      .adminWorkflowEvents(auth.token, workflow && workflow !== "all" ? workflow : undefined, 200)
+      .then(setWorkflowEvents)
+      .finally(() => setWorkflowRefreshing(false));
   }
 
   function refreshEscalations() {
@@ -105,11 +118,11 @@ export default function AdminPage() {
     setBusyVisitId(visitId);
     setVisitError(null);
     try {
-      const updated =
-        action === "cancel"
-          ? await api.adminCancelVisit(auth.token, visitId)
-          : await api.adminRescheduleVisit(auth.token, visitId, scheduledDate!);
-      setVisits((list) => list.map((v) => (v.id === visitId ? updated : v)));
+      if (action === "cancel") {
+        await api.adminCancelVisit(auth.token, visitId);
+      } else {
+        await api.adminRescheduleVisit(auth.token, visitId, scheduledDate!);
+      }
       refreshVisits();
     } catch (e) {
       setVisitError(e instanceof Error ? e.message : "Update failed");
@@ -152,7 +165,7 @@ export default function AdminPage() {
         api.adminDashboard(auth.token, trendDays),
         api.adminCustomers(auth.token),
         api.adminProviders(auth.token),
-        api.adminVisits(auth.token),
+        api.adminVisits(auth.token, { limit: 200 }),
         api.adminEscalations(auth.token),
         api.adminWorkflowEvents(auth.token),
         api.adminAiActions(auth.token),
@@ -218,6 +231,11 @@ export default function AdminPage() {
     };
   }, [auth, trendDays]);
 
+  useEffect(() => {
+    if (!auth?.token || auth.role !== "Admin") return;
+    refreshVisits();
+  }, [auth?.token, visitStatusFilter]);
+
   async function approveProvider(providerId: string) {
     if (!auth?.token) return;
     setApprovingProviderId(providerId);
@@ -251,11 +269,12 @@ export default function AdminPage() {
     []
   );
   const searchVisit = useCallback(
-    (visit: JobVisit, query: string) =>
+    (visit: AdminJobVisit, query: string) =>
       matchesSearch(
         query,
         visit.scheduledDate,
         visit.postcode,
+        visit.customerName,
         visit.availabilityWindow,
         visit.status,
         visit.assignedProviderName
@@ -633,8 +652,13 @@ export default function AdminPage() {
                 setDispatchNotice(null);
                 setDispatchError(null);
                 try {
-                  await api.adminOpenDispatch(auth.token);
-                  setDispatchNotice("Scheduled visits opened for provider claiming.");
+                  const result = await api.adminOpenDispatch(auth.token);
+                  setDispatchNotice(
+                    `Opened ${result.opened} visit${result.opened === 1 ? "" : "s"} for claiming` +
+                      (result.autoAssigned > 0
+                        ? ` (${result.autoAssigned} auto-assigned to preferred gardeners).`
+                        : ".")
+                  );
                   refreshVisits();
                 } catch (e) {
                   setDispatchError(e instanceof Error ? e.message : "Dispatch failed");
@@ -673,13 +697,13 @@ export default function AdminPage() {
             />
           </>
         ) : (
-        <VisitList
+        <AdminVisitBoard
           visits={visits}
+          statusFilter={visitStatusFilter}
+          onStatusFilterChange={setVisitStatusFilter}
           busyId={busyVisitId}
-          allowInProgress
           onCancel={(id) => runVisitAction(id, "cancel")}
           onReschedule={(id, date) => runVisitAction(id, "reschedule", date)}
-          emptyMessage="No visits scheduled."
         />
         )}
       </section>
@@ -720,7 +744,12 @@ export default function AdminPage() {
         <p className="mt-1 text-sm text-stone-500">
           Recent platform events - signup, billing, scheduling, dispatch, and support.
         </p>
-        <WorkflowEventList events={workflowEvents} />
+        <WorkflowEventList
+          events={workflowEvents}
+          refreshing={workflowRefreshing}
+          onRefresh={() => refreshWorkflowEvents()}
+          onWorkflowFilterChange={(workflow) => refreshWorkflowEvents(workflow)}
+        />
       </section>
 
       <section id="ai-log" className="scroll-mt-6">

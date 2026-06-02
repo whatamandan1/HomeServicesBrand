@@ -138,6 +138,21 @@ public class ProviderCoverageService(
         return GeoDistance.MilesBetween(pLat, pLon, coords.Latitude, coords.Longitude) <= effectiveRadius;
     }
 
+    public async Task<double?> GetDistanceMilesAsync(
+        Provider provider,
+        CustomerProperty property,
+        CancellationToken ct = default)
+    {
+        if (provider.CoverageLatitude is not double pLat || provider.CoverageLongitude is not double pLon)
+            return null;
+
+        var coords = await GetPropertyCoordinatesAsync(property, ct);
+        if (coords is null)
+            return null;
+
+        return Math.Round(GeoDistance.MilesBetween(pLat, pLon, coords.Latitude, coords.Longitude), 1);
+    }
+
     private async Task LoadTerritoriesAsync(Provider provider, CancellationToken ct)
     {
         if (provider.Territories.Count > 0)

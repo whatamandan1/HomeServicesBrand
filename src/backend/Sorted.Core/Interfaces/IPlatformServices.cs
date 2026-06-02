@@ -107,10 +107,12 @@ public interface IAiSupportService
     Task<SupportChatResponse> GuestChatAsync(SupportChatRequest request, CancellationToken ct = default);
 }
 
+public record OpenDispatchResult(int Opened, int AutoAssigned);
+
 public interface IVisitSchedulingService
 {
     Task GenerateVisitsForSubscriptionAsync(Guid subscriptionId, int count = 4, CancellationToken ct = default);
-    Task OpenVisitsForDispatchAsync(CancellationToken ct = default);
+    Task<OpenDispatchResult> OpenVisitsForDispatchAsync(CancellationToken ct = default);
     Task TopUpFutureVisitsAsync(int targetCount = 4, CancellationToken ct = default);
     Task OpenUpcomingVisitsForDispatchAsync(int withinDays = 14, CancellationToken ct = default);
     Task ExpireStaleDispatchOffersAsync(int renewalExpiryDays = 3, CancellationToken ct = default);
@@ -151,6 +153,13 @@ public interface IProviderCoverageService
     void ScheduleTerritorySync(Guid providerId);
     void ScheduleTerritoryResync(Guid providerId);
     Task<bool> IsPropertyWithinCoverageAsync(Provider provider, CustomerProperty property, CancellationToken ct = default);
+    Task<double?> GetDistanceMilesAsync(Provider provider, CustomerProperty property, CancellationToken ct = default);
+}
+
+public interface IDataPrivacyService
+{
+    Task<object> ExportUserDataAsync(Guid userId, CancellationToken ct = default);
+    Task DeleteAccountAsync(Guid userId, string confirmation, CancellationToken ct = default);
 }
 
 public interface IProviderAvailabilityService

@@ -13,6 +13,18 @@ using Sorted.Infrastructure.Data;
 
 var builder = WebApplication.CreateBuilder(args);
 
+var sentryDsn = builder.Configuration["Sentry:Dsn"];
+if (!string.IsNullOrWhiteSpace(sentryDsn))
+{
+    builder.WebHost.UseSentry(options =>
+    {
+        options.Dsn = sentryDsn;
+        options.Environment = builder.Configuration["Sentry:Environment"] ?? builder.Environment.EnvironmentName;
+        if (double.TryParse(builder.Configuration["Sentry:TracesSampleRate"], out var sampleRate))
+            options.TracesSampleRate = sampleRate;
+    });
+}
+
 // Railway sets PORT; local dev defaults to 5080 (see launchSettings.json / scripts/dev-api.sh).
 var port = Environment.GetEnvironmentVariable("PORT")
     ?? (builder.Environment.IsDevelopment() ? "5080" : "8080");

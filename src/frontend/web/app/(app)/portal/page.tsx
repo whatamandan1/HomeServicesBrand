@@ -9,6 +9,7 @@ import { BillingSection } from "@/components/billing/BillingSection";
 import { VisitList } from "@/components/visits/VisitList";
 import { CustomerChatWidget } from "@/components/support/SupportChat";
 import { PropertyList } from "@/components/properties/PropertyList";
+import { AccountPrivacySection } from "@/components/account/AccountPrivacySection";
 import { AlertBanner, LoadingSpinner, PageLoading } from "@/components/ui/feedback";
 import { stashedPhotoToFile, takeSignupPhotos } from "@/lib/pending-signup-photos";
 
@@ -225,6 +226,10 @@ export default function PortalPage() {
             emptyMessage="No past visits."
           />
         </section>
+      )}
+
+      {!loading && auth?.token && (
+        <AccountPrivacySection token={auth.token} email={auth.email} />
       )}
 
       {!loading && auth?.token && (

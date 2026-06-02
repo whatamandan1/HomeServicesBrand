@@ -14,13 +14,18 @@ PLANNING = ROOT / "planning"
 SRC = PLANNING / "sorted_saas_recurring_revenue_forecast.xlsx"
 OUT = PLANNING / "sorted_saas_recurring_revenue_forecast_v3_elite.xlsx"
 
-# Annual visits per plan (product truth 2026-05) - provider pay = visits/12 × per-visit rate
+# Annual visits per plan (product truth 2026-06) - provider pay = visits/12 × per-visit rate
 VISITS_ESS_YR = 10
 VISITS_PREM_YR = 20
 VISITS_ELITE_YR = 30
-PROV_SMALL = 15
-PROV_MEDIUM = 18
-PROV_LARGE = 21
+PROV_SMALL = 20
+PROV_MEDIUM = 30
+PROV_LARGE = 40
+ESS_SMALL_MO = 59.99
+PREM_SMALL_MO = 84.99
+ELITE_SMALL_MO = 119.99
+GARDEN_MEDIUM_UPLIFT_MO = 20.0
+GARDEN_LARGE_UPLIFT_MO = 40.0
 
 FIRST = 5
 BLOCK_W = 48
@@ -484,12 +489,12 @@ def update_inputs(wb):
     unmerge_input_blockers(ws)
 
     pricing = [
-        (8, "Essential Monthly (£/mo, small)", 29.95, "10 visits/yr - medium +£10, large +£20"),
-        (9, "Premium Monthly (£/mo, small)", 54.95, "20 visits/yr - medium +£10, large +£20"),
-        (10, "Elite Monthly (£/mo, small)", 89.95, "30 visits/yr + patio refresh - medium +£10, large +£20"),
-        (11, "Essential Annual (£/yr, small)", 299.95, "medium +£100, large +£200"),
-        (12, "Premium Annual (£/yr, small)", 549.95, "medium +£100, large +£200"),
-        (13, "Elite Annual (£/yr, small)", 899.95, "medium +£100, large +£200"),
+        (8, "Essential Monthly (£/mo, small ≤50 m²)", ESS_SMALL_MO, "10 visits/yr - medium +£20, large +£40"),
+        (9, "Premium Monthly (£/mo, small ≤50 m²)", PREM_SMALL_MO, "20 visits/yr - medium +£20, large +£40"),
+        (10, "Elite Monthly (£/mo, small ≤50 m²)", ELITE_SMALL_MO, "30 visits/yr - medium +£20, large +£40"),
+        (11, "Essential Annual (£/yr, small)", round(ESS_SMALL_MO * 10, 2), "10× monthly (~2 months free)"),
+        (12, "Premium Annual (£/yr, small)", round(PREM_SMALL_MO * 10, 2), "10× monthly (~2 months free)"),
+        (13, "Elite Annual (£/yr, small)", round(ELITE_SMALL_MO * 10, 2), "10× monthly (~2 months free)"),
     ]
     for row, label, val, note in pricing:
         ws.cell(row, 1, label)
@@ -514,9 +519,9 @@ def update_inputs(wb):
     ws["A20"] = "GARDEN SIZE MIX"
     ws["A20"].font = SECTION_FONT
     garden_rows = [
-        (21, "Small garden mix (%)", 0.5, "Up to 75 m²"),
-        (22, "Medium garden mix (%)", 0.35, "75–150 m² (+£10/mo customer, +£3/visit provider)"),
-        (23, "Large garden mix (%)", 0.15, "150+ m² (+£20/mo customer, +£6/visit provider)"),
+        (21, "Small garden mix (%)", 0.5, "≤50 m² maintained area"),
+        (22, "Medium garden mix (%)", 0.35, "≤100 m² (+£20/mo customer, +£10/visit provider vs small)"),
+        (23, "Large garden mix (%)", 0.15, "≤150 m² (+£40/mo customer, +£20/visit provider vs small)"),
     ]
     for row, label, val, note in garden_rows:
         ws.cell(row, 1, label)

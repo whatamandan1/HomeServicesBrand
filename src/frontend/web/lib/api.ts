@@ -191,6 +191,21 @@ export type JobVisit = {
   assignedProviderName: string | null;
   latitude: number | null;
   longitude: number | null;
+  distanceMilesFromProviderBase?: number | null;
+};
+
+export type AdminJobVisit = JobVisit & {
+  customerName: string | null;
+  dispatchOfferExpiresAtUtc: string | null;
+  dispatchOfferStatus: string | null;
+  claimedAtUtc: string | null;
+  dispatchNotifiedAtUtc: string | null;
+  daysOpenForClaim: number | null;
+};
+
+export type OpenDispatchResult = {
+  opened: number;
+  autoAssigned: number;
 };
 
 export type AdminCustomer = {
@@ -640,6 +655,13 @@ export const api = {
       method: "POST",
       body: JSON.stringify({ scheduledDate }),
     }, token),
+  privacyExport: (token: string) =>
+    request<Record<string, unknown>>("/api/privacy/export", {}, token),
+  privacyDeleteAccount: (token: string, confirmation: string) =>
+    request<{ message: string }>("/api/privacy/delete-account", {
+      method: "POST",
+      body: JSON.stringify({ confirmation }),
+    }, token),
   supportChat: (token: string, message: string, threadId?: string) =>
     request<{ threadId: string; reply: string; escalated: boolean }>(
       "/api/customer/support/chat",
@@ -737,8 +759,38 @@ export const api = {
     request<AuthResponse>(`/api/admin/users/${userId}/impersonate`, { method: "POST" }, token),
   adminProviders: (token: string) =>
     request<AdminProvider[]>("/api/admin/providers", {}, token),
-  adminVisits: (token: string) =>
-    request<JobVisit[]>("/api/admin/visits", {}, token),
+  adminVisits: (
+    token: string,
+    options?: { status?: string; fromDate?: string; toDate?: string; limit?: number }
+  ) => {
+    const params = new URLSearchParams();
+    if (options?.status) params.set("status", options.status);
+    if (options?.fromDate) params.set("fromDate", options.fromDate);
+    if (options?.toDate) params.set("toDate", options.toDate);
+    if (options?.limit) params.set("limit", String(options.limit));
+    const qs = params.toString();
+    return request<AdminJobVisit[]>(`/api/admin/visits${qs ? `?${qs}` : ""}`, {}, token);
+  },
+  adminUpdateCustomerProperty: (
+    token: string,
+    customerId: string,
+    propertyId: string,
+    body: {
+      line1: string;
+      line2: string | null;
+      city: string;
+      postcode: string;
+      gardenSize: GardenSize;
+      accessNotes: string | null;
+    }
+  ) =>
+    request<CustomerProperty>(
+      `/api/admin/customers/${customerId}/properties/${propertyId}`,
+      { method: "PATCH", body: JSON.stringify(body) },
+      token
+    ),
+  adminProviderVisits: (token: string, providerId: string, limit = 20) =>
+    request<JobVisit[]>(`/api/admin/providers/${providerId}/visits?limit=${limit}`, {}, token),
   adminCancelVisit: (token: string, visitId: string) =>
     request<JobVisit>(`/api/admin/visits/${visitId}/cancel`, { method: "POST" }, token),
   adminRescheduleVisit: (token: string, visitId: string, scheduledDate: string) =>
@@ -845,7 +897,7 @@ export const api = {
       token
     ),
   adminOpenDispatch: (token: string) =>
-    request<void>("/api/admin/scheduling/open-dispatch", { method: "POST" }, token),
+    request<OpenDispatchResult>("/api/admin/scheduling/open-dispatch", { method: "POST" }, token),
   adminWorkflowEvents: (token: string, workflow?: string, limit = 100) => {
     const params = new URLSearchParams();
     if (workflow) params.set("workflow", workflow);

@@ -5,7 +5,10 @@ namespace Sorted.Infrastructure.Mapping;
 
 public static class JobVisitResponseMapper
 {
-    public static JobVisitResponse FromEntity(JobVisit visit, string? assignedProviderName = null) =>
+    public static JobVisitResponse FromEntity(
+        JobVisit visit,
+        string? assignedProviderName = null,
+        double? distanceMilesFromProviderBase = null) =>
         new(
             visit.Id,
             visit.ScheduledDate,
@@ -17,5 +20,6 @@ public static class JobVisitResponseMapper
                 ? null
                 : visit.AssignedProvider.User.FirstName + " " + visit.AssignedProvider.User.LastName),
             visit.Property.Latitude,
-            visit.Property.Longitude);
+            visit.Property.Longitude,
+            distanceMilesFromProviderBase);
 }

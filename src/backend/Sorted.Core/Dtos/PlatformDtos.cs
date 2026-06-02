@@ -89,7 +89,28 @@ public record JobVisitResponse(
     string Postcode,
     string? AssignedProviderName,
     double? Latitude = null,
-    double? Longitude = null);
+    double? Longitude = null,
+    double? DistanceMilesFromProviderBase = null);
+
+public record AdminJobVisitResponse(
+    Guid Id,
+    DateTime ScheduledDate,
+    string AvailabilityWindow,
+    VisitStatus Status,
+    string Postcode,
+    string? CustomerName,
+    string? AssignedProviderName,
+    double? Latitude,
+    double? Longitude,
+    DateTime? DispatchOfferExpiresAtUtc,
+    string? DispatchOfferStatus,
+    DateTime? ClaimedAtUtc,
+    DateTime? DispatchNotifiedAtUtc,
+    int? DaysOpenForClaim);
+
+public record OpenDispatchResponse(int Opened, int AutoAssigned);
+
+public record DeleteAccountRequest(string Confirmation);
 
 public record ClaimVisitRequest(Guid VisitId);
 

@@ -33,13 +33,18 @@ export function StatCard({
   );
 }
 
+export type DataTableRow = {
+  onClick?: () => void;
+  [columnKey: string]: string | number | boolean | null | undefined | (() => void);
+};
+
 export function DataTable({
   columns,
   rows,
   emptyMessage = "No data yet.",
 }: {
   columns: { key: string; label: string }[];
-  rows: Record<string, string | number | boolean | null | undefined>[];
+  rows: DataTableRow[];
   emptyMessage?: string;
 }) {
   if (rows.length === 0) {
@@ -49,20 +54,37 @@ export function DataTable({
   return (
     <>
       <div className="mt-2 space-y-3 md:hidden">
-        {rows.map((row, i) => (
-          <div key={i} className="rounded-xl border bg-white p-4 shadow-sm">
-            {columns.map((c) => (
-              <div key={c.key} className="flex items-start justify-between gap-4 border-b border-stone-100 py-2.5 last:border-0">
-                <span className="shrink-0 text-xs font-medium uppercase tracking-wide text-stone-500">
-                  {c.label}
-                </span>
-                <span className="text-right text-sm font-medium text-stone-800">
-                  {String(row[c.key] ?? "-")}
-                </span>
-              </div>
-            ))}
-          </div>
-        ))}
+        {rows.map((row, i) => {
+          const { onClick, ...cells } = row;
+          const content = (
+            <>
+              {columns.map((c) => (
+                <div key={c.key} className="flex items-start justify-between gap-4 border-b border-stone-100 py-2.5 last:border-0">
+                  <span className="shrink-0 text-xs font-medium uppercase tracking-wide text-stone-500">
+                    {c.label}
+                  </span>
+                  <span className="text-right text-sm font-medium text-stone-800">
+                    {String(cells[c.key] ?? "-")}
+                  </span>
+                </div>
+              ))}
+            </>
+          );
+          return onClick ? (
+            <button
+              key={i}
+              type="button"
+              onClick={onClick}
+              className="w-full rounded-xl border bg-white p-4 text-left shadow-sm hover:border-gardens-primary/30"
+            >
+              {content}
+            </button>
+          ) : (
+            <div key={i} className="rounded-xl border bg-white p-4 shadow-sm">
+              {content}
+            </div>
+          );
+        })}
       </div>
 
       <div className="mt-2 hidden overflow-x-auto rounded-lg border bg-white shadow-sm md:block">
@@ -77,15 +99,22 @@ export function DataTable({
             </tr>
           </thead>
           <tbody>
-            {rows.map((row, i) => (
-              <tr key={i} className="border-b last:border-0">
-                {columns.map((c) => (
-                  <td key={c.key} className="px-4 py-3">
-                    {String(row[c.key] ?? "-")}
-                  </td>
-                ))}
-              </tr>
-            ))}
+            {rows.map((row, i) => {
+              const { onClick, ...cells } = row;
+              return (
+                <tr
+                  key={i}
+                  className={`border-b last:border-0 ${onClick ? "cursor-pointer hover:bg-stone-50" : ""}`}
+                  onClick={onClick}
+                >
+                  {columns.map((c) => (
+                    <td key={c.key} className="px-4 py-3">
+                      {String(cells[c.key] ?? "-")}
+                    </td>
+                  ))}
+                </tr>
+              );
+            })}
           </tbody>
         </table>
       </div>

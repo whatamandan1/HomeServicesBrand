@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { AdminPropertyPhotos } from "@/components/admin/AdminPropertyPhotos";
+import { AdminPropertyEditor } from "@/components/admin/AdminPropertyEditor";
 import { ActAsUserButton } from "@/components/admin/ActAsUserButton";
 import { CommunicationThreadList } from "@/components/ai/CommunicationThreadList";
 import { api, type AdminCustomerDetail, type AuthResponse, type CommunicationThreadSummary } from "@/lib/api";
@@ -37,6 +38,7 @@ export function CustomerDetailPanel({
   const [threads, setThreads] = useState<CommunicationThreadSummary[]>([]);
   const [threadsLoading, setThreadsLoading] = useState(true);
   const [threadsError, setThreadsError] = useState<string | null>(null);
+  const [savingPropertyId, setSavingPropertyId] = useState<string | null>(null);
 
   useEffect(() => {
     setLoading(true);
@@ -211,6 +213,34 @@ export function CustomerDetailPanel({
                       token={token}
                       customerId={customerId}
                       propertyId={p.id}
+                    />
+                    <AdminPropertyEditor
+                      property={p}
+                      saving={savingPropertyId === p.id}
+                      onSave={async (body) => {
+                        setSavingPropertyId(p.id);
+                        try {
+                          const updated = await api.adminUpdateCustomerProperty(
+                            token,
+                            customerId,
+                            p.id,
+                            body
+                          );
+                          setDetail((current) =>
+                            current
+                              ? {
+                                  ...current,
+                                  properties: current.properties.map((prop) =>
+                                    prop.id === p.id ? updated : prop
+                                  ),
+                                }
+                              : current
+                          );
+                          onUpdated?.();
+                        } finally {
+                          setSavingPropertyId(null);
+                        }
+                      }}
                     />
                   </li>
                 ))}

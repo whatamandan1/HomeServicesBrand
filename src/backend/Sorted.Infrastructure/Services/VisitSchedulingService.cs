@@ -84,7 +84,7 @@ public class VisitSchedulingService(
             logger.LogInformation("Topped up future visits for {Count} active subscriptions", toppedUp);
     }
 
-    public async Task OpenVisitsForDispatchAsync(CancellationToken ct = default)
+    public async Task<OpenDispatchResult> OpenVisitsForDispatchAsync(CancellationToken ct = default)
         => await OpenVisitsForDispatchAsync(
             await db.JobVisits
                 .Where(v => v.Status == VisitStatus.Scheduled && !v.IsDeleted)
@@ -104,10 +104,10 @@ public class VisitSchedulingService(
         await OpenVisitsForDispatchAsync(visits, ct);
     }
 
-    private async Task OpenVisitsForDispatchAsync(IReadOnlyList<JobVisit> visits, CancellationToken ct)
+    private async Task<OpenDispatchResult> OpenVisitsForDispatchAsync(IReadOnlyList<JobVisit> visits, CancellationToken ct)
     {
         if (visits.Count == 0)
-            return;
+            return new OpenDispatchResult(0, 0);
 
         var expiryDays = _jobOptions.DispatchOfferExpiryDays;
         var now = DateTime.UtcNow;
@@ -145,6 +145,8 @@ public class VisitSchedulingService(
             null,
             new { count = opened, autoAssigned },
             ct);
+
+        return new OpenDispatchResult(opened, autoAssigned);
     }
 
     public async Task ExpireStaleDispatchOffersAsync(int renewalExpiryDays = 3, CancellationToken ct = default)

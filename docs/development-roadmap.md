@@ -6,7 +6,7 @@ Living checklist comparing the current GardensSorted / Sorted platform build aga
 Use this document to track what is done, what is partial, and what to build next. Update
 statuses as features ship.
 
-**Last reviewed:** 2026-06-02 (garden-band pricing, comms stack, vetting, signup leads)  
+**Last reviewed:** 2026-06-02 (CRM dispatch board, GDPR export/delete, Sentry, forecast script)  
 **Live site:** https://gardenssorted.co.uk/ (canonical; `gardenssorted.com` redirects here)  
 **Live API:** https://homeservicesbrand-production.up.railway.app/
 
@@ -89,7 +89,7 @@ These are the spec's top priorities for initial launch.
 | Payment processing | ✅ Done | Renewals, past_due, cancellation via webhooks |
 | Provider onboarding | ✅ Done | Self-signup at `/providers#apply` + admin approval; base postcode + radius; vetting (ID photo, RTW, DBS, insurance) |
 | Provider job claiming | ✅ Done | Radius/outcode coverage + distance fallback; claim with conflict check |
-| Operational CRM | 🟡 Partial | Dashboard, visits, escalations, workflow/AI/comms viewers, customer detail, provider coverage + vetting edit; mobile section nav + loading/error polish |
+| Operational CRM | 🟡 Partial | Dispatch board (status tabs, offer expiry, open counts), admin property edit, provider visit roster, workflow log refresh + payload detail; travel distance on provider claim |
 | Recurring scheduling | ✅ Done | Yearly cadence via `PlanCatalog` (10/20/30 visits/yr); background top-up; legacy demo DB spacing may remain |
 | Communication systems | ✅ Done | SendGrid live (transactional + lifecycle); Twilio wired but **deferred** (UK sender registration); see [`communications-inventory.md`](communications-inventory.md) |
 | AI support assistant | ✅ Done | Customer portal chat + guest homepage chat |
@@ -241,7 +241,7 @@ Requirements: [`multi-property-solutions-requirements.md`](multi-property-soluti
 | Recurring provider preference | ✅ Done | Set on first completed visit; auto-assign on scheduling + after complete |
 | FCFS claiming | ✅ Done | - |
 | Double-booking prevention | ✅ Done | Conflict check on claim |
-| Travel-time validation | ⬜ Not started | Distance/travel checks before claim |
+| Travel-time validation | 🟡 Partial | Straight-line distance shown on provider open jobs; claim requires verified coords + coverage check |
 | Dispatch offer expiry | ✅ Done | `ExpireStaleDispatchOffersAsync` in background job; renews open offers |
 
 ---
@@ -326,9 +326,9 @@ Modular boundaries to maintain as the platform grows.
 |------|--------|-----------|
 | JWT + RBAC | ✅ Done | API + Next.js role middleware on `/admin`, `/provider`, `/portal`, `/landlord` |
 | Encrypted secrets | 🟡 Partial | Env vars documented; production startup validates JWT + Stripe webhook |
-| GDPR readiness | 🟡 Partial | Privacy policy at `/privacy`; data export/delete flows still open |
+| GDPR readiness | 🟡 Partial | Privacy policy at `/privacy`; **data export + account deletion** in customer portal (`/portal` → Privacy & data) |
 | Audit logging | ✅ Done | AI + workflow + communication logs in DB; admin viewers on `/admin` |
-| Structured logging | 🟡 Partial | Serilog + `/health`; add error tracking (e.g. Sentry) |
+| Structured logging | 🟡 Partial | Serilog + `/health`; **Sentry optional** via `Sentry__Dsn` (API) and `NEXT_PUBLIC_SENTRY_DSN` (web) |
 | Workflow tracing | ✅ Done | `WorkflowEvent` table + admin workflow viewer |
 | AI action logging | ✅ Done | `AIActionLog` persisted |
 | Automated tests | ✅ Done | xUnit core + API integration tests; Playwright e2e in CI |

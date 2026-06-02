@@ -329,6 +329,11 @@ export default function ProviderPage() {
                     {v.scheduledDate.slice(0, 10)} - {v.postcode}
                   </div>
                   <div className="text-sm text-stone-500">{v.availabilityWindow}</div>
+                  {v.distanceMilesFromProviderBase != null && (
+                    <p className="text-xs text-stone-500">
+                      ~{v.distanceMilesFromProviderBase} miles from your base
+                    </p>
+                  )}
                   <StatusBadge status={v.status} />
                 </div>
                 <button

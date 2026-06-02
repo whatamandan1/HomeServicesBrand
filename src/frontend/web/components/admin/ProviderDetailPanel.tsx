@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { AdminProviderAvailabilitySection } from "@/components/admin/AdminProviderAvailabilitySection";
 import { ActAsUserButton } from "@/components/admin/ActAsUserButton";
-import { api, type AdminProvider, type AuthResponse, type ProviderEarningsSummary } from "@/lib/api";
+import { api, type AdminProvider, type AuthResponse, type JobVisit, type ProviderEarningsSummary } from "@/lib/api";
 import { formatMoneyGbp } from "@/lib/provider-availability";
 import { StatusBadge } from "@/components/ui";
 import { AdminProviderVettingSection } from "@/components/admin/AdminProviderVettingSection";
@@ -31,6 +31,8 @@ export function ProviderDetailPanel({
   const [earnings, setEarnings] = useState<ProviderEarningsSummary | null>(null);
   const [earningsLoading, setEarningsLoading] = useState(true);
   const [markingPaidId, setMarkingPaidId] = useState<string | null>(null);
+  const [visits, setVisits] = useState<JobVisit[]>([]);
+  const [visitsLoading, setVisitsLoading] = useState(true);
 
   useEffect(() => {
     setEarningsLoading(true);
@@ -39,6 +41,15 @@ export function ProviderDetailPanel({
       .then(setEarnings)
       .catch(() => setEarnings(null))
       .finally(() => setEarningsLoading(false));
+  }, [provider.id, token]);
+
+  useEffect(() => {
+    setVisitsLoading(true);
+    api
+      .adminProviderVisits(token, provider.id)
+      .then(setVisits)
+      .catch(() => setVisits([]))
+      .finally(() => setVisitsLoading(false));
   }, [provider.id, token]);
 
   async function markPaid(earningId: string) {
@@ -227,6 +238,29 @@ export function ProviderDetailPanel({
           onNotice={setMessage}
           onError={setError}
         />
+      </div>
+
+      <div className="mt-6">
+        <h4 className="text-sm font-semibold text-gardens-dark">Assigned visits</h4>
+        {visitsLoading ? (
+          <p className="mt-2 text-sm text-stone-500">Loading visits…</p>
+        ) : visits.length === 0 ? (
+          <p className="mt-2 text-sm text-stone-500">No assigned visits yet.</p>
+        ) : (
+          <ul className="mt-2 space-y-2">
+            {visits.map((v) => (
+              <li key={v.id} className="rounded-lg border bg-white p-3 text-sm">
+                <div className="flex flex-wrap items-center justify-between gap-2">
+                  <div>
+                    <p className="font-medium">{v.scheduledDate.slice(0, 10)} · {v.postcode}</p>
+                    <p className="text-xs text-stone-500">{v.availabilityWindow}</p>
+                  </div>
+                  <StatusBadge status={v.status} />
+                </div>
+              </li>
+            ))}
+          </ul>
+        )}
       </div>
 
       <div className="mt-6 space-y-3">

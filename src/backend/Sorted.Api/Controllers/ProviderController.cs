@@ -395,7 +395,8 @@ public class ProviderController(
             if (!await availability.IsAvailableAsync(provider, visit.ScheduledDate, visit.AvailabilityWindow, ct))
                 continue;
 
-            filtered.Add(JobVisitResponseMapper.FromEntity(visit));
+            var distance = await coverage.GetDistanceMilesAsync(provider, visit.Property, ct);
+            filtered.Add(JobVisitResponseMapper.FromEntity(visit, distanceMilesFromProviderBase: distance));
         }
 
         return Ok(filtered);
@@ -417,6 +418,10 @@ public class ProviderController(
 
         if (!await coverage.IsPropertyWithinCoverageAsync(provider, visit.Property, ct))
             return BadRequest(new { error = "Visit is outside your coverage area." });
+
+        var distance = await coverage.GetDistanceMilesAsync(provider, visit.Property, ct);
+        if (distance is null)
+            return BadRequest(new { error = "We could not verify travel distance for this property. Contact operations." });
 
         if (!await availability.IsAvailableAsync(provider, visit.ScheduledDate, visit.AvailabilityWindow, ct))
             return BadRequest(new { error = "This visit falls on a day or time you have marked unavailable." });

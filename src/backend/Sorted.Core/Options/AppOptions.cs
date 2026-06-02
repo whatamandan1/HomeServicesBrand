@@ -77,6 +77,15 @@ public class AppOptions
     public string OpsNotificationEmail { get; set; } = string.Empty;
 }
 
+public class SentryOptions
+{
+    public const string Section = "Sentry";
+    /// <summary>Sentry DSN (optional). When unset, error tracking is disabled.</summary>
+    public string Dsn { get; set; } = string.Empty;
+    public string Environment { get; set; } = "development";
+    public double TracesSampleRate { get; set; } = 0.1;
+}
+
 public class FeaturesOptions
 {
     public const string Section = "Features";
