@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { AdminCustomerPrivacyActions } from "@/components/admin/AdminCustomerPrivacyActions";
 import { AdminPropertyPhotos } from "@/components/admin/AdminPropertyPhotos";
 import { AdminPropertyEditor } from "@/components/admin/AdminPropertyEditor";
 import { ActAsUserButton } from "@/components/admin/ActAsUserButton";
@@ -275,6 +276,13 @@ export function CustomerDetailPanel({
               </ul>
             )}
           </div>
+
+          <AdminCustomerPrivacyActions
+            token={token}
+            customerId={customerId}
+            customerEmail={detail.email}
+            onDeleted={onClose}
+          />
 
           <div>
             <h4 className="text-sm font-semibold text-gardens-dark">Support conversations</h4>

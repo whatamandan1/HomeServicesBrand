@@ -326,7 +326,7 @@ Modular boundaries to maintain as the platform grows.
 |------|--------|-----------|
 | JWT + RBAC | ✅ Done | API + Next.js role middleware on `/admin`, `/provider`, `/portal`, `/landlord` |
 | Encrypted secrets | 🟡 Partial | Env vars documented; production startup validates JWT + Stripe webhook |
-| GDPR readiness | 🟡 Partial | Privacy policy at `/privacy`; **data export + account deletion** in customer portal (`/portal` → Privacy & data) |
+| GDPR readiness | 🟡 Partial | Privacy policy at `/privacy`; admin export/delete on customer detail (on written request) |
 | Audit logging | ✅ Done | AI + workflow + communication logs in DB; admin viewers on `/admin` |
 | Structured logging | 🟡 Partial | Serilog + `/health`; **Sentry optional** via `Sentry__Dsn` (API) and `NEXT_PUBLIC_SENTRY_DSN` (web) |
 | Workflow tracing | ✅ Done | `WorkflowEvent` table + admin workflow viewer |

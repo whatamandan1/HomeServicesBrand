@@ -655,10 +655,10 @@ export const api = {
       method: "POST",
       body: JSON.stringify({ scheduledDate }),
     }, token),
-  privacyExport: (token: string) =>
-    request<Record<string, unknown>>("/api/privacy/export", {}, token),
-  privacyDeleteAccount: (token: string, confirmation: string) =>
-    request<{ message: string }>("/api/privacy/delete-account", {
+  adminExportCustomerData: (token: string, customerId: string) =>
+    request<Record<string, unknown>>(`/api/admin/customers/${customerId}/privacy/export`, {}, token),
+  adminDeleteCustomerAccount: (token: string, customerId: string, confirmation: string) =>
+    request<{ message: string }>(`/api/admin/customers/${customerId}/privacy/delete-account`, {
       method: "POST",
       body: JSON.stringify({ confirmation }),
     }, token),
@@ -898,6 +898,12 @@ export const api = {
     ),
   adminOpenDispatch: (token: string) =>
     request<OpenDispatchResult>("/api/admin/scheduling/open-dispatch", { method: "POST" }, token),
+  adminEnsureDemoData: (token: string) =>
+    request<{ message: string; visitCount: number; openCount: number }>(
+      "/api/admin/scheduling/ensure-demo-data",
+      { method: "POST" },
+      token
+    ),
   adminWorkflowEvents: (token: string, workflow?: string, limit = 100) => {
     const params = new URLSearchParams();
     if (workflow) params.set("workflow", workflow);

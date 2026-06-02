@@ -84,13 +84,21 @@ export default function AdminPage() {
   const [pageError, setPageError] = useState<string | null>(null);
   const [dispatchNotice, setDispatchNotice] = useState<string | null>(null);
   const [dispatchError, setDispatchError] = useState<string | null>(null);
+  const [visitLoadError, setVisitLoadError] = useState<string | null>(null);
+  const [demoSeedBusy, setDemoSeedBusy] = useState(false);
   const [approvingProviderId, setApprovingProviderId] = useState<string | null>(null);
 
   function refreshVisits() {
     if (!auth?.token) return;
     const options: { status?: string; limit?: number } = { limit: 200 };
     if (visitStatusFilter !== "all") options.status = visitStatusFilter;
-    api.adminVisits(auth.token, options).then(setVisits);
+    setVisitLoadError(null);
+    api.adminVisits(auth.token, options)
+      .then(setVisits)
+      .catch((e) => {
+        setVisits([]);
+        setVisitLoadError(e instanceof Error ? e.message : "Could not load visits");
+      });
     api.adminDashboard(auth.token, trendDays).then(setDash);
   }
 
@@ -192,7 +200,16 @@ export default function AdminPage() {
       if (dashResult.status === "fulfilled") setDash(dashResult.value);
       if (customersResult.status === "fulfilled") setCustomers(customersResult.value);
       if (providersResult.status === "fulfilled") setProviders(providersResult.value);
-      if (visitsResult.status === "fulfilled") setVisits(visitsResult.value);
+      if (visitsResult.status === "fulfilled") {
+        setVisits(visitsResult.value);
+        setVisitLoadError(null);
+      } else if (visitsResult.status === "rejected") {
+        setVisits([]);
+        const reason = visitsResult.reason;
+        setVisitLoadError(
+          reason instanceof Error ? reason.message : "Could not load visits."
+        );
+      }
       if (escalationsResult.status === "fulfilled") setEscalations(escalationsResult.value);
       if (workflowResult.status === "fulfilled") setWorkflowEvents(workflowResult.value);
       if (aiResult.status === "fulfilled") setAiActionLogs(aiResult.value);
@@ -667,6 +684,31 @@ export default function AdminPage() {
             >
               Open visits for dispatch
             </button>
+            {visits.length === 0 && (
+              <button
+                type="button"
+                disabled={demoSeedBusy}
+                className="rounded-lg border border-stone-300 bg-white px-4 py-2 text-sm font-medium text-stone-700 hover:bg-stone-50 disabled:opacity-50"
+                onClick={async () => {
+                  if (!auth?.token) return;
+                  setDemoSeedBusy(true);
+                  setVisitLoadError(null);
+                  try {
+                    const result = await api.adminEnsureDemoData(auth.token);
+                    setDispatchNotice(
+                      `${result.message} ${result.visitCount} total visits (${result.openCount} open for claim).`
+                    );
+                    refreshVisits();
+                  } catch (e) {
+                    setVisitLoadError(e instanceof Error ? e.message : "Could not seed demo visits");
+                  } finally {
+                    setDemoSeedBusy(false);
+                  }
+                }}
+              >
+                {demoSeedBusy ? "Seeding…" : "Seed demo visits"}
+              </button>
+            )}
           </div>
           <ListMapToggle value={visitView} onChange={setVisitView} />
         </div>
@@ -675,6 +717,9 @@ export default function AdminPage() {
         )}
         {dispatchError && (
           <AlertBanner variant="error" message={dispatchError} onDismiss={() => setDispatchError(null)} />
+        )}
+        {visitLoadError && (
+          <AlertBanner variant="error" message={visitLoadError} onDismiss={() => setVisitLoadError(null)} />
         )}
         {visitError && (
           <AlertBanner variant="error" message={visitError} onDismiss={() => setVisitError(null)} />

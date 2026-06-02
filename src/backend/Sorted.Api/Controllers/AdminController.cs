@@ -2,11 +2,14 @@ using System.Security.Claims;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 using Sorted.Core.Dtos;
 using Sorted.Core.Entities;
 using Sorted.Core.Enums;
 using Sorted.Core.Geo;
 using Sorted.Core.Interfaces;
+using Sorted.Core.Options;
 using Sorted.Infrastructure.Data;
 using Sorted.Infrastructure.Mapping;
 using Sorted.Infrastructure.Services;
@@ -29,7 +32,9 @@ public class AdminController(
     IProviderEarningsService earnings,
     IPortfolioEnquiryService portfolioEnquiries,
     ISignupLeadService signupLeads,
-    ICommunicationService communications) : ControllerBase
+    ICommunicationService communications,
+    IDataPrivacyService privacy,
+    ILogger<AdminController> logger) : ControllerBase
 {
     [HttpGet("dashboard")]
     public async Task<ActionResult<AdminDashboardResponse>> Dashboard([FromQuery] int days = 30, CancellationToken ct = default)
@@ -667,62 +672,65 @@ public class AdminController(
         CancellationToken ct = default)
     {
         limit = Math.Clamp(limit, 1, 500);
-        var query = db.JobVisits.AsNoTracking()
-            .Include(v => v.Property)
-            .Include(v => v.Subscription).ThenInclude(s => s.Customer).ThenInclude(c => c.User)
-            .Include(v => v.AssignedProvider).ThenInclude(p => p!.User)
-            .Where(v => !v.IsDeleted);
-
-        if (status is VisitStatus visitStatus)
-            query = query.Where(v => v.Status == visitStatus);
-        if (fromDate is DateTime from)
-            query = query.Where(v => v.ScheduledDate >= from);
-        if (toDate is DateTime to)
-            query = query.Where(v => v.ScheduledDate <= to);
-
-        var visits = await query
-            .OrderByDescending(v => v.ScheduledDate)
-            .Take(limit)
-            .ToListAsync(ct);
-
-        var visitIds = visits.Select(v => v.Id).ToList();
-        var offers = await db.DispatchOffers.AsNoTracking()
-            .Where(o => visitIds.Contains(o.JobVisitId) && !o.IsDeleted)
-            .OrderByDescending(o => o.CreatedAtUtc)
-            .ToListAsync(ct);
-
-        var offerByVisit = offers
-            .GroupBy(o => o.JobVisitId)
-            .ToDictionary(g => g.Key, g => g.First());
-
-        var now = DateTime.UtcNow;
-        var list = visits.Select(v =>
+        try
         {
-            offerByVisit.TryGetValue(v.Id, out var offer);
-            int? daysOpen = null;
-            if (v.Status == VisitStatus.OpenForClaim && v.DispatchNotifiedAtUtc is DateTime openedAt)
-                daysOpen = Math.Max(0, (int)(now - openedAt).TotalDays);
+            var list = await AdminJobVisitMapper.LoadAsync(db, status, fromDate, toDate, limit, ct);
+            return Ok(list);
+        }
+        catch (Exception ex)
+        {
+            logger.LogError(ex, "Failed to load admin visits");
+            return StatusCode(500, new { error = "Could not load visits. Try again or check API logs." });
+        }
+    }
 
-            return new AdminJobVisitResponse(
-                v.Id,
-                v.ScheduledDate,
-                v.AvailabilityWindow,
-                v.Status,
-                v.Property.Postcode,
-                $"{v.Subscription.Customer.User.FirstName} {v.Subscription.Customer.User.LastName}".Trim(),
-                v.AssignedProvider is null
-                    ? null
-                    : $"{v.AssignedProvider.User.FirstName} {v.AssignedProvider.User.LastName}".Trim(),
-                v.Property.Latitude,
-                v.Property.Longitude,
-                offer?.ExpiresAtUtc,
-                offer?.Status.ToString(),
-                v.ClaimedAtUtc,
-                v.DispatchNotifiedAtUtc,
-                daysOpen);
-        }).ToList();
+    [HttpGet("customers/{customerId:guid}/privacy/export")]
+    public async Task<ActionResult<object>> ExportCustomerData(Guid customerId, CancellationToken ct)
+    {
+        var userId = await db.Customers.AsNoTracking()
+            .Where(c => c.Id == customerId && !c.IsDeleted)
+            .Select(c => (Guid?)c.UserId)
+            .FirstOrDefaultAsync(ct);
+        if (userId is null) return NotFound();
 
-        return Ok(list);
+        try
+        {
+            return Ok(await privacy.ExportUserDataAsync(userId.Value, ct));
+        }
+        catch (InvalidOperationException ex)
+        {
+            return BadRequest(new { error = ex.Message });
+        }
+    }
+
+    [HttpPost("customers/{customerId:guid}/privacy/delete-account")]
+    public async Task<IActionResult> DeleteCustomerAccount(
+        Guid customerId,
+        [FromBody] DeleteAccountRequest request,
+        CancellationToken ct)
+    {
+        var userId = await db.Customers.AsNoTracking()
+            .Where(c => c.Id == customerId && !c.IsDeleted)
+            .Select(c => (Guid?)c.UserId)
+            .FirstOrDefaultAsync(ct);
+        if (userId is null) return NotFound();
+
+        try
+        {
+            await privacy.DeleteAccountAsync(userId.Value, request.Confirmation, ct);
+            await workflow.LogAsync(
+                "privacy",
+                "admin_account_deleted",
+                nameof(Customer),
+                customerId,
+                null,
+                ct);
+            return Ok(new { message = "Customer account deleted and personal data anonymised." });
+        }
+        catch (InvalidOperationException ex)
+        {
+            return BadRequest(new { error = ex.Message });
+        }
     }
 
     [HttpPost("visits/{visitId:guid}/cancel")]
@@ -864,6 +872,20 @@ public class AdminController(
     {
         var result = await scheduling.OpenVisitsForDispatchAsync(ct);
         return Ok(new OpenDispatchResponse(result.Opened, result.AutoAssigned));
+    }
+
+    [HttpPost("scheduling/ensure-demo-data")]
+    public async Task<ActionResult<object>> EnsureDemoData(
+        [FromServices] IOptions<FeaturesOptions> features,
+        CancellationToken ct)
+    {
+        if (!(features.Value.SeedDemoData))
+            return BadRequest(new { error = "Demo seed is disabled (Features__SeedDemoData=false)." });
+
+        await DataSeeder.EnsureDemoDispatchDataAsync(db, scheduling, logger, ct);
+        var visitCount = await db.JobVisits.CountAsync(v => !v.IsDeleted, ct);
+        var openCount = await db.JobVisits.CountAsync(v => v.Status == VisitStatus.OpenForClaim && !v.IsDeleted, ct);
+        return Ok(new { message = "Demo dispatch data ensured.", visitCount, openCount });
     }
 
     [HttpPost("subscriptions/{subscriptionId:guid}/cancel")]
