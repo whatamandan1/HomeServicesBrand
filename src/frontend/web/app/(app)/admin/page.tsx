@@ -61,6 +61,8 @@ export default function AdminPage() {
   const [providers, setProviders] = useState<AdminProvider[]>([]);
   const [visits, setVisits] = useState<AdminJobVisit[]>([]);
   const [visitStatusFilter, setVisitStatusFilter] = useState("all");
+  const [visitFromDate, setVisitFromDate] = useState("");
+  const [visitToDate, setVisitToDate] = useState("");
   const [workflowRefreshing, setWorkflowRefreshing] = useState(false);
   const [escalations, setEscalations] = useState<Escalation[]>([]);
   const [workflowEvents, setWorkflowEvents] = useState<WorkflowEvent[]>([]);
@@ -90,8 +92,9 @@ export default function AdminPage() {
 
   function refreshVisits() {
     if (!auth?.token) return;
-    const options: { status?: string; limit?: number } = { limit: 200 };
-    if (visitStatusFilter !== "all") options.status = visitStatusFilter;
+    const options: { fromDate?: string; toDate?: string; limit?: number } = { limit: 200 };
+    if (visitFromDate) options.fromDate = `${visitFromDate}T00:00:00Z`;
+    if (visitToDate) options.toDate = `${visitToDate}T23:59:59Z`;
     setVisitLoadError(null);
     api.adminVisits(auth.token, options)
       .then(setVisits)
@@ -100,6 +103,16 @@ export default function AdminPage() {
         setVisitLoadError(e instanceof Error ? e.message : "Could not load visits");
       });
     api.adminDashboard(auth.token, trendDays).then(setDash);
+  }
+
+  function openCustomerFromVisit(customerId: string) {
+    setSelectedCustomerId(customerId);
+    setSelectedProviderId(null);
+    requestAnimationFrame(() => {
+      document
+        .getElementById(`customer-${customerId}`)
+        ?.scrollIntoView({ behavior: "smooth", block: "nearest" });
+    });
   }
 
   function refreshWorkflowEvents(workflow?: string) {
@@ -119,8 +132,8 @@ export default function AdminPage() {
 
   async function runVisitAction(
     visitId: string,
-    action: "cancel" | "reschedule",
-    scheduledDate?: string
+    action: "cancel" | "reschedule" | "release" | "assign",
+    payload?: string
   ) {
     if (!auth?.token) return;
     setBusyVisitId(visitId);
@@ -128,8 +141,14 @@ export default function AdminPage() {
     try {
       if (action === "cancel") {
         await api.adminCancelVisit(auth.token, visitId);
+      } else if (action === "reschedule") {
+        await api.adminRescheduleVisit(auth.token, visitId, payload!);
+      } else if (action === "release") {
+        await api.adminReleaseVisit(auth.token, visitId);
+        setDispatchNotice("Visit released back to the open pool.");
       } else {
-        await api.adminRescheduleVisit(auth.token, visitId, scheduledDate!);
+        await api.adminAssignVisit(auth.token, visitId, payload!);
+        setDispatchNotice("Visit assigned to gardener.");
       }
       refreshVisits();
     } catch (e) {
@@ -251,7 +270,9 @@ export default function AdminPage() {
   useEffect(() => {
     if (!auth?.token || auth.role !== "Admin") return;
     refreshVisits();
-  }, [auth?.token, visitStatusFilter]);
+  }, [auth?.token, visitFromDate, visitToDate]);
+
+  const approvedProviders = providers.filter((p) => p.isApproved);
 
   async function approveProvider(providerId: string) {
     if (!auth?.token) return;
@@ -712,6 +733,43 @@ export default function AdminPage() {
           </div>
           <ListMapToggle value={visitView} onChange={setVisitView} />
         </div>
+        <div className="mt-3 flex flex-wrap items-end gap-3">
+          <label className="text-sm">
+            <span className="font-medium text-stone-700">From</span>
+            <input
+              type="date"
+              value={visitFromDate}
+              onChange={(e) => setVisitFromDate(e.target.value)}
+              className="field-input mt-1 block"
+            />
+          </label>
+          <label className="text-sm">
+            <span className="font-medium text-stone-700">To</span>
+            <input
+              type="date"
+              value={visitToDate}
+              onChange={(e) => setVisitToDate(e.target.value)}
+              className="field-input mt-1 block"
+            />
+          </label>
+          <button
+            type="button"
+            className="rounded-lg border border-stone-200 bg-white px-3 py-2 text-sm font-medium text-stone-700 hover:bg-stone-50"
+            onClick={() => {
+              setVisitFromDate("");
+              setVisitToDate("");
+            }}
+          >
+            Clear dates
+          </button>
+          <button
+            type="button"
+            className="rounded-lg border border-stone-200 bg-white px-3 py-2 text-sm font-medium text-stone-700 hover:bg-stone-50"
+            onClick={refreshVisits}
+          >
+            Refresh visits
+          </button>
+        </div>
         {dispatchNotice && (
           <AlertBanner variant="success" message={dispatchNotice} onDismiss={() => setDispatchNotice(null)} />
         )}
@@ -747,8 +805,12 @@ export default function AdminPage() {
           statusFilter={visitStatusFilter}
           onStatusFilterChange={setVisitStatusFilter}
           busyId={busyVisitId}
+          approvedProviders={approvedProviders}
           onCancel={(id) => runVisitAction(id, "cancel")}
           onReschedule={(id, date) => runVisitAction(id, "reschedule", date)}
+          onRelease={(id) => runVisitAction(id, "release")}
+          onAssignProvider={(id, providerId) => runVisitAction(id, "assign", providerId)}
+          onViewCustomer={openCustomerFromVisit}
         />
         )}
       </section>

@@ -113,8 +113,12 @@ public static class AdminJobVisitMapper
                 row.AvailabilityWindow,
                 row.Status,
                 property?.Postcode ?? "-",
+                subscriptionCustomerMap.TryGetValue(row.SubscriptionId, out var mappedCustomerId)
+                    ? mappedCustomerId
+                    : null,
                 customerName,
                 providerName,
+                row.AssignedProviderId,
                 property?.Latitude,
                 property?.Longitude,
                 offer?.ExpiresAtUtc,

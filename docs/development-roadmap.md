@@ -89,7 +89,7 @@ These are the spec's top priorities for initial launch.
 | Payment processing | ✅ Done | Renewals, past_due, cancellation via webhooks |
 | Provider onboarding | ✅ Done | Self-signup at `/providers#apply` + admin approval; base postcode + radius; vetting (ID photo, RTW, DBS, insurance) |
 | Provider job claiming | ✅ Done | Radius/outcode coverage + distance fallback; claim with conflict check |
-| Operational CRM | 🟡 Partial | Dispatch board (status tabs, offer expiry, open counts), admin property edit, provider visit roster, workflow log refresh + payload detail; travel distance on provider claim |
+| Operational CRM | 🟡 Partial | Dispatch board (status tab counts, date filter, release/assign, customer link), admin property edit, provider visit roster, workflow log refresh + payload detail; travel distance on provider claim |
 | Recurring scheduling | ✅ Done | Yearly cadence via `PlanCatalog` (10/20/30 visits/yr); background top-up; legacy demo DB spacing may remain |
 | Communication systems | ✅ Done | SendGrid live (transactional + lifecycle); Twilio wired but **deferred** (UK sender registration); see [`communications-inventory.md`](communications-inventory.md) |
 | AI support assistant | ✅ Done | Customer portal chat + guest homepage chat |
@@ -223,7 +223,7 @@ Requirements: [`multi-property-solutions-requirements.md`](multi-property-soluti
 | Customer management | 🟡 Partial | Customer detail with subs (preferred times, gardener), visit gardener names, photo lightbox |
 | Multi-property management | 🟡 Partial | Multi-Property Solutions section - enquiry leads + status; quotes/invoicing phase 2+ |
 | Workflow monitoring | 🟡 Partial | UI for `WorkflowEvent` log on `/admin` |
-| Dispatch visibility | 🟡 Partial | Dispatch board + open-dispatch action in UI |
+| Dispatch visibility | 🟡 Partial | Dispatch board + open-dispatch; admin release to pool + manual assign gardener |
 | Escalation handling | ✅ Done | Take case and resolve in admin portal |
 | KPI monitoring | ✅ Done | Dashboard counts + 7/30/90-day trend charts (weekly buckets at 90d) |
 | AI action monitoring | ✅ Done | Admin view of `AIActionLog` + communication thread review |

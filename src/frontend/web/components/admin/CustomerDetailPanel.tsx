@@ -41,6 +41,20 @@ export function CustomerDetailPanel({
   const [threadsError, setThreadsError] = useState<string | null>(null);
   const [savingPropertyId, setSavingPropertyId] = useState<string | null>(null);
 
+  async function reloadDetail() {
+    setLoading(true);
+    setError(null);
+    try {
+      const refreshed = await api.adminCustomerDetail(token, customerId);
+      setDetail(refreshed);
+      onUpdated?.();
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "Failed to load customer");
+    } finally {
+      setLoading(false);
+    }
+  }
+
   useEffect(() => {
     setLoading(true);
     setError(null);
@@ -94,6 +108,14 @@ export function CustomerDetailPanel({
       <div className="flex flex-wrap items-start justify-between gap-3">
         <h3 className="font-semibold text-gardens-dark">Customer detail</h3>
         <div className="flex flex-wrap items-center gap-2">
+          <button
+            type="button"
+            disabled={loading}
+            onClick={() => void reloadDetail()}
+            className="rounded-lg border border-stone-200 px-3 py-1.5 text-sm font-medium text-stone-700 hover:bg-stone-50 disabled:opacity-50"
+          >
+            {loading ? "Refreshing…" : "Refresh"}
+          </button>
           <ActAsUserButton
               adminAuth={adminAuth}
               userId={detail?.userId ?? customerUserId}

@@ -34,6 +34,23 @@ export function ProviderDetailPanel({
   const [visits, setVisits] = useState<JobVisit[]>([]);
   const [visitsLoading, setVisitsLoading] = useState(true);
 
+  async function reloadVisits() {
+    setVisitsLoading(true);
+    try {
+      const refreshed = await api.adminProviderVisits(token, provider.id, 30);
+      setVisits(refreshed);
+    } catch {
+      setVisits([]);
+    } finally {
+      setVisitsLoading(false);
+    }
+  }
+
+  const upcomingVisits = visits.filter(
+    (v) => v.status !== "Completed" && v.status !== "Cancelled"
+  );
+  const pastVisits = visits.filter((v) => v.status === "Completed");
+
   useEffect(() => {
     setEarningsLoading(true);
     api
@@ -241,25 +258,60 @@ export function ProviderDetailPanel({
       </div>
 
       <div className="mt-6">
-        <h4 className="text-sm font-semibold text-gardens-dark">Assigned visits</h4>
+        <div className="flex flex-wrap items-center justify-between gap-2">
+          <h4 className="text-sm font-semibold text-gardens-dark">Assigned visits</h4>
+          <button
+            type="button"
+            disabled={visitsLoading}
+            onClick={() => void reloadVisits()}
+            className="rounded-lg border border-stone-200 px-2 py-1 text-xs font-medium text-stone-700 hover:bg-stone-50 disabled:opacity-50"
+          >
+            {visitsLoading ? "Refreshing…" : "Refresh"}
+          </button>
+        </div>
         {visitsLoading ? (
           <p className="mt-2 text-sm text-stone-500">Loading visits…</p>
         ) : visits.length === 0 ? (
           <p className="mt-2 text-sm text-stone-500">No assigned visits yet.</p>
         ) : (
-          <ul className="mt-2 space-y-2">
-            {visits.map((v) => (
-              <li key={v.id} className="rounded-lg border bg-white p-3 text-sm">
-                <div className="flex flex-wrap items-center justify-between gap-2">
-                  <div>
-                    <p className="font-medium">{v.scheduledDate.slice(0, 10)} · {v.postcode}</p>
-                    <p className="text-xs text-stone-500">{v.availabilityWindow}</p>
-                  </div>
-                  <StatusBadge status={v.status} />
-                </div>
-              </li>
-            ))}
-          </ul>
+          <div className="mt-2 space-y-4">
+            {upcomingVisits.length > 0 && (
+              <div>
+                <p className="text-xs font-medium uppercase tracking-wide text-stone-500">Upcoming</p>
+                <ul className="mt-2 space-y-2">
+                  {upcomingVisits.map((v) => (
+                    <li key={v.id} className="rounded-lg border bg-white p-3 text-sm">
+                      <div className="flex flex-wrap items-center justify-between gap-2">
+                        <div>
+                          <p className="font-medium">{v.scheduledDate.slice(0, 10)} · {v.postcode}</p>
+                          <p className="text-xs text-stone-500">{v.availabilityWindow}</p>
+                        </div>
+                        <StatusBadge status={v.status} />
+                      </div>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )}
+            {pastVisits.length > 0 && (
+              <div>
+                <p className="text-xs font-medium uppercase tracking-wide text-stone-500">Completed</p>
+                <ul className="mt-2 space-y-2">
+                  {pastVisits.map((v) => (
+                    <li key={v.id} className="rounded-lg border border-stone-100 bg-stone-50 p-3 text-sm">
+                      <div className="flex flex-wrap items-center justify-between gap-2">
+                        <div>
+                          <p className="font-medium">{v.scheduledDate.slice(0, 10)} · {v.postcode}</p>
+                          <p className="text-xs text-stone-500">{v.availabilityWindow}</p>
+                        </div>
+                        <StatusBadge status={v.status} />
+                      </div>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )}
+          </div>
         )}
       </div>
 

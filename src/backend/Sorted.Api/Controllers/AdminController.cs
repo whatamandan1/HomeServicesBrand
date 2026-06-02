@@ -769,6 +769,37 @@ public class AdminController(
         }
     }
 
+    [HttpPost("visits/{visitId:guid}/release")]
+    public async Task<IActionResult> ReleaseVisit(Guid visitId, CancellationToken ct)
+    {
+        try
+        {
+            await scheduling.ReleaseVisitToOpenPoolAsync(visitId, ct);
+            return Ok(new { message = "Visit released back to the open pool." });
+        }
+        catch (InvalidOperationException ex)
+        {
+            return BadRequest(new { error = ex.Message });
+        }
+    }
+
+    [HttpPost("visits/{visitId:guid}/assign")]
+    public async Task<IActionResult> AssignVisit(
+        Guid visitId,
+        [FromBody] AdminAssignVisitRequest request,
+        CancellationToken ct)
+    {
+        try
+        {
+            await scheduling.AdminAssignVisitAsync(visitId, request.ProviderId, ct);
+            return Ok(new { message = "Visit assigned to provider." });
+        }
+        catch (InvalidOperationException ex)
+        {
+            return BadRequest(new { error = ex.Message });
+        }
+    }
+
     [HttpGet("escalations")]
     public async Task<ActionResult<IEnumerable<EscalationResponse>>> Escalations(CancellationToken ct)
     {

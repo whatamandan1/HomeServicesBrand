@@ -195,7 +195,9 @@ export type JobVisit = {
 };
 
 export type AdminJobVisit = JobVisit & {
+  customerId: string | null;
   customerName: string | null;
+  assignedProviderId: string | null;
   dispatchOfferExpiresAtUtc: string | null;
   dispatchOfferStatus: string | null;
   claimedAtUtc: string | null;
@@ -797,6 +799,13 @@ export const api = {
     request<JobVisit>(`/api/admin/visits/${visitId}/reschedule`, {
       method: "POST",
       body: JSON.stringify({ scheduledDate }),
+    }, token),
+  adminReleaseVisit: (token: string, visitId: string) =>
+    request<{ message: string }>(`/api/admin/visits/${visitId}/release`, { method: "POST" }, token),
+  adminAssignVisit: (token: string, visitId: string, providerId: string) =>
+    request<{ message: string }>(`/api/admin/visits/${visitId}/assign`, {
+      method: "POST",
+      body: JSON.stringify({ providerId }),
     }, token),
   adminEscalations: (token: string) =>
     request<Escalation[]>("/api/admin/escalations", {}, token),

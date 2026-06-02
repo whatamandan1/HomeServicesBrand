@@ -118,6 +118,8 @@ public interface IVisitSchedulingService
     Task ExpireStaleDispatchOffersAsync(int renewalExpiryDays = 3, CancellationToken ct = default);
     Task SendDueVisitRemindersAsync(int leadHours = 24, CancellationToken ct = default);
     Task AssignPreferredProviderToPendingVisitsAsync(Guid subscriptionId, CancellationToken ct = default);
+    Task ReleaseVisitToOpenPoolAsync(Guid visitId, CancellationToken ct = default);
+    Task AdminAssignVisitAsync(Guid visitId, Guid providerId, CancellationToken ct = default);
 }
 
 public interface IVisitManagementService

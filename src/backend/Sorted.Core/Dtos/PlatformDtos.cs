@@ -98,8 +98,10 @@ public record AdminJobVisitResponse(
     string AvailabilityWindow,
     VisitStatus Status,
     string Postcode,
+    Guid? CustomerId,
     string? CustomerName,
     string? AssignedProviderName,
+    Guid? AssignedProviderId,
     double? Latitude,
     double? Longitude,
     DateTime? DispatchOfferExpiresAtUtc,
@@ -109,6 +111,8 @@ public record AdminJobVisitResponse(
     int? DaysOpenForClaim);
 
 public record OpenDispatchResponse(int Opened, int AutoAssigned);
+
+public record AdminAssignVisitRequest(Guid ProviderId);
 
 public record DeleteAccountRequest(string Confirmation);
 

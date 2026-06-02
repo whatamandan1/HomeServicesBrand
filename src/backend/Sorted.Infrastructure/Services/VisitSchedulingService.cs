@@ -424,4 +424,117 @@ public class VisitSchedulingService(
             ?? throw new InvalidOperationException("No property on subscription.");
 
     public static string PostcodeSector(string postcode) => PostcodeFormat.Outcode(postcode);
+
+    public async Task ReleaseVisitToOpenPoolAsync(Guid visitId, CancellationToken ct = default)
+    {
+        var visit = await db.JobVisits
+            .Include(v => v.Property)
+            .FirstOrDefaultAsync(v => v.Id == visitId && !v.IsDeleted, ct)
+            ?? throw new InvalidOperationException("Visit not found.");
+
+        if (visit.Status is not (VisitStatus.Claimed or VisitStatus.Scheduled))
+            throw new InvalidOperationException("Only claimed or scheduled visits can be released to the open pool.");
+
+        var now = DateTime.UtcNow;
+        var expiryDays = _jobOptions.DispatchOfferExpiryDays;
+        var offer = await db.DispatchOffers.FirstOrDefaultAsync(o => o.JobVisitId == visit.Id && !o.IsDeleted, ct);
+
+        visit.Status = VisitStatus.OpenForClaim;
+        visit.AssignedProviderId = null;
+        visit.ClaimedAtUtc = null;
+        visit.UpdatedAtUtc = now;
+
+        if (offer is not null)
+        {
+            offer.Status = DispatchOfferStatus.Open;
+            offer.ExpiresAtUtc = now.AddDays(expiryDays);
+            offer.UpdatedAtUtc = now;
+        }
+        else
+        {
+            db.DispatchOffers.Add(new DispatchOffer
+            {
+                JobVisitId = visit.Id,
+                Status = DispatchOfferStatus.Open,
+                ExpiresAtUtc = now.AddDays(expiryDays),
+            });
+        }
+
+        await db.SaveChangesAsync(ct);
+        await workflow.LogAsync(
+            "dispatch",
+            "visit_released_to_open_pool",
+            nameof(JobVisit),
+            visit.Id,
+            null,
+            ct);
+
+        if (visit.DispatchNotifiedAtUtc is null)
+        {
+            await NotifyProvidersOfDispatchAsync(visit, ct);
+            visit.DispatchNotifiedAtUtc = now;
+            await db.SaveChangesAsync(ct);
+        }
+    }
+
+    public async Task AdminAssignVisitAsync(Guid visitId, Guid providerId, CancellationToken ct = default)
+    {
+        var visit = await db.JobVisits
+            .Include(v => v.Property)
+            .Include(v => v.Subscription).ThenInclude(s => s.Customer).ThenInclude(c => c.User)
+            .FirstOrDefaultAsync(v => v.Id == visitId && !v.IsDeleted, ct)
+            ?? throw new InvalidOperationException("Visit not found.");
+
+        if (visit.Status is not (VisitStatus.OpenForClaim or VisitStatus.Scheduled))
+            throw new InvalidOperationException("Only open or scheduled visits can be assigned.");
+
+        var provider = await db.Providers
+            .Include(p => p.User)
+            .FirstOrDefaultAsync(p => p.Id == providerId && p.IsApproved && !p.IsDeleted, ct)
+            ?? throw new InvalidOperationException("Approved provider not found.");
+
+        if (!await coverage.IsPropertyWithinCoverageAsync(provider, visit.Property, ct))
+            throw new InvalidOperationException("Visit is outside the provider's coverage area.");
+
+        if (!await availability.IsAvailableAsync(provider, visit.ScheduledDate, visit.AvailabilityWindow, ct))
+            throw new InvalidOperationException("Provider is unavailable on this date or time window.");
+
+        var conflict = await db.JobVisits.AnyAsync(v =>
+            v.AssignedProviderId == provider.Id
+            && v.ScheduledDate == visit.ScheduledDate
+            && v.Id != visit.Id
+            && v.Status != VisitStatus.Cancelled
+            && !v.IsDeleted, ct);
+        if (conflict)
+            throw new InvalidOperationException("Provider already has a visit on this date.");
+
+        visit.Status = VisitStatus.Claimed;
+        visit.AssignedProviderId = provider.Id;
+        visit.ClaimedAtUtc = DateTime.UtcNow;
+        visit.UpdatedAtUtc = DateTime.UtcNow;
+
+        var offer = await db.DispatchOffers.FirstOrDefaultAsync(o => o.JobVisitId == visit.Id && !o.IsDeleted, ct);
+        if (offer is not null)
+            offer.Status = DispatchOfferStatus.Claimed;
+
+        await db.SaveChangesAsync(ct);
+
+        var customer = visit.Subscription.Customer.User;
+        await communications.NotifyVisitClaimedAsync(
+            customer.Email,
+            customer.Phone,
+            customer.FirstName,
+            visit.ScheduledDate,
+            visit.Property.Postcode,
+            visit.AvailabilityWindow,
+            ct);
+
+        await workflow.LogAsync(
+            "dispatch",
+            "admin_assigned_provider",
+            nameof(JobVisit),
+            visit.Id,
+            new { providerId = provider.Id },
+            ct);
+    }
 }
