@@ -6,17 +6,20 @@ Living checklist comparing the current GardensSorted / Sorted platform build aga
 Use this document to track what is done, what is partial, and what to build next. Update
 statuses as features ship.
 
-**Last reviewed:** 2026-05-26 (custom domain + operational polish)  
+**Last reviewed:** 2026-06-02 (garden-band pricing, comms stack, vetting, signup leads)  
 **Live site:** https://gardenssorted.co.uk/ (canonical; `gardenssorted.com` redirects here)  
 **Live API:** https://homeservicesbrand-production.up.railway.app/
 
-**Current focus:** Demo phase - custom domain live; operational polish shipped; Multi-Property Solutions phase 2 next.
+**Product truth docs:** [`consumer-plans-and-pricing.md`](consumer-plans-and-pricing.md) (pricing/cadence), [`communications-inventory.md`](communications-inventory.md) (email/SMS registry), [`signup-needs-map.md`](signup-needs-map.md) (signup + leads)
+
+**Current focus:** Demo phase - custom domain live; growth/compliance polish shipped; Multi-Property Solutions phase 2 next.
 
 ### What's next (demo phase)
 
 1. **Multi-Property Solutions phase 2** - pricing rules + AI indicative quote + admin review
 2. **Multi-brand frontend** - when a second brand is ready
 3. **Pre-launch gate** - real admin, disable demo seed - only when inviting paying customers
+4. **Doc hygiene** - keep deploy/marketing/Stripe docs aligned with [`consumer-plans-and-pricing.md`](consumer-plans-and-pricing.md) ✅ (2026-06-02)
 
 **Multi-Property Solutions** (full requirements: [`multi-property-solutions-requirements.md`](multi-property-solutions-requirements.md)):
 
@@ -35,14 +38,21 @@ statuses as features ship.
 | **Stripe Connect (v2 payouts)** | Manual admin mark-paid is fine for demo |
 | **Pre-launch gate** | Real admin, `Features__SeedDemoData=false` - only when inviting paying customers (custom domain ✅) |
 
-### Plan visit cadence (product truth)
+### Plan visit cadence & pricing (product truth)
 
-| Plan | Visits included | Schedule spacing | Provider pay per visit (~60% share) |
-|------|-----------------|------------------|-------------------------------------|
-| Essential | 1 / month | every 30 days | ~£17.97 (at £29.95/mo) |
-| Premium | 2 / month | every 15 days | ~£14.99 (at £49.95/mo) |
+See [`consumer-plans-and-pricing.md`](consumer-plans-and-pricing.md) for full detail.
 
-Legacy demo data may still have weekly-spaced visits from before `ecdf9ea`; new signups and top-ups use plan cadence.
+| Dimension | Launch model |
+|-----------|--------------|
+| **Garden bands** | ≤50 m² £59.99/mo · ≤100 m² £79.99/mo · ≤150 m² £99.99/mo |
+| **Visit frequency at signup** | **10 / 20 / 30 visits per year** (Essential / Premium / Elite plan names) |
+| **Schedule spacing** | ~36 / ~18 / ~12 day intervals (`PlanCatalog.VisitIntervalDays`) |
+| **Provider pay per visit** | **£20 / £30 / £40** by garden band (`ProviderVisitPay`) |
+| **Signup add-ons** | Hedges, seasonal tidy, patio refresh (optional; 6-month min on monthly) |
+
+Legacy demo DB rows may still have old weekly spacing or pre-band pricing from before `ecdf9ea`; new signups use garden-band pricing + yearly cadence.
+
+**Note:** In-portal tier upgrades are disabled (`PlanCatalog.GetUpgradeTier` → `null`) until multi-tier upsell returns; AI chat copy should not promise instant upgrades.
 
 ### Last job before go-live (customer + portfolio launch gate) 🔵 Deferred
 
@@ -50,10 +60,10 @@ Do this **once**, immediately before inviting real paying customers (not needed 
 
 1. **Create a real admin account** (your email, strong password) - do not rely on `admin@gardenssorted.local` / seeded demo users.
 2. **Turn off demo seed on Railway** - set `Features__SeedDemoData=false` and redeploy API (only after the real admin exists and you have verified admin login).
-3. **Ship Multi-Property Solutions phase 1** - `/multi-property-solutions` marketing page + enquiry form (2+ properties, address + garden size); admin lead notification.
-4. **Smoke-test on live** - admin login, customer signup, multi-property enquiry, billing portal, provider claim flow, no demo credentials visible in UI.
+3. **Verify Stripe price IDs** match garden-band + tier uplifts - see [`stripe-price-ids-checklist.md`](stripe-price-ids-checklist.md).
+4. **Smoke-test on live** - admin login, customer signup (all visit frequencies + add-ons), multi-property enquiry, billing portal, provider claim + vetting flow, no demo credentials visible in UI.
 
-Recent session (2026-05-23): plan cadence + earnings fix (`PlanCatalog`: Essential 1 visit/mo, Premium 2/mo); provider earnings ledger; admin availability edit + photo lightbox + richer customer CRM; day-off visit release; billing/signup/trends/auto-assign from earlier in session - all verified on live.
+Recent session (2026-06-02): repo cleanup (`planning/` folder); roadmap aligned to garden-band product truth. Prior session (2026-05-31 → 2026-06-01): provider vetting + ID photo upload; full comms stack; signup leads + abandon automation; Leeds/York/Wakefield SEO pages; UK address autocomplete; cookie consent; garden-band pricing across signup/marketing.
 
 ---
 
@@ -74,15 +84,16 @@ These are the spec's top priorities for initial launch.
 
 | Priority | Status | Notes / next step |
 |----------|--------|-------------------|
-| Customer signup | ✅ Done | 3-step wizard at `/signup`; dev Stripe bypass; see [`signup-needs-map.md`](signup-needs-map.md) |
+| Customer signup | ✅ Done | 3-step wizard at `/signup`; garden band + 10/20/30 visits/yr + add-ons; dev Stripe bypass; see [`signup-needs-map.md`](signup-needs-map.md) |
 | Recurring subscriptions | ✅ Done | Stripe Checkout subscription mode + renewal webhooks |
 | Payment processing | ✅ Done | Renewals, past_due, cancellation via webhooks |
-| Provider onboarding | ✅ Done | Self-signup at `/providers#apply` + admin approval; base postcode + radius |
+| Provider onboarding | ✅ Done | Self-signup at `/providers#apply` + admin approval; base postcode + radius; vetting (ID photo, RTW, DBS, insurance) |
 | Provider job claiming | ✅ Done | Radius/outcode coverage + distance fallback; claim with conflict check |
-| Operational CRM | 🟡 Partial | Dashboard, visits, escalations, workflow/AI viewers, customer detail, provider coverage edit; mobile section nav + loading/error polish |
-| Recurring scheduling | 🟡 Partial | Plan cadence via `PlanCatalog` (Essential 30d, Premium 15d); background top-up; legacy weekly visits may remain in demo DB |
-| Communication systems | 🟡 Partial | SendGrid live; Twilio deferred (UK regulatory) |
+| Operational CRM | 🟡 Partial | Dashboard, visits, escalations, workflow/AI/comms viewers, customer detail, provider coverage + vetting edit; mobile section nav + loading/error polish |
+| Recurring scheduling | ✅ Done | Yearly cadence via `PlanCatalog` (10/20/30 visits/yr); background top-up; legacy demo DB spacing may remain |
+| Communication systems | ✅ Done | SendGrid live (transactional + lifecycle); Twilio wired but **deferred** (UK sender registration); see [`communications-inventory.md`](communications-inventory.md) |
 | AI support assistant | ✅ Done | Customer portal chat + guest homepage chat |
+| Signup lead capture | ✅ Done | Debounced capture + abandon/checkout/winback emails; admin **Incomplete signups** inbox |
 | Multi-Property Solutions (phase 1) | ✅ Done | `/multi-property-solutions` + enquiry + admin section |
 
 ---
@@ -103,8 +114,8 @@ Work through phases in order. Each phase builds on the last.
 
 ### Phase 2 - Day-to-day operations ✅
 
-- [x] **Background jobs** - ongoing visit generation, dispatch offer expiry, pre-visit reminders
-- [x] **SMS + email in production** - SendGrid configured; Twilio deferred (UK regulatory)
+- [x] **Background jobs** - ongoing visit generation, dispatch offer expiry, pre-visit reminders, scheduled lifecycle comms (abandon, winback, review ask)
+- [x] **SMS + email in production** - SendGrid configured for full transactional + lifecycle set; Twilio deferred (UK regulatory)
 - [x] **Admin workflow viewer** - browse `WorkflowEvent` log in admin UI
 - [x] **Admin AI log viewer** - browse `AIActionLog` and communication threads
 - [x] **Customer property management** - edit property details, access notes, optional media upload *(media deferred)*
@@ -115,15 +126,29 @@ Work through phases in order. Each phase builds on the last.
 
 - [x] **Provider availability (v1)** - working days + default hours + blocked dates on `/provider`; claim, open jobs, and preferred-provider auto-assign respect schedule; blocking a day or changing working days releases assigned visits back to open pool (incl. rescheduled)
 - [x] **Provider availability (v2)** - customer text windows (morning/afternoon/evening) matched to provider work hours on open jobs, claim, auto-assign, and day-off release
-- [ ] **Multi-brand frontend** - theme/config per brand; remove hardcoded `gardens-sorted` in API client
-- [x] **Provider earnings / payouts (v1)** - visit ledger accrues on complete (60% share ÷ plan visits/mo); Essential ~£17.97, Premium ~£14.99; provider + admin views; admin marks paid manually
+- [ ] **Multi-brand frontend** - theme/config per brand; remove hardcoded `gardens-sorted` in `lib/api.ts`, `PortfolioEnquiryForm.tsx`
+- [x] **Provider earnings / payouts (v1)** - visit ledger accrues on complete (`ProviderVisitPay`: £20/30/40 by garden band); provider + admin views; admin marks paid manually
 - [ ] **Provider earnings / payouts (v2)** - Stripe Connect automated transfers 🔵 Deferred (demo phase)
 - [x] **Recurring provider preference** - preferred provider after first visit; auto-assign pending visits on complete + scheduling
 - [ ] **Weather-aware rescheduling** - weather API + reschedule workflow
 - [x] **Automated test suite** - xUnit core + API tests; CI fails on test failure
 - [x] **Auth hardening (core)** - role-based middleware route guards, password reset, session handling *(refresh tokens still open)*
 - [x] **Production security (core)** - startup checks for JWT/webhook/Stripe bypass; Stripe signature verification; dev endpoints gated *(demo seed still on until go-live gate)*
+- [ ] **In-portal tier upgrades** - checkout/API paths exist; `GetUpgradeTier` disabled until multi-tier upsell relaunch
 - [ ] **Garden size help when unsure** - see [Possible later improvements](#possible-later-improvements) (AI from photos + optional Maps/aerial)
+
+### Phase 3b - Growth & compliance ✅
+
+- [x] **Signup lead capture** - debounced `POST /api/marketing/signup-leads`; admin **Incomplete signups** inbox
+- [x] **Abandon / lifecycle email automation** - `ScheduledCommunicationService` (checkout abandon, winback, review ask, annual nudge, unclaimed visits)
+- [x] **Provider vetting** - ID photo upload, RTW, DBS, insurance; admin verify + approval gate ([`provider-requirements.md`](provider-requirements.md))
+- [x] **Provider add-on equipment** - checklist for hedge/seasonal/patio add-ons
+- [x] **Admin impersonation** - “Act as user” for support/debug
+- [x] **SEO area pages** - `/areas/[city]` (Leeds, York, Wakefield)
+- [x] **UK address autocomplete** - getAddress.io on signup finish step
+- [x] **Cookie policy + consent** - `/cookies`, preference UI for marketing tags
+- [x] **Marketing analytics** - GA4 conversion events; visitor location for hero personalisation
+- [x] **Facebook/social assets** - cover + profile images in `public/`
 
 ### Phase 4 - Multi-Property Solutions
 
@@ -152,7 +177,7 @@ Requirements: [`multi-property-solutions-requirements.md`](multi-property-soluti
 | Manage properties | 🟡 Partial | Edit property, access notes, multiple properties |
 | View upcoming visits | ✅ Done | Cancel/reschedule in customer portal |
 | Communicate with support | ✅ Done | Guest + authenticated AI chat |
-| Upload property media | 🟡 Partial | Up to 3 photos per property in signup + portal (stored in DB) |
+| Upload property media | ✅ Done | Up to 3 photos per property in signup + portal (stored in DB); AI sizing not yet |
 
 ---
 
@@ -183,7 +208,7 @@ Requirements: [`multi-property-solutions-requirements.md`](multi-property-soluti
 | ID, RTW, DBS | ✅ Portal form | Post-signup `PUT /api/provider/me/vetting`; admin verify + approve gate - [`provider-requirements.md`](provider-requirements.md) |
 | Claim jobs | ✅ Done | Matched by derived outcodes / distance within radius |
 | Manage availability | ✅ Done | Provider self-service + admin edit; v2 time-window matching on dispatch |
-| View earnings | 🟡 Partial | Accrued/paid ledger on `/provider`; plan-based per-visit amounts; admin mark paid; Stripe Connect 🔵 deferred |
+| View earnings | 🟡 Partial | Accrued/paid ledger on `/provider`; garden-band per-visit pay (£20/30/40); admin mark paid; Stripe Connect 🔵 deferred |
 | View recurring assignments | ✅ Done | Preferred gardener auto-assign; portal shows assigned gardener name |
 | Communicate with operations | ⬜ Not started | Provider messaging or ops notifications |
 
@@ -194,14 +219,14 @@ Requirements: [`multi-property-solutions-requirements.md`](multi-property-soluti
 | Requirement | Status | Next step |
 |-------------|--------|-----------|
 | Operational dashboards | 🟡 Partial | KPIs, trends, date filters |
-| Provider management | 🟡 Partial | Approve providers; edit coverage + availability; earnings mark-paid |
+| Provider management | 🟡 Partial | Approve providers; vetting verify; edit coverage + availability; earnings mark-paid |
 | Customer management | 🟡 Partial | Customer detail with subs (preferred times, gardener), visit gardener names, photo lightbox |
 | Multi-property management | 🟡 Partial | Multi-Property Solutions section - enquiry leads + status; quotes/invoicing phase 2+ |
 | Workflow monitoring | 🟡 Partial | UI for `WorkflowEvent` log on `/admin` |
 | Dispatch visibility | 🟡 Partial | Dispatch board + open-dispatch action in UI |
 | Escalation handling | ✅ Done | Take case and resolve in admin portal |
 | KPI monitoring | ✅ Done | Dashboard counts + 7/30/90-day trend charts (weekly buckets at 90d) |
-| AI action monitoring | 🟡 Partial | Admin view of `AIActionLog` + thread review |
+| AI action monitoring | ✅ Done | Admin view of `AIActionLog` + communication thread review |
 
 ---
 
@@ -209,7 +234,7 @@ Requirements: [`multi-property-solutions-requirements.md`](multi-property-soluti
 
 | Requirement | Status | Next step |
 |-------------|--------|-----------|
-| Recurring visits | 🟡 Partial | `PlanCatalog`: Essential 1/mo, Premium 2/mo; top-up job maintains buffer; initial batch on signup |
+| Recurring visits | ✅ Done | `PlanCatalog`: 10/20/30 visits/yr; top-up job maintains buffer; initial batch on signup; legacy demo spacing may remain |
 | Availability windows | ✅ Done | Customer free-text preference; provider schedule + work hours enforced on dispatch; day-off unassigns conflicting visits |
 | Provider allocation | ✅ Done | Radius from base postcode; outcodes derived via postcodes.io; distance fallback |
 | Weather-aware adjustments | ⬜ Not started | Weather API + reschedule workflow |
@@ -226,10 +251,10 @@ Requirements: [`multi-property-solutions-requirements.md`](multi-property-soluti
 | Requirement | Status | Next step |
 |-------------|--------|-----------|
 | Live chat | ✅ Done | Guest homepage + customer portal |
-| Email notifications | 🟡 Partial | SendGrid live; visit-claimed + pre-visit reminder emails in job loop |
+| Email notifications | ✅ Done | SendGrid live; full transactional + lifecycle set - see [`communications-inventory.md`](communications-inventory.md) |
 | SMS notifications | 🔵 Deferred | Twilio wired; blocked on UK sender registration - demo uses email |
 | WhatsApp provider workflows | ⬜ Not started | - |
-| Centralized communication logs | ✅ Done | DB persistence; admin UI to browse still needed |
+| Centralized communication logs | ✅ Done | DB persistence + admin communication thread viewer on `/admin` |
 
 ---
 
@@ -239,12 +264,12 @@ Requirements: [`multi-property-solutions-requirements.md`](multi-property-soluti
 |----------|--------|-----------|
 | Customer signup | ✅ Done | Logged via `WorkflowEvent` |
 | Payment success | ✅ Done | Initial payment + recurring renewals via webhooks |
-| Recurring visit generation | 🟡 Partial | Plan-based spacing (30d / 15d); top-up maintains ~4 future visits |
+| Recurring visit generation | ✅ Done | Yearly cadence (10/20/30 visits/yr); top-up maintains ~4 future visits |
 | Provider dispatch | 🟡 Partial | Offer expiry job + preferred-provider auto-assign |
 | Provider claim | ✅ Done | Email always; SMS when Twilio configured |
-| Reminders | 🟡 Partial | Pre-visit email in background job; SMS when Twilio configured |
+| Reminders | ✅ Done | Pre-visit email in background job; SMS when Twilio configured |
 | Weather rescheduling | ⬜ Not started | - |
-| Payout generation | 🟡 Partial | Plan-based accrual on visit complete; admin marks paid manually; Stripe Connect 🔵 deferred |
+| Payout generation | 🟡 Partial | Garden-band per-visit accrual on visit complete; admin marks paid manually; Stripe Connect 🔵 deferred |
 | Portfolio quote | ⬜ Not started | AI indicative + admin review (phase 2) |
 | Portfolio invoicing | ⬜ Not started | Monthly arrears; card/BACS threshold (phase 4) |
 | Churn prevention | ⬜ Not started | - |
@@ -263,13 +288,13 @@ Modular boundaries to maintain as the platform grows.
 | Brands | 🟡 Partial | Entity + API; frontend not multi-brand yet |
 | Customers | ✅ Done | Registration, portal, subscriptions |
 | Multi-Property Solutions | 🟡 Partial | Phase 1 enquiry + admin leads; invoicing track phase 4 |
-| Providers | 🟡 Partial | Self-signup, coverage, claiming, availability v1+v2, earnings ledger v1 |
-| Services | 🟡 Partial | Essential (1 visit/mo) + Premium (2 visits/mo); plan copy aligned |
+| Providers | 🟡 Partial | Self-signup, coverage, claiming, availability v1+v2, vetting + ID photo, earnings ledger v1 |
+| Services | ✅ Done | Garden care by band + optional add-ons; 10/20/30 visits/yr at signup |
 | Subscriptions | ✅ Done | Plans + Stripe subscription Checkout + renewal webhooks |
-| Scheduling | 🟡 Partial | `PlanCatalog` cadence; top-up jobs; provider availability + time windows enforced |
+| Scheduling | ✅ Done | `PlanCatalog` yearly cadence; top-up jobs; provider availability + time windows enforced |
 | Dispatch | 🟡 Partial | FCFS claim + preferred auto-assign; travel validation missing |
-| CRM | 🟡 Partial | Customer/provider detail, photo lightbox, earnings, availability edit, trends |
-| Communications | 🟡 Partial | Chat done; email/SMS/WhatsApp incomplete |
+| CRM | 🟡 Partial | Customer/provider detail, vetting, photo lightbox, earnings, availability edit, trends, signup leads |
+| Communications | ✅ Done | Full transactional + lifecycle email; chat done; SMS deferred; admin thread viewer |
 | Billing | ✅ Done | Stripe subscription Checkout (consumer); portfolio invoicing ⬜ phase 4 |
 | AI Orchestration | ✅ Done | OpenAI chat, escalation, audit logging |
 | Workflow Engine | 🟡 Partial | Event logging; limited automation |
@@ -302,11 +327,11 @@ Modular boundaries to maintain as the platform grows.
 | JWT + RBAC | ✅ Done | API + Next.js role middleware on `/admin`, `/provider`, `/portal`, `/landlord` |
 | Encrypted secrets | 🟡 Partial | Env vars documented; production startup validates JWT + Stripe webhook |
 | GDPR readiness | 🟡 Partial | Privacy policy at `/privacy`; data export/delete flows still open |
-| Audit logging | 🟡 Partial | AI + workflow logs in DB; admin UI missing |
+| Audit logging | ✅ Done | AI + workflow + communication logs in DB; admin viewers on `/admin` |
 | Structured logging | 🟡 Partial | Serilog + `/health`; add error tracking (e.g. Sentry) |
-| Workflow tracing | 🟡 Partial | `WorkflowEvent` table + admin workflow viewer |
+| Workflow tracing | ✅ Done | `WorkflowEvent` table + admin workflow viewer |
 | AI action logging | ✅ Done | `AIActionLog` persisted |
-| Automated tests | 🟡 Partial | xUnit core + API integration tests; CI fails on test failure |
+| Automated tests | ✅ Done | xUnit core + API integration tests; Playwright e2e in CI |
 | Maintainability | ✅ Done | Clear module separation, domain naming |
 
 ---
@@ -341,53 +366,49 @@ Related today: garden size is self-selected in the signup wizard; optional photo
 
 ## What's already shipped (reference)
 
-Quick snapshot of implemented features as of last review.
+Quick snapshot of implemented features as of **2026-06-02**.
 
 ### Backend
 - Auth: register/login, JWT, password reset, role-based controllers, admin impersonation
-- Customer: signup creates account, property, subscription; property edit in portal
+- Customer: signup creates account, property, subscription; garden-band pricing + visit frequency + add-ons; property edit in portal
 - Stripe: subscription Checkout + renewal/past_due/cancel webhooks; billing portal (cancel disabled - support/admin only); customer payment history API
 - Visits: scheduling service, background jobs (top-up, dispatch expiry, reminders), claim/start/complete, cancel/reschedule
-- Provider earnings: `ProviderEarning` ledger; plan-based accrual on complete (60% ÷ visits/mo - Essential ~£17.97, Premium ~£14.99); admin mark paid
-- Plan cadence: `PlanCatalog.VisitsPerMonth` - Essential 1/mo (30d interval), Premium 2/mo (15d interval); scheduling + payouts aligned
+- Provider earnings: `ProviderEarning` ledger; garden-band per-visit accrual on complete (£20/30/40); admin mark paid
+- Plan cadence: `PlanCatalog` - 10/20/30 visits/yr (~36/18/12 day intervals); scheduling + payouts aligned
 - Provider availability: working days, hours, blocked dates; **v2** customer time-window matching (morning/afternoon/evening); day-off releases assigned visits; admin can edit provider schedule
-- Admin CRM: photo lightbox, customer preferred times/gardener, provider earnings + availability edit
-- Signup/plan copy: Essential “1 visit per month”, Premium “2 visits per month”
-- Signup: terms acceptance, deferred photo upload, checkout session sync, PostgreSQL migration repair
+- Provider vetting: ID photo upload, RTW, DBS, insurance; admin verify + approval gate
+- Signup leads: capture API, abandon/checkout/winback automation via `ScheduledCommunicationService`
+- Admin CRM: photo lightbox, customer preferred times/gardener, provider earnings + availability + vetting edit, signup lead inbox
 - Billing: Manage billing for active subs; Stripe link recovery from checkout session
-- Admin: KPI trend charts (daily 7/30d, weekly 90d); customer photo count in CRM
-- Gardener preference: auto-assign pending visits after complete; provider list auto-refresh
-- Admin: dashboard, customer detail (subs, visits, chat history), provider detail, workflow/AI/comms viewers, maps
+- Admin: KPI trend charts (daily 7/30d, weekly 90d); workflow/AI/comms thread viewers; maps
 - AI: customer + guest chat, escalation creation, audit logs
-- SMS/email: SendGrid live on Railway; Twilio wired (deferred)
+- Comms: full transactional + lifecycle email set ([`communications-inventory.md`](communications-inventory.md)); Twilio wired (SMS deferred)
+- Multi-property: enquiry API + admin leads; demo landlord portal (`/landlord`) seeded separately from MPS product track
 - Brands API, workflow event logging, health checks
 
 ### Frontend
-- Marketing: customer-focused `/`, `/about`, `/providers`; **For landlords** `/multi-property-solutions`; SEO (sitemap, robots); compressed hero; lazy chat; `/privacy` and `/terms`; OG image (~200KB JPEG)
+- Marketing: customer-focused `/`, `/about`, `/providers`; **For landlords** `/multi-property-solutions`; SEO area pages (`/areas/leeds`, etc.); sitemap, robots; hero with visitor location; lazy chat; `/privacy`, `/terms`, `/cookies`; OG + Facebook assets
 - Custom domain: `gardenssorted.co.uk` + `gardenssorted.com` (redirect to `.co.uk`; see `docs/custom-domain-setup.md`)
 - Operational polish: shared loading spinners, alert banners, admin mobile section nav, dashboard skeleton
-- Signup: 3-step customer wizard; provider apply form (postcode + radius slider)
-- Portals: `/portal` (Manage billing, photos, preferred gardener), `/provider` (coverage, availability, earnings), `/admin` (CRM + trends + photo lightbox), `/landlord` (multi-property demo dashboard)
+- Signup: 3-step wizard (garden band, visit frequency 10/20/30/yr, add-ons); UK address autocomplete; lead capture hook; provider apply form (postcode + radius slider)
+- Portals: `/portal` (Manage billing, photos, preferred gardener), `/provider` (coverage, availability, earnings, vetting), `/admin` (CRM + trends + leads + comms), `/landlord` (multi-property demo dashboard)
 - Mobile UX: responsive layouts, hamburger nav, mobile CTA bar
 - API proxy via Next.js rewrites for Vercel production
 
 ### Infrastructure
 - Railway + Vercel deployment docs
-- GitHub Actions CI (build only)
+- GitHub Actions CI: backend build + tests, frontend build, Playwright e2e
 - Docker, env examples, Stripe/Twilio setup guides
 
-### Recent commits (2026-05-23)
-- `15c1d84` - provider availability v2 (customer time-window matching)
-- `ecdf9ea` - plan visit cadence + provider pay (Essential 1/mo, Premium 2/mo)
-- `7e5b4d7` - admin CRM polish (availability edit, photo lightbox, earnings refresh)
-- `62069a3` - provider earnings ledger v1 + admin photo thumbnails
-- `89b611b` - roadmap update after day-off release verification
-- `efacb65` - reliable day-off release (calendar-day match, self-heal)
-- `772083a` - initial day-off clash fix
-- `bb9ef6d` - provider availability v1
-- `5e14953` - 90-day weekly trend charts; provider refresh after complete
-- `0555109` - billing portal, admin trends/photos, gardener auto-assign
-- `ae236be` - PostgreSQL migration fix (signup on Railway)
+### Since last review (2026-05-26 → 2026-06-02)
+
+- Garden-band pricing + 10/20/30 visits/yr across signup and marketing
+- Full email/SMS comms stack + lifecycle automation
+- Provider vetting + ID photo upload
+- Signup leads + abandon sequences; admin incomplete signups inbox
+- Leeds/York/Wakefield SEO pages + GA4
+- UK address autocomplete; cookie consent + legal pages
+- Repo cleanup: `planning/` folder, removed debug assets
 
 ---
 

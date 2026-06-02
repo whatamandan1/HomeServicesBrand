@@ -63,7 +63,7 @@ Tenants never interact with the platform. One login maps to one multi-property a
 |--|---------------------|--------------------------|
 | Properties | Typically 1 | 2+ required |
 | Pricing | Fixed Essential / Premium | Personalised from rules |
-| Visits | Plan cadence (1 or 2 / month) | Per-property requirements |
+| Visits | Plan cadence (10 / 20 / 30 per year) | Per-property requirements |
 | Billing | Stripe subscription | Monthly invoice in arrears |
 | Minimum term | Plan minimum term | **3 months per property** |
 | Payment | Card (Stripe Checkout) | Card if **&lt; £200/mo**; **BACS** if **≥ £200/mo** |

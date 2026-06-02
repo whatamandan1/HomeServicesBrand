@@ -142,17 +142,17 @@ Local development should use **Stripe CLI** (`stripe listen`), not a Dashboard U
 
 ## Creating Stripe Prices (production)
 
-Use [`stripe-price-ids-checklist.md`](stripe-price-ids-checklist.md) for the full matrix (Essential, Premium, Elite × monthly/annual).
+Use [`stripe-price-ids-checklist.md`](stripe-price-ids-checklist.md) for the full matrix and checkout behaviour.
 
-Quick summary - create each recurring price, copy `price_...` to Railway, redeploy API:
+Quick summary - create each recurring price for **small garden** (≤50 m²), copy `price_...` to Railway, redeploy API:
 
-| Plan | Amount |
-|------|--------|
-| Essential Monthly | £29.95/mo |
-| Essential Annual | £299.95/yr |
-| Premium Monthly | £54.95/mo |
-| Premium Annual | £549.95/yr |
-| Elite Monthly | £89.95/mo |
-| Elite Annual | £899.95/yr |
+| Plan | Amount (small garden) |
+|------|------------------------|
+| Essential Monthly | £59.99/mo |
+| Essential Annual | £599.90/yr |
+| Premium Monthly | £84.99/mo |
+| Premium Annual | £849.90/yr |
+| Elite Monthly | £119.99/mo |
+| Elite Annual | £1199.90/yr |
 
-Medium/large gardens use dynamic checkout amounts (+£10/£20 monthly uplift); fixed Price IDs apply to **small gardens only**.
+**Medium / large gardens** and **signup add-ons** use dynamic checkout amounts (+£20 / +£40 band uplift, tier uplift, add-on fees). Fixed Price IDs apply to **small garden** checkouts only when configured.

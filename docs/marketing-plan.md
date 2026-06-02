@@ -59,7 +59,7 @@ Marketing activity maps to product readiness in [`development-roadmap.md`](devel
 | **Proud homeowner** | Invested in outdoor space; wants it to look good for visitors | Premium / Elite | “Regular upkeep that keeps your garden looking its best” |
 | **Overwhelmed first-time owner** | Recently moved; garden bigger or faster-growing than expected | Premium | “We handle the routine - you enjoy the space” |
 
-**Garden size:** Courtyard band (up to 40 m² maintained) is the entry offer (from **£39.95/mo** Essential). Four bands to 140 m²; above that is quoted. Uplifts should be clear at signup to avoid surprise and support load.
+**Garden size:** Three bands by **maintained area** (lawn, beds, edges): **≤50 m²** from **£59.99/mo**, **≤100 m²** £79.99/mo, **≤150 m²** £99.99/mo. Above 150 m² → personalised quote. Band and visit frequency are chosen at signup — be explicit in ads to avoid surprise.
 
 **Geography (initial):** Leeds, York, Wakefield and surrounding postcodes. Postcode checker at signup is the primary availability gate.
 
@@ -130,13 +130,15 @@ We are **not** a lead-gen directory or quote marketplace. We sell **recurring ga
 
 Reference: [`consumer-plans-and-pricing.md`](consumer-plans-and-pricing.md).
 
-| Plan | Visits | From (small garden) | Best for |
-|------|--------|---------------------|----------|
-| **Essential** | 1 / month | £29.95/mo | Tidy upkeep, low commitment entry |
-| **Premium** | 2 / month | £54.95/mo | Faster-growing gardens, more complete care |
-| **Elite** | 3 / month | £89.95/mo | Near-weekly care; patio refresh included 1×/year |
+| Plan | Visits / year | From (≤50 m²) | Best for |
+|------|---------------|---------------|----------|
+| **Essential** | **10** | **£59.99/mo** | Tidy upkeep on a seasonal rhythm (~every 5–6 weeks) |
+| **Premium** | **20** | **£84.99/mo** | Faster-growing gardens (~every 2 weeks) |
+| **Elite** | **30** | **£119.99/mo** | Near-weekly care in growing season |
 
-**Annual billing:** ~2 months free vs monthly - primary upsell at checkout and in lifecycle email.
+Medium/large gardens add **+£20 / +£40** to the band base. Optional add-ons (hedges, seasonal tidy, patio) increase monthly price; **6-month minimum** applies when add-ons are selected on monthly billing.
+
+**Annual billing:** ~2 months free vs monthly (10× monthly charged) — hidden at signup for now; lifecycle email upsell when enabled.
 
 **Minimum term:** 3 months (monthly) / 12 months (annual) - must be clear in ads and landing pages to reduce disputes and chargebacks.
 
@@ -324,7 +326,7 @@ Ensure implied subscriber volume is realistic for postcode size and seasonality.
 
 **Creative themes:**
 
-- Hero: tidy suburban garden + “from £29.95/month”
+- Hero: tidy suburban garden + “from £59.99/month”
 - Problem/solution: overgrown → maintained
 - Social proof: testimonial cards (when available)
 - UGC-style: real gardener on site (with consent)
@@ -412,11 +414,11 @@ Follow existing GardensSorted web components (`src/frontend/web/components/marke
 
 **Search:**
 
-> Regular garden maintenance in Leeds - from £29.95/mo. Subscribe online, local gardeners, manage visits in your account. See plans.
+> Regular garden maintenance in Leeds - from £59.99/mo. Subscribe online, local gardeners, manage visits in your account. See plans.
 
 **Social:**
 
-> Tired of chasing gardeners? GardensSorted keeps your garden maintained on a schedule - lawn, borders, tidy. Yorkshire homeowners: see plans from £29.95/month.
+> Tired of chasing gardeners? GardensSorted keeps your garden maintained on a schedule - lawn, borders, tidy. Yorkshire homeowners: see plans from £59.99/month.
 
 **Landlord:**
 

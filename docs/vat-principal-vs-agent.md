@@ -2,7 +2,7 @@
 
 Reference for how UK VAT may apply to GardensSorted consumer subscriptions, how the financial model treats it today, and what would need to change to account for VAT on **platform margin only**.
 
-**Last updated:** 2026-05-24  
+**Last updated:** 2026-06-02  
 **Status:** For accountant review - not adopted as filing or invoicing policy
 
 ---
@@ -15,12 +15,12 @@ This document is **internal planning guidance**, not tax or legal advice. VAT tr
 
 ## The question
 
-For Essential (small garden), a customer pays **£29.95/month**. The self-employed gardener receives **£15/visit** (see [`consumer-plans-and-pricing.md`](consumer-plans-and-pricing.md)). The platform keeps roughly **£14.95** before Stripe, ops, and marketing.
+For Essential (small garden, 10 visits/year), a customer pays **£59.99/month**. The self-employed gardener receives **£20/visit** (~£16.67/mo equivalent — see [`consumer-plans-and-pricing.md`](consumer-plans-and-pricing.md)). The platform keeps roughly **£43.32** before Stripe, ops, and marketing.
 
 Should VAT (once registered) be charged on:
 
-1. **Full customer price** (£29.95) - *principal* treatment, or  
-2. **Platform margin only** (£14.95) - *agent / commission* treatment?
+1. **Full customer price** (£59.99) - *principal* treatment, or  
+2. **Platform margin only** (~£43.32) - *agent / commission* treatment?
 
 ---
 
@@ -31,7 +31,7 @@ Should VAT (once registered) be charged on:
 | **Who supplies the garden visit to the homeowner?** | GardensSorted | The matched gardener (platform arranges) |
 | **Platform’s VATable turnover** | Full customer payment | Commission / platform fee only |
 | **Provider payment (£15)** | Cost of sales | Gardener’s money passing through (not platform turnover) |
-| **Essential small - VAT base (if 20% VAT-inclusive)** | ~£29.95 gross → ~£4.99 VAT element | ~£14.95 margin → ~£2.49 VAT element |
+| **Essential small - VAT base (if 20% VAT-inclusive)** | ~£59.99 gross → ~£10.00 VAT element | ~£43.32 margin → ~£7.22 VAT element |
 | **£90k registration threshold (simplified)** | Rolling **gross customer revenue** | Rolling **taxable commission**, not total cash collected |
 | **Typical consumer marketplace default** | Yes - brand owns subscription | Possible, but requires deliberate legal + ops design |
 
@@ -69,17 +69,17 @@ For any given supply, the business is **either** principal **or** agent - not bo
 
 ## Essential economics (small garden, illustrative)
 
-Per visit / month (1 visit on Essential):
+Monthly subscription (10 visits/year cadence):
 
 | Line | Principal view | Agent view (if valid) |
 |------|----------------|------------------------|
-| Customer pays | £29.95 | £29.95 (collected) |
-| Gardener receives | £15.00 (platform cost) | £15.00 (gardener’s consideration) |
-| Platform margin (pre Stripe/ops) | £14.95 | £14.95 (commission) |
-| **VAT base (if registered, VAT-inclusive prices)** | ~£29.95 | ~£14.95 |
-| **VAT element at 20% (approx.)** | ~£4.99 | ~£2.49 |
+| Customer pays | £59.99 | £59.99 (collected) |
+| Gardener receives (~£20 × 10/12 visits/mo) | ~£16.67 (platform cost) | ~£16.67 (gardener’s consideration) |
+| Platform margin (pre Stripe/ops) | ~£43.32 | ~£43.32 (commission) |
+| **VAT base (if registered, VAT-inclusive prices)** | ~£59.99 | ~£43.32 |
+| **VAT element at 20% (approx.)** | ~£10.00 | ~£7.22 |
 
-Premium and Elite scale similarly: provider pay is **visits × per-visit rate** (£18 / £20 / £25 / £30 by garden band); platform margin is customer price minus blended provider cost. See [`consumer-plans-and-pricing.md`](consumer-plans-and-pricing.md).
+Premium and Elite add tier uplifts (+£25 / +£60 monthly on the garden band base). Provider pay is **£20 / £30 / £40 per completed visit** by garden band. See [`consumer-plans-and-pricing.md`](consumer-plans-and-pricing.md).
 
 ---
 
@@ -116,12 +116,12 @@ Only pursue after professional advice. Typical requirements:
 ### 3. Invoicing
 
 - Invoices should reflect the gardener as **supplier** of the maintenance, or use **agent invoicing** on the gardener’s behalf where appropriate (see VAT Act 1994 s.47 - agent acting in own name).
-- A single invoice for “GardensSorted Essential £29.95” with no supplier disclosure weakens the agent argument.
+- A single invoice for “GardensSorted Essential £59.99” with no supplier disclosure weakens the agent argument.
 
 ### 4. Money flow and accounts
 
 - Customer receipts split conceptually (and ideally in reporting): **gardener portion** vs **commission**.
-- Accounts should not treat the full £29.95 as platform turnover if claiming agent status.
+- Accounts should not treat the full £59.99 as platform turnover if claiming agent status.
 - Stripe/settlement reporting may need to support the split for audit.
 
 ### 5. Operational consistency

@@ -8,9 +8,9 @@
 
 ## Launch offer (signup)
 
-One subscription at signup: **garden care** - **10 visits per year**, priced by **garden size band** plus optional **add-ons**. Marketing label: *Garden care*; DB plan name: `Essential Monthly` (legacy naming).
+One subscription at signup: **garden care** priced by **garden size band**, **visit frequency** (10 / 20 / 30 visits per year), plus optional **add-ons**. Marketing label: *Garden care*; DB plan names: `Essential Monthly`, `Premium Monthly`, `Elite Monthly`.
 
-**Premium / Elite** tiers are **inactive** at signup (`IsActive = false`) but remain in the database for existing subscribers. Tier upgrades are disabled until multi-tier plans return (`PlanCatalog.GetUpgradeTier` → `null`).
+**In-portal tier upgrades** are disabled until multi-tier upsell returns (`PlanCatalog.GetUpgradeTier` → `null`).
 
 ---
 
@@ -26,7 +26,7 @@ Maintained **lawn, beds, and edges** - not whole plot or large paved areas.
 
 Above **150 m²** → personalised quote.
 
-**Cadence:** **10 visits per year** (~every 5–6 weeks). Provider monthly equivalent ≈ `(10 ÷ 12) × pay per visit`.
+**Cadence:** **10 / 20 / 30 visits per year** at signup (~every 5–6 weeks / ~2 weeks / weekly in season). Provider monthly equivalent ≈ `(visits ÷ 12) × pay per visit`.
 
 Implementation: `Sorted.Core/Plans/GardenSizePricing.cs`, `ProviderVisitPay.cs`, frontend `src/frontend/web/lib/consumer-plans.ts`.
 
@@ -48,9 +48,9 @@ Annual billing is **hidden at signup** for now; when enabled, checkout ≈ **10�
 
 | Tier | Visits / year | Status |
 |------|----------------|--------|
-| Essential | **10** | **Offered** (as garden care) |
-| Premium | **20** | Inactive at signup |
-| Elite | **30** | Inactive at signup |
+| Essential | **10** | **Offered** (default visit frequency) |
+| Premium | **20** | **Offered** at signup |
+| Elite | **30** | **Offered** at signup |
 
 Existing Premium/Elite subscriptions keep their visit cadence and pricing rules in code.
 

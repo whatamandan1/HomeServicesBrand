@@ -37,18 +37,18 @@ Ensure `appsettings.Development.local.json` is **not** committed (it is gitignor
 | `Jwt__Secret` | long random string (32+ chars) |
 | `Stripe__SecretKey` | `sk_test_...` or live later |
 | `Stripe__WebhookSecret` | from Stripe Dashboard webhook |
-| `Stripe__Prices__EssentialMonthly` | `price_...` - Essential **£29.95/mo** (small garden) |
-| `Stripe__Prices__EssentialAnnual` | `price_...` - Essential **£299.95/yr** |
-| `Stripe__Prices__PremiumMonthly` | `price_...` - Premium **£54.95/mo** |
-| `Stripe__Prices__PremiumAnnual` | `price_...` - Premium **£549.95/yr** |
-| `Stripe__Prices__EliteMonthly` | `price_...` - Elite **£89.95/mo** |
-| `Stripe__Prices__EliteAnnual` | `price_...` - Elite **£899.95/yr** |
-| `Plans__EssentialMonthly` | `29.95` |
-| `Plans__EssentialAnnual` | `299.95` |
-| `Plans__PremiumMonthly` | `54.95` |
-| `Plans__PremiumAnnual` | `549.95` |
-| `Plans__EliteMonthly` | `89.95` |
-| `Plans__EliteAnnual` | `899.95` |
+| `Stripe__Prices__EssentialMonthly` | `price_...` - Essential **£59.99/mo** (small garden, 10 visits/yr) |
+| `Stripe__Prices__EssentialAnnual` | `price_...` - Essential **£599.90/yr** |
+| `Stripe__Prices__PremiumMonthly` | `price_...` - Premium **£84.99/mo** (20 visits/yr) |
+| `Stripe__Prices__PremiumAnnual` | `price_...` - Premium **£849.90/yr** |
+| `Stripe__Prices__EliteMonthly` | `price_...` - Elite **£119.99/mo** (30 visits/yr) |
+| `Stripe__Prices__EliteAnnual` | `price_...` - Elite **£1199.90/yr** |
+| `Plans__EssentialMonthly` | `59.99` |
+| `Plans__EssentialAnnual` | `599.90` |
+| `Plans__PremiumMonthly` | `84.99` |
+| `Plans__PremiumAnnual` | `849.90` |
+| `Plans__EliteMonthly` | `119.99` |
+| `Plans__EliteAnnual` | `1199.90` |
 | `Features__BypassStripeCheckout` | `false` - must be false in production (API refuses to start if true) |
 | `Stripe__SuccessUrl` | `https://gardenssorted.co.uk/signup/success` |
 | `Stripe__CancelUrl` | `https://gardenssorted.co.uk/signup` |

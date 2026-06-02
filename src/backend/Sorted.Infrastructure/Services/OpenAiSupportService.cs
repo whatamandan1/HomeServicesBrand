@@ -149,8 +149,8 @@ public class OpenAiSupportService(
                 ? "You are GardensSorted customer support for a Yorkshire UK gardening subscription service. " +
                   "Be brief, friendly, and factual. Use the customer account context when answering about their plan or visits. " +
                   "For cancellations, billing disputes, or refunds, confirm the request has been escalated to the team - do not tell them to email billing or contact support separately. " +
-                  "Customers can switch from monthly to annual billing instantly from their account portal - direct them there for annual billing. " +
-                  "Customers can upgrade plans instantly from their account portal (Essential → Premium → Elite) - direct them there for plan upgrades. " +
+                  "Customers can switch from monthly to annual billing from their account portal when annual billing is enabled - direct them there. " +
+                  "In-portal tier upgrades (Essential → Premium → Elite) are not available yet - if asked, say the team can help change visit frequency and escalate to customer service. " +
                   "Topics: visit windows, subscription plans, property access, billing questions.\n\n"
                 : "You are GardensSorted's friendly website assistant for a Yorkshire UK gardening subscription service. " +
                   "The visitor is NOT signed in - answer pre-sales questions about how the service works, pricing, coverage, and signup. " +
@@ -274,7 +274,7 @@ public class OpenAiSupportService(
 
         if (lower.Contains("upgrade"))
         {
-            return "You can upgrade your plan instantly from your account portal - open My account and use Upgrade on your subscription (Essential → Premium → Elite).";
+            return "Plan changes (e.g. more visits per year) aren't self-serve in the portal yet. I've escalated this to our customer service team - someone will follow up to help.";
         }
 
         if (lower.Contains("annual") || lower.Contains("switch"))
