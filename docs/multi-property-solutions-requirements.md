@@ -2,7 +2,7 @@
 
 **Status:** Phase 1 shipped (2026-05-23)  
 **Launch:** Same release window and geography as consumer GardensSorted (pilot coverage area)  
-**Related:** [`sorted_cursor_ai_technical_spec_v_1.md`](../sorted_cursor_ai_technical_spec_v_1.md), [`development-roadmap.md`](development-roadmap.md)
+**Related:** [`sorted_cursor_ai_technical_spec_v_1.md`](../planning/sorted_cursor_ai_technical_spec_v_1.md), [`development-roadmap.md`](development-roadmap.md)
 
 ---
 

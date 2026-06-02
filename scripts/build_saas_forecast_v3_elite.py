@@ -2,14 +2,17 @@
 """Build SaaS forecast v3/v4: Elite tier, annual visit cadence (10/20/30), VAT principal vs agent."""
 import shutil
 from copy import copy
+from pathlib import Path
 
 import openpyxl
 from openpyxl.styles import Font, PatternFill, Border, Side, Alignment
 from openpyxl.utils import get_column_letter
 from openpyxl.workbook.defined_name import DefinedName
 
-SRC = "/Users/dan/Documents/HomeServicesBrand/sorted_saas_recurring_revenue_forecast.xlsx"
-OUT = "/Users/dan/Documents/HomeServicesBrand/sorted_saas_recurring_revenue_forecast_v3_elite.xlsx"
+ROOT = Path(__file__).resolve().parents[1]
+PLANNING = ROOT / "planning"
+SRC = PLANNING / "sorted_saas_recurring_revenue_forecast.xlsx"
+OUT = PLANNING / "sorted_saas_recurring_revenue_forecast_v3_elite.xlsx"
 
 # Annual visits per plan (product truth 2026-05) - provider pay = visits/12 × per-visit rate
 VISITS_ESS_YR = 10

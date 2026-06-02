@@ -142,7 +142,7 @@ Per customer at **£65 CAC**:
 CAC payback = £65 ÷ £36.50 ≈ 1.8 months of contribution
 ```
 
-Target for paid scale is typically **≤ 3 months** payback on contribution. At **£59.99 small garden** with **~£16.67/mo provider cost**, **£65 CAC is inside that band** (~1.8 months). Month 1 still loses cash on a P&L basis because **£4,000 ads** land in the same month as **provider fulfilment** for new subs. **£65 CAC is acceptable for a learning month** if month-2 CAC trends down and churn is low. Reconcile mix and months 2–12 in [`sorted_saas_forecast_garden_bands.xlsx`](../sorted_saas_forecast_garden_bands.xlsx).
+Target for paid scale is typically **≤ 3 months** payback on contribution. At **£59.99 small garden** with **~£16.67/mo provider cost**, **£65 CAC is inside that band** (~1.8 months). Month 1 still loses cash on a P&L basis because **£4,000 ads** land in the same month as **provider fulfilment** for new subs. **£65 CAC is acceptable for a learning month** if month-2 CAC trends down and churn is low. Reconcile mix and months 2–12 in [`sorted_saas_forecast_garden_bands.xlsx`](../planning/sorted_saas_forecast_garden_bands.xlsx).
 
 ### 4.5 Scenarios vs economics
 
@@ -170,7 +170,7 @@ Month 1 does not need to be cash-positive. Continue to month 2 if:
 
 ### 4.7 Link to financial model
 
-Plug measured CAC, marketing, and garden-band mix into [`sorted_saas_forecast_garden_bands.xlsx`](../sorted_saas_forecast_garden_bands.xlsx) (Headlines + Garden mix tabs) to project months 2–12 cash and MRR. Forecast mix defaults to **~£59.99/mo** Essential ARPU and **~£25/mo** provider (UK housing mix alone is ~£52 - reference column on Garden mix). Older file: [`sorted_saas_forecast_simplified.xlsx`](../sorted_saas_forecast_simplified.xlsx).
+Plug measured CAC, marketing, and garden-band mix into [`sorted_saas_forecast_garden_bands.xlsx`](../planning/sorted_saas_forecast_garden_bands.xlsx) (Headlines + Garden mix tabs) to project months 2–12 cash and MRR. Forecast mix defaults to **~£59.99/mo** Essential ARPU and **~£25/mo** provider (UK housing mix alone is ~£52 - reference column on Garden mix). Older file: [`sorted_saas_forecast_simplified.xlsx`](../planning/sorted_saas_forecast_simplified.xlsx).
 
 ---
 
@@ -484,8 +484,8 @@ Complete at end of week 4.
 | [`consumer-plans-and-pricing.md`](consumer-plans-and-pricing.md) | Plan features - keep copy accurate |
 | [`development-roadmap.md`](development-roadmap.md) | Go-live gates |
 | [`signup-needs-map.md`](signup-needs-map.md) | Funnel steps |
-| [`sorted_saas_forecast_garden_bands.xlsx`](../sorted_saas_forecast_garden_bands.xlsx) | Month 2+ cash and MRR (4 garden bands, UK mix) |
-| [`sorted_saas_forecast_simplified.xlsx`](../sorted_saas_forecast_simplified.xlsx) | Legacy single-price forecast |
+| [`sorted_saas_forecast_garden_bands.xlsx`](../planning/sorted_saas_forecast_garden_bands.xlsx) | Month 2+ cash and MRR (4 garden bands, UK mix) |
+| [`sorted_saas_forecast_simplified.xlsx`](../planning/sorted_saas_forecast_simplified.xlsx) | Legacy single-price forecast |
 
 ---
 

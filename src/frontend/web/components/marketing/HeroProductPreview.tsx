@@ -3,7 +3,6 @@ import { Button } from "@/components/marketing/ui";
 import { HeroLocationBadge } from "@/components/marketing/HeroLocationBadge";
 import { HeroVisitPreviewCard } from "@/components/marketing/HeroVisitPreviewCard";
 import { PRIMARY_CTA_HREF, PRIMARY_CTA_LABEL } from "@/lib/marketing-cta";
-import { VISIT_CADENCE_HEADLINE } from "@/lib/marketing-copy";
 
 const HERO_GARDEN_ALT = "Well-maintained Yorkshire garden with green lawn and tidy borders";
 
@@ -52,8 +51,8 @@ export function HeroProductPreview() {
             Regular garden maintenance across Yorkshire
           </h1>
           <p className="mt-4 max-w-lg text-base text-gardens-dark/80 text-balance sm:mt-5 sm:text-lg">
-            {VISIT_CADENCE_HEADLINE} - regular garden maintenance for Leeds, York, Wakefield and across Yorkshire. Vetted
-            local gardeners; you manage everything in your online account.
+            Regular garden maintenance for Leeds, York, Wakefield and across Yorkshire. Vetted local gardeners; you
+            manage everything in your online account.
           </p>
         </div>
 

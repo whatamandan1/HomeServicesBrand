@@ -7,7 +7,7 @@ from openpyxl.styles import Alignment, Font, PatternFill
 from openpyxl.utils import get_column_letter
 
 ROOT = Path(__file__).resolve().parents[1]
-OUT = ROOT / "sorted_saas_forecast_garden_bands.xlsx"
+OUT = ROOT / "planning" / "sorted_saas_forecast_garden_bands.xlsx"
 
 INPUT_FILL = PatternFill("solid", fgColor="FFF2CC")
 HEADER_FILL = PatternFill("solid", fgColor="2F5496")

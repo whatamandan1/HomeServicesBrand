@@ -4,7 +4,7 @@ Living marketing strategy for the initial **GardensSorted** launch under the **S
 
 **Last updated:** 2026-05-28  
 **Status:** Draft - pre go-live  
-**Related:** [`sorted_high_level_business_plan_v_2.md`](../sorted_high_level_business_plan_v_2.md), [`consumer-plans-and-pricing.md`](consumer-plans-and-pricing.md), [`multi-property-solutions-requirements.md`](multi-property-solutions-requirements.md), [`development-roadmap.md`](development-roadmap.md)
+**Related:** [`sorted_high_level_business_plan_v_2.md`](../planning/sorted_high_level_business_plan_v_2.md), [`consumer-plans-and-pricing.md`](consumer-plans-and-pricing.md), [`multi-property-solutions-requirements.md`](multi-property-solutions-requirements.md), [`development-roadmap.md`](development-roadmap.md)
 
 ---
 
@@ -635,7 +635,7 @@ Track answers here as the plan matures.
 | [`consumer-plans-and-pricing.md`](consumer-plans-and-pricing.md) | Plan features, price matrix, copy accuracy |
 | [`multi-property-solutions-requirements.md`](multi-property-solutions-requirements.md) | Landlord track messaging |
 | [`signup-needs-map.md`](signup-needs-map.md) | Funnel steps, lead capture |
-| [`sorted_financial_model_framework_v_1.md`](../sorted_financial_model_framework_v_1.md) | CAC, retention, unit economics |
+| [`sorted_financial_model_framework_v_1.md`](../planning/sorted_financial_model_framework_v_1.md) | CAC, retention, unit economics |
 | [`development-roadmap.md`](development-roadmap.md) | Go-live gates, feature readiness |
 
 ---

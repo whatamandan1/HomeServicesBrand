@@ -103,5 +103,5 @@ CI builds backend and frontend on push/PR. See `.github/workflows/ci.yml`.
 
 ## Spec documents
 
-- `sorted_cursor_ai_technical_spec_v_1.md`
-- `sorted_platform_master_spec_v_1.md`
+- `planning/sorted_cursor_ai_technical_spec_v_1.md`
+- `planning/sorted_platform_master_spec_v_1.md`

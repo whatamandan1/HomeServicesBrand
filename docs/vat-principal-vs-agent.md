@@ -208,7 +208,7 @@ Uber also argued **TOMS** (Tour Operators’ Margin Scheme) to reduce the VAT ba
 
 ## Financial model treatment
 
-**File:** [`sorted_saas_recurring_revenue_forecast_v3_elite.xlsx`](../sorted_saas_recurring_revenue_forecast_v3_elite.xlsx)  
+**File:** [`sorted_saas_recurring_revenue_forecast_v3_elite.xlsx`](../planning/sorted_saas_recurring_revenue_forecast_v3_elite.xlsx)  
 **Rebuild script:** [`scripts/build_saas_forecast_v3_elite.py`](../scripts/build_saas_forecast_v3_elite.py)
 
 ### Current behaviour (toggle on Inputs B66)
@@ -265,4 +265,4 @@ Take this document and ask:
 - [VAT Notice 700/25 - taxis and private hire](https://www.gov.uk/guidance/vat-notice-70025-how-vat-applies-to-taxis-and-private-hire-cars) - Uber PHV context (not gardening)
 - [`consumer-plans-and-pricing.md`](consumer-plans-and-pricing.md) - customer prices and provider visit pay
 - [`payments-strategy.md`](payments-strategy.md) - Stripe checkout and billing
-- [`sorted_financial_model_framework_v_1.md`](../sorted_financial_model_framework_v_1.md) - broader model scope (§10 VAT and business structure)
+- [`sorted_financial_model_framework_v_1.md`](../planning/sorted_financial_model_framework_v_1.md) - broader model scope (§10 VAT and business structure)

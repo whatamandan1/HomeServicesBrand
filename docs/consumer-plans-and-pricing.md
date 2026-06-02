@@ -154,6 +154,6 @@ Documented in [`/terms`](/terms) (section 9). Signup acceptance records `TermsAc
 
 ## Related docs
 
-- [`sorted_saas_forecast_garden_bands.xlsx`](../sorted_saas_forecast_garden_bands.xlsx) - regenerate: `python3 scripts/build_forecast_garden_bands.py`
+- [`sorted_saas_forecast_garden_bands.xlsx`](../planning/sorted_saas_forecast_garden_bands.xlsx) - regenerate: `python3 scripts/build_forecast_garden_bands.py`
 - [`provider-requirements.md`](provider-requirements.md)
 - [`first-month-marketing-plan.md`](first-month-marketing-plan.md)

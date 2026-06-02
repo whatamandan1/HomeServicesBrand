@@ -1,7 +1,7 @@
 # Development Roadmap
 
 Living checklist comparing the current GardensSorted / Sorted platform build against
-[`sorted_cursor_ai_technical_spec_v_1.md`](../sorted_cursor_ai_technical_spec_v_1.md).
+[`sorted_cursor_ai_technical_spec_v_1.md`](../planning/sorted_cursor_ai_technical_spec_v_1.md).
 
 Use this document to track what is done, what is partial, and what to build next. Update
 statuses as features ship.

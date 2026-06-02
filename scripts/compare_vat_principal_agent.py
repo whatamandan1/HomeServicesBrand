@@ -1,8 +1,12 @@
 #!/usr/bin/env python3
 """Compare principal vs agent VAT impact - mirrors v4 model base case (10/20/30 visits per year)."""
+from pathlib import Path
+
 import openpyxl
 
-XLSX = "/Users/dan/Documents/HomeServicesBrand/sorted_saas_recurring_revenue_forecast_v3_elite.xlsx"
+ROOT = Path(__file__).resolve().parents[1]
+PLANNING = ROOT / "planning"
+XLSX = PLANNING / "sorted_saas_recurring_revenue_forecast_v3_elite.xlsx"
 FIRST = 5
 
 VISITS_ESS_YR = 10
