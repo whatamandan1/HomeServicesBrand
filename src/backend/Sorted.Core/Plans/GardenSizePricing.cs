@@ -75,4 +75,10 @@ public static class GardenSizePricing
         GardenSize gardenSize,
         IEnumerable<string>? signupAddonIds = null) =>
         MonthlyPriceGbp(planName, gardenSize) + SignupAddonPricing.MonthlyAddonsTotalGbp(gardenSize, signupAddonIds);
+
+    /// <summary>Map estimated maintained m² to a signup band (above 150 m² still returns Large — ops quote required).</summary>
+    public static GardenSize BandFromEstimatedMaintainedSqm(int sqm) =>
+        sqm <= MaxMaintainedAreaSqm(GardenSize.Small) ? GardenSize.Small
+        : sqm <= MaxMaintainedAreaSqm(GardenSize.Medium) ? GardenSize.Medium
+        : GardenSize.Large;
 }

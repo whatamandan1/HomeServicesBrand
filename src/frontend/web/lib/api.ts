@@ -44,6 +44,15 @@ export type CustomerPayment = {
 
 export type GardenSize = "Small" | "Medium" | "Large";
 
+export type GardenSizeSuggestion = {
+  suggestedSize: GardenSize;
+  estimatedMaintainedSqm: number;
+  confidence: number;
+  source: string;
+  disclaimer: string;
+  requiresPersonalisedQuote: boolean;
+};
+
 export type PortfolioEnquiryStatus =
   | "New"
   | "Quoted"
@@ -485,6 +494,16 @@ export const api = {
     request<{ bypassStripeCheckout: boolean }>("/api/config/public"),
   getPlans: () =>
     request<SubscriptionPlan[]>("/api/brands/gardens-sorted/plans"),
+  suggestGardenSize: (body: {
+    postcode: string;
+    line1?: string | null;
+    latitude?: number | null;
+    longitude?: number | null;
+  }) =>
+    request<GardenSizeSuggestion | undefined>("/api/geo/garden-size-suggest", {
+      method: "POST",
+      body: JSON.stringify(body),
+    }),
   captureSignupLead: (body: {
     email: string;
     phone: string;

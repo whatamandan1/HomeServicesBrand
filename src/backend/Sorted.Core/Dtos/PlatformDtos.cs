@@ -439,3 +439,17 @@ public record LandlordAccountResponse(
     decimal? IndicativeMonthlyGbp,
     string? AgreementNotes,
     IReadOnlyList<LandlordPropertyResponse> Properties);
+
+public record GardenSizeSuggestRequest(
+    string Postcode,
+    string? Line1 = null,
+    double? Latitude = null,
+    double? Longitude = null);
+
+public record GardenSizeSuggestionResponse(
+    GardenSize SuggestedSize,
+    int EstimatedMaintainedSqm,
+    double Confidence,
+    string Source,
+    string Disclaimer,
+    bool RequiresPersonalisedQuote);

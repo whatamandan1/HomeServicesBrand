@@ -18,5 +18,8 @@
   },
   "OpenAI": {
     "ApiKey": "sk-YOUR_KEY"
+  },
+  "GoogleMaps": {
+    "ApiKey": "YOUR_GOOGLE_MAPS_STATIC_API_KEY"
   }
 }

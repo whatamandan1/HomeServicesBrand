@@ -4,7 +4,7 @@ import { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { Check, ChevronLeft, ChevronRight } from "lucide-react";
-import { api, type AuthResponse, type GardenSize, type SubscriptionPlan } from "@/lib/api";
+import { api, type AuthResponse, type GardenSize, type GardenSizeSuggestion, type SubscriptionPlan } from "@/lib/api";
 import { FALLBACK_PLANS, sortPlans } from "@/lib/plans";
 import {
   findSignupMonthlyPlanForFrequency,
@@ -44,6 +44,7 @@ import { AlertBanner, LoadingSpinner } from "@/components/ui/feedback";
 import { AvailabilityPicker } from "@/components/signup/AvailabilityPicker";
 import { SignupVisitFrequencyPicker } from "@/components/signup/SignupVisitFrequencyPicker";
 import { UkAddressLookup } from "@/components/signup/UkAddressLookup";
+import { GardenSizeSuggestionCard } from "@/components/signup/GardenSizeSuggestionCard";
 import { SIGNUP_MOBILE_WIZARD_PADDING_CLASS } from "@/lib/mobile-chrome";
 
 const STEPS = ["Garden size", "Add-ons", "Your quote", "Finish signup"] as const;
@@ -90,6 +91,8 @@ export default function SignupPage() {
     line2: "",
     city: "",
     postcode: "",
+    latitude: undefined as number | undefined,
+    longitude: undefined as number | undefined,
     gardenSize: "Small" as GardenSize,
     availability: "",
     marketingOptIn: false,
@@ -98,6 +101,10 @@ export default function SignupPage() {
   const [photoBusy, setPhotoBusy] = useState(false);
   const [photoPreviewUrls, setPhotoPreviewUrls] = useState<string[]>([]);
   const [quoteUnveiled, setQuoteUnveiled] = useState(false);
+  const gardenSizeManualRef = useRef(false);
+  const quoteGardenSizeRef = useRef<GardenSize | null>(null);
+  const [gardenSuggestion, setGardenSuggestion] = useState<GardenSizeSuggestion | null>(null);
+  const [gardenSuggestionLoading, setGardenSuggestionLoading] = useState(false);
   const topRef = useRef<HTMLDivElement>(null);
   const mobileScrollRef = useRef<HTMLDivElement>(null);
   const trackedLead = useRef(false);
@@ -174,6 +181,47 @@ export default function SignupPage() {
     trackMarketingEvent("begin_checkout", { event_category: "signup" });
   }, [step]);
 
+  useEffect(() => {
+    if (step !== 3 || !isValidUkPostcode(form.postcode)) {
+      setGardenSuggestion(null);
+      setGardenSuggestionLoading(false);
+      return;
+    }
+
+    let cancelled = false;
+    setGardenSuggestionLoading(true);
+
+    void api
+      .suggestGardenSize({
+        postcode: normalizeUkPostcode(form.postcode),
+        line1: form.line1 || null,
+        latitude: form.latitude ?? null,
+        longitude: form.longitude ?? null,
+      })
+      .then((result) => {
+        if (cancelled) return;
+        setGardenSuggestionLoading(false);
+        if (!result) {
+          setGardenSuggestion(null);
+          return;
+        }
+        setGardenSuggestion(result);
+        if (!gardenSizeManualRef.current) {
+          setForm((f) => ({ ...f, gardenSize: result.suggestedSize }));
+        }
+      })
+      .catch(() => {
+        if (!cancelled) {
+          setGardenSuggestionLoading(false);
+          setGardenSuggestion(null);
+        }
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [step, form.postcode, form.line1, form.latitude, form.longitude]);
+
   useLayoutEffect(() => {
     if (isMobileSignupLayout()) {
       window.scrollTo({ top: 0, left: 0, behavior: "instant" });
@@ -249,6 +297,7 @@ export default function SignupPage() {
     if (step === 3) await captureLead();
     if (step === 2 && !quoteUnveiled) {
       await captureLead();
+      quoteGardenSizeRef.current = form.gardenSize;
       setQuoteUnveiled(true);
       return;
     }
@@ -479,7 +528,10 @@ export default function SignupPage() {
                         <button
                           key={size}
                           type="button"
-                          onClick={() => updateField("gardenSize", size)}
+                          onClick={() => {
+                            gardenSizeManualRef.current = true;
+                            updateField("gardenSize", size);
+                          }}
                           className={`rounded-2xl border p-4 text-left transition ${
                             selected
                               ? "border-gardens-primary bg-gardens-light/50 ring-2 ring-gardens-primary/30"
@@ -494,6 +546,9 @@ export default function SignupPage() {
                   </div>
                 </fieldset>
                 <p className="text-xs text-stone-500">{GARDEN_SIZE_ABOVE_BAND_NOTE}</p>
+                <p className="text-xs text-stone-500">
+                  Not sure? We&apos;ll suggest a size from satellite imagery after you enter your address.
+                </p>
               </div>
             )}
 
@@ -686,11 +741,43 @@ export default function SignupPage() {
                     line2: form.line2,
                     city: form.city,
                     postcode: form.postcode,
+                    latitude: form.latitude,
+                    longitude: form.longitude,
                   }}
                   onChange={(addr) => {
                     setForm((f) => ({ ...f, ...addr }));
+                    setGardenSuggestion(null);
                   }}
                 />
+                {(gardenSuggestionLoading || gardenSuggestion) && (
+                  <GardenSizeSuggestionCard
+                    suggestion={
+                      gardenSuggestion ?? {
+                        suggestedSize: form.gardenSize,
+                        estimatedMaintainedSqm: 0,
+                        confidence: 0,
+                        source: "loading",
+                        disclaimer: "",
+                        requiresPersonalisedQuote: false,
+                      }
+                    }
+                    selectedSize={form.gardenSize}
+                    loading={gardenSuggestionLoading}
+                    onSelectSize={(size) => {
+                      gardenSizeManualRef.current = true;
+                      setForm((f) => ({ ...f, gardenSize: size }));
+                    }}
+                  />
+                )}
+                {quoteUnveiled &&
+                activePlan &&
+                quoteGardenSizeRef.current &&
+                quoteGardenSizeRef.current !== form.gardenSize ? (
+                  <AlertBanner
+                    variant="warning"
+                    message={`Your quote was for a ${GARDEN_SIZE_GUIDE[quoteGardenSizeRef.current].label.toLowerCase()} garden. Checkout price: ${formatQuotedPrice(planPriceForGarden(activePlan, form.gardenSize, selectedServices), "mo")}.`}
+                  />
+                ) : null}
                 <AvailabilityPicker value={form.availability} onChange={(v) => updateField("availability", v)} />
                 <label className="flex cursor-pointer items-start gap-3 rounded-xl border border-stone-200 bg-stone-50 px-3 py-3 text-sm text-stone-700">
                   <input

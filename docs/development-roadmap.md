@@ -148,7 +148,7 @@ Work through phases in order. Each phase builds on the last.
 - [x] **UK address autocomplete** - getAddress.io on signup finish step
 - [x] **Cookie policy + consent** - `/cookies`, preference UI for marketing tags
 - [x] **Marketing analytics** - GA4 conversion events; visitor location for hero personalisation
-- [x] **Facebook/social assets** - cover + profile images in `public/`
+- [x] **Garden size aerial suggestion** - satellite + OpenAI at signup step 3 when `GoogleMaps__ApiKey` configured; customer confirms band
 
 ### Phase 4 - Multi-Property Solutions
 
@@ -358,9 +358,9 @@ Ideas worth revisiting after core signup and scheduling are stable - not committ
 | Item | Notes |
 |------|--------|
 | **AI garden size from photos** | When a customer is unsure which band (Small / Medium / Large) fits, analyse optional signup or property photos with a vision model to estimate **maintained** lawn and bed area and suggest a band (human can override). Reuse existing photo upload flow; show confidence and “we’ll confirm on first visit” disclaimer. |
-| **Google Maps / aerial garden size** | Satellite or aerial imagery (Maps Platform or similar) to suggest or cross-check maintained area at signup or property edit - complements photo-based AI or replaces it if imagery quality is sufficient. |
+| **Google Maps / aerial garden size** | 🟡 Partial — satellite + OpenAI at signup when `GoogleMaps__ApiKey` and `OpenAI__ApiKey` set; customer confirms band on step 3 |
 
-Related today: garden size is self-selected in the signup wizard; optional photos are uploaded but not used for sizing ([`signup-needs-map.md`](signup-needs-map.md)).
+Related today: garden size is self-selected on step 0; **aerial suggestion** runs on step 3 after address entry when Maps + OpenAI are configured; customer confirms before payment ([`signup-needs-map.md`](signup-needs-map.md)).
 
 ---
 

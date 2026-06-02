@@ -50,7 +50,7 @@ public class StripePaymentService(
         var addonIds = SignupAddonPricing.ParseSignupAddonIds(subscription.SelectedSignupAddonsJson);
         var minimumTermMonths = SubscriptionCommitment.ResolveMinimumTermMonths(plan, addonIds);
         var chargePrice = PlanPricing.ResolvePrice(plan, _planPricing, gardenSize, addonIds);
-        var lineItem = BuildSubscriptionLineItem(plan, chargePrice, gardenSize);
+        var lineItem = BuildSubscriptionLineItem(plan, chargePrice, gardenSize, addonIds);
         var sessionService = new SessionService();
         var session = await sessionService.CreateAsync(new SessionCreateOptions
         {
@@ -406,16 +406,17 @@ public class StripePaymentService(
     private SessionLineItemOptions BuildSubscriptionLineItem(
         SubscriptionPlan plan,
         decimal chargePrice,
-        GardenSize gardenSize = GardenSize.Small)
+        GardenSize gardenSize,
+        IReadOnlyList<string> addonIds)
     {
-        if (!string.IsNullOrWhiteSpace(plan.StripePriceId) && gardenSize == GardenSize.Small)
+        if (StripeCatalogPricing.UseCatalogPriceId(plan, chargePrice, gardenSize, addonIds))
         {
-            if (plan.StripePriceId.StartsWith("prod_", StringComparison.OrdinalIgnoreCase))
+            if (plan.StripePriceId!.StartsWith("prod_", StringComparison.OrdinalIgnoreCase))
             {
                 throw new InvalidOperationException(
                     "Stripe is configured with a Product ID (prod_...) instead of a Price ID (price_...). " +
                     "In Stripe Dashboard → Products → open your plan → under Pricing, copy the Price ID. " +
-                    "Update Stripe__Prices__EssentialMonthly / EssentialAnnual on Railway, then redeploy.");
+                    "Update Stripe__Prices__EssentialMonthly / PremiumMonthly / EliteMonthly on Railway, then redeploy.");
             }
 
             return new SessionLineItemOptions
@@ -425,7 +426,17 @@ public class StripePaymentService(
             };
         }
 
+        return BuildDynamicLineItem(plan, chargePrice, gardenSize, addonIds);
+    }
+
+    private static SessionLineItemOptions BuildDynamicLineItem(
+        SubscriptionPlan plan,
+        decimal chargePrice,
+        GardenSize gardenSize,
+        IReadOnlyList<string> addonIds)
+    {
         var amountPence = (long)(chargePrice * 100);
+        var description = BuildLineItemDescription(plan, gardenSize, addonIds);
         return new SessionLineItemOptions
         {
             Quantity = 1,
@@ -440,12 +451,23 @@ public class StripePaymentService(
                 ProductData = new SessionLineItemPriceDataProductDataOptions
                 {
                     Name = plan.Name,
-                    Description = gardenSize == GardenSize.Small
-                        ? plan.Description
-                        : $"{plan.Description} ({gardenSize} garden)"
+                    Description = description
                 }
             }
         };
+    }
+
+    private static string BuildLineItemDescription(
+        SubscriptionPlan plan,
+        GardenSize gardenSize,
+        IReadOnlyList<string> addonIds)
+    {
+        var parts = new List<string> { plan.Description ?? plan.Name };
+        if (gardenSize != GardenSize.Small)
+            parts.Add($"{gardenSize} garden");
+        if (addonIds.Count > 0)
+            parts.Add($"add-ons: {string.Join(", ", addonIds)}");
+        return string.Join(" · ", parts);
     }
 
     private async Task HandleCheckoutCompletedAsync(Event stripeEvent, CancellationToken ct)
@@ -746,7 +768,16 @@ public class StripePaymentService(
         CancellationToken ct)
     {
         EnsureApiKey();
-        var priceId = ResolveStripePriceId(targetPlan);
+
+        var gardenSize = await db.CustomerProperties.AsNoTracking()
+            .Where(p => p.CustomerId == subscription.CustomerId && !p.IsDeleted)
+            .OrderByDescending(p => p.IsPrimary)
+            .Select(p => p.GardenSize)
+            .FirstOrDefaultAsync(ct);
+
+        var addonIds = SignupAddonPricing.ParseSignupAddonIds(subscription.SelectedSignupAddonsJson);
+        var chargePrice = PlanPricing.ResolvePrice(targetPlan, _planPricing, gardenSize, addonIds);
+
         var subscriptionService = new SubscriptionService();
         var stripeSubscription = await subscriptionService.GetAsync(
             subscription.StripeSubscriptionId,
@@ -754,27 +785,46 @@ public class StripePaymentService(
         var item = stripeSubscription.Items.Data.FirstOrDefault()
             ?? throw new InvalidOperationException("Stripe subscription has no billable items.");
 
+        SubscriptionItemOptions itemUpdate;
+        if (StripeCatalogPricing.UseCatalogPriceId(targetPlan, chargePrice, gardenSize, addonIds))
+        {
+            itemUpdate = new SubscriptionItemOptions
+            {
+                Id = item.Id,
+                Price = targetPlan.StripePriceId,
+            };
+        }
+        else
+        {
+            var productId = item.Price.ProductId;
+            itemUpdate = new SubscriptionItemOptions
+            {
+                Id = item.Id,
+                PriceData = new SubscriptionItemPriceDataOptions
+                {
+                    Currency = "gbp",
+                    UnitAmount = (long)(chargePrice * 100),
+                    Product = productId,
+                    Recurring = new SubscriptionItemPriceDataRecurringOptions
+                    {
+                        Interval = targetPlan.BillingInterval == SubscriptionBillingInterval.Monthly ? "month" : "year",
+                    },
+                },
+            };
+        }
+
         await subscriptionService.UpdateAsync(
             subscription.StripeSubscriptionId,
             new SubscriptionUpdateOptions
             {
-                Items =
-                [
-                    new SubscriptionItemOptions
-                    {
-                        Id = item.Id,
-                        Price = priceId,
-                    },
-                ],
+                Items = [itemUpdate],
                 ProrationBehavior = "create_prorations",
                 Metadata = new Dictionary<string, string>
                 {
                     ["subscriptionId"] = subscription.Id.ToString(),
                     ["planId"] = targetPlan.Id.ToString(),
                     ["minimumTermMonths"] = SubscriptionCommitment
-                        .ResolveMinimumTermMonths(
-                            targetPlan,
-                            SignupAddonPricing.ParseSignupAddonIds(subscription.SelectedSignupAddonsJson))
+                        .ResolveMinimumTermMonths(targetPlan, addonIds)
                         .ToString(),
                 },
             },
@@ -837,23 +887,6 @@ public class StripePaymentService(
             minimumTermEndsAtUtc,
             $"You're now on {premiumPlan.Name} (£{chargePrice:0.00}/{(premiumPlan.BillingInterval == SubscriptionBillingInterval.Monthly ? "month" : "year")}). "
             + $"Your minimum term runs until {minimumTermEndsAtUtc:dddd d MMMM yyyy}.{prorationNote}");
-    }
-
-    private string ResolveStripePriceId(SubscriptionPlan plan)
-    {
-        if (!string.IsNullOrWhiteSpace(plan.StripePriceId))
-        {
-            if (plan.StripePriceId.StartsWith("prod_", StringComparison.OrdinalIgnoreCase))
-            {
-                throw new InvalidOperationException(
-                    $"{plan.Name} is misconfigured in Stripe (product ID instead of price ID).");
-            }
-
-            return plan.StripePriceId;
-        }
-
-        throw new InvalidOperationException(
-            $"{plan.Name} is not configured in Stripe yet. Please try again later or contact support.");
     }
 
     private void EnsureApiKey()

@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Sorted.Core.Dtos;
 using Sorted.Core.Interfaces;
 
 namespace Sorted.Api.Controllers;
@@ -7,7 +8,9 @@ namespace Sorted.Api.Controllers;
 [ApiController]
 [Route("api/geo")]
 [AllowAnonymous]
-public class GeoController(IPostcodeGeocodingService geocoding) : ControllerBase
+public class GeoController(
+    IPostcodeGeocodingService geocoding,
+    IGardenSizeSuggestionService gardenSizeSuggestion) : ControllerBase
 {
     [HttpGet("postcodes/{postcode}")]
     public async Task<ActionResult> LookupPostcode(string postcode, CancellationToken ct)
@@ -24,5 +27,20 @@ public class GeoController(IPostcodeGeocodingService geocoding) : ControllerBase
             latitude = geo.Latitude,
             longitude = geo.Longitude,
         });
+    }
+
+    [HttpPost("garden-size-suggest")]
+    public async Task<ActionResult<GardenSizeSuggestionResponse>> SuggestGardenSize(
+        [FromBody] GardenSizeSuggestRequest request,
+        CancellationToken ct)
+    {
+        if (string.IsNullOrWhiteSpace(request.Postcode))
+            return BadRequest(new { error = "Postcode is required." });
+
+        var suggestion = await gardenSizeSuggestion.SuggestAsync(request, ct);
+        if (suggestion is null)
+            return NoContent();
+
+        return Ok(suggestion);
     }
 }

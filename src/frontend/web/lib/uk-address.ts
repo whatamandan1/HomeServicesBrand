@@ -5,6 +5,8 @@ export type UkAddressFields = {
   line2: string;
   city: string;
   postcode: string;
+  latitude?: number;
+  longitude?: number;
 };
 
 export type UkAddressSuggestion = {
@@ -44,11 +46,15 @@ export function parseGetAddressPayload(data: Record<string, unknown>): UkAddress
   if (!resolvedLine1 || !postcode.trim()) return null;
 
   const extraLine = [line2, line3].map((s) => s.trim()).filter(Boolean).join(", ");
+  const latitude = typeof data.latitude === "number" ? data.latitude : undefined;
+  const longitude = typeof data.longitude === "number" ? data.longitude : undefined;
 
   return {
     line1: resolvedLine1,
     line2: extraLine,
     city: resolvedCity || (typeof data.county === "string" ? data.county : ""),
     postcode: normalizeUkPostcode(postcode),
+    latitude,
+    longitude,
   };
 }

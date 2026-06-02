@@ -20,6 +20,7 @@ public static class DependencyInjection
         services.Configure<PlanPricingOptions>(configuration.GetSection(PlanPricingOptions.Section));
         services.Configure<SendGridOptions>(configuration.GetSection(SendGridOptions.Section));
         services.Configure<OpenAiOptions>(configuration.GetSection(OpenAiOptions.Section));
+        services.Configure<GoogleMapsOptions>(configuration.GetSection(GoogleMapsOptions.Section));
         services.Configure<TwilioOptions>(configuration.GetSection(TwilioOptions.Section));
         services.Configure<FeaturesOptions>(configuration.GetSection(FeaturesOptions.Section));
         services.AddOptions<AppOptions>()
@@ -48,6 +49,8 @@ public static class DependencyInjection
         services.AddScoped<ICommunicationService, CommunicationService>();
         services.AddScoped<IScheduledCommunicationService, ScheduledCommunicationService>();
         services.AddScoped<IAiSupportService, OpenAiSupportService>();
+        services.AddScoped<IGardenSizeSuggestionService, GardenSizeSuggestionService>();
+        services.AddHttpClient();
         services.AddScoped<IVisitSchedulingService, VisitSchedulingService>();
         services.AddScoped<IVisitManagementService, VisitManagementService>();
         services.AddScoped<IProviderCoverageService, ProviderCoverageService>();

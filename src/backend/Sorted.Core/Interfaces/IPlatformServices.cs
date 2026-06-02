@@ -140,6 +140,11 @@ public interface IPostcodeGeocodingService
         CancellationToken ct = default);
 }
 
+public interface IGardenSizeSuggestionService
+{
+    Task<GardenSizeSuggestionResponse?> SuggestAsync(GardenSizeSuggestRequest request, CancellationToken ct = default);
+}
+
 public interface IProviderCoverageService
 {
     Task SyncTerritoriesAsync(Provider provider, CancellationToken ct = default);

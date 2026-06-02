@@ -3,6 +3,13 @@ namespace Sorted.Core.Options;
 using Sorted.Core.Enums;
 using Sorted.Core.Plans;
 
+public class GoogleMapsOptions
+{
+    public const string Section = "GoogleMaps";
+    /// <summary>Maps Static API key for satellite imagery used in garden-size suggestions.</summary>
+    public string ApiKey { get; set; } = string.Empty;
+}
+
 public class JwtOptions
 {
     public const string Section = "Jwt";

@@ -37,12 +37,9 @@ Ensure `appsettings.Development.local.json` is **not** committed (it is gitignor
 | `Jwt__Secret` | long random string (32+ chars) |
 | `Stripe__SecretKey` | `sk_test_...` or live later |
 | `Stripe__WebhookSecret` | from Stripe Dashboard webhook |
-| `Stripe__Prices__EssentialMonthly` | `price_...` - Essential **£59.99/mo** (small garden, 10 visits/yr) |
-| `Stripe__Prices__EssentialAnnual` | `price_...` - Essential **£599.90/yr** |
-| `Stripe__Prices__PremiumMonthly` | `price_...` - Premium **£84.99/mo** (20 visits/yr) |
-| `Stripe__Prices__PremiumAnnual` | `price_...` - Premium **£849.90/yr** |
-| `Stripe__Prices__EliteMonthly` | `price_...` - Elite **£119.99/mo** (30 visits/yr) |
-| `Stripe__Prices__EliteAnnual` | `price_...` - Elite **£1199.90/yr** |
+| `Stripe__Prices__EssentialMonthly` | `price_...` - Essential **£59.99/mo** (small garden catalog — optional) |
+| `Stripe__Prices__PremiumMonthly` | `price_...` - Premium **£84.99/mo** (catalog — optional) |
+| `Stripe__Prices__EliteMonthly` | `price_...` - Elite **£119.99/mo** (catalog — optional) |
 | `Plans__EssentialMonthly` | `59.99` |
 | `Plans__EssentialAnnual` | `599.90` |
 | `Plans__PremiumMonthly` | `84.99` |
@@ -160,6 +157,6 @@ Optional: add Vercel/Railway deploy hooks later.
 - [ ] CORS includes custom domain (`https://gardenssorted.co.uk`)  
 - [ ] `API_URL` on Vercel matches Railway URL  
 - [ ] `NEXT_PUBLIC_SHOW_DEMO_LOGIN` **not** set on Vercel (demo login hints hidden)  
-- [ ] All **six** Stripe Price IDs set - see [`stripe-price-ids-checklist.md`](stripe-price-ids-checklist.md)
+- [ ] All **three** monthly Stripe Price IDs set (optional but recommended) - see [`stripe-price-ids-checklist.md`](stripe-price-ids-checklist.md)
 - [ ] `Plans__*` amounts match Stripe and [`consumer-plans-and-pricing.md`](consumer-plans-and-pricing.md)
 - [ ] `Features__SeedDemoData` still `true` until go-live gate (then set `false`)
