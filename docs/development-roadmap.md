@@ -145,7 +145,7 @@ Work through phases in order. Each phase builds on the last.
 - [x] **Provider add-on equipment** - checklist for hedge/seasonal/patio add-ons
 - [x] **Admin impersonation** - “Act as user” for support/debug
 - [x] **SEO area pages** - `/areas/[city]` (Leeds, York, Wakefield)
-- [x] **UK address autocomplete** - getAddress.io on signup finish step
+- [x] **UK address autocomplete** - Ideal Postcodes (preferred) or getAddress.io on signup finish step
 - [x] **Cookie policy + consent** - `/cookies`, preference UI for marketing tags
 - [x] **Marketing analytics** - GA4 conversion events; visitor location for hero personalisation
 - [x] **Garden size aerial suggestion** - satellite + OpenAI at signup step 3 when `GoogleMaps__ApiKey` configured; customer confirms band

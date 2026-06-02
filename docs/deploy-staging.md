@@ -120,6 +120,8 @@ If you only see project-level settings, you clicked the wrong level - go back to
 | `NEXT_PUBLIC_SITE_URL` | `https://gardenssorted.co.uk` |
 | `NEXT_PUBLIC_GA_MEASUREMENT_ID` | e.g. `G-YTCG270KXL` — GA4 (loads after cookie consent; do not paste gtag HTML into pages) |
 | `NEXT_PUBLIC_SHOW_DEMO_LOGIN` | **Leave unset** on production (demo credentials hidden). Set `true` only for local dev. |
+| `IDEAL_POSTCODES_API_KEY` | Ideal Postcodes API key for signup address search ([ideal-postcodes.co.uk](https://ideal-postcodes.co.uk/)). Use `ak_test` locally; production needs a live key. |
+| `GETADDRESS_API_KEY` | Optional legacy fallback if Ideal Postcodes is not set |
 | `NEXT_PUBLIC_API_URL` | optional - leave unset; `/api` is proxied via `API_URL` |
 
 Legacy: if you already use `NEXT_PUBLIC_API_URL` pointing at Railway, that still works as a direct browser call.

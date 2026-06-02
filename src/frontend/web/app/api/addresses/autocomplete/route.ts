@@ -1,13 +1,10 @@
 import { NextResponse } from "next/server";
-
-type GetAddressSuggestion = {
-  id?: string;
-  address?: string;
-};
+import { addressLookupEnabled, resolveAddressLookupProvider } from "@/lib/address-lookup-config";
+import { getAddressAutocomplete } from "@/lib/getaddress";
+import { idealPostcodesAutocomplete } from "@/lib/ideal-postcodes";
 
 export async function GET(request: Request) {
-  const apiKey = process.env.GETADDRESS_API_KEY?.trim();
-  if (!apiKey) {
+  if (!addressLookupEnabled()) {
     return NextResponse.json({ enabled: false, suggestions: [] });
   }
 
@@ -16,30 +13,27 @@ export async function GET(request: Request) {
     return NextResponse.json({ enabled: true, suggestions: [] });
   }
 
+  const provider = resolveAddressLookupProvider();
+  if (!provider) {
+    return NextResponse.json({ enabled: false, suggestions: [] });
+  }
+
   try {
-    const res = await fetch(
-      `https://api.getAddress.io/autocomplete/${encodeURIComponent(q)}?api-key=${encodeURIComponent(apiKey)}&all=true&top=6`,
-      { next: { revalidate: 0 } }
-    );
+    const result =
+      provider === "ideal-postcodes"
+        ? await idealPostcodesAutocomplete(q, process.env.IDEAL_POSTCODES_API_KEY!.trim())
+        : await getAddressAutocomplete(q, process.env.GETADDRESS_API_KEY!.trim());
 
-    if (res.status === 429) {
-      return NextResponse.json(
-        { enabled: true, suggestions: [], error: "Address lookup is busy. Try again in a moment." },
-        { status: 429 }
-      );
-    }
-
-    if (!res.ok) {
-      return NextResponse.json({ enabled: true, suggestions: [] });
-    }
-
-    const data = (await res.json()) as { suggestions?: GetAddressSuggestion[] };
-    const suggestions = (data.suggestions ?? [])
-      .filter((s): s is { id: string; address: string } => Boolean(s.id && s.address))
-      .map((s) => ({ id: s.id, address: s.address }));
-
-    return NextResponse.json({ enabled: true, suggestions });
+    return NextResponse.json({
+      enabled: true,
+      suggestions: result.suggestions,
+      ...(result.error ? { error: result.error } : {}),
+    });
   } catch {
-    return NextResponse.json({ enabled: true, suggestions: [], error: "Could not search addresses." });
+    return NextResponse.json({
+      enabled: true,
+      suggestions: [],
+      error: "Could not search addresses.",
+    });
   }
 }
